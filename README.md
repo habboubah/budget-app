@@ -11,7 +11,9 @@ month, and the two numbers that matter: **what is on the account now** and
 - **One month per page.** ‹ › switch months; "Zum aktuellen Monat" jumps back.
   The month reads in the order money moves: **Einkommen** first, then
   **Fixkosten**, **Auto**, **Sonderkosten**, **Einkaufen**, **Familie** — each a
-  card with its total and what is still open.
+  card with its total and what is still open. Tap a card's header to fold it
+  down to that one line (remembered per category, in every month); "⋯" folds
+  or unfolds them all.
 - **Two balances.** *Jetzt auf dem Konto* counts what is paid / received.
   *Am Monatsende* also counts everything still open. Below them: how many of the
   month's bills are paid, and the carry-over, income and expenses that add up to

@@ -33,6 +33,9 @@ interface Props {
   /** Opens Settings → Kategorien (when there are none left). */
   onCategories: () => void;
   onImportExcel: () => void;
+  /** Ids of the categories folded down to their header. */
+  collapsed: string[];
+  onCollapse: (categoryId: string) => void;
 }
 
 /**
@@ -132,6 +135,8 @@ export function MonthView(p: Props) {
               language={p.language}
               t={t}
               today={today}
+              collapsed={p.collapsed.includes(c.id)}
+              onCollapse={() => p.onCollapse(c.id)}
               onAdd={() => p.onAdd(c.id)}
               onEdit={p.onEdit}
               onToggle={p.onToggle}

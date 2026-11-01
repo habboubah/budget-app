@@ -69,6 +69,10 @@ const de = {
   entryDeleted: '„{name}“ gelöscht',
   entryAdded: '„{name}“ eingetragen',
   editNamed: '{name} bearbeiten',
+  collapse: 'Einklappen',
+  expand: 'Aufklappen',
+  collapseAll: 'Alle Kategorien einklappen',
+  expandAll: 'Alle Kategorien aufklappen',
 
   // Starting a month
   notStartedTitle: '{month} ist noch leer',
@@ -313,6 +317,10 @@ const en: Strings = {
   entryDeleted: '“{name}” deleted',
   entryAdded: '“{name}” added',
   editNamed: 'Edit {name}',
+  collapse: 'Collapse',
+  expand: 'Expand',
+  collapseAll: 'Collapse all categories',
+  expandAll: 'Expand all categories',
 
   notStartedTitle: '{month} is still empty',
   startBody: '{n} recurring items from {from} – salary, rent and insurance, for example – come in as open. Tick them off once they are paid.',

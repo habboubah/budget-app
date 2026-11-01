@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Plus, Repeat as RepeatIcon } from 'lucide-react';
+import { Check, ChevronDown, Plus, Repeat as RepeatIcon } from 'lucide-react';
 import { Category, Entry } from '../types';
 import { displayName, formatMoney, isOverdue } from '../logic';
-import { Strings, fmt } from '../translations';
+import { Strings, fmt, plural } from '../translations';
 import { Picture } from '../ui/Picture';
 import { tapLight } from '../ui/haptics';
 
@@ -14,6 +14,9 @@ interface Props {
   language: string;
   t: Strings;
   today: Date;
+  /** Folded down to its header: name, total, what is still open. */
+  collapsed: boolean;
+  onCollapse: () => void;
   onAdd: () => void;
   onEdit: (e: Entry) => void;
   onToggle: (e: Entry) => void;
@@ -21,9 +24,12 @@ interface Props {
 
 /**
  * One category of a month — one column of the Excel sheet: its total, how much
- * of it is still open, its entries, and an add row at the bottom.
+ * of it is still open, its entries, and an add row at the bottom. Tapping the
+ * header folds the card down to that header and back; the state is kept per
+ * category, so a category minimised stays minimised in every month.
  */
-export function CategorySection({ category, entries, language, t, today, onAdd, onEdit, onToggle }: Props) {
+export function CategorySection({ category, entries, language, t, today, collapsed, onCollapse, onAdd, onEdit, onToggle }: Props) {
+  const bodyId = useId();
   const name = displayName(category.names, language);
   const income = category.kind === 'income';
   const total = entries.reduce((s, e) => s + e.amount, 0);
@@ -32,51 +38,83 @@ export function CategorySection({ category, entries, language, t, today, onAdd, 
 
   return (
     <section data-hue={category.hue} className="rounded-md bg-surface card-edge overflow-hidden" aria-label={name}>
-      <header className="flex items-center gap-3 px-4 pt-3.5 pb-3">
-        <Picture emoji={category.emoji} name={name} size="md" />
-        <div className="min-w-0 flex-1">
-          <h2 className="display text-heading font-bold text-fg wrap-compound">{name}</h2>
-          {open > 0 && (
-            <p className="text-caption font-semibold text-warn num">{fmt(t.sectionOpen, { amount: money(open) })}</p>
-          )}
-        </div>
-        <p className={`display text-heading font-bold num shrink-0 ${income && total ? 'text-pos' : total ? 'text-fg' : 'text-fg-mute'}`}>
-          {money(total)}
-        </p>
-      </header>
+      <h2>
+        <button
+          type="button"
+          onClick={() => { tapLight(); onCollapse(); }}
+          aria-expanded={!collapsed}
+          aria-controls={bodyId}
+          title={collapsed ? t.expand : t.collapse}
+          className="w-full flex items-center gap-3 ps-4 pe-3 pt-3.5 pb-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+        >
+          <Picture emoji={category.emoji} name={name} size="md" />
+          <span className="min-w-0 flex-1">
+            <span className="block display text-heading font-bold text-fg wrap-compound">{name}</span>
+            {(open > 0 || (collapsed && entries.length > 0)) && (
+              <span className="flex flex-wrap gap-x-2 text-caption font-semibold num">
+                {collapsed && entries.length > 0 && (
+                  <span className="text-fg-mute whitespace-nowrap">{plural(entries.length, t.entriesOne, t.entriesMany)}</span>
+                )}
+                {open > 0 && <span className="text-warn whitespace-nowrap">{fmt(t.sectionOpen, { amount: money(open) })}</span>}
+              </span>
+            )}
+          </span>
+          <span className={`display text-heading font-bold num shrink-0 ${income && total ? 'text-pos' : total ? 'text-fg' : 'text-fg-mute'}`}>
+            {money(total)}
+          </span>
+          <ChevronDown
+            className={`w-5 h-5 shrink-0 text-fg-mute transition-transform duration-200 ${collapsed ? '-rotate-90 rtl:rotate-90' : ''}`}
+            aria-hidden="true"
+          />
+        </button>
+      </h2>
 
-      {entries.length > 0 && (
-        <ul className="hairline-t divide-hairline-inset" style={{ '--sep': '60px' } as React.CSSProperties}>
-          <AnimatePresence initial={false}>
-            {entries.map(e => (
-              <motion.li
-                key={e.id}
-                layout="position"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-                className="overflow-hidden"
-              >
-                <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)}
-                  onEdit={() => onEdit(e)} onToggle={() => onToggle(e)} />
-              </motion.li>
-            ))}
-          </AnimatePresence>
-        </ul>
-      )}
+      <AnimatePresence initial={false}>
+        {!collapsed && (
+          <motion.div
+            key="body"
+            id={bodyId}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+            className="overflow-hidden"
+          >
+            {entries.length > 0 && (
+              <ul className="hairline-t divide-hairline-inset" style={{ '--sep': '60px' } as React.CSSProperties}>
+                <AnimatePresence initial={false}>
+                  {entries.map(e => (
+                    <motion.li
+                      key={e.id}
+                      layout="position"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)}
+                        onEdit={() => onEdit(e)} onToggle={() => onToggle(e)} />
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
+              </ul>
+            )}
 
-      <button
-        type="button"
-        onClick={() => { tapLight(); onAdd(); }}
-        aria-label={fmt(t.addTo, { name })}
-        className="w-full min-h-chrome px-4 flex items-center gap-3 hairline-t text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus"
-      >
-        <span className="w-7 h-7 ms-0.5 rounded-full bg-accent-dim inline-flex items-center justify-center shrink-0" aria-hidden="true">
-          <Plus className="w-4 h-4" strokeWidth={2.75} />
-        </span>
-        <span className="text-label font-semibold">{entries.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
-      </button>
+            <button
+              type="button"
+              onClick={() => { tapLight(); onAdd(); }}
+              aria-label={fmt(t.addTo, { name })}
+              className="w-full min-h-chrome px-4 flex items-center gap-3 hairline-t text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus"
+            >
+              <span className="w-7 h-7 ms-0.5 rounded-full bg-accent-dim inline-flex items-center justify-center shrink-0" aria-hidden="true">
+                <Plus className="w-4 h-4" strokeWidth={2.75} />
+              </span>
+              <span className="text-label font-semibold">{entries.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

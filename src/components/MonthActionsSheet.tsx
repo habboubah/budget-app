@@ -1,22 +1,25 @@
-import { Repeat as RepeatIcon, Trash2, Wallet } from 'lucide-react';
+import { ChevronsDownUp, ChevronsUpDown, Repeat as RepeatIcon, Trash2, Wallet } from 'lucide-react';
 import { MonthKey } from '../types';
 import { monthLabel } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Group, Row } from '../ui/Screen';
 
-/** The month's "⋯": correct the opening balance, fetch missing recurring entries, delete the month. */
-export function MonthActionsSheet({ open, month, started, prevKey, missing, t, onClose, onOpening, onPull, onDelete }: {
+/** The month's "⋯": correct the opening balance, fetch missing recurring entries, fold all categories, delete the month. */
+export function MonthActionsSheet({ open, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onPull, onCollapseAll, onDelete }: {
   open: boolean;
   month: MonthKey;
   started: boolean;
   prevKey?: MonthKey;
   /** Recurring entries of earlier months this month doesn't have yet. */
   missing: number;
+  /** Every category is folded down — the row offers to unfold them all. */
+  allCollapsed: boolean;
   t: Strings;
   onClose: () => void;
   onOpening: () => void;
   onPull: () => void;
+  onCollapseAll: (collapse: boolean) => void;
   onDelete: () => void;
 }) {
   const run = (fn: () => void) => () => { onClose(); fn(); };
@@ -35,6 +38,15 @@ export function MonthActionsSheet({ open, month, started, prevKey, missing, t, o
               sub={missing ? fmt(t.pullRecurringSub, { n: missing }) : t.nothingToPull}
               leading={<RepeatIcon className="w-5 h-5 text-accent" aria-hidden="true" />}
               onClick={missing ? run(onPull) : undefined}
+            />
+          )}
+          {started && (
+            <Row
+              label={allCollapsed ? t.expandAll : t.collapseAll}
+              leading={allCollapsed
+                ? <ChevronsUpDown className="w-5 h-5 text-accent" aria-hidden="true" />
+                : <ChevronsDownUp className="w-5 h-5 text-accent" aria-hidden="true" />}
+              onClick={run(() => onCollapseAll(!allCollapsed))}
             />
           )}
         </Group>

@@ -93,6 +93,8 @@ export default function App() {
     const now = Date.now();
     const entry: Entry = { id, month: m, seriesId: id, createdAt: now, ...d, ...(d.paid ? { paidAt: now } : {}) };
     store.addEntry(entry);
+    // A new entry in a folded category unfolds it, so it can be seen landing.
+    store.expand(d.categoryId);
     setLastCategory(d.categoryId);
     show(fmt(t.entryAdded, { name: d.name }));
   };
@@ -266,6 +268,8 @@ export default function App() {
             onDismissIntro={store.dismissIntro}
             onCategories={() => { setTab('settings'); setShowCategories(true); }}
             onImportExcel={() => excelInput.current?.click()}
+            collapsed={store.collapsed}
+            onCollapse={store.toggleCollapsed}
           />
         )}
       </motion.div>
@@ -321,10 +325,12 @@ export default function App() {
         started={balance.started}
         prevKey={balance.prevKey}
         missing={balance.started ? candidates.length : 0}
+        allCollapsed={categories.length > 0 && categories.every(c => store.collapsed.includes(c.id))}
         t={t}
         onClose={() => setActionsOpen(false)}
         onOpening={() => setOpeningOpen(true)}
         onPull={() => { const n = store.pullRecurring(month); show(fmt(t.pulled, { n })); }}
+        onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
         onDelete={deleteMonth}
       />
 

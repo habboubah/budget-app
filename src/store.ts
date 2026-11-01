@@ -16,6 +16,7 @@ const K = {
   lang: 'spartopf-lang',
   theme: 'spartopf-theme',
   intro: 'spartopf-intro-done',
+  collapsed: 'spartopf-collapsed',
   meta: 'spartopf-meta',
 } as const;
 
@@ -74,6 +75,11 @@ export function useAppStore() {
   });
   /** The "how it works" card on the first month — gone for good once dismissed. */
   const [introDone, setIntroDone] = useState(() => readString(K.intro) === '1');
+  /** Categories folded down on the month page — a view preference, not data, so not in a backup. */
+  const [collapsed, setCollapsed] = useState<string[]>(() => {
+    const saved = readJson(K.collapsed);
+    return Array.isArray(saved) ? saved.filter((x): x is string => typeof x === 'string') : [];
+  });
 
   // Keys whose last write failed (quota, private mode) — the data is at risk
   // and the UI says so. Tracked per key: one recovering write must not hide
@@ -93,6 +99,7 @@ export function useAppStore() {
   useEffect(() => { persist(K.entries, JSON.stringify(entries)); }, [entries]);
   useEffect(() => { persist(K.months, JSON.stringify(months)); }, [months]);
   useEffect(() => { persist(K.intro, introDone ? '1' : '0'); }, [introDone]);
+  useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.meta, JSON.stringify({ schemaVersion: SCHEMA_VERSION, seeded: true })); }, []);
 
   useEffect(() => {
@@ -275,6 +282,10 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode, storageError: failedKeys.length > 0,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
+    collapsed,
+    toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),
+    expand: (id: string) => setCollapsed(prev => prev.filter(x => x !== id)),
+    setCollapsed,
     data, categories, entries, months, balances,
     startMonth, pullRecurring, setOpening, removeMonth, restoreMonth,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry,
