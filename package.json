@@ -8,7 +8,7 @@
     "build": "vite build && npx cap sync",
     "build:web": "vite build",
     "build:ios": "vite build && npx cap sync ios && npx cap open ios",
-    "assets:generate": "npx @capacitor/assets generate --ios --iconBackgroundColor '#12333B' --splashBackgroundColor '#F5F4F0' --splashBackgroundColorDark '#0E1112'",
+    "assets:generate": "npx @capacitor/assets generate --ios --iconBackgroundColor '#10313A' --splashBackgroundColor '#F5F4F0' --splashBackgroundColorDark '#0E1112'",
     "screenshots": "node scripts/screenshots.mjs",
     "release": "node scripts/release.js",
     "release:ios": "node scripts/release.js",
