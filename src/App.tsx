@@ -1,19 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { motion } from 'motion/react';
-import { AlertTriangle, BarChart3, CalendarDays } from 'lucide-react';
+import { AlertTriangle, BarChart3, CalendarDays, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import translations, { fmt } from './translations';
-import { Entry, EntryDraft, MonthKey } from './types';
-import { balanceFor, carryCandidates, monthKeyOf, monthLabel, openBefore, uid } from './logic';
+import { Category, Entry, EntryDraft, MonthKey } from './types';
+import { balanceFor, carryCandidates, displayName, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { MonthView } from './components/MonthView';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
 import { MonthActionsSheet } from './components/MonthActionsSheet';
 import { StatsView } from './components/StatsView';
+import { SettingsView } from './components/SettingsView';
+import { CategoriesView } from './components/CategoriesView';
+import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
+import { BackupGroup } from './components/BackupGroup';
 import { AddButton } from './ui/AddButton';
 import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
+import { Confirm } from './ui/Sheet';
 import { notifySuccess, notifyWarning, tapLight } from './ui/haptics';
 
 export default function App() {
@@ -22,7 +28,11 @@ export default function App() {
   const t = translations[language];
   const { toast, show, hide } = useToast();
 
-  const [tab, setTab] = useState<'month' | 'stats'>('month');
+  const [tab, setTab] = useState<'month' | 'stats' | 'settings'>('month');
+  const [showCategories, setShowCategories] = useState(false);
+  const [categorySheet, setCategorySheet] = useState<CategorySheetMode>(null);
+  /** A category with entries waiting for "really delete?". */
+  const [confirmCategory, setConfirmCategory] = useState<Category | null>(null);
   /** One month for both tabs: statistics open on the month being looked at. */
   const [month, setMonth] = useState<MonthKey>(monthKeyOf);
   const [entrySheet, setEntrySheet] = useState<EntrySheetMode>(null);
@@ -36,7 +46,35 @@ export default function App() {
   const candidates = useMemo(() => carryCandidates(data, month), [data, month]);
   const openEarlier = useMemo(() => (balance.started ? openBefore(data, month) : []), [data, month, balance.started]);
 
-  useEffect(() => { window.scrollTo(0, 0); }, [month, tab]);
+  // Screens pushed over the tab's root, outermost first. Every pushed screen
+  // must be here: it drives the hardware back, the scroll reset and the slide
+  // direction (the same pattern as shopping-list and pizza-driver-log).
+  const pushed: [string, boolean, () => void][] = [
+    ['categories', tab === 'settings' && showCategories, () => setShowCategories(false)],
+  ];
+  const topIndex = pushed.findIndex(([, isOpen]) => isOpen);
+  const screen = topIndex === -1 ? tab : pushed[topIndex][0];
+  const depth = topIndex === -1 ? 0 : pushed.length - topIndex;
+  // Push slides in from the trailing edge, pop reveals the parent from the
+  // leading edge; switching tabs just cross-fades. Kept in a ref guarded by
+  // `screen` so StrictMode's double render can't recompute the direction.
+  const nav = useRef({ screen, depth, dir: 0 });
+  if (nav.current.screen !== screen) {
+    nav.current = { screen, depth, dir: depth === nav.current.depth ? 0 : depth > nav.current.depth ? 1 : -1 };
+  }
+  const dir = nav.current.dir;
+  const rtl = t.dir === 'rtl' ? -1 : 1;
+
+  useEffect(() => { window.scrollTo(0, 0); }, [month, screen]);
+
+  useEffect(() => {
+    const handle = CapacitorApp.addListener('backButton', () => {
+      if (topIndex !== -1) pushed[topIndex][2]();
+      else if (tab !== 'month') setTab('month');
+      else void CapacitorApp.minimizeApp();
+    });
+    return () => { void handle.then(h => h.remove()); };
+  }, [topIndex, tab]);
 
   // Status-bar glyphs must invert with the theme or they vanish into the bar.
   useEffect(() => {
@@ -83,6 +121,26 @@ export default function App() {
     });
   };
 
+  /** An empty category just goes (with undo); one with entries asks first. */
+  const askDeleteCategory = (c: Category) => {
+    if (entries.some(e => e.categoryId === c.id)) setConfirmCategory(c);
+    else deleteCategory(c);
+  };
+
+  const deleteCategory = (c: Category) => {
+    const removed = store.removeCategory(c.id);
+    if (!removed) return;
+    notifyWarning();
+    show(fmt(t.categoryDeleted, { name: displayName(c.names, language) }), {
+      label: t.undo, run: () => store.restoreCategory(removed),
+    });
+  };
+
+  const restoreDefaults = () => {
+    const before = store.restoreDefaults();
+    show(t.restoreDefaultsDone, { label: t.undo, run: () => store.setCategories(before) });
+  };
+
   const quickAddCategory = (lastCategory && categories.some(c => c.id === lastCategory) ? lastCategory : null)
     ?? categories.find(c => c.kind === 'expense')?.id ?? categories[0]?.id;
 
@@ -98,12 +156,49 @@ export default function App() {
       )}
 
       <motion.div
-        key={tab}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.18 }}
+        key={screen}
+        // Enter-only: the old screen leaves on the spot and the new one comes
+        // in over it. Fixed chrome (sheets, toasts, the tab bar) is portalled
+        // to <body>, so this transform can never capture it.
+        initial={dir === 0 ? { opacity: 0 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={dir === 0 ? { duration: 0.18 } : { duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
       >
-        {tab === 'stats' ? (
+        {screen === 'categories' ? (
+          <CategoriesView
+            categories={categories}
+            entries={entries}
+            language={language}
+            t={t}
+            onBack={() => setShowCategories(false)}
+            onEdit={c => setCategorySheet({ kind: 'edit', category: c })}
+            onNew={() => setCategorySheet({ kind: 'new' })}
+            onDelete={askDeleteCategory}
+            onReorder={store.setCategoryOrder}
+            onRestoreDefaults={restoreDefaults}
+          />
+        ) : screen === 'settings' ? (
+          <SettingsView
+            language={language}
+            themeMode={themeMode}
+            t={t}
+            categoryCount={categories.length}
+            onLanguage={store.setLanguage}
+            onTheme={store.setThemeMode}
+            onCategories={() => setShowCategories(true)}
+            onRestoreDefaults={restoreDefaults}
+            onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); show(t.deleteAllDone); }}
+            backup={
+              <BackupGroup
+                data={data}
+                language={language}
+                t={t}
+                onImport={d => { store.importData(d); setMonth(monthKeyOf()); }}
+                toast={label => show(label)}
+              />
+            }
+          />
+        ) : screen === 'stats' ? (
           <StatsView
             month={month}
             balances={balances}
@@ -139,10 +234,12 @@ export default function App() {
       <TabBar
         label={t.appName}
         active={tab}
-        onChange={setTab}
+        // Tapping the active tab again pops back to its root, as on iOS.
+        onChange={id => { if (id === tab) setShowCategories(false); setTab(id); }}
         tabs={[
           { id: 'month', label: t.tabMonth, icon: CalendarDays },
           { id: 'stats', label: t.tabStats, icon: BarChart3 },
+          { id: 'settings', label: t.tabSettings, icon: Settings },
         ]}
       />
 
@@ -190,6 +287,27 @@ export default function App() {
         onOpening={() => setOpeningOpen(true)}
         onPull={() => { const n = store.pullRecurring(month); show(fmt(t.pulled, { n })); }}
         onDelete={deleteMonth}
+      />
+
+      <CategorySheet
+        mode={categorySheet}
+        language={language}
+        t={t}
+        onClose={() => setCategorySheet(null)}
+        onCreate={store.addCategory}
+        onSave={store.updateCategory}
+        onDelete={askDeleteCategory}
+      />
+
+      <Confirm
+        open={!!confirmCategory}
+        title={fmt(t.deleteCategoryTitle, { name: confirmCategory ? displayName(confirmCategory.names, language) : '' })}
+        body={fmt(t.deleteCategoryBody, { n: confirmCategory ? entries.filter(e => e.categoryId === confirmCategory.id).length : 0 })}
+        confirmLabel={t.deleteCategory}
+        cancelLabel={t.cancel}
+        danger
+        onCancel={() => setConfirmCategory(null)}
+        onConfirm={() => { if (confirmCategory) deleteCategory(confirmCategory); setConfirmCategory(null); }}
       />
 
       <Toast toast={toast} onDone={hide} raised />

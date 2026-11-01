@@ -54,7 +54,7 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
             role="radio"
             aria-checked={on}
             onClick={() => { tapLight(); onChange(o.value); }}
-            className={`flex-1 min-h-[40px] px-3 rounded-[10px] text-label font-semibold transition-colors focus-visible:ring-focus wrap-compound ${
+            className={`flex-1 min-h-[40px] px-2 rounded-[10px] text-label font-semibold transition-colors focus-visible:ring-focus wrap-compound ${
               on ? 'bg-raised text-fg shadow-e1' : 'text-fg-mute active:bg-raised/60'}`}
           >
             {o.label}
