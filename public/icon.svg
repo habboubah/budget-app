@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Spartopf: a gold coin sinking into a cream pot, on the hero petrol. -->
+  <rect width="1024" height="1024" rx="0" fill="#10313A"/>
+  <circle cx="512" cy="372" r="136" fill="#F2C14E"/>
+  <circle cx="512" cy="372" r="92" fill="none" stroke="#C98F1E" stroke-width="20"/>
+  <path d="M248 500 H776 V540 C776 718 666 832 512 832 C358 832 248 718 248 540 Z" fill="#F5F4F0"/>
+  <rect x="208" y="458" width="608" height="84" rx="42" fill="#F5F4F0"/>
+  <rect x="404" y="486" width="216" height="28" rx="14" fill="#10313A"/>
+</svg>

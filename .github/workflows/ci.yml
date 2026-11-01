@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npx vite build
+      # The app promises it talks to nobody. Assert it, so a stray CDN font or
+      # script can't quietly reintroduce a third-party call.
+      - name: Assert the bundle loads nothing from a third party
+        run: |
+          if grep -rqE "https?://(fonts\.(googleapis|gstatic)|cdn\.|unpkg\.com|jsdelivr)" dist/assets dist/index.html; then
+            echo "::error::Built bundle references an external host"
+            exit 1
+          fi

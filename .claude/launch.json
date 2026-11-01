@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3002
+    },
+    {
+      "//": "Any free port — for a second session that just needs to look at the app.",
+      "name": "dev-auto",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite"],
+      "port": 3002,
+      "autoPort": true
+    }
+  ]
+}

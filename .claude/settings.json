@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "decksmith": {
+      "source": {
+        "source": "github",
+        "repo": "ashivalagar/decksmith"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "impeccable@decksmith": true
+  }
+}

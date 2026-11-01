@@ -1,0 +1,21 @@
+node_modules/
+build/
+dist/
+dev-dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+!.env.release.example
+*.p8
+.vite/
+**/.idea/
+# Xcode per-user state and build output inside the native shell.
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/DerivedData/
+ios/App/build/
+ios/build/
+# Regenerated screenshots, not source.
+screenshots/
