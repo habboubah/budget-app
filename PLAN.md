@@ -73,10 +73,9 @@ One bank account only, on purpose.
 6. Settings: categories, language, theme, backup / CSV
 7. iOS project, App Store release pipeline, store listing, screenshots
 8. Polish, empty states, README; final check on iPhone width + desktop
+9. Import from Excel: month tabs → months, with a preview and undo
 
 ## Ideas for later
 
-- Import the existing `My_expense.xlsx` months (one sheet per month → started
-  months with their entries).
 - A home-screen widget with "Jetzt" and "Monatsende".
 - Arabic (`dir: 'rtl'`) as a third language.

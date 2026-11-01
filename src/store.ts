@@ -274,7 +274,7 @@ export function useAppStore() {
 
   return {
     language, setLanguage, themeMode, setThemeMode, storageError: failedKeys.length > 0,
-    introDone, dismissIntro: () => setIntroDone(true),
+    introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
     data, categories, entries, months, balances,
     startMonth, pullRecurring, setOpening, removeMonth, restoreMonth,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry,

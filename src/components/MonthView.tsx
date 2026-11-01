@@ -32,6 +32,7 @@ interface Props {
   onDismissIntro: () => void;
   /** Opens Settings → Kategorien (when there are none left). */
   onCategories: () => void;
+  onImportExcel: () => void;
 }
 
 /**
@@ -89,6 +90,7 @@ export function MonthView(p: Props) {
               t={t}
               needsStart={!balance.prevKey && !balance.overridden}
               onStartingBalance={p.onOpening}
+              onImportExcel={p.onImportExcel}
               onDismiss={p.onDismissIntro}
             />
           )}

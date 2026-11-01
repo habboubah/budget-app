@@ -35,6 +35,15 @@ month, and the two numbers that matter: **what is on the account now** and
 - **Settings.** Categories — create (income or expense, default repeat, emoji,
   colour), edit, drag to reorder, delete (undoable; asks first if entries go with
   it), *Standard wiederherstellen*. Deutsch / English, light / dark / automatic.
+- **Import from Excel.** *Einstellungen → Excel → Aus Excel importieren* (or the
+  button on the first month) reads a budget sheet laid out like
+  `My_expense.xlsx`: one tab per month ("11.2026"), the categories in row 1,
+  each with name · paid · open columns. A preview shows every month, how the
+  columns map onto categories and what gets replaced before anything is written.
+  "Before" becomes the starting balance (and a hand correction in a later month
+  is kept), a day in brackets like `Vodafone(18)` becomes the due day, what comes
+  back every month is marked *monatlich*, and a tab with a year typo ("08.2025"
+  between July and September 2026) lands in the right month. Undoable.
 - **Backup.** Export everything as a JSON file (share sheet on iPhone → Files /
   iCloud Drive / AirDrop) and import it again, or export every entry as **CSV for
   Excel**. There is no cloud: back up now and then.
@@ -92,6 +101,7 @@ TestFlight, the same way Fahrtwerk and Korb ship. The full first-time checklist
 | `src/App.tsx` | Tabs, pushed screens (no router), sheets, toasts |
 | `src/store.ts` | All state, persisted to `localStorage` (`spartopf-*` keys) |
 | `src/logic.ts` | Pure logic — money parsing/formatting, months, the two balances, carry-over, statistics, storage validation, CSV (tested in `logic.test.ts`) |
+| `src/xlsx.ts`, `src/excelImport.ts` | Reading an .xlsx on the device, and turning a budget sheet into months (tested in `excelImport.test.ts`) |
 | `src/data/defaults.ts` | Built-in categories, name suggestions, emoji |
 | `src/translations.ts` | All UI text, `de` and `en` |
 | `src/components/` | Screens (`*View`) and sheets (`*Sheet`), the charts |

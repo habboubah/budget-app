@@ -16,6 +16,9 @@ import { SettingsView } from './components/SettingsView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { BackupGroup } from './components/BackupGroup';
+import { ExcelImportSheet } from './components/ExcelImportSheet';
+import { readXlsx } from './xlsx';
+import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
 import { AddButton } from './ui/AddButton';
 import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
@@ -31,6 +34,9 @@ export default function App() {
   const [tab, setTab] = useState<'month' | 'stats' | 'settings'>('month');
   const [showCategories, setShowCategories] = useState(false);
   const [categorySheet, setCategorySheet] = useState<CategorySheetMode>(null);
+  /** An Excel file read and planned, waiting for "import". */
+  const [excel, setExcel] = useState<{ plan: ImportPlan; fileName: string } | null>(null);
+  const excelInput = useRef<HTMLInputElement>(null);
   /** A category with entries waiting for "really delete?". */
   const [confirmCategory, setConfirmCategory] = useState<Category | null>(null);
   /** One month for both tabs: statistics open on the month being looked at. */
@@ -121,6 +127,36 @@ export default function App() {
     });
   };
 
+  const onExcelFile = async (f: File | undefined) => {
+    if (excelInput.current) excelInput.current.value = '';
+    if (!f) return;
+    try {
+      const plan = planExcelImport(readXlsx(new Uint8Array(await f.arrayBuffer())), categories, language);
+      if (!plan.months.length) { show(t.excelNoMonths); return; }
+      setExcel({ plan, fileName: f.name });
+    } catch {
+      show(t.excelInvalid);
+    }
+  };
+
+  const importExcel = () => {
+    if (!excel) return;
+    const before = data;
+    const introWasDone = store.introDone;
+    store.importData(applyExcelImport(data, excel.plan));
+    store.dismissIntro();
+    const n = excel.plan.months.length;
+    setMonth(lastMonth(excel.plan) ?? monthKeyOf());
+    setTab('month');
+    setShowCategories(false);
+    setExcel(null);
+    notifySuccess();
+    show(fmt(t.excelDone, { n }), {
+      label: t.undo,
+      run: () => { store.importData(before); if (!introWasDone) store.restoreIntro(); setMonth(monthKeyOf()); },
+    });
+  };
+
   /** An empty category just goes (with undo); one with entries asks first. */
   const askDeleteCategory = (c: Category) => {
     if (entries.some(e => e.categoryId === c.id)) setConfirmCategory(c);
@@ -194,6 +230,7 @@ export default function App() {
                 language={language}
                 t={t}
                 onImport={d => { store.importData(d); setMonth(monthKeyOf()); }}
+                onImportExcel={() => excelInput.current?.click()}
                 toast={label => show(label)}
               />
             }
@@ -228,6 +265,7 @@ export default function App() {
             onOpening={() => setOpeningOpen(true)}
             onDismissIntro={store.dismissIntro}
             onCategories={() => { setTab('settings'); setShowCategories(true); }}
+            onImportExcel={() => excelInput.current?.click()}
           />
         )}
       </motion.div>
@@ -298,6 +336,24 @@ export default function App() {
         onCreate={store.addCategory}
         onSave={store.updateCategory}
         onDelete={askDeleteCategory}
+      />
+
+      <input
+        ref={excelInput}
+        type="file"
+        accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        className="sr-only" tabIndex={-1} aria-hidden="true"
+        onChange={e => void onExcelFile(e.target.files?.[0])}
+      />
+      <ExcelImportSheet
+        plan={excel?.plan ?? null}
+        fileName={excel?.fileName ?? ''}
+        replaced={excel ? replacedMonths(data, excel.plan) : []}
+        categories={categories}
+        language={language}
+        t={t}
+        onClose={() => setExcel(null)}
+        onConfirm={importExcel}
       />
 
       <Confirm

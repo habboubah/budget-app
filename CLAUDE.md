@@ -31,6 +31,11 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
 - **Pure logic** goes in `src/logic.ts` (money, months, balances, carry-over,
   statistics, storage validation) and is tested in `src/logic.test.ts`.
   Components never do balance arithmetic themselves.
+- **Excel import** is two layers: `src/xlsx.ts` unzips the file (fflate) and
+  reads cell values with string matching — no spreadsheet library — and
+  `src/excelImport.ts` plans the import as pure data (`planExcelImport`) that
+  the preview sheet shows and `applyExcelImport` writes. Tests build their own
+  .xlsx in memory; never commit a real one (it is someone's finances).
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /

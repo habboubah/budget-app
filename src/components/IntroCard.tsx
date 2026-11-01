@@ -1,3 +1,4 @@
+import { FileUp } from 'lucide-react';
 import { Strings } from '../translations';
 import { Button } from '../ui/Button';
 
@@ -5,11 +6,13 @@ import { Button } from '../ui/Button';
  * Shown on the first month until dismissed: the order the app is meant to be
  * filled in — the order of the Excel sheet — and the one gesture that matters.
  */
-export function IntroCard({ t, needsStart, onStartingBalance, onDismiss }: {
+export function IntroCard({ t, needsStart, onStartingBalance, onImportExcel, onDismiss }: {
   t: Strings;
   /** No starting balance yet: offer to enter it. */
   needsStart: boolean;
   onStartingBalance: () => void;
+  /** Bring the months over from the Excel sheet instead of typing them. */
+  onImportExcel: () => void;
   onDismiss: () => void;
 }) {
   const steps = [t.introStep1, t.introStep2, t.introStep3, t.introStep4];
@@ -28,7 +31,8 @@ export function IntroCard({ t, needsStart, onStartingBalance, onDismiss }: {
       </ol>
       <div className="mt-4 flex flex-wrap gap-2">
         {needsStart && <Button onClick={onStartingBalance}>{t.setStartingBalance}</Button>}
-        <Button variant={needsStart ? 'ghost' : 'secondary'} onClick={onDismiss}>{t.introDismiss}</Button>
+        <Button variant="secondary" icon={FileUp} onClick={onImportExcel}>{t.introExcel}</Button>
+        <Button variant="ghost" onClick={onDismiss}>{t.introDismiss}</Button>
       </div>
     </section>
   );
