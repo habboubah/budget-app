@@ -143,7 +143,7 @@ const de = {
   savingsRate: '{p} % vom Einkommen gespart',
   whereMoneyWent: 'Wohin ging das Geld?',
   byCategory: 'Nach Kategorie',
-  byName: 'Nach Laden & Empfänger',
+  byName: 'Nach Empfänger',
   timesCount: '{n}×',
   inclOpen: 'davon {amount} offen',
   lastMonths: 'Die letzten {n} Monate',
@@ -159,6 +159,7 @@ const de = {
   chartLegendIncome: 'Einnahmen',
   chartLegendExpenses: 'Ausgaben',
   ofExpenses: '{p} %',
+  showTable: 'Als Tabelle anzeigen',
 
   // Settings
   settingsTitle: 'Einstellungen',
@@ -358,7 +359,7 @@ const en: Strings = {
   savingsRate: '{p} % of income saved',
   whereMoneyWent: 'Where did the money go?',
   byCategory: 'By category',
-  byName: 'By shop & payee',
+  byName: 'By payee',
   timesCount: '{n}×',
   inclOpen: '{amount} of it open',
   lastMonths: 'The last {n} months',
@@ -374,6 +375,7 @@ const en: Strings = {
   chartLegendIncome: 'Income',
   chartLegendExpenses: 'Expenses',
   ofExpenses: '{p} %',
+  showTable: 'Show as a table',
 
   settingsTitle: 'Settings',
   categories: 'Categories',

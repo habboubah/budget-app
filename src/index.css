@@ -58,6 +58,12 @@
   --color-warn:     var(--t-warn);
   --color-warn-dim: var(--t-warn-dim);
 
+  /* Chart series: money in / money out, and the balance line. Validated with
+     the dataviz skill's validate_palette.js (CVD + contrast) per theme. */
+  --color-chart-in:   var(--t-chart-in);
+  --color-chart-out:  var(--t-chart-out);
+  --color-chart-line: var(--t-chart-line);
+
   --color-hero:       var(--t-hero);
   --color-hero-ink:   var(--t-hero-ink);
   --color-hero-mute:  var(--t-hero-mute);
@@ -122,6 +128,10 @@
   --t-warn:     #8A5300;
   --t-warn-dim: #FFF0D0;
 
+  --t-chart-in:   #22874F;
+  --t-chart-out:  #4E66B8;
+  --t-chart-line: #155E6E;
+
   --t-hero:       #10313A;
   --t-hero-ink:   #FFFFFF;
   --t-hero-mute:  #A9D3DB;
@@ -175,6 +185,10 @@
   --t-neg-dim:  rgba(255, 138, 128, 0.14);
   --t-warn:     #F3C969;
   --t-warn-dim: rgba(243, 201, 105, 0.14);
+
+  --t-chart-in:   #3A9E66;
+  --t-chart-out:  #6F7FD0;
+  --t-chart-line: #7FCFDC;
 
   --t-hero:       #12343D;
   --t-hero-ink:   #EEF1F2;

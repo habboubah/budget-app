@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { AlertTriangle } from 'lucide-react';
+import { motion } from 'motion/react';
+import { AlertTriangle, BarChart3, CalendarDays } from 'lucide-react';
 import { useAppStore } from './store';
 import translations, { fmt } from './translations';
 import { Entry, EntryDraft, MonthKey } from './types';
@@ -9,7 +10,9 @@ import { MonthView } from './components/MonthView';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
 import { MonthActionsSheet } from './components/MonthActionsSheet';
+import { StatsView } from './components/StatsView';
 import { AddButton } from './ui/AddButton';
+import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
 import { notifySuccess, notifyWarning, tapLight } from './ui/haptics';
 
@@ -19,6 +22,8 @@ export default function App() {
   const t = translations[language];
   const { toast, show, hide } = useToast();
 
+  const [tab, setTab] = useState<'month' | 'stats'>('month');
+  /** One month for both tabs: statistics open on the month being looked at. */
   const [month, setMonth] = useState<MonthKey>(monthKeyOf);
   const [entrySheet, setEntrySheet] = useState<EntrySheetMode>(null);
   const [openingOpen, setOpeningOpen] = useState(false);
@@ -31,7 +36,7 @@ export default function App() {
   const candidates = useMemo(() => carryCandidates(data, month), [data, month]);
   const openEarlier = useMemo(() => (balance.started ? openBefore(data, month) : []), [data, month, balance.started]);
 
-  useEffect(() => { window.scrollTo(0, 0); }, [month]);
+  useEffect(() => { window.scrollTo(0, 0); }, [month, tab]);
 
   // Status-bar glyphs must invert with the theme or they vanish into the bar.
   useEffect(() => {
@@ -92,28 +97,57 @@ export default function App() {
         </div>
       )}
 
-      <MonthView
-        month={month}
-        balance={balance}
-        categories={categories}
-        entries={entries}
-        candidates={candidates}
-        openEarlier={openEarlier}
-        showIntro={!store.introDone && !balance.prevKey}
-        language={language}
-        t={t}
-        onMonth={setMonth}
-        onStart={startMonth}
-        onActions={() => setActionsOpen(true)}
-        onAdd={categoryId => setEntrySheet({ kind: 'new', month, categoryId })}
-        onEdit={entry => setEntrySheet({ kind: 'edit', entry })}
-        onToggle={toggle}
-        onOpening={() => setOpeningOpen(true)}
-        onDismissIntro={store.dismissIntro}
+      <motion.div
+        key={tab}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.18 }}
+      >
+        {tab === 'stats' ? (
+          <StatsView
+            month={month}
+            balances={balances}
+            categories={categories}
+            entries={entries}
+            language={language}
+            t={t}
+            onMonth={setMonth}
+          />
+        ) : (
+          <MonthView
+            month={month}
+            balance={balance}
+            categories={categories}
+            entries={entries}
+            candidates={candidates}
+            openEarlier={openEarlier}
+            showIntro={!store.introDone && !balance.prevKey}
+            language={language}
+            t={t}
+            onMonth={setMonth}
+            onStart={startMonth}
+            onActions={() => setActionsOpen(true)}
+            onAdd={categoryId => setEntrySheet({ kind: 'new', month, categoryId })}
+            onEdit={entry => setEntrySheet({ kind: 'edit', entry })}
+            onToggle={toggle}
+            onOpening={() => setOpeningOpen(true)}
+            onDismissIntro={store.dismissIntro}
+          />
+        )}
+      </motion.div>
+
+      <TabBar
+        label={t.appName}
+        active={tab}
+        onChange={setTab}
+        tabs={[
+          { id: 'month', label: t.tabMonth, icon: CalendarDays },
+          { id: 'stats', label: t.tabStats, icon: BarChart3 },
+        ]}
       />
 
-      {quickAddCategory && balance.started && (
-        <AddButton label={t.addEntry} onClick={() => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory })} />
+      {tab === 'month' && quickAddCategory && balance.started && (
+        <AddButton aboveTabs label={t.addEntry} onClick={() => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory })} />
       )}
 
       <EntrySheet
