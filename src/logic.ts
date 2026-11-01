@@ -527,6 +527,7 @@ function normalizeCategory(v: unknown): Category | null {
     hue: isHue(v.hue) ? v.hue : 'stone',
     kind: v.kind === 'income' ? 'income' : 'expense',
     repeat: isRepeat(v.repeat) ? v.repeat : 'none',
+    ...(v.budget === 'need' || v.budget === 'want' ? { budget: v.budget } : {}),
     ...(v.builtin === true ? { builtin: true } : {}),
   };
 }

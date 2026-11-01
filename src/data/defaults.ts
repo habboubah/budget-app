@@ -9,11 +9,11 @@ import { Category, Names } from '../types';
  */
 const CATEGORIES: Category[] = [
   { id: 'income', names: { de: 'Einkommen', en: 'Income' }, emoji: '💶', hue: 'leaf', kind: 'income', repeat: 'monthly', builtin: true },
-  { id: 'fixed', names: { de: 'Fixkosten', en: 'Fixed costs' }, emoji: '🏠', hue: 'sky', kind: 'expense', repeat: 'monthly', builtin: true },
-  { id: 'car', names: { de: 'Auto', en: 'Car' }, emoji: '🚗', hue: 'carrot', kind: 'expense', repeat: 'none', builtin: true },
-  { id: 'extra', names: { de: 'Sonderkosten', en: 'Extras' }, emoji: '🛍️', hue: 'lavender', kind: 'expense', repeat: 'none', builtin: true },
-  { id: 'groceries', names: { de: 'Einkaufen', en: 'Groceries' }, emoji: '🛒', hue: 'lime', kind: 'expense', repeat: 'none', builtin: true },
-  { id: 'family', names: { de: 'Familie', en: 'Family' }, emoji: '👨‍👩‍👦', hue: 'berry', kind: 'expense', repeat: 'none', builtin: true },
+  { id: 'fixed', names: { de: 'Fixkosten', en: 'Fixed costs' }, emoji: '🏠', hue: 'sky', kind: 'expense', repeat: 'monthly', budget: 'need', builtin: true },
+  { id: 'car', names: { de: 'Auto', en: 'Car' }, emoji: '🚗', hue: 'carrot', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
+  { id: 'extra', names: { de: 'Sonderkosten', en: 'Extras' }, emoji: '🛍️', hue: 'lavender', kind: 'expense', repeat: 'none', budget: 'want', builtin: true },
+  { id: 'groceries', names: { de: 'Einkaufen', en: 'Groceries' }, emoji: '🛒', hue: 'lime', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
+  { id: 'family', names: { de: 'Familie', en: 'Family' }, emoji: '👨‍👩‍👦', hue: 'berry', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
 ];
 
 /** A fresh copy of the built-in categories. */
@@ -23,8 +23,13 @@ export function defaultCategories(): Category[] {
 
 /** The category orphaned entries (from an old backup) are put into. */
 export const OTHER_CATEGORY: Category = {
-  id: 'other', names: { de: 'Sonstiges', en: 'Other' }, emoji: '📦', hue: 'stone', kind: 'expense', repeat: 'none',
+  id: 'other', names: { de: 'Sonstiges', en: 'Other' }, emoji: '📦', hue: 'stone', kind: 'expense', repeat: 'none', budget: 'want',
 };
+
+/** Built-in expense categories that are basic needs, for data saved before `budget` existed. */
+const NEED_IDS = ['fixed', 'car', 'groceries', 'family'];
+/** Need or want: the category's own choice, else the built-in default, else want. */
+export const budgetOf = (c: Category) => c.budget ?? (NEED_IDS.includes(c.id) ? 'need' : 'want');
 
 /**
  * Names offered in the entry sheet before the user has a history of their

@@ -30,10 +30,18 @@ month, and the two numbers that matter: **what is on the account now** and
   balance is carried over automatically — set it by hand for the first month or
   when the real account has drifted ("⋯" → Kontostand am Monatsanfang). Open
   entries left in earlier months are flagged with a link to them.
-- **Statistics.** What you saved this month and the savings rate; where the money
-  went, by category (paid vs. open) or by payee ("Lidl · 6×"); the last twelve
-  months as income vs. expenses and balance at month end (hover / tap for values,
-  or open the table); the average per category.
+- **Statistics.** From the long view down to one month:
+  - *all months* (last 12, or all): income vs. expenses, the balance at each
+    month's end, the average per category, and every category per month as
+    grouped columns (tap the legend to hide one; switch to income) — hover /
+    tap for values, or open the table;
+  - *insights* (Auswertung): savings rate, emergency reserve in months of
+    spending (3–6 is the usual advice), a forecast for the year's end and 12
+    months out, the 50/30/20 rule (needs / wants / saved — set per category
+    whether it counts as needs), fixed commitments per month and per year,
+    what was unusual this month, and the best and weakest month;
+  - *one month in detail*: what was saved and where the money went, by
+    category (paid vs. open) or by payee ("Lidl · 6×").
 - **Settings.** Categories — create (income or expense, default repeat, emoji,
   colour), edit, drag to reorder, delete (undoable; asks first if entries go with
   it), *Standard wiederherstellen*. Deutsch / English, light / dark / automatic.
@@ -103,6 +111,7 @@ TestFlight, the same way Fahrtwerk and Korb ship. The full first-time checklist
 | `src/App.tsx` | Tabs, pushed screens (no router), sheets, toasts |
 | `src/store.ts` | All state, persisted to `localStorage` (`spartopf-*` keys) |
 | `src/logic.ts` | Pure logic — money parsing/formatting, months, the two balances, carry-over, statistics, storage validation, CSV (tested in `logic.test.ts`) |
+| `src/insights.ts` | Savings rate, reserve, forecast, 50/30/20, commitments, unusual months (tested in `insights.test.ts`) |
 | `src/xlsx.ts`, `src/excelImport.ts` | Reading an .xlsx on the device, and turning a budget sheet into months (tested in `excelImport.test.ts`) |
 | `src/data/defaults.ts` | Built-in categories, name suggestions, emoji |
 | `src/translations.ts` | All UI text, `de` and `en` |

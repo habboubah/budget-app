@@ -63,6 +63,8 @@
   --color-chart-in:   var(--t-chart-in);
   --color-chart-out:  var(--t-chart-out);
   --color-chart-line: var(--t-chart-line);
+  --color-chart-want: var(--t-chart-want);
+  --color-chart-label: var(--t-chart-label);
 
   --color-hero:       var(--t-hero);
   --color-hero-ink:   var(--t-hero-ink);
@@ -101,6 +103,9 @@
 @theme inline {
   --color-hue-bg:  var(--hue-bg, var(--t-surface-2));
   --color-hue-ink: var(--hue-ink, var(--t-fg));
+  /* A category's mark in a chart: one OKLCH step per hue and theme, inside
+     the dataviz lightness band (light L 0.56, dark L 0.66). */
+  --color-hue-chart: var(--hue-chart, var(--t-chart-out));
 }
 
 /* ============ Day ========================================================= */
@@ -131,6 +136,9 @@
   --t-chart-in:   #22874F;
   --t-chart-out:  #4E66B8;
   --t-chart-line: #155E6E;
+  --t-chart-want: #AD5C15;
+  /* Text inside a filled chart block: white on the darker day fills, near-black on the lighter night fills. */
+  --t-chart-label: #FFFFFF;
 
   --t-hero:       #10313A;
   --t-hero-ink:   #FFFFFF;
@@ -158,6 +166,22 @@
   --t-berry-bg: #FFDDE8;    --t-berry-ink: #A12B5A;
   --t-sand-bg: #F1E7D3;     --t-sand-ink: #6E5530;
   --t-stone-bg: #E6E6E1;    --t-stone-ink: #4E524D;
+
+  /* Chart marks per hue (generated in OKLCH; the six default categories pass
+     validate_palette.js for CVD separation and contrast). */
+  --t-tomato-chart: #B84E44;
+  --t-carrot-chart: #AD5C15;
+  --t-lemon-chart: #8E710F;
+  --t-lime-chart: #628202;
+  --t-leaf-chart: #218A45;
+  --t-mint-chart: #098777;
+  --t-sky-chart: #117FAA;
+  --t-blue-chart: #4B70C6;
+  --t-lavender-chart: #7862BF;
+  --t-plum-chart: #9A55A5;
+  --t-berry-chart: #B14C79;
+  --t-sand-chart: #9A692A;
+  --t-stone-chart: #6A7683;
 
   color-scheme: light;
 }
@@ -189,6 +213,8 @@
   --t-chart-in:   #3A9E66;
   --t-chart-out:  #6F7FD0;
   --t-chart-line: #7FCFDC;
+  --t-chart-want: #D27830;
+  --t-chart-label: #0E1112;
 
   --t-hero:       #12343D;
   --t-hero-ink:   #EEF1F2;
@@ -217,24 +243,38 @@
   --t-sand-bg: #332B1F;     --t-sand-ink: #E6D1AC;
   --t-stone-bg: #2A2B29;    --t-stone-ink: #CFD0CB;
 
+  --t-tomato-chart: #DB6D60;
+  --t-carrot-chart: #D27830;
+  --t-lemon-chart: #B18E15;
+  --t-lime-chart: #7FA034;
+  --t-leaf-chart: #47AA62;
+  --t-mint-chart: #00AA95;
+  --t-sky-chart: #179FD4;
+  --t-blue-chart: #688FE8;
+  --t-lavender-chart: #9580E0;
+  --t-plum-chart: #BA73C5;
+  --t-berry-chart: #D36A96;
+  --t-sand-chart: #B98749;
+  --t-stone-chart: #8794A1;
+
   color-scheme: dark;
 }
 
 /* A category's colour. Set `data-hue` on any element and its subtree can
    paint with bg-hue-bg / text-hue-ink. */
-[data-hue="tomato"]   { --hue-bg: var(--t-tomato-bg);   --hue-ink: var(--t-tomato-ink); }
-[data-hue="carrot"]   { --hue-bg: var(--t-carrot-bg);   --hue-ink: var(--t-carrot-ink); }
-[data-hue="lemon"]    { --hue-bg: var(--t-lemon-bg);    --hue-ink: var(--t-lemon-ink); }
-[data-hue="lime"]     { --hue-bg: var(--t-lime-bg);     --hue-ink: var(--t-lime-ink); }
-[data-hue="leaf"]     { --hue-bg: var(--t-leaf-bg);     --hue-ink: var(--t-leaf-ink); }
-[data-hue="mint"]     { --hue-bg: var(--t-mint-bg);     --hue-ink: var(--t-mint-ink); }
-[data-hue="sky"]      { --hue-bg: var(--t-sky-bg);      --hue-ink: var(--t-sky-ink); }
-[data-hue="blue"]     { --hue-bg: var(--t-blue-bg);     --hue-ink: var(--t-blue-ink); }
-[data-hue="lavender"] { --hue-bg: var(--t-lavender-bg); --hue-ink: var(--t-lavender-ink); }
-[data-hue="plum"]     { --hue-bg: var(--t-plum-bg);     --hue-ink: var(--t-plum-ink); }
-[data-hue="berry"]    { --hue-bg: var(--t-berry-bg);    --hue-ink: var(--t-berry-ink); }
-[data-hue="sand"]     { --hue-bg: var(--t-sand-bg);     --hue-ink: var(--t-sand-ink); }
-[data-hue="stone"]    { --hue-bg: var(--t-stone-bg);    --hue-ink: var(--t-stone-ink); }
+[data-hue="tomato"]   { --hue-bg: var(--t-tomato-bg);   --hue-ink: var(--t-tomato-ink);  --hue-chart: var(--t-tomato-chart); }
+[data-hue="carrot"]   { --hue-bg: var(--t-carrot-bg);   --hue-ink: var(--t-carrot-ink);  --hue-chart: var(--t-carrot-chart); }
+[data-hue="lemon"]    { --hue-bg: var(--t-lemon-bg);    --hue-ink: var(--t-lemon-ink);  --hue-chart: var(--t-lemon-chart); }
+[data-hue="lime"]     { --hue-bg: var(--t-lime-bg);     --hue-ink: var(--t-lime-ink);  --hue-chart: var(--t-lime-chart); }
+[data-hue="leaf"]     { --hue-bg: var(--t-leaf-bg);     --hue-ink: var(--t-leaf-ink);  --hue-chart: var(--t-leaf-chart); }
+[data-hue="mint"]     { --hue-bg: var(--t-mint-bg);     --hue-ink: var(--t-mint-ink);  --hue-chart: var(--t-mint-chart); }
+[data-hue="sky"]      { --hue-bg: var(--t-sky-bg);      --hue-ink: var(--t-sky-ink);  --hue-chart: var(--t-sky-chart); }
+[data-hue="blue"]     { --hue-bg: var(--t-blue-bg);     --hue-ink: var(--t-blue-ink);  --hue-chart: var(--t-blue-chart); }
+[data-hue="lavender"] { --hue-bg: var(--t-lavender-bg); --hue-ink: var(--t-lavender-ink);  --hue-chart: var(--t-lavender-chart); }
+[data-hue="plum"]     { --hue-bg: var(--t-plum-bg);     --hue-ink: var(--t-plum-ink);  --hue-chart: var(--t-plum-chart); }
+[data-hue="berry"]    { --hue-bg: var(--t-berry-bg);    --hue-ink: var(--t-berry-ink);  --hue-chart: var(--t-berry-chart); }
+[data-hue="sand"]     { --hue-bg: var(--t-sand-bg);     --hue-ink: var(--t-sand-ink);  --hue-chart: var(--t-sand-chart); }
+[data-hue="stone"]    { --hue-bg: var(--t-stone-bg);    --hue-ink: var(--t-stone-ink);  --hue-chart: var(--t-stone-chart); }
 
 /* ============ Utilities =================================================== */
 

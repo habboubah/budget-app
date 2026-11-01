@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { Category, CategoryKind, Hue, Repeat } from '../types';
+import { Budget, Category, CategoryKind, Hue, Repeat } from '../types';
 import { cleanText, displayName, uid } from '../logic';
-import { CATEGORY_EMOJIS } from '../data/defaults';
+import { CATEGORY_EMOJIS, budgetOf } from '../data/defaults';
 import { Strings } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field, Label, Segmented } from '../ui/Field';
@@ -28,14 +28,15 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
   const [hue, setHue] = useState<Hue>('sky');
   const [kind, setKind] = useState<CategoryKind>('expense');
   const [repeat, setRepeat] = useState<Repeat>('none');
+  const [budget, setBudget] = useState<Budget>('want');
 
   useEffect(() => {
     if (!mode) return;
     if (mode.kind === 'edit') {
       const c = mode.category;
-      setName(displayName(c.names, language)); setEmoji(c.emoji); setHue(c.hue); setKind(c.kind); setRepeat(c.repeat);
+      setName(displayName(c.names, language)); setEmoji(c.emoji); setHue(c.hue); setKind(c.kind); setRepeat(c.repeat); setBudget(budgetOf(c));
     } else {
-      setName(''); setEmoji('📦'); setHue('sky'); setKind('expense'); setRepeat('none');
+      setName(''); setEmoji('📦'); setHue('sky'); setKind('expense'); setRepeat('none'); setBudget('want');
     }
   }, [mode]);
 
@@ -46,9 +47,9 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
       // Renaming in one language replaces the built-in translations: the
       // user's name is the name now, whatever the app language.
       const names = clean === displayName(editing.names, language) ? editing.names : { [language]: clean };
-      onSave(editing.id, { names, emoji, hue, kind, repeat });
+      onSave(editing.id, { names, emoji, hue, kind, repeat, budget });
     } else {
-      onCreate({ id: uid(), names: { [language]: clean }, emoji, hue, kind, repeat });
+      onCreate({ id: uid(), names: { [language]: clean }, emoji, hue, kind, repeat, budget });
     }
     onClose();
   };
@@ -73,6 +74,18 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
             options={[{ value: 'expense', label: t.kindExpense }, { value: 'income', label: t.kindIncome }]}
           />
         </div>
+        {kind === 'expense' && (
+          <div>
+            <Label>{t.budgetKind}</Label>
+            <Segmented<Budget>
+              label={t.budgetKind}
+              value={budget}
+              onChange={setBudget}
+              options={[{ value: 'need', label: t.budgetNeed }, { value: 'want', label: t.budgetWant }]}
+            />
+            <p className="text-caption text-fg-mute mt-1.5 px-1 wrap-prose">{t.budgetKindHint}</p>
+          </div>
+        )}
         <div>
           <Label>{t.defaultRepeat}</Label>
           <Segmented<Repeat>

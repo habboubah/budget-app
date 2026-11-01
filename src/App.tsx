@@ -241,8 +241,7 @@ export default function App() {
           <StatsView
             month={month}
             balances={balances}
-            categories={categories}
-            entries={entries}
+            data={data}
             language={language}
             t={t}
             onMonth={setMonth}

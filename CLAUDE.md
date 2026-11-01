@@ -36,6 +36,14 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   `src/excelImport.ts` plans the import as pure data (`planExcelImport`) that
   the preview sheet shows and `applyExcelImport` writes. Tests build their own
   .xlsx in memory; never commit a real one (it is someone's finances).
+- **Statistics** beyond sums (savings rate, reserve, forecast, 50/30/20,
+  commitments, unusual months) live in `src/insights.ts`, pure and tested.
+  Averages use *finished* months (`finishedMonths`), never the running one.
+- **Charts** (`components/Charts.tsx`) follow the dataviz skill. Series
+  colours are tokens: `chart-in` / `chart-out` / `chart-line` / `chart-want`,
+  and per category `bg-hue-chart` / `fill-hue-chart` under `data-hue` — one
+  OKLCH step per hue and theme (`--t-<hue>-chart`). The default categories'
+  colours pass `validate_palette.js`; re-run it when changing them.
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /

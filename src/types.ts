@@ -27,9 +27,14 @@ export interface Category {
   kind: CategoryKind;
   /** What a new entry in this category repeats as, until the user picks otherwise. */
   repeat: Repeat;
+  /** For an expense category: basic needs (rent, food, the car) or wants —
+   *  the split behind the 50/30/20 check in the statistics. Unset = want. */
+  budget?: Budget;
   /** Ships with the app (can be edited, deleted and restored). */
   builtin?: boolean;
 }
+
+export type Budget = 'need' | 'want';
 
 /** A calendar month as `YYYY-MM`. Compare with `<` / `>`: the format sorts. */
 export type MonthKey = string;
