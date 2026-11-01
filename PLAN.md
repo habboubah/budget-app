@@ -69,6 +69,14 @@ One bank account only, on purpose.
 2. Data model, local storage, default categories, balance & carry-over logic + tests
 3. Month screen: balance card and starting balance, category sections, add / edit / delete entries, paid toggle
 4. Months: switch, start a month with carry-over, month actions, open items from earlier months, first-run intro
-5. Statistics screen
-6. Settings: categories, language, theme, backup / CSV; offline + installable; iOS project + release pipeline
-7. Polish, empty states, accessibility, README, CI; final check on iPhone width + desktop
+5. Statistics tab (and the tab bar)
+6. Settings: categories, language, theme, backup / CSV
+7. iOS project, App Store release pipeline, store listing, screenshots
+8. Polish, empty states, README; final check on iPhone width + desktop
+
+## Ideas for later
+
+- Import the existing `My_expense.xlsx` months (one sheet per month → started
+  months with their entries).
+- A home-screen widget with "Jetzt" and "Monatsende".
+- Arabic (`dir: 'rtl'`) as a third language.

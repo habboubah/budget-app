@@ -2,8 +2,8 @@ import { AlertCircle, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-r
 import { Category, Entry, MonthKey } from '../types';
 import { MonthBalance, addMonths, entriesOf, formatMoney, monthKeyOf, monthLabel, sortEntries } from '../logic';
 import { Strings, fmt } from '../translations';
-import { Screen } from '../ui/Screen';
-import { IconButton } from '../ui/Button';
+import { Empty, Screen } from '../ui/Screen';
+import { Button, IconButton } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
 import { BalanceCard } from './BalanceCard';
 import { CategorySection } from './CategorySection';
@@ -30,6 +30,8 @@ interface Props {
   onToggle: (e: Entry) => void;
   onOpening: () => void;
   onDismissIntro: () => void;
+  /** Opens Settings → Kategorien (when there are none left). */
+  onCategories: () => void;
 }
 
 /**
@@ -109,6 +111,15 @@ export function MonthView(p: Props) {
               </span>
               <ChevronRight className="w-5 h-5 text-warn shrink-0 mt-0.5 rtl:rotate-180" aria-hidden="true" />
             </button>
+          )}
+
+          {categories.length === 0 && (
+            <Empty
+              emoji="🗂️"
+              title={t.noCategories}
+              body={t.noCategoriesBody}
+              action={<Button onClick={p.onCategories}>{t.categories}</Button>}
+            />
           )}
 
           {categories.map(c => (

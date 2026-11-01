@@ -1,10 +1,43 @@
 # Spartopf – Haushaltsbuch 🪙
 
-A simple, private budget book for iPhone and the browser — your monthly Excel
-sheet, made easy to fill in with one thumb.
+A simple, private budget book for iPhone and the browser — the monthly Excel
+sheet, made easy to fill in with one thumb. One bank account, one page per
+month, and the two numbers that matter: **what is on the account now** and
+**what will be left at the end of the month**.
 **No sign-up, no server, no ads** — everything stays on your device.
 
-> Work in progress — see `PLAN.md` for the concept and the build steps.
+## What it does
+
+- **One month per page.** ‹ › switch months; "Zum aktuellen Monat" jumps back.
+  The month reads in the order money moves: **Einkommen** first, then
+  **Fixkosten**, **Auto**, **Sonderkosten**, **Einkaufen**, **Familie** — each a
+  card with its total and what is still open.
+- **Two balances.** *Jetzt auf dem Konto* counts what is paid / received.
+  *Am Monatsende* also counts everything still open. Below them: how many of the
+  month's bills are paid, and the carry-over, income and expenses that add up to
+  the end balance.
+- **Paid or open.** Every entry has a ring in front: dashed = still open (rent
+  not paid yet, salary expected), filled = paid. One tap toggles it. With a due
+  day ("am 14."), open entries turn **überfällig** once the day has passed.
+- **Fast entry.** The amount comes first (German or English number format both
+  work: `1.050,00`, `45,12`, `12.5`). Name suggestions come from earlier months
+  and a built-in list per category; tapping "Miete" fills in last month's amount
+  and due day. "Sichern & nächster" for a stack of receipts. Deleting is undoable.
+- **Carry-over.** Mark entries **monatlich** or **jährlich**. Starting the next
+  month shows exactly which ones come along and copies them in as *open*. The
+  balance is carried over automatically — set it by hand for the first month or
+  when the real account has drifted ("⋯" → Kontostand am Monatsanfang). Open
+  entries left in earlier months are flagged with a link to them.
+- **Statistics.** What you saved this month and the savings rate; where the money
+  went, by category (paid vs. open) or by payee ("Lidl · 6×"); the last twelve
+  months as income vs. expenses and balance at month end (hover / tap for values,
+  or open the table); the average per category.
+- **Settings.** Categories — create (income or expense, default repeat, emoji,
+  colour), edit, drag to reorder, delete (undoable; asks first if entries go with
+  it), *Standard wiederherstellen*. Deutsch / English, light / dark / automatic.
+- **Backup.** Export everything as a JSON file (share sheet on iPhone → Files /
+  iCloud Drive / AirDrop) and import it again, or export every entry as **CSV for
+  Excel**. There is no cloud: back up now and then.
 
 ## Run locally
 
@@ -16,4 +49,57 @@ npm run dev        # http://localhost:3002 — also reachable from your phone on
 Other commands: `npm run lint` (type-check), `npm test` (unit tests),
 `npm run build:web` (production build to `dist/`), `npm run preview`.
 
-See `CLAUDE.md` for the conventions and `PLAN.md` for the concept.
+## Put it on your iPhone
+
+### Option A — as a real app via Xcode (recommended)
+
+Needs a Mac with Xcode.
+
+```bash
+npm install
+npm run build:ios          # builds, syncs into ios/ and opens Xcode
+```
+
+In Xcode: select the **App** target → *Signing & Capabilities* → your Team
+(already set to Ahmad Habboubah) → plug in the iPhone (or pick it over Wi-Fi) →
+▶ Run. The bundle id is `com.habboubah.spartopf`.
+
+After changing web code, `npm run build:ios` again (or `npm run build:web &&
+npx cap sync ios`). Icons and splash come from `assets/` — regenerate with
+`npm run assets:generate`.
+
+### Option B — as a web app on the home screen
+
+Host `dist/` on any HTTPS host (e.g. Cloudflare like pizza-driver-log:
+`npm run build:web && npx wrangler pages deploy dist`), open it in Safari on the
+iPhone → Share → **Add to Home Screen**. It then opens full-screen and works
+offline.
+
+Home-screen web apps and the Xcode app keep separate data. Use
+**Einstellungen → Datensicherung** to move months between them.
+
+## Publish on the App Store
+
+`npm run release` builds Spartopf and uploads it straight to App Store Connect /
+TestFlight, the same way Fahrtwerk and Korb ship. The full first-time checklist
+(API key, app record, privacy policy, screenshots, listing texts, review) is in
+**[APP_STORE_RELEASE.md](APP_STORE_RELEASE.md)**.
+
+## Project layout
+
+| Path | What |
+|---|---|
+| `src/App.tsx` | Tabs, pushed screens (no router), sheets, toasts |
+| `src/store.ts` | All state, persisted to `localStorage` (`spartopf-*` keys) |
+| `src/logic.ts` | Pure logic — money parsing/formatting, months, the two balances, carry-over, statistics, storage validation, CSV (tested in `logic.test.ts`) |
+| `src/data/defaults.ts` | Built-in categories, name suggestions, emoji |
+| `src/translations.ts` | All UI text, `de` and `en` |
+| `src/components/` | Screens (`*View`) and sheets (`*Sheet`), the charts |
+| `src/ui/` | Shared primitives from shopping-list: Screen, Sheet, Button, Field, Toast, TabBar … |
+| `ios/` | Capacitor iOS project (Swift Package Manager, UIScene lifecycle) |
+| `scripts/` | `release.js` (App Store upload), `screenshots.mjs` (store screenshots) |
+| `store/` | App Store texts and the privacy policy |
+| `.claude/skills/` | Design / UX / animation / release skills from shopping-list and pizza-driver-log |
+
+See `CLAUDE.md` for the conventions and `PLAN.md` for the concept and the money
+rules.

@@ -227,6 +227,7 @@ export default function App() {
             onToggle={toggle}
             onOpening={() => setOpeningOpen(true)}
             onDismissIntro={store.dismissIntro}
+            onCategories={() => { setTab('settings'); setShowCategories(true); }}
           />
         )}
       </motion.div>
