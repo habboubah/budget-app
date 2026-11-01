@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   addMonths, amountToInput, averageByCategory, balanceFor, canRemoveFromMonth, carryCandidates, carryOver, categoryBreakdown,
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
-  monthCategories, monthTotals, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
+  monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames,
 } from './logic';
 import { defaultCategories } from './data/defaults';
@@ -344,5 +344,38 @@ describe('categories per month', () => {
     const s = normalizeState({ categories: [{ ...cats[1], standard: false }], months: [{ key: '2026-11', categories: ['fixed', 'fixed', 3] }] });
     expect(s.categories[0].standard).toBe(false);
     expect(s.months[0].categories).toEqual(['fixed']);
+  });
+});
+
+describe('dragging entries', () => {
+  const rent = e('2026-11', 'fixed', 'Miete', 105000, true, { dueDay: 1 });
+  const phone = e('2026-11', 'fixed', 'Handy', 1999, true, { dueDay: 18 });
+  const gym = e('2026-11', 'fixed', 'Gym', 2490, true);
+  const lidl = e('2026-11', 'groceries', 'Lidl', 4000, true);
+  const rewe = e('2026-11', 'groceries', 'Rewe', 3000, true);
+  const other = e('2026-10', 'fixed', 'Alt', 100, true);
+  const all = [rent, phone, gym, lidl, rewe, other];
+  const order = (xs: Entry[], cat: string, month = '2026-11') => sortEntries(xs.filter(x => x.categoryId === cat && x.month === month)).map(x => x.name);
+
+  it('reorders inside a category and keeps that order', () => {
+    const next = moveEntry(all, gym.id, 'fixed', 0);
+    expect(order(next, 'fixed')).toEqual(['Gym', 'Miete', 'Handy']);
+    expect(next.find(x => x.id === other.id)).toBe(other); // other months untouched
+  });
+  it('moves an entry to another category at the spot it was dropped', () => {
+    const next = moveEntry(all, phone.id, 'groceries', 1);
+    expect(order(next, 'groceries')).toEqual(['Lidl', 'Handy', 'Rewe']);
+    expect(order(next, 'fixed')).toEqual(['Miete', 'Gym']);
+    expect(next.find(x => x.id === phone.id)?.categoryId).toBe('groceries');
+  });
+  it('clamps the drop position and puts ordered entries before new ones', () => {
+    const next = moveEntry(all, rent.id, 'fixed', 99);
+    expect(order(next, 'fixed')).toEqual(['Handy', 'Gym', 'Miete']);
+    const added = e('2026-11', 'fixed', 'Neu', 1, true, { dueDay: 1 });
+    expect(order([...next, added], 'fixed')).toEqual(['Handy', 'Gym', 'Miete', 'Neu']);
+  });
+  it('carries the order into the next month', () => {
+    const [copy] = carryOver([{ ...gym, repeat: 'monthly', order: 0 }], '2026-12', 1, () => 'c');
+    expect(copy.order).toBe(0);
   });
 });

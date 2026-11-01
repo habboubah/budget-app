@@ -71,6 +71,7 @@ const de = {
   editNamed: '{name} bearbeiten',
   removeFromMonth: '{name} aus diesem Monat entfernen',
   removedFromMonth: '„{name}“ aus {month} entfernt',
+  movedTo: '„{name}“ nach {category} verschoben',
   addCategoryToMonth: 'Kategorie hinzufügen',
   addCategoryTitle: 'Kategorie hinzufügen',
   addCategoryBody: 'Nur für {month}. Welche Kategorien jeder neue Monat bekommt, legst du in den Einstellungen unter Kategorien fest.',
@@ -109,6 +110,7 @@ const de = {
   introStep2: 'Dann die Fixkosten – Miete, Strom, Handy …',
   introStep3: 'Dann Auto und Extras, wenn sie anfallen.',
   introStep4: 'Tippe auf den Kreis, sobald etwas bezahlt ist. Markiere wiederkehrende Posten als „monatlich“ – sie kommen im nächsten Monat von selbst wieder.',
+  introStep5: 'Halte einen Eintrag gedrückt und zieh ihn – zum Sortieren oder in eine andere Kategorie.',
   introDismiss: 'Verstanden',
   introExcel: 'Excel-Tabelle importieren',
 
@@ -373,6 +375,7 @@ const en: Strings = {
   editNamed: 'Edit {name}',
   removeFromMonth: 'Remove {name} from this month',
   removedFromMonth: '“{name}” removed from {month}',
+  movedTo: '“{name}” moved to {category}',
   addCategoryToMonth: 'Add category',
   addCategoryTitle: 'Add a category',
   addCategoryBody: 'For {month} only. Which categories every new month gets is set in Settings under Categories.',
@@ -409,6 +412,7 @@ const en: Strings = {
   introStep2: 'Then the fixed costs – rent, electricity, phone …',
   introStep3: 'Then car and extras as they come up.',
   introStep4: 'Tap the circle as soon as something is paid. Mark recurring items as “monthly” – they come back next month on their own.',
+  introStep5: 'Press and hold an entry, then drag it – to sort, or into another category.',
   introDismiss: 'Got it',
   introExcel: 'Import an Excel sheet',
 

@@ -59,6 +59,9 @@ export interface Entry {
   seriesId: string;
   createdAt: number;
   paidAt?: number;
+  /** Position inside its category, once the user has dragged entries there.
+   *  Entries without one follow, by due day and then as entered. */
+  order?: number;
 }
 
 /** A month the user has started. Entries only live in started months. */

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppData, Category, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
-  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, monthKeyOf, normalizeState,
+  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, standardCategoryIds, uid,
 } from './logic';
 import { defaultCategories } from './data/defaults';
@@ -214,6 +214,9 @@ export function useAppStore() {
     setEntries(prev => prev.map(e => {
       if (e.id !== id) return e;
       const next = { ...e, ...patch };
+      // Moved to another category in the editor: it goes to the end there,
+      // its old position means nothing in the new category.
+      if (patch.categoryId && patch.categoryId !== e.categoryId) delete next.order;
       // Optional fields set to undefined are dropped, not stored as null.
       if (next.dueDay === undefined) delete next.dueDay;
       if (!next.note) delete next.note;
@@ -225,6 +228,24 @@ export function useAppStore() {
   const togglePaid = (id: string) => {
     const e = entries.find(x => x.id === id);
     if (e) updateEntry(id, { paid: !e.paid });
+  };
+
+  /**
+   * Drag and drop: put an entry at `toIndex` of a category in its month.
+   * Returns the affected entries as they were, for undo.
+   */
+  const moveEntry = (id: string, toCategoryId: string, toIndex: number): Entry[] | null => {
+    const e = entries.find(x => x.id === id);
+    if (!e) return null;
+    const before = entries.filter(x => x.month === e.month && (x.categoryId === e.categoryId || x.categoryId === toCategoryId));
+    setEntries(prev => move(prev, id, toCategoryId, toIndex));
+    return before;
+  };
+
+  /** Put entries back as they were (the undo of a move). */
+  const restoreEntries = (versions: Entry[]) => {
+    const byId = new Map(versions.map(v => [v.id, v]));
+    setEntries(prev => prev.map(x => byId.get(x.id) ?? x));
   };
 
   const removeEntry = (id: string): { entry: Entry; index: number } | null => {
@@ -321,7 +342,7 @@ export function useAppStore() {
     setCollapsed,
     data, categories, entries, months, balances,
     startMonth, pullRecurring, setOpening, removeMonth, restoreMonth, hideCategory, showCategory,
-    addEntry, updateEntry, togglePaid, removeEntry, restoreEntry,
+    addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
     setCategories, importData, resetAll,
     newId: uid,

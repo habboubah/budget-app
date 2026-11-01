@@ -168,6 +168,22 @@ export default function App() {
     });
   };
 
+  /**
+   * Dragged (or Alt + ↑ / ↓): sorting within a category just happens; moving
+   * into another one unfolds it and can be undone.
+   */
+  const moveEntry = (id: string, categoryId: string, index: number) => {
+    const e = entries.find(x => x.id === id);
+    const before = store.moveEntry(id, categoryId, index);
+    if (!e || !before || e.categoryId === categoryId) return;
+    tapLight();
+    store.expand(categoryId);
+    const c = categories.find(x => x.id === categoryId);
+    show(fmt(t.movedTo, { name: e.name, category: c ? displayName(c.names, language) : '' }), {
+      label: t.undo, run: () => store.restoreEntries(before),
+    });
+  };
+
   /** Take an empty category out of this month only; undoable. */
   const removeFromMonth = (c: Category) => {
     if (!store.hideCategory(month, c.id)) return;
@@ -292,6 +308,7 @@ export default function App() {
             onRemoveCategory={removeFromMonth}
             onAddCategory={() => setAddCategoryOpen(true)}
             noCategories={categories.length === 0}
+            onMoveEntry={moveEntry}
           />
         )}
       </motion.div>

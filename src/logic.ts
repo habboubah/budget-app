@@ -204,17 +204,38 @@ export function canRemoveFromMonth(data: AppData, key: MonthKey, categoryId: str
 }
 
 /**
- * The order rows show in within a category: what has a due day first, by that
- * day (rent on the 1st above the phone bill on the 18th), then everything
- * else in the order it was entered — the way the Excel column grows.
+ * The order rows show in within a category: the user's own order first, once
+ * entries have been dragged there; then what has a due day, by that day (rent
+ * on the 1st above the phone bill on the 18th); then everything else in the
+ * order it was entered — the way the Excel column grows.
  */
 export function sortEntries(entries: Entry[]): Entry[] {
   return [...entries].sort((a, b) => {
+    if (a.order !== undefined && b.order !== undefined && a.order !== b.order) return a.order - b.order;
+    if (a.order !== undefined && b.order === undefined) return -1;
+    if (a.order === undefined && b.order !== undefined) return 1;
     if (a.dueDay !== undefined && b.dueDay !== undefined && a.dueDay !== b.dueDay) return a.dueDay - b.dueDay;
     if (a.dueDay !== undefined && b.dueDay === undefined) return -1;
     if (a.dueDay === undefined && b.dueDay !== undefined) return 1;
     return a.createdAt - b.createdAt;
   });
+}
+
+/**
+ * Drop an entry at `toIndex` of a category in the same month — a reorder when
+ * it is its own category, a move when it isn't. Both categories get their
+ * order written down, so it stays exactly as the user left it.
+ */
+export function moveEntry(entries: Entry[], id: string, toCategoryId: string, toIndex: number): Entry[] {
+  const moving = entries.find(e => e.id === id);
+  if (!moving) return entries;
+  const inMonth = (catId: string) => sortEntries(entries.filter(e => e.month === moving.month && e.categoryId === catId && e.id !== id));
+  const target = inMonth(toCategoryId);
+  target.splice(Math.max(0, Math.min(toIndex, target.length)), 0, { ...moving, categoryId: toCategoryId });
+  const updates = new Map<string, Entry>();
+  target.forEach((e, k) => updates.set(e.id, { ...e, order: k }));
+  if (moving.categoryId !== toCategoryId) inMonth(moving.categoryId).forEach((e, k) => updates.set(e.id, { ...e, order: k }));
+  return entries.map(e => updates.get(e.id) ?? e);
 }
 
 /**
@@ -385,6 +406,7 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
     };
     if (e.dueDay !== undefined) copy.dueDay = e.dueDay;
     if (e.note) copy.note = e.note;
+    if (e.order !== undefined) copy.order = e.order;
     return copy;
   });
 }
@@ -575,6 +597,7 @@ function normalizeEntry(v: unknown): Entry | null {
   const note = cleanText(str(v.note) ?? '', 200);
   if (note) e.note = note;
   if (typeof v.paidAt === 'number' && Number.isFinite(v.paidAt)) e.paidAt = v.paidAt;
+  if (typeof v.order === 'number' && Number.isFinite(v.order)) e.order = v.order;
   return e;
 }
 

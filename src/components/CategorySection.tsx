@@ -23,6 +23,14 @@ interface Props {
   onAdd: () => void;
   onEdit: (e: Entry) => void;
   onToggle: (e: Entry) => void;
+  /** The entry being dragged right now (from any category), if any. */
+  dragId: string | null;
+  /** Where the dragged entry would land in this category, if it is over it. */
+  dropIndex: number | null;
+  /** Drag handlers for an entry's row body (from `useEntryDrag`). */
+  dragProps: (id: string) => React.HTMLAttributes<HTMLElement>;
+  /** Alt + ↑ / ↓: move an entry one place up or down within the category. */
+  onMoveBy: (e: Entry, delta: -1 | 1) => void;
 }
 
 /**
@@ -30,8 +38,15 @@ interface Props {
  * of it is still open, its entries, and an add row at the bottom. Tapping the
  * header folds the card down to that header and back; the state is kept per
  * category, so a category minimised stays minimised in every month.
+ *
+ * Entries can be dragged (press and hold): within the card to sort them, or
+ * onto another card to move them there. While one is dragged over this card,
+ * a line shows where it would land.
  */
-export function CategorySection({ category, entries, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle }: Props) {
+export function CategorySection({
+  category, entries, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle,
+  dragId, dropIndex, dragProps, onMoveBy,
+}: Props) {
   const bodyId = useId();
   const name = displayName(category.names, language);
   const income = category.kind === 'income';
@@ -39,8 +54,57 @@ export function CategorySection({ category, entries, language, t, today, collaps
   const open = entries.reduce((s, e) => s + (e.paid ? 0 : e.amount), 0);
   const money = (c: number) => formatMoney(c, t.locale);
 
+  // Index among the *other* entries, the way the drop target counts.
+  const homeIndex = dragId ? entries.findIndex(e => e.id === dragId) : -1;
+  const isHome = homeIndex >= 0;
+  const showLine = dropIndex !== null && !collapsed && !(isHome && dropIndex === homeIndex);
+  const incoming = dropIndex !== null && !isHome;
+  const line = (
+    <li key="drop-line" aria-hidden="true" className="h-0">
+      <span className="absolute inset-x-3 -top-[1.5px] h-[3px] rounded-full bg-accent-fill z-10" />
+    </li>
+  );
+  const rows: React.ReactNode[] = [];
+  let others = 0;
+  for (const e of entries) {
+    if (e.id !== dragId) {
+      if (showLine && dropIndex === others) rows.push(line);
+      others++;
+    }
+    rows.push(
+      <motion.li
+        key={e.id}
+        data-entry-row={e.id}
+        layout="position"
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 'auto' }}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+        className="overflow-hidden"
+      >
+        <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)} lifted={e.id === dragId}
+          dragProps={dragProps(e.id)}
+          onEdit={() => onEdit(e)} onToggle={() => onToggle(e)}
+          onMoveBy={delta => {
+            onMoveBy(e, delta);
+            // Moving the row in the DOM takes the focus with it; put it back.
+            requestAnimationFrame(() =>
+              document.querySelector<HTMLElement>(`[data-entry-row="${e.id}"] [data-entry-body]`)?.focus());
+          }} />
+      </motion.li>,
+    );
+  }
+  if (showLine && dropIndex! >= others) rows.push(line);
+
   return (
-    <section data-hue={category.hue} className="rounded-md bg-surface card-edge overflow-hidden" aria-label={name}>
+    <section
+      data-hue={category.hue}
+      data-drop-category={category.id}
+      data-collapsed={collapsed ? 'true' : undefined}
+      className={`rounded-md bg-surface card-edge overflow-hidden transition-[outline-color] ${
+        incoming ? 'outline-2 outline-accent -outline-offset-2' : 'outline-transparent'}`}
+      aria-label={name}
+    >
       <h2 className="flex items-center">
         <button
           type="button"
@@ -87,24 +151,9 @@ export function CategorySection({ category, entries, language, t, today, collaps
             transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
             className="overflow-hidden"
           >
-            {entries.length > 0 && (
+            {rows.length > 0 && (
               <ul className="hairline-t divide-hairline-inset" style={{ '--sep': '60px' } as React.CSSProperties}>
-                <AnimatePresence initial={false}>
-                  {entries.map(e => (
-                    <motion.li
-                      key={e.id}
-                      layout="position"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-                      className="overflow-hidden"
-                    >
-                      <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)}
-                        onEdit={() => onEdit(e)} onToggle={() => onToggle(e)} />
-                    </motion.li>
-                  ))}
-                </AnimatePresence>
+                <AnimatePresence initial={false}>{rows}</AnimatePresence>
               </ul>
             )}
 
@@ -130,13 +179,17 @@ export function CategorySection({ category, entries, language, t, today, collaps
  * A row: the paid ring (its own button, a checkbox for VoiceOver) beside the
  * row body that opens the editor. Siblings, never nested.
  */
-function EntryRow({ entry: e, income, t, overdue, onEdit, onToggle }: {
+function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onToggle, onMoveBy }: {
   entry: Entry;
   income: boolean;
   t: Strings;
   overdue: boolean;
+  /** Being dragged: it stays in place, faded, until it is dropped. */
+  lifted: boolean;
+  dragProps: React.HTMLAttributes<HTMLElement>;
   onEdit: () => void;
   onToggle: () => void;
+  onMoveBy: (delta: -1 | 1) => void;
 }) {
   const meta: React.ReactNode[] = [];
   if (e.dueDay) meta.push(<span key="due">{fmt(t.dueOn, { day: e.dueDay })}</span>);
@@ -152,7 +205,7 @@ function EntryRow({ entry: e, income, t, overdue, onEdit, onToggle }: {
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;
 
   return (
-    <div className="flex items-stretch min-h-chrome">
+    <div className={`flex items-stretch min-h-chrome transition-opacity duration-150 ${lifted ? 'opacity-35' : ''}`}>
       <button
         type="button"
         role="checkbox"
@@ -182,10 +235,18 @@ function EntryRow({ entry: e, income, t, overdue, onEdit, onToggle }: {
       </button>
       <button
         type="button"
+        data-entry-body=""
+        {...dragProps}
         onClick={() => { tapLight(); onEdit(); }}
+        onKeyDown={ev => {
+          if (!ev.altKey || (ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown')) return;
+          ev.preventDefault();
+          onMoveBy(ev.key === 'ArrowUp' ? -1 : 1);
+        }}
+        aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
         aria-label={`${fmt(t.editNamed, { name: e.name })}, ${formatMoney(e.amount, t.locale)}, ${
           e.paid ? (income ? t.receivedState : t.paidState) : overdue ? t.overdue : income ? t.expected : t.open}`}
-        className="flex-1 min-w-0 py-2.5 pe-4 flex items-center gap-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+        className="flex-1 min-w-0 py-2.5 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         <span className="min-w-0 flex-1">
           <span className="block text-body text-fg wrap-compound">{e.name}</span>

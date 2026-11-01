@@ -49,6 +49,13 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   vanishes. Unset (months from before, Excel imports) = all categories. New
   months take `standardCategoryIds()` (categories with `standard !== false`).
   Only an empty category can be taken out of a month (`canRemoveFromMonth`).
+- **Entry order:** `Entry.order` is set once the user drags entries in a
+  category (`moveEntry()` renumbers the source and target category of that
+  month); `sortEntries()` puts ordered entries first, the rest by due day, then
+  as entered. Carry-over copies `order`; changing an entry's category in the
+  editor drops it. The gesture is `ui/useEntryDrag.ts` (long press on touch,
+  drag with a mouse, auto-scroll near the edges); it finds the drop spot via
+  `data-drop-category` / `data-entry-row`, so keep those on the cards and rows.
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /

@@ -18,6 +18,11 @@ month, and the two numbers that matter: **what is on the account now** and
   category with entries always stays. Tap a card's header to fold it
   down to that one line (remembered per category, in every month); "⋯" folds
   or unfolds them all.
+- **Drag to sort.** Press and hold an entry (with a mouse: just drag it) and
+  move it — within its card to change the order, or onto another card to move
+  it there (undoable). A line shows where it lands, and the page scrolls along
+  near the edges. The order is kept per month and comes along with recurring
+  entries. Keyboard: Alt + ↑ / ↓.
 - **Two balances.** *Jetzt auf dem Konto* counts what is paid / received.
   *Am Monatsende* also counts everything still open. Below them: how many of the
   month's bills are paid, and the carry-over, income and expenses that add up to

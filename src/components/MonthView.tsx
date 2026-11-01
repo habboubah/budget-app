@@ -1,10 +1,14 @@
+import { createPortal } from 'react-dom';
+import { motion } from 'motion/react';
 import { AlertCircle, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react';
 import { Category, Entry, MonthKey } from '../types';
-import { MonthBalance, addMonths, entriesOf, formatMoney, monthKeyOf, monthLabel, sortEntries } from '../logic';
+import { MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, sortEntries } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
+import { useEntryDrag } from '../ui/useEntryDrag';
+import { Picture } from '../ui/Picture';
 import { BalanceCard } from './BalanceCard';
 import { CategorySection } from './CategorySection';
 import { StartMonthCard } from './StartMonthCard';
@@ -42,6 +46,8 @@ interface Props {
   onAddCategory: () => void;
   /** There are no categories at all (all deleted in Settings). */
   noCategories: boolean;
+  /** Put an entry at `index` (among the others) of a category — dragged there, or Alt + ↑ / ↓. */
+  onMoveEntry: (entryId: string, categoryId: string, index: number) => void;
 }
 
 /**
@@ -56,6 +62,25 @@ export function MonthView(p: Props) {
   const current = monthKeyOf(today);
   const mine = entriesOf(entries, month);
   const label = monthLabel(month, t.locale);
+
+  const inCategory = (categoryId: string) => sortEntries(mine.filter(e => e.categoryId === categoryId));
+
+  // Dropping an entry where it already is changes nothing — not even its order.
+  const drag = useEntryDrag((id, to) => {
+    const e = mine.find(x => x.id === id);
+    if (!e) return;
+    if (e.categoryId === to.categoryId && inCategory(e.categoryId).findIndex(x => x.id === id) === to.index) return;
+    p.onMoveEntry(id, to.categoryId, to.index);
+  });
+  const moveBy = (e: Entry, delta: -1 | 1) => {
+    const list = inCategory(e.categoryId);
+    const to = list.findIndex(x => x.id === e.id) + delta;
+    if (to < 0 || to >= list.length) return;
+    tapLight();
+    p.onMoveEntry(e.id, e.categoryId, to);
+  };
+  const lifted = drag.ghost ? mine.find(e => e.id === drag.ghost!.id) : undefined;
+  const liftedCategory = lifted && categories.find(c => c.id === lifted.categoryId);
 
   const oldestOpen = p.openEarlier.reduce<Entry | undefined>((a, e) => (!a || e.month < a.month ? e : a), undefined);
   const openSum = p.openEarlier.reduce((s, e) => s + e.amount, 0);
@@ -137,7 +162,7 @@ export function MonthView(p: Props) {
             <CategorySection
               key={c.id}
               category={c}
-              entries={sortEntries(mine.filter(e => e.categoryId === c.id))}
+              entries={inCategory(c.id)}
               language={p.language}
               t={t}
               today={today}
@@ -147,6 +172,10 @@ export function MonthView(p: Props) {
               onAdd={() => p.onAdd(c.id)}
               onEdit={p.onEdit}
               onToggle={p.onToggle}
+              dragId={drag.dragging}
+              dropIndex={drag.target?.categoryId === c.id ? drag.target.index : null}
+              dragProps={drag.bind}
+              onMoveBy={moveBy}
             />
           ))}
 
@@ -160,6 +189,28 @@ export function MonthView(p: Props) {
             {t.addCategoryToMonth}
           </button>
         </>
+      )}
+
+      {/* The row under the finger while it is dragged. */}
+      {drag.ghost && lifted && createPortal(
+        <div
+          aria-hidden="true"
+          data-hue={liftedCategory?.hue}
+          className="fixed z-50 pointer-events-none"
+          style={{ top: drag.ghost.y - drag.ghost.grab, left: drag.ghost.left, width: drag.ghost.width }}
+        >
+          <motion.div
+            initial={{ scale: 1 }}
+            animate={{ scale: 1.03 }}
+            transition={{ type: 'spring', duration: 0.25, bounce: 0.3 }}
+            className="rounded-md bg-surface card-edge shadow-[var(--shadow-e2)] min-h-chrome ps-3 pe-4 py-2.5 flex items-center gap-3"
+          >
+            {liftedCategory && <Picture emoji={liftedCategory.emoji} name={displayName(liftedCategory.names, p.language)} size="sm" />}
+            <span className="min-w-0 flex-1 text-body font-semibold text-fg wrap-compound">{lifted.name}</span>
+            <span className="shrink-0 text-body font-semibold num text-fg">{formatMoney(lifted.amount, t.locale)}</span>
+          </motion.div>
+        </div>,
+        document.body,
       )}
     </Screen>
   );

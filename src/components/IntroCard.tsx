@@ -15,7 +15,7 @@ export function IntroCard({ t, needsStart, onStartingBalance, onImportExcel, onD
   onImportExcel: () => void;
   onDismiss: () => void;
 }) {
-  const steps = [t.introStep1, t.introStep2, t.introStep3, t.introStep4];
+  const steps = [t.introStep1, t.introStep2, t.introStep3, t.introStep4, t.introStep5];
   return (
     <section className="rounded-md bg-surface card-edge p-5" aria-labelledby="intro-title">
       <h2 id="intro-title" className="display text-heading font-bold text-fg wrap-compound">{t.introTitle}</h2>
