@@ -1,4 +1,4 @@
-import { AlertCircle, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react';
 import { Category, Entry, MonthKey } from '../types';
 import { MonthBalance, addMonths, entriesOf, formatMoney, monthKeyOf, monthLabel, sortEntries } from '../logic';
 import { Strings, fmt } from '../translations';
@@ -36,6 +36,12 @@ interface Props {
   /** Ids of the categories folded down to their header. */
   collapsed: string[];
   onCollapse: (categoryId: string) => void;
+  /** Take an empty category out of this month. */
+  onRemoveCategory: (c: Category) => void;
+  /** Open the sheet that puts a category (back) into this month. */
+  onAddCategory: () => void;
+  /** There are no categories at all (all deleted in Settings). */
+  noCategories: boolean;
 }
 
 /**
@@ -118,7 +124,7 @@ export function MonthView(p: Props) {
             </button>
           )}
 
-          {categories.length === 0 && (
+          {p.noCategories && (
             <Empty
               emoji="🗂️"
               title={t.noCategories}
@@ -137,11 +143,22 @@ export function MonthView(p: Props) {
               today={today}
               collapsed={p.collapsed.includes(c.id)}
               onCollapse={() => p.onCollapse(c.id)}
+              onRemove={() => p.onRemoveCategory(c)}
               onAdd={() => p.onAdd(c.id)}
               onEdit={p.onEdit}
               onToggle={p.onToggle}
             />
           ))}
+
+          {/* A category taken out of this month (or one that isn't standard) comes back here. */}
+          <button
+            type="button"
+            onClick={() => { tapLight(); p.onAddCategory(); }}
+            className="w-full min-h-chrome rounded-md border-2 border-dashed border-hairline px-4 flex items-center justify-center gap-2 text-label font-semibold text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus"
+          >
+            <Plus className="w-5 h-5" aria-hidden="true" />
+            {t.addCategoryToMonth}
+          </button>
         </>
       )}
     </Screen>

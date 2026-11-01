@@ -44,6 +44,11 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   and per category `bg-hue-chart` / `fill-hue-chart` under `data-hue` — one
   OKLCH step per hue and theme (`--t-<hue>-chart`). The default categories'
   colours pass `validate_palette.js`; re-run it when changing them.
+- **Categories per month:** `MonthRecord.categories` lists what a month
+  shows; `monthCategories()` adds anything with entries, so money never
+  vanishes. Unset (months from before, Excel imports) = all categories. New
+  months take `standardCategoryIds()` (categories with `standard !== false`).
+  Only an empty category can be taken out of a month (`canRemoveFromMonth`).
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /

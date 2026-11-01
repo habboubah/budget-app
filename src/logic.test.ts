@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addMonths, amountToInput, averageByCategory, balanceFor, carryCandidates, carryOver, categoryBreakdown,
+  addMonths, amountToInput, averageByCategory, balanceFor, canRemoveFromMonth, carryCandidates, carryOver, categoryBreakdown,
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
-  monthTotals, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
-  restoreDefaultCategories, sortEntries, suggestNames, toCsv, topNames,
+  monthCategories, monthTotals, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
+  restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Entry } from './types';
@@ -323,5 +323,26 @@ describe('CSV export', () => {
     const lines = csv.replace('﻿', '').trim().split('\r\n');
     expect(lines[1]).toBe('2026-11;Einkommen;Einnahme;Gehalt;4164,59;bezahlt;einmalig;;');
     expect(lines[2]).toBe('2026-11;Fixkosten;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;');
+  });
+});
+
+describe('categories per month', () => {
+  const extra = e('2026-11', 'extra', 'Amazon', 2000, true);
+  const base = (months: AppData['months']): AppData => ({ categories: cats, entries: [extra], months });
+
+  it('shows every category in a month from before per-month lists', () => {
+    expect(monthCategories(base([{ key: '2026-11', startedAt: 0 }]), '2026-11').map(c => c.id)).toEqual(cats.map(c => c.id));
+  });
+  it('shows the month’s own list plus anything with entries, in category order', () => {
+    const d = base([{ key: '2026-11', startedAt: 0, categories: ['fixed', 'income'] }]);
+    expect(monthCategories(d, '2026-11').map(c => c.id)).toEqual(['income', 'fixed', 'extra']);
+    expect(canRemoveFromMonth(d, '2026-11', 'fixed')).toBe(true);
+    expect(canRemoveFromMonth(d, '2026-11', 'extra')).toBe(false);
+  });
+  it('knows which categories new months get, and keeps the list through storage', () => {
+    expect(standardCategoryIds([{ ...cats[0] }, { ...cats[1], standard: false }])).toEqual(['income']);
+    const s = normalizeState({ categories: [{ ...cats[1], standard: false }], months: [{ key: '2026-11', categories: ['fixed', 'fixed', 3] }] });
+    expect(s.categories[0].standard).toBe(false);
+    expect(s.months[0].categories).toEqual(['fixed']);
   });
 });

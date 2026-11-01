@@ -30,6 +30,8 @@ export interface Category {
   /** For an expense category: basic needs (rent, food, the car) or wants —
    *  the split behind the 50/30/20 check in the statistics. Unset = want. */
   budget?: Budget;
+  /** Part of every newly started month. Unset = yes. */
+  standard?: boolean;
   /** Ships with the app (can be edited, deleted and restored). */
   builtin?: boolean;
 }
@@ -65,6 +67,10 @@ export interface MonthRecord {
   /** Manual opening balance in cents. Replaces the carry-over from the
    *  previous month — for the very first month, or to match the real bank. */
   opening?: number;
+  /** The categories this month shows (besides any that have entries in it).
+   *  Set from the standard categories when the month is started; an empty one
+   *  can be taken out, another added. Unset (months from before) = all. */
+  categories?: string[];
   startedAt: number;
 }
 

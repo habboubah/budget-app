@@ -9,6 +9,7 @@ import { Field, Label, Segmented } from '../ui/Field';
 import { Button } from '../ui/Button';
 import { Picture } from '../ui/Picture';
 import { EmojiPicker, HuePicker } from '../ui/PicturePicker';
+import { Switch } from '../ui/Switch';
 
 export type CategorySheetMode = { kind: 'new' } | { kind: 'edit'; category: Category } | null;
 
@@ -29,14 +30,15 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
   const [kind, setKind] = useState<CategoryKind>('expense');
   const [repeat, setRepeat] = useState<Repeat>('none');
   const [budget, setBudget] = useState<Budget>('want');
+  const [standard, setStandard] = useState(true);
 
   useEffect(() => {
     if (!mode) return;
     if (mode.kind === 'edit') {
       const c = mode.category;
-      setName(displayName(c.names, language)); setEmoji(c.emoji); setHue(c.hue); setKind(c.kind); setRepeat(c.repeat); setBudget(budgetOf(c));
+      setName(displayName(c.names, language)); setEmoji(c.emoji); setHue(c.hue); setKind(c.kind); setRepeat(c.repeat); setBudget(budgetOf(c)); setStandard(c.standard !== false);
     } else {
-      setName(''); setEmoji('📦'); setHue('sky'); setKind('expense'); setRepeat('none'); setBudget('want');
+      setName(''); setEmoji('📦'); setHue('sky'); setKind('expense'); setRepeat('none'); setBudget('want'); setStandard(true);
     }
   }, [mode]);
 
@@ -47,9 +49,9 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
       // Renaming in one language replaces the built-in translations: the
       // user's name is the name now, whatever the app language.
       const names = clean === displayName(editing.names, language) ? editing.names : { [language]: clean };
-      onSave(editing.id, { names, emoji, hue, kind, repeat, budget });
+      onSave(editing.id, { names, emoji, hue, kind, repeat, budget, standard });
     } else {
-      onCreate({ id: uid(), names: { [language]: clean }, emoji, hue, kind, repeat, budget });
+      onCreate({ id: uid(), names: { [language]: clean }, emoji, hue, kind, repeat, budget, standard });
     }
     onClose();
   };
@@ -64,6 +66,13 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
             <Field label={t.categoryName} value={name} onChange={setName} placeholder={t.categoryNamePlaceholder}
               maxLength={40} autoFocus={!editing} enterKeyHint="done" />
           </div>
+        </div>
+        <div>
+          <div className="flex items-center gap-3 rounded-md bg-surface-2 ps-4 pe-1">
+            <span className="flex-1 min-w-0 text-body text-fg">{t.inNewMonths}</span>
+            <Switch checked={standard} onChange={setStandard} label={t.inNewMonths} />
+          </div>
+          <p className="text-caption text-fg-mute mt-1.5 px-1 wrap-prose">{t.inNewMonthsHint}</p>
         </div>
         <div>
           <Label>{t.kind}</Label>

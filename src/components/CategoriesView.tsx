@@ -9,6 +9,7 @@ import { Button, IconButton } from '../ui/Button';
 import { Confirm } from '../ui/Sheet';
 import { Picture } from '../ui/Picture';
 import { tapLight } from '../ui/haptics';
+import { Switch } from '../ui/Switch';
 
 interface Props {
   categories: Category[];
@@ -22,6 +23,8 @@ interface Props {
   onDelete: (c: Category) => void;
   onReorder: (ids: string[]) => void;
   onRestoreDefaults: () => void;
+  /** Whether the category is part of every new month. */
+  onStandard: (c: Category, on: boolean) => void;
 }
 
 /**
@@ -30,7 +33,7 @@ interface Props {
  * keys on it) — a delete button on each (undoable), "Neue Kategorie" and
  * "Standard wiederherstellen". Like shopping-list's list types.
  */
-export function CategoriesView({ categories, entries, language, t, onBack, onEdit, onNew, onDelete, onReorder, onRestoreDefaults }: Props) {
+export function CategoriesView({ categories, entries, language, t, onBack, onEdit, onNew, onDelete, onReorder, onRestoreDefaults, onStandard }: Props) {
   const [confirmRestore, setConfirmRestore] = useState(false);
   const counts = new Map<string, number>();
   for (const e of entries) counts.set(e.categoryId, (counts.get(e.categoryId) ?? 0) + 1);
@@ -64,6 +67,7 @@ export function CategoriesView({ categories, entries, language, t, onBack, onEdi
               t={t}
               onEdit={() => onEdit(c)}
               onDelete={() => onDelete(c)}
+              onStandard={on => onStandard(c, on)}
               onMove={d => move(i, i + d)}
             />
           ))}
@@ -90,18 +94,20 @@ export function CategoriesView({ categories, entries, language, t, onBack, onEdi
   );
 }
 
-function CategoryRow({ category: c, count, language, t, onEdit, onDelete, onMove }: {
+function CategoryRow({ category: c, count, language, t, onEdit, onDelete, onStandard, onMove }: {
   category: Category;
   count: number;
   language: string;
   t: Strings;
   onEdit: () => void;
   onDelete: () => void;
+  onStandard: (on: boolean) => void;
   onMove: (delta: number) => void;
 }) {
   const controls = useDragControls();
   const name = displayName(c.names, language);
-  const sub = `${c.kind === 'income' ? t.kindIncome : t.kindExpense} · ${count ? plural(count, t.entriesOne, t.entriesMany) : t.entriesNone}`;
+  const standard = c.standard !== false;
+  const sub = `${c.kind === 'income' ? t.kindIncome : t.kindExpense} · ${count ? plural(count, t.entriesOne, t.entriesMany) : t.entriesNone}${standard ? '' : ` · ${t.notInNewMonths}`}`;
   return (
     <Reorder.Item
       value={c.id}
@@ -136,6 +142,7 @@ function CategoryRow({ category: c, count, language, t, onEdit, onDelete, onMove
           <span className="block text-caption text-fg-mute">{sub}</span>
         </span>
       </button>
+      <Switch checked={standard} onChange={onStandard} label={fmt(t.inNewMonthsNamed, { name })} />
       <IconButton label={fmt(t.deleteCategoryNamed, { name })} icon={Trash2} tone="danger" onClick={onDelete} />
     </Reorder.Item>
   );

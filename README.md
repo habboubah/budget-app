@@ -11,7 +11,11 @@ month, and the two numbers that matter: **what is on the account now** and
 - **One month per page.** ‹ › switch months; "Zum aktuellen Monat" jumps back.
   The month reads in the order money moves: **Einkommen** first, then
   **Fixkosten**, **Auto**, **Sonderkosten**, **Einkaufen**, **Familie** — each a
-  card with its total and what is still open. Tap a card's header to fold it
+  card with its total and what is still open. Each month has its own set of
+  categories: a new month gets the ones switched on under *Einstellungen →
+  Kategorien → In jedem neuen Monat*; an empty category can be removed from a
+  month (undoable), and *Kategorie hinzufügen* brings any category in. A
+  category with entries always stays. Tap a card's header to fold it
   down to that one line (remembered per category, in every month); "⋯" folds
   or unfolds them all.
 - **Two balances.** *Jetzt auf dem Konto* counts what is paid / received.

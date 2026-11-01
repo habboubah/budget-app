@@ -6,7 +6,7 @@ import { AlertTriangle, BarChart3, CalendarDays, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import translations, { fmt } from './translations';
 import { Category, Entry, EntryDraft, MonthKey } from './types';
-import { balanceFor, carryCandidates, displayName, monthKeyOf, monthLabel, openBefore, uid } from './logic';
+import { balanceFor, carryCandidates, displayName, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { MonthView } from './components/MonthView';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
@@ -15,6 +15,7 @@ import { StatsView } from './components/StatsView';
 import { SettingsView } from './components/SettingsView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
+import { AddCategorySheet } from './components/AddCategorySheet';
 import { BackupGroup } from './components/BackupGroup';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
@@ -34,6 +35,9 @@ export default function App() {
   const [tab, setTab] = useState<'month' | 'stats' | 'settings'>('month');
   const [showCategories, setShowCategories] = useState(false);
   const [categorySheet, setCategorySheet] = useState<CategorySheetMode>(null);
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+  /** A category created from the month page also joins that month. */
+  const [createForMonth, setCreateForMonth] = useState<MonthKey | null>(null);
   /** An Excel file read and planned, waiting for "import". */
   const [excel, setExcel] = useState<{ plan: ImportPlan; fileName: string } | null>(null);
   const excelInput = useRef<HTMLInputElement>(null);
@@ -50,6 +54,9 @@ export default function App() {
   const balance = balanceFor(balances, month);
   const prevBalance = balance.prevKey ? balances.find(b => b.key === balance.prevKey) : undefined;
   const candidates = useMemo(() => carryCandidates(data, month), [data, month]);
+  /** The categories this month shows (its own list, plus any with entries). */
+  const shownCategories = useMemo(() => monthCategories(data, month), [data, month]);
+  const hiddenCategories = categories.filter(c => !shownCategories.includes(c));
   const openEarlier = useMemo(() => (balance.started ? openBefore(data, month) : []), [data, month, balance.started]);
 
   // Screens pushed over the tab's root, outermost first. Every pushed screen
@@ -93,6 +100,8 @@ export default function App() {
     const now = Date.now();
     const entry: Entry = { id, month: m, seriesId: id, createdAt: now, ...d, ...(d.paid ? { paidAt: now } : {}) };
     store.addEntry(entry);
+    // The category stays in the month even if this entry is deleted again.
+    store.showCategory(m, d.categoryId);
     // A new entry in a folded category unfolds it, so it can be seen landing.
     store.expand(d.categoryId);
     setLastCategory(d.categoryId);
@@ -159,6 +168,16 @@ export default function App() {
     });
   };
 
+  /** Take an empty category out of this month only; undoable. */
+  const removeFromMonth = (c: Category) => {
+    if (!store.hideCategory(month, c.id)) return;
+    notifyWarning();
+    const m = month;
+    show(fmt(t.removedFromMonth, { name: displayName(c.names, language), month: monthLabel(m, t.locale) }), {
+      label: t.undo, run: () => store.showCategory(m, c.id),
+    });
+  };
+
   /** An empty category just goes (with undo); one with entries asks first. */
   const askDeleteCategory = (c: Category) => {
     if (entries.some(e => e.categoryId === c.id)) setConfirmCategory(c);
@@ -214,6 +233,7 @@ export default function App() {
             onDelete={askDeleteCategory}
             onReorder={store.setCategoryOrder}
             onRestoreDefaults={restoreDefaults}
+            onStandard={(c, on) => store.updateCategory(c.id, { standard: on })}
           />
         ) : screen === 'settings' ? (
           <SettingsView
@@ -250,7 +270,7 @@ export default function App() {
           <MonthView
             month={month}
             balance={balance}
-            categories={categories}
+            categories={shownCategories}
             entries={entries}
             candidates={candidates}
             openEarlier={openEarlier}
@@ -269,6 +289,9 @@ export default function App() {
             onImportExcel={() => excelInput.current?.click()}
             collapsed={store.collapsed}
             onCollapse={store.toggleCollapsed}
+            onRemoveCategory={removeFromMonth}
+            onAddCategory={() => setAddCategoryOpen(true)}
+            noCategories={categories.length === 0}
           />
         )}
       </motion.div>
@@ -337,10 +360,28 @@ export default function App() {
         mode={categorySheet}
         language={language}
         t={t}
-        onClose={() => setCategorySheet(null)}
-        onCreate={store.addCategory}
+        onClose={() => { setCategorySheet(null); setCreateForMonth(null); }}
+        onCreate={c => {
+          store.addCategory(c);
+          if (createForMonth) store.showCategory(createForMonth, c.id);
+        }}
         onSave={store.updateCategory}
         onDelete={askDeleteCategory}
+      />
+
+      <AddCategorySheet
+        open={addCategoryOpen}
+        month={month}
+        hidden={hiddenCategories}
+        language={language}
+        t={t}
+        onClose={() => setAddCategoryOpen(false)}
+        onPick={c => {
+          store.showCategory(month, c.id);
+          store.expand(c.id);
+          show(fmt(t.categoryAddedToMonth, { name: displayName(c.names, language) }));
+        }}
+        onCreate={() => { setCreateForMonth(month); setCategorySheet({ kind: 'new' }); }}
       />
 
       <input

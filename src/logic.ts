@@ -180,6 +180,29 @@ export function entriesOf(entries: Entry[], month: MonthKey, categoryId?: string
   return entries.filter(e => e.month === month && (categoryId === undefined || e.categoryId === categoryId));
 }
 
+/** The categories every newly started month gets. */
+export function standardCategoryIds(categories: Category[]): string[] {
+  return categories.filter(c => c.standard !== false).map(c => c.id);
+}
+
+/**
+ * The categories a month shows, in the user's order: the ones in the month's
+ * own list, plus any that have entries in it — a category with money in it
+ * never disappears. A month from before per-month lists shows them all.
+ */
+export function monthCategories(data: AppData, key: MonthKey): Category[] {
+  const list = data.months.find(m => m.key === key)?.categories;
+  if (!list) return data.categories;
+  const shown = new Set(list);
+  for (const e of data.entries) if (e.month === key) shown.add(e.categoryId);
+  return data.categories.filter(c => shown.has(c.id));
+}
+
+/** A category can be taken out of a month only while it has no entries there. */
+export function canRemoveFromMonth(data: AppData, key: MonthKey, categoryId: string): boolean {
+  return !data.entries.some(e => e.month === key && e.categoryId === categoryId);
+}
+
 /**
  * The order rows show in within a category: what has a due day first, by that
  * day (rent on the 1st above the phone bill on the 18th), then everything
@@ -528,6 +551,7 @@ function normalizeCategory(v: unknown): Category | null {
     kind: v.kind === 'income' ? 'income' : 'expense',
     repeat: isRepeat(v.repeat) ? v.repeat : 'none',
     ...(v.budget === 'need' || v.budget === 'want' ? { budget: v.budget } : {}),
+    ...(v.standard === false ? { standard: false } : {}),
     ...(v.builtin === true ? { builtin: true } : {}),
   };
 }
@@ -557,6 +581,7 @@ function normalizeEntry(v: unknown): Entry | null {
 function normalizeMonth(v: unknown): MonthRecord | null {
   if (!isObj(v) || !isMonthKey(v.key)) return null;
   const m: MonthRecord = { key: v.key, startedAt: typeof v.startedAt === 'number' ? v.startedAt : 0 };
+  if (Array.isArray(v.categories)) m.categories = [...new Set(v.categories.filter((x): x is string => typeof x === 'string'))];
   if (typeof v.opening === 'number' && Number.isFinite(v.opening)) m.opening = Math.round(Math.max(-MAX_CENTS, Math.min(MAX_CENTS, v.opening)));
   return m;
 }

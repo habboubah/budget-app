@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppData, Category, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
-  SCHEMA_VERSION, carryCandidates, carryOver, computeBalances, monthKeyOf, normalizeState,
-  restoreDefaultCategories, uid,
+  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, monthKeyOf, normalizeState,
+  restoreDefaultCategories, standardCategoryIds, uid,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 
@@ -58,7 +58,7 @@ function loadInitial(): AppData {
     months: readJson(K.months),
   });
   if (meta?.seeded || data.months.length) return data;
-  return { ...data, months: [{ key: monthKeyOf(), startedAt: Date.now() }] };
+  return { ...data, months: [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(data.categories) }] };
 }
 
 const sortMonths = (ms: MonthRecord[]) => [...ms].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
@@ -131,19 +131,40 @@ export function useAppStore() {
 
   /* ---------------------------------------------------------------- months */
 
+  /** A new month record: it shows the standard categories (plus `extra`). */
+  const newMonth = (key: MonthKey, extra: string[] = []): MonthRecord =>
+    ({ key, startedAt: Date.now(), categories: [...new Set([...standardCategoryIds(categories), ...extra])] });
+
   const ensureMonth = (key: MonthKey) =>
-    setMonths(prev => (prev.some(m => m.key === key) ? prev : sortMonths([...prev, { key, startedAt: Date.now() }])));
+    setMonths(prev => (prev.some(m => m.key === key) ? prev : sortMonths([...prev, newMonth(key)])));
 
   /**
-   * Start a month. With `carry`, the recurring entries of earlier months come
-   * along as open entries. Returns how many were carried over.
+   * Start a month with the standard categories. With `carry`, the recurring
+   * entries of earlier months come along as open entries (and their
+   * categories with them). Returns how many were carried over.
    */
   const startMonth = (key: MonthKey, carry: boolean): number => {
     const copies = carry ? carryOver(carryCandidates(data, key), key, Date.now()) : [];
-    ensureMonth(key);
+    const record = newMonth(key, copies.map(e => e.categoryId));
+    setMonths(prev => (prev.some(m => m.key === key) ? prev : sortMonths([...prev, record])));
     if (copies.length) setEntries(prev => [...prev, ...copies]);
     return copies.length;
   };
+
+  /** Patch one month's category list; a month from before lists starts as "all of them". */
+  const patchMonthCategories = (key: MonthKey, fn: (ids: string[]) => string[]) =>
+    setMonths(prev => prev.map(m => (m.key === key ? { ...m, categories: fn(m.categories ?? categories.map(c => c.id)) } : m)));
+
+  /** Take an empty category out of one month. Refuses (false) while it has entries there. */
+  const hideCategory = (key: MonthKey, categoryId: string): boolean => {
+    if (!canRemoveFromMonth(data, key, categoryId)) return false;
+    patchMonthCategories(key, ids => ids.filter(id => id !== categoryId));
+    return true;
+  };
+
+  /** Put a category into one month. */
+  const showCategory = (key: MonthKey, categoryId: string) =>
+    patchMonthCategories(key, ids => (ids.includes(categoryId) ? ids : [...ids, categoryId]));
 
   /** Bring recurring entries the month is missing (added to last month after this one started). */
   const pullRecurring = (key: MonthKey): number => {
@@ -156,7 +177,7 @@ export function useAppStore() {
   const setOpening = (key: MonthKey, opening: number | undefined) =>
     setMonths(prev => {
       const has = prev.some(m => m.key === key);
-      const next = has ? prev : [...prev, { key, startedAt: Date.now() }];
+      const next = has ? prev : [...prev, newMonth(key)];
       return sortMonths(next.map(m => {
         if (m.key !== key) return m;
         const { opening: _drop, ...rest } = m;
@@ -218,7 +239,18 @@ export function useAppStore() {
 
   /* ------------------------------------------------------------ categories */
 
-  const addCategory = (c: Category) => setCategories(prev => [...prev, c]);
+  /**
+   * A new category. A standard one also joins the months from this one on
+   * that already have their own list — a category made today is wanted today.
+   */
+  const addCategory = (c: Category) => {
+    setCategories(prev => [...prev, c]);
+    if (c.standard === false) return;
+    const now = monthKeyOf();
+    setMonths(prev => prev.map(m => (m.key >= now && m.categories && !m.categories.includes(c.id)
+      ? { ...m, categories: [...m.categories, c.id] }
+      : m)));
+  };
 
   const updateCategory = (id: string, patch: Partial<Omit<Category, 'id'>>) =>
     setCategories(prev => prev.map(c => (c.id === id ? { ...c, ...patch } : c)));
@@ -269,13 +301,14 @@ export function useAppStore() {
     const fixed = d.categories.length ? d : normalizeState({ ...d, categories: defaultCategories() });
     setCategories(fixed.categories);
     setEntries(fixed.entries);
-    setMonths(fixed.months.length ? fixed.months : [{ key: monthKeyOf(), startedAt: Date.now() }]);
+    setMonths(fixed.months.length ? fixed.months : [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fixed.categories) }]);
   };
 
   const resetAll = () => {
-    setCategories(defaultCategories());
+    const fresh = defaultCategories();
+    setCategories(fresh);
     setEntries([]);
-    setMonths([{ key: monthKeyOf(), startedAt: Date.now() }]);
+    setMonths([{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fresh) }]);
     setIntroDone(false);
   };
 
@@ -287,7 +320,7 @@ export function useAppStore() {
     expand: (id: string) => setCollapsed(prev => prev.filter(x => x !== id)),
     setCollapsed,
     data, categories, entries, months, balances,
-    startMonth, pullRecurring, setOpening, removeMonth, restoreMonth,
+    startMonth, pullRecurring, setOpening, removeMonth, restoreMonth, hideCategory, showCategory,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
     setCategories, importData, resetAll,

@@ -1,11 +1,12 @@
 import React, { useId } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, ChevronDown, Plus, Repeat as RepeatIcon } from 'lucide-react';
+import { Check, ChevronDown, Plus, Repeat as RepeatIcon, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
 import { displayName, formatMoney, isOverdue } from '../logic';
 import { Strings, fmt, plural } from '../translations';
 import { Picture } from '../ui/Picture';
 import { tapLight } from '../ui/haptics';
+import { IconButton } from '../ui/Button';
 
 interface Props {
   category: Category;
@@ -17,6 +18,8 @@ interface Props {
   /** Folded down to its header: name, total, what is still open. */
   collapsed: boolean;
   onCollapse: () => void;
+  /** Take the category out of this month — offered only while it is empty. */
+  onRemove?: () => void;
   onAdd: () => void;
   onEdit: (e: Entry) => void;
   onToggle: (e: Entry) => void;
@@ -28,7 +31,7 @@ interface Props {
  * header folds the card down to that header and back; the state is kept per
  * category, so a category minimised stays minimised in every month.
  */
-export function CategorySection({ category, entries, language, t, today, collapsed, onCollapse, onAdd, onEdit, onToggle }: Props) {
+export function CategorySection({ category, entries, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle }: Props) {
   const bodyId = useId();
   const name = displayName(category.names, language);
   const income = category.kind === 'income';
@@ -38,14 +41,14 @@ export function CategorySection({ category, entries, language, t, today, collaps
 
   return (
     <section data-hue={category.hue} className="rounded-md bg-surface card-edge overflow-hidden" aria-label={name}>
-      <h2>
+      <h2 className="flex items-center">
         <button
           type="button"
           onClick={() => { tapLight(); onCollapse(); }}
           aria-expanded={!collapsed}
           aria-controls={bodyId}
           title={collapsed ? t.expand : t.collapse}
-          className="w-full flex items-center gap-3 ps-4 pe-3 pt-3.5 pb-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+          className="flex-1 min-w-0 flex items-center gap-3 ps-4 pe-3 pt-3.5 pb-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
         >
           <Picture emoji={category.emoji} name={name} size="md" />
           <span className="min-w-0 flex-1">
@@ -67,6 +70,10 @@ export function CategorySection({ category, entries, language, t, today, collaps
             aria-hidden="true"
           />
         </button>
+        {onRemove && entries.length === 0 && (
+          /* Quiet, not red: a new month has several empty categories, and it is undoable. */
+          <IconButton label={fmt(t.removeFromMonth, { name })} icon={Trash2} tone="default" className="me-1" onClick={onRemove} />
+        )}
       </h2>
 
       <AnimatePresence initial={false}>
