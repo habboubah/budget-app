@@ -47,13 +47,17 @@ function initialLanguage(): Language {
  */
 function loadInitial(): AppData {
   const meta = readJson(K.meta) as { seeded?: boolean } | undefined;
-  const data = normalizeState({ categories: readJson(K.categories), entries: readJson(K.entries), months: readJson(K.months) });
-  if (meta?.seeded) return data;
-  // Not seeded yet. Only fill what is genuinely missing, so a half-written
-  // first launch never loses anything.
-  const categories = data.categories.length ? data.categories : defaultCategories();
-  const months = data.months.length ? data.months : [{ key: monthKeyOf(), startedAt: Date.now() }];
-  return { categories, entries: data.entries, months };
+  const rawCategories = readJson(K.categories);
+  // Not seeded yet: the defaults go in *before* normalising, or entries from
+  // a half-written first launch would all be filed under "Sonstiges".
+  const missing = !meta?.seeded && (!Array.isArray(rawCategories) || rawCategories.length === 0);
+  const data = normalizeState({
+    categories: missing ? defaultCategories() : rawCategories,
+    entries: readJson(K.entries),
+    months: readJson(K.months),
+  });
+  if (meta?.seeded || data.months.length) return data;
+  return { ...data, months: [{ key: monthKeyOf(), startedAt: Date.now() }] };
 }
 
 const sortMonths = (ms: MonthRecord[]) => [...ms].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));

@@ -67,8 +67,8 @@ One bank account only, on purpose.
 
 1. Project setup, skills copied from shopping-list / pizza-driver-log, docs, design tokens, icon
 2. Data model, local storage, default categories, balance & carry-over logic + tests
-3. Month screen: balance card, category sections, add / edit / delete entries, paid toggle
-4. Months: switch, start a month with carry-over, opening balance, open items from earlier months
+3. Month screen: balance card and starting balance, category sections, add / edit / delete entries, paid toggle
+4. Months: switch, start a month with carry-over, month actions, open items from earlier months, first-run intro
 5. Statistics screen
 6. Settings: categories, language, theme, backup / CSV; offline + installable; iOS project + release pipeline
 7. Polish, empty states, accessibility, README, CI; final check on iPhone width + desktop

@@ -1,0 +1,71 @@
+import React, { useEffect, useId, useRef } from 'react';
+import { tapLight } from './haptics';
+
+interface FieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'className' | 'value'> {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  /** Hide the visible label (it still names the input for VoiceOver). */
+  hideLabel?: boolean;
+  trailing?: React.ReactNode;
+}
+
+/** A labelled text input. Focus on mount uses preventScroll — the DOM
+ *  `autofocus` attribute inside a sheet scrolls the page behind it. */
+export function Field({ label, value, onChange, hideLabel, trailing, autoFocus, ...rest }: FieldProps) {
+  const id = useId();
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (autoFocus) ref.current?.focus({ preventScroll: true });
+  }, [autoFocus]);
+  return (
+    <div>
+      <label htmlFor={id} className={hideLabel ? 'sr-only' : 'block text-caption font-semibold text-fg-mute mb-1.5 px-1'}>{label}</label>
+      <div className="flex items-center gap-2 bg-surface-2 rounded-md px-4 min-h-control focus-within:ring-2 focus-within:ring-accent">
+        <input
+          ref={ref}
+          id={id}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className="flex-1 min-w-0 bg-transparent py-3 text-body text-fg placeholder:text-fg-faint outline-none"
+          {...rest}
+        />
+        {trailing}
+      </div>
+    </div>
+  );
+}
+
+/** iOS-style segmented control. */
+export function Segmented<T extends string>({ label, value, options, onChange }: {
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div role="radiogroup" aria-label={label} className="flex bg-surface-2 rounded-sm p-1 gap-1">
+      {options.map(o => {
+        const on = o.value === value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => { tapLight(); onChange(o.value); }}
+            className={`flex-1 min-h-[40px] px-3 rounded-[10px] text-label font-semibold transition-colors focus-visible:ring-focus wrap-compound ${
+              on ? 'bg-raised text-fg shadow-e1' : 'text-fg-mute active:bg-raised/60'}`}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** A small caption above a group of controls inside a sheet. */
+export function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
+  return <label htmlFor={htmlFor} className="block text-caption font-semibold text-fg-mute mb-1.5 px-1">{children}</label>;
+}
