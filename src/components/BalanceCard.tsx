@@ -19,14 +19,14 @@ interface Props {
  * numbers that explain the end balance: carry-over, income, expenses.
  */
 export function BalanceCard({ balance: b, t, onOpening }: Props) {
-  const money = (c: number, sign: 'auto' | 'always' = 'auto') => formatMoney(c, t.locale, sign);
+  const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   const income = b.incomePaid + b.incomeOpen;
   const expenses = b.expensePaid + b.expenseOpen;
   const ratio = b.expenseCount ? b.expensePaidCount / b.expenseCount : 0;
   const carryLabel = b.overridden
     ? t.carryManual
     : b.prevKey
-      ? fmt(t.carryFrom, { month: monthLabel(b.prevKey, t.locale, 'month') })
+      ? fmt(t.carryFrom, { month: monthLabel(b.prevKey, t.locale, 'long') })
       : t.startingBalance;
 
   return (
@@ -37,9 +37,11 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
       <div className="mt-5 flex items-end justify-between gap-x-4 gap-y-1 flex-wrap">
         <div className="min-w-0">
           <p className="eyebrow text-hero-mute">{t.balanceEnd}</p>
-          <p className="text-caption text-hero-mute mt-1 wrap-prose">
-            {b.openCount ? plural(b.openCount, t.afterOpenOne, t.afterOpenMany) : t.allSettled}
-          </p>
+          {b.count > 0 && (
+            <p className="text-caption text-hero-mute mt-1 wrap-prose">
+              {b.openCount ? plural(b.openCount, t.afterOpenOne, t.afterOpenMany) : t.allSettled}
+            </p>
+          )}
         </div>
         <p className={`display text-heading font-bold num ${b.end < 0 ? 'text-hero-neg' : ''}`}>{money(b.end)}</p>
       </div>
@@ -64,25 +66,27 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
         </div>
       )}
 
-      <div className="mt-4 pt-3 border-t border-hero-track grid grid-cols-3 gap-2">
+      {/* The sum behind "Monatsende": carry-over + income − expenses. */}
+      <div className="mt-4 pt-1 border-t border-hero-track">
         <button
           type="button"
           onClick={() => { tapLight(); onOpening(); }}
-          className="min-w-0 -mx-2 -my-1 px-2 py-1 rounded-sm text-start active:bg-hero-track transition-colors focus-visible:ring-focus"
+          className="w-full -mx-2 px-2 min-h-control rounded-sm flex items-center gap-2 text-start active:bg-hero-track transition-colors focus-visible:ring-focus"
+          style={{ width: 'calc(100% + 1rem)' }}
         >
-          <span className="flex items-center gap-0.5 text-caption text-hero-mute wrap-compound">
-            <span className="min-w-0">{carryLabel}</span>
-            <ChevronRight className="w-3.5 h-3.5 shrink-0 rtl:rotate-180" aria-hidden="true" />
-          </span>
-          <span className={`block text-label font-bold num mt-0.5 ${b.openingNow < 0 ? 'text-hero-neg' : ''}`}>{money(b.openingNow)}</span>
+          <span className="min-w-0 flex-1 text-label text-hero-mute wrap-prose">{carryLabel}</span>
+          <span className={`text-label font-bold num ${b.openingNow < 0 ? 'text-hero-neg' : ''}`}>{money(b.openingNow)}</span>
+          <ChevronRight className="w-4 h-4 shrink-0 text-hero-mute rtl:rotate-180" aria-hidden="true" />
         </button>
-        <div className="min-w-0">
-          <span className="block text-caption text-hero-mute">{t.income}</span>
-          <span className="block text-label font-bold num mt-0.5 text-hero-pos">{money(income, 'always')}</span>
-        </div>
-        <div className="min-w-0">
-          <span className="block text-caption text-hero-mute">{t.expenses}</span>
-          <span className="block text-label font-bold num mt-0.5">{money(-expenses)}</span>
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="min-w-0">
+            <span className="block text-caption text-hero-mute">{t.income}</span>
+            <span className="block text-label font-bold num mt-0.5 text-hero-pos">{money(income, 'exceptZero')}</span>
+          </div>
+          <div className="min-w-0">
+            <span className="block text-caption text-hero-mute">{t.expenses}</span>
+            <span className="block text-label font-bold num mt-0.5">{money(expenses ? -expenses : 0)}</span>
+          </div>
         </div>
       </div>
     </section>

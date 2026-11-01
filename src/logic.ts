@@ -213,7 +213,8 @@ export interface Totals {
   incomeOpen: number;
   expensePaid: number;
   expenseOpen: number;
-  /** Entries still open (both kinds). */
+  /** Entries in the month, and how many are still open (both kinds). */
+  count: number;
   openCount: number;
   /** Expense entries, and how many of them are paid — the progress bar. */
   expenseCount: number;
@@ -222,9 +223,10 @@ export interface Totals {
 
 export function monthTotals(entries: Entry[], categories: Category[], month: MonthKey): Totals {
   const kind = kindLookup(categories);
-  const t: Totals = { incomePaid: 0, incomeOpen: 0, expensePaid: 0, expenseOpen: 0, openCount: 0, expenseCount: 0, expensePaidCount: 0 };
+  const t: Totals = { incomePaid: 0, incomeOpen: 0, expensePaid: 0, expenseOpen: 0, count: 0, openCount: 0, expenseCount: 0, expensePaidCount: 0 };
   for (const e of entries) {
     if (e.month !== month) continue;
+    t.count++;
     if (!e.paid) t.openCount++;
     if (kind(e.categoryId) === 'income') {
       if (e.paid) t.incomePaid += e.amount; else t.incomeOpen += e.amount;
@@ -302,7 +304,7 @@ export function balanceFor(balances: MonthBalance[], key: MonthKey): MonthBalanc
   if (found) return found;
   let prev: MonthBalance | undefined;
   for (const b of balances) if (b.key < key) prev = b;
-  const empty: Totals = { incomePaid: 0, incomeOpen: 0, expensePaid: 0, expenseOpen: 0, openCount: 0, expenseCount: 0, expensePaidCount: 0 };
+  const empty: Totals = { incomePaid: 0, incomeOpen: 0, expensePaid: 0, expenseOpen: 0, count: 0, openCount: 0, expenseCount: 0, expensePaidCount: 0 };
   return {
     key, started: false, prevKey: prev?.key, overridden: false,
     openingNow: prev?.now ?? 0, openingEnd: prev?.end ?? 0, ...empty,
