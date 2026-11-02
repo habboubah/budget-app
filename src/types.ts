@@ -27,8 +27,9 @@ export interface Category {
   kind: CategoryKind;
   /** What a new entry in this category repeats as, until the user picks otherwise. */
   repeat: Repeat;
-  /** For an expense category: basic needs (rent, food, the car) or wants —
-   *  the split behind the 50/30/20 check in the statistics. Unset = want. */
+  /** For an expense category: basic needs (rent, food, the car), wants, or
+   *  money put aside (an ETF plan) — the split behind the 50/30/20 check in
+   *  the statistics. Unset = want. */
   budget?: Budget;
   /** Part of every newly started month. Unset = yes. */
   standard?: boolean;
@@ -36,7 +37,7 @@ export interface Category {
   builtin?: boolean;
 }
 
-export type Budget = 'need' | 'want';
+export type Budget = 'need' | 'want' | 'save';
 
 /** A calendar month as `YYYY-MM`. Compare with `<` / `>`: the format sorts. */
 export type MonthKey = string;

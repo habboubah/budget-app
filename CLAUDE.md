@@ -38,6 +38,8 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   .xlsx in memory; never commit a real one (it is someone's finances).
 - **Statistics** beyond sums (savings rate, reserve, forecast, 50/30/20,
   commitments, unusual months) live in `src/insights.ts`, pure and tested.
+  In the 50/30/20 split a category counts as `need`, `want` or `save`
+  (`budgetOf`); `save` expenses stay in *saved*.
   Averages use *finished* months (`finishedMonths`), never the running one.
 - **Charts** (`components/Charts.tsx`) follow the dataviz skill. Series
   colours are tokens: `chart-in` / `chart-out` / `chart-line` / `chart-want`,
@@ -46,9 +48,17 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   colours pass `validate_palette.js`; re-run it when changing them.
 - **Categories per month:** `MonthRecord.categories` lists what a month
   shows; `monthCategories()` adds anything with entries, so money never
-  vanishes. Unset (months from before, Excel imports) = all categories. New
+  vanishes. Unset (months from before, Excel imports) = the standard ones. New
   months take `standardCategoryIds()` (categories with `standard !== false`).
-  Only an empty category can be taken out of a month (`canRemoveFromMonth`).
+  Of the 21 built-ins only the first six are standard; the banking-app ones
+  (`clothing` … `other`) ship with `standard: false` — keep it that way, or
+  every month fills up with empty cards. Only an empty category can be taken
+  out of a month (`canRemoveFromMonth`).
+- **Schema 2** added those built-ins. `upgradeCategories()` (run once by
+  `loadInitial` for storage below version 2, and by `parseBackup` for older
+  backups) appends the missing ones and applies renamed names / emoji
+  (`SHIPPED_V1` in `defaults.ts`) only where the user kept what v1 shipped.
+  Future changes to built-ins follow the same pattern with a new version.
 - **Entry order:** `Entry.order` is set once the user drags entries in a
   category (`moveEntry()` renumbers the source and target category of that
   month); `sortEntries()` puts ordered entries first, the rest by due day, then

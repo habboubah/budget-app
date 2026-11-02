@@ -79,6 +79,11 @@ describe('smart numbers', () => {
       income: 300000, needs: 158667, wants: 23333, saved: 118000,
     });
   });
+  it('counts money put into savings as saved, not spent, in the 50/30/20 split', () => {
+    const month = [e('2026-10', 'income', 'Gehalt', 3000), e('2026-10', 'fixed', 'Miete', 1000), e('2026-10', 'leisure', 'Kino', 200),
+      e('2026-10', 'investment', 'ETF-Sparplan', 300)];
+    expect(budgetSplit(month, cats, ['2026-10'])).toEqual({ income: 300000, needs: 100000, wants: 20000, saved: 180000 });
+  });
   it('lists recurring commitments per month and per year', () => {
     const c = commitments(data, '2026-10');
     expect(c.items.map(i => [i.name, i.monthly, i.yearly, i.repeat])).toEqual([

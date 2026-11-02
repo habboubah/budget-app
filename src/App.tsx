@@ -331,7 +331,8 @@ export default function App() {
 
       <EntrySheet
         mode={entrySheet}
-        categories={categories}
+        // This month's categories first; the rest after them (picking one adds it to the month).
+        categories={[...shownCategories, ...hiddenCategories]}
         entries={entries}
         language={language}
         t={t}

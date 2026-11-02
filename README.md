@@ -10,12 +10,13 @@ month, and the two numbers that matter: **what is on the account now** and
 
 - **One month per page.** ‹ › switch months; "Zum aktuellen Monat" jumps back.
   The month reads in the order money moves: **Einkommen** first, then
-  **Fixkosten**, **Auto**, **Sonderkosten**, **Einkaufen**, **Familie** — each a
-  card with its total and what is still open. Each month has its own set of
-  categories: a new month gets the ones switched on under *Einstellungen →
-  Kategorien → In jedem neuen Monat*; an empty category can be removed from a
-  month (undoable), and *Kategorie hinzufügen* brings any category in. A
-  category with entries always stays. Tap a card's header to fold it
+  **Fixkosten**, **Auto**, **Sonderkosten**, **Lebensmittel und Drogerie**,
+  **Familie** — each a card with its total and what is still open. Each month
+  has its own set of categories: a new month gets the ones switched on under
+  *Einstellungen → Kategorien → In jedem neuen Monat*; an empty category can
+  be removed from a month (undoable), and *Kategorie hinzufügen* brings any
+  category in — as does picking it when entering something. A category with
+  entries always stays. Tap a card's header to fold it
   down to that one line (remembered per category, in every month); "⋯" folds
   or unfolds them all.
 - **Drag to sort.** Press and hold an entry (with a mouse: just drag it) and
@@ -47,13 +48,20 @@ month, and the two numbers that matter: **what is on the account now** and
   - *insights* (Auswertung): savings rate, emergency reserve in months of
     spending (3–6 is the usual advice), a forecast for the year's end and 12
     months out, the 50/30/20 rule (needs / wants / saved — set per category
-    whether it counts as needs), fixed commitments per month and per year,
+    whether it counts as *Bedarf*, *Wünsche* or *Sparen*, so an ETF plan in
+    *Geldanlage* is saved, not spent), fixed commitments per month and per year,
     what was unusual this month, and the best and weakest month;
   - *one month in detail*: what was saved and where the money went, by
     category (paid vs. open) or by payee ("Lidl · 6×").
-- **Settings.** Categories — create (income or expense, default repeat, emoji,
-  colour), edit, drag to reorder, delete (undoable; asks first if entries go with
-  it), *Standard wiederherstellen*. Deutsch / English, light / dark / automatic.
+- **Settings.** Categories — besides the six above, the usual categories of a
+  German banking app are built in, switched off for new months until you want
+  them: *Bekleidung, Einkäufe, Wohnen und Garten, Telekommunikation, Mobilität,
+  Reisen, Freizeit und Unterhaltung, Sport und Hobby, Gesundheit und Wellness,
+  Bildung und Erziehung, Geldanlage, Absicherung und Vorsorge, Bargeld, Steuern
+  und Gebühren, Sonstiges*, each with its own name suggestions. Create your own
+  (income or expense, default repeat, emoji, colour), edit, drag to reorder,
+  delete (undoable; asks first if entries go with it), *Standard
+  wiederherstellen*. Deutsch / English, light / dark / automatic.
 - **Import from Excel.** *Einstellungen → Excel → Aus Excel importieren* (or the
   button on the first month) reads a budget sheet laid out like
   `My_expense.xlsx`: one tab per month ("11.2026"), the categories in row 1,

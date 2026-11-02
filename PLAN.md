@@ -16,7 +16,7 @@ One bank account only, on purpose.
 | Excel | App |
 |---|---|
 | One sheet per month (`10.2026`, `11.2026`) | One **month** per page, ‹ › to switch |
-| Columns *Einkommen, Fixed Kosten, Sonder Kosten, Einkaufen, Auto, Family* | Default **categories** (editable in Settings) |
+| Columns *Einkommen, Fixed Kosten, Sonder Kosten, Einkaufen, Auto, Family* | Default **categories** (editable in Settings); *Einkaufen* is *Lebensmittel und Drogerie*, plus the usual banking-app categories, off for new months by default |
 | Two columns per category: paid (G) and still to pay (H) | Every **entry** is *paid* or *open* (planned) — one tap toggles |
 | `Before` = last month's *Rest in Bank* | **Carry-over** is computed from the previous month, automatically |
 | *Rest in Bank* (paid only) vs *All Rest in Bank* (incl. open) | **Jetzt auf dem Konto** vs **Am Monatsende** |

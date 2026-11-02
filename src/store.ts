@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppData, Category, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
-  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, monthKeyOf, moveEntry as move, normalizeState,
+  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, upgradeCategories, carryOver, computeBalances, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, standardCategoryIds, uid,
 } from './logic';
 import { defaultCategories } from './data/defaults';
@@ -47,7 +47,7 @@ function initialLanguage(): Language {
  * on — not a question.
  */
 function loadInitial(): AppData {
-  const meta = readJson(K.meta) as { seeded?: boolean } | undefined;
+  const meta = readJson(K.meta) as { seeded?: boolean; schemaVersion?: number } | undefined;
   const rawCategories = readJson(K.categories);
   // Not seeded yet: the defaults go in *before* normalising, or entries from
   // a half-written first launch would all be filed under "Sonstiges".
@@ -57,6 +57,8 @@ function loadInitial(): AppData {
     entries: readJson(K.entries),
     months: readJson(K.months),
   });
+  // Saved by an older version: new built-in categories, updated looks.
+  if (!missing && (meta?.schemaVersion ?? 1) < 2) data.categories = upgradeCategories(data.categories);
   if (meta?.seeded || data.months.length) return data;
   return { ...data, months: [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(data.categories) }] };
 }
@@ -153,7 +155,7 @@ export function useAppStore() {
 
   /** Patch one month's category list; a month from before lists starts as "all of them". */
   const patchMonthCategories = (key: MonthKey, fn: (ids: string[]) => string[]) =>
-    setMonths(prev => prev.map(m => (m.key === key ? { ...m, categories: fn(m.categories ?? categories.map(c => c.id)) } : m)));
+    setMonths(prev => prev.map(m => (m.key === key ? { ...m, categories: fn(m.categories ?? standardCategoryIds(categories)) } : m)));
 
   /** Take an empty category out of one month. Refuses (false) while it has entries there. */
   const hideCategory = (key: MonthKey, categoryId: string): boolean => {

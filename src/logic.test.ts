@@ -3,10 +3,10 @@ import {
   addMonths, amountToInput, averageByCategory, balanceFor, canRemoveFromMonth, carryCandidates, carryOver, categoryBreakdown,
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
-  restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames,
+  restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, upgradeCategories,
 } from './logic';
 import { defaultCategories } from './data/defaults';
-import { AppData, Entry } from './types';
+import { AppData, Category, Entry } from './types';
 
 const cats = defaultCategories();
 let n = 0;
@@ -330,8 +330,11 @@ describe('categories per month', () => {
   const extra = e('2026-11', 'extra', 'Amazon', 2000, true);
   const base = (months: AppData['months']): AppData => ({ categories: cats, entries: [extra], months });
 
-  it('shows every category in a month from before per-month lists', () => {
-    expect(monthCategories(base([{ key: '2026-11', startedAt: 0 }]), '2026-11').map(c => c.id)).toEqual(cats.map(c => c.id));
+  it('shows the standard categories (and any with entries) in a month without its own list', () => {
+    const ids = monthCategories(base([{ key: '2026-11', startedAt: 0 }]), '2026-11').map(c => c.id);
+    expect(ids).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'family']);
+    const withCash = { ...base([{ key: '2026-11', startedAt: 0 }]), entries: [extra, e('2026-11', 'cash', 'Geldautomat', 5000, true)] };
+    expect(monthCategories(withCash, '2026-11').map(c => c.id)).toEqual([...ids, 'cash']);
   });
   it('shows the month’s own list plus anything with entries, in category order', () => {
     const d = base([{ key: '2026-11', startedAt: 0, categories: ['fixed', 'income'] }]);
@@ -377,5 +380,53 @@ describe('dragging entries', () => {
   it('carries the order into the next month', () => {
     const [copy] = carryOver([{ ...gym, repeat: 'monthly', order: 0 }], '2026-12', 1, () => 'c');
     expect(copy.order).toBe(0);
+  });
+});
+
+describe('upgrading categories saved before schema 2', () => {
+  // What a first launch of version 1 stored.
+  const v1 = (): Category[] => [
+    { id: 'income', names: { de: 'Einkommen', en: 'Income' }, emoji: '💶', hue: 'leaf' as const, kind: 'income' as const, repeat: 'monthly' as const, builtin: true },
+    { id: 'fixed', names: { de: 'Fixkosten', en: 'Fixed costs' }, emoji: '🏠', hue: 'sky' as const, kind: 'expense' as const, repeat: 'monthly' as const, budget: 'need' as const, builtin: true },
+    { id: 'extra', names: { de: 'Sonderkosten', en: 'Extras' }, emoji: '🛍️', hue: 'lavender' as const, kind: 'expense' as const, repeat: 'none' as const, budget: 'want' as const, builtin: true },
+    { id: 'groceries', names: { de: 'Einkaufen', en: 'Groceries' }, emoji: '🛒', hue: 'lime' as const, kind: 'expense' as const, repeat: 'none' as const, budget: 'need' as const, builtin: true },
+  ];
+
+  it('adds the new built-ins, not in new months, and updates what the user left as shipped', () => {
+    const up = upgradeCategories(v1());
+    expect(up.slice(0, 4).map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries']);
+    expect(up.find(c => c.id === 'groceries')!.names).toEqual({ de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore' });
+    expect(up.find(c => c.id === 'extra')!.emoji).toBe('🧾');
+    expect(up.map(c => c.id).slice(4)).toEqual([
+      'clothing', 'shopping', 'home', 'telecom', 'mobility', 'travel', 'leisure', 'sport', 'health', 'education',
+      'investment', 'insurance', 'cash', 'taxes', 'other',
+    ]);
+    expect(standardCategoryIds(up)).toEqual(['income', 'fixed', 'extra', 'groceries']);
+    expect(up.find(c => c.id === 'investment')!.budget).toBe('save');
+  });
+  it('keeps what the user renamed or repainted, and the user’s own categories', () => {
+    const mine = v1();
+    mine[3] = { ...mine[3], names: { de: 'Supermarkt' } };
+    mine[2] = { ...mine[2], emoji: '✨' };
+    const own = { id: 'pets', names: { de: 'Haustier' }, emoji: '🐾', hue: 'sand' as const, kind: 'expense' as const, repeat: 'none' as const };
+    const up = upgradeCategories([...mine, own]);
+    expect(up.find(c => c.id === 'groceries')!.names).toEqual({ de: 'Supermarkt' });
+    expect(up.find(c => c.id === 'extra')!.emoji).toBe('✨');
+    expect(up[4]).toEqual(own);
+  });
+  it('puts the new ones before an existing “Sonstiges”, and is a no-op the second time', () => {
+    const fallback = { id: 'other', names: { de: 'Sonstiges', en: 'Other' }, emoji: '📦', hue: 'stone' as const, kind: 'expense' as const, repeat: 'none' as const };
+    const up = upgradeCategories([...v1(), fallback]);
+    expect(up[up.length - 1].id).toBe('other');
+    expect(up.filter(c => c.id === 'other')).toHaveLength(1);
+    expect(upgradeCategories(up)).toEqual(up);
+    expect(upgradeCategories([])).toEqual([]);
+  });
+  it('runs on a backup from version 1, not on a current one', () => {
+    const old = { app: 'spartopf', schemaVersion: 1, categories: v1(), entries: [], months: [] };
+    const parsed = parseBackup(JSON.stringify(old));
+    expect(parsed.ok && parsed.data.categories.length).toBe(19);
+    const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 2 }));
+    expect(current.ok && current.data.categories.length).toBe(4);
   });
 });

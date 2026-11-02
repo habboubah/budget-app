@@ -1,10 +1,10 @@
 import {
   AppData, Backup, Category, CategoryKind, Entry, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
 } from './types';
-import { NAME_SUGGESTIONS, OTHER_CATEGORY } from './data/defaults';
+import { NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, defaultCategories } from './data/defaults';
 
 /** Bump when a stored shape changes, and migrate in `normalizeState`. */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -188,11 +188,11 @@ export function standardCategoryIds(categories: Category[]): string[] {
 /**
  * The categories a month shows, in the user's order: the ones in the month's
  * own list, plus any that have entries in it — a category with money in it
- * never disappears. A month from before per-month lists shows them all.
+ * never disappears. A month without a list of its own (from before per-month
+ * lists, or an Excel import) shows the standard ones.
  */
 export function monthCategories(data: AppData, key: MonthKey): Category[] {
-  const list = data.months.find(m => m.key === key)?.categories;
-  if (!list) return data.categories;
+  const list = data.months.find(m => m.key === key)?.categories ?? standardCategoryIds(data.categories);
   const shown = new Set(list);
   for (const e of data.entries) if (e.month === key) shown.add(e.categoryId);
   return data.categories.filter(c => shown.has(c.id));
@@ -572,7 +572,7 @@ function normalizeCategory(v: unknown): Category | null {
     hue: isHue(v.hue) ? v.hue : 'stone',
     kind: v.kind === 'income' ? 'income' : 'expense',
     repeat: isRepeat(v.repeat) ? v.repeat : 'none',
-    ...(v.budget === 'need' || v.budget === 'want' ? { budget: v.budget } : {}),
+    ...(v.budget === 'need' || v.budget === 'want' || v.budget === 'save' ? { budget: v.budget } : {}),
     ...(v.standard === false ? { standard: false } : {}),
     ...(v.builtin === true ? { builtin: true } : {}),
   };
@@ -640,6 +640,34 @@ export function normalizeState(raw: unknown): AppData {
   return { categories, entries, months };
 }
 
+const sameNames = (a: Names, b: Names) =>
+  Object.keys(a).length > 0 && Object.entries(a).every(([lang, n]) => b[lang] === n);
+
+/**
+ * Categories saved before schema 2, brought up to date once: the new built-in
+ * categories are added (before "Sonstiges" if it is there, else at the end;
+ * not in any month), and a built-in whose name or emoji changed gets the new
+ * one — only where the user still has exactly what the app shipped, so
+ * nothing they renamed or repainted is touched. An empty list stays empty.
+ */
+export function upgradeCategories(categories: Category[]): Category[] {
+  if (!categories.length) return categories;
+  const shipped = new Map(defaultCategories().map(c => [c.id, c]));
+  const out = categories.map(c => {
+    const now = shipped.get(c.id);
+    if (!now) return c;
+    const old = SHIPPED_V1[c.id];
+    const next: Category = { ...c, builtin: true };
+    if (old?.names && sameNames(c.names, old.names)) next.names = { ...now.names };
+    if (old?.emoji && c.emoji === old.emoji) next.emoji = now.emoji;
+    return next;
+  });
+  const have = new Set(out.map(c => c.id));
+  const added = NEW_IN_V2.filter(id => !have.has(id)).map(id => shipped.get(id)!);
+  const other = out.findIndex(c => c.id === OTHER_CATEGORY.id);
+  return other < 0 ? [...out, ...added] : [...out.slice(0, other), ...added, ...out.slice(other)];
+}
+
 export function makeBackup(data: AppData, now = new Date()): Backup {
   return { app: 'spartopf', schemaVersion: SCHEMA_VERSION, exportedAt: now.toISOString(), ...data };
 }
@@ -650,7 +678,9 @@ export function parseBackup(text: string): { ok: true; data: AppData } | { ok: f
   try { raw = JSON.parse(text); } catch { return { ok: false, error: 'backupInvalid' }; }
   if (!isObj(raw) || raw.app !== 'spartopf' || !Array.isArray(raw.entries)) return { ok: false, error: 'backupInvalid' };
   if (typeof raw.schemaVersion === 'number' && raw.schemaVersion > SCHEMA_VERSION) return { ok: false, error: 'backupTooNew' };
-  return { ok: true, data: normalizeState(raw) };
+  const data = normalizeState(raw);
+  const version = typeof raw.schemaVersion === 'number' ? raw.schemaVersion : 1;
+  return { ok: true, data: version < 2 ? { ...data, categories: upgradeCategories(data.categories) } : data };
 }
 
 /**

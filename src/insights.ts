@@ -130,11 +130,11 @@ export interface BudgetSplit {
   income: number;
   needs: number;
   wants: number;
-  /** income − needs − wants; negative when more went out than came in. */
+  /** income − needs − wants (money moved into savings counts here); negative when more went out than came in. */
   saved: number;
 }
 
-/** 50/30/20: the average month split into needs, wants and what was left. */
+/** 50/30/20: the average month split into needs, wants and what was left or put aside. */
 export function budgetSplit(entries: Entry[], categories: Category[], months: MonthKey[]): BudgetSplit {
   const inRange = new Set(months);
   const byId = new Map(categories.map(c => [c.id, c]));
@@ -147,7 +147,8 @@ export function budgetSplit(entries: Entry[], categories: Category[], months: Mo
     if (!c) continue;
     if (c.kind === 'income') income += e.amount;
     else if (budgetOf(c) === 'need') needs += e.amount;
-    else wants += e.amount;
+    else if (budgetOf(c) === 'want') wants += e.amount;
+    // 'save' (an ETF plan, a savings account): not spent — it stays in `saved`.
   }
   const n = Math.max(1, months.length);
   const out = { income: Math.round(income / n), needs: Math.round(needs / n), wants: Math.round(wants / n) };

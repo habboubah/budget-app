@@ -90,7 +90,7 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
               label={t.budgetKind}
               value={budget}
               onChange={setBudget}
-              options={[{ value: 'need', label: t.budgetNeed }, { value: 'want', label: t.budgetWant }]}
+              options={[{ value: 'need', label: t.budgetNeed }, { value: 'want', label: t.budgetWant }, { value: 'save', label: t.budgetSave }]}
             />
             <p className="text-caption text-fg-mute mt-1.5 px-1 wrap-prose">{t.budgetKindHint}</p>
           </div>
