@@ -1,30 +1,28 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Spartopf design tokens — "Haushaltsbuch"
+   Spartopf design tokens — calm, native iOS
    ----------------------------------------------------------------------------
-   The household book on the kitchen table: warm paper, white pages with a
-   hairline edge, near-black ink and one deep petrol for actions. Money has
-   exactly three colours and they always mean the same thing:
+   Built like an iPhone app of today: the grouped grey background with white
+   cards (true black with graphite cards at night), Apple's system font — SF
+   Pro, with SF Rounded for the money amounts — one petrol tint taken from the
+   app icon for everything you can tap, and generous radii.
+
+   Money has exactly three colours and they always mean the same thing:
      pos   — money coming in (income, a positive balance change).
-     neg   — money going out that leaves you short (a negative balance).
+     neg   — money going out that leaves you short, or a bill overdue.
      warn  — still open: a bill not paid yet, income not received yet.
    Everything else stays neutral, so the eye only stops where it should.
 
-   hero — the dark petrol card at the top of a month with the two balances,
-   "jetzt" and "Monatsende". The one place the app turns up the contrast,
-   because it is the number you open the app for. Its progress bar is coin
-   gold (hero-bar): how much of the month's bills are already paid.
-
    Three neutral layers per theme:
-     bg         — the table the book lies on.
-     surface    — a page: a category card, a sheet, a group of rows.
-     surface-2  — a well inside a page: inputs, chips, segmented tracks.
+     bg         — the grouped background behind everything.
+     surface    — a card, a sheet, a group of rows; the floating tab bar.
+     surface-2  — a fill inside a card: inputs, chips, segmented tracks.
 
    The accent has two tunings:
-     accent       — as *text* on a page (links, back chevron, ghost buttons).
+     accent       — as *text* on a page (links, nav buttons, the add row).
      accent-fill  — as a *fill* with its own ink (primary buttons, the add
-                    button, a paid tick).
+                    button, a paid tick, progress).
 
    Theme: data-theme = light | dark on <html>, set by store.ts.
    Category hue: data-hue = one of the HUES in src/types.ts on the element; it
@@ -33,7 +31,10 @@
 
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Bricolage Grotesque Variable", var(--font-sans);
+  /* SF Pro Display: the system face, which switches to its display cut by itself at large sizes. */
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
+  /* SF Rounded for big money, as in Wallet and Fitness; elsewhere the system face. */
+  --font-rounded: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
   --font-emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 
   --color-bg:        var(--t-bg);
@@ -58,6 +59,14 @@
   --color-warn:     var(--t-warn);
   --color-warn-dim: var(--t-warn-dim);
 
+  /* White ink on a saturated fill (swipe actions, settings icon tiles), in both themes. */
+  --color-on-color: #FFFFFF;
+
+  /* Swipe actions behind a row: mark paid / open, delete. */
+  --color-swipe-paid:   var(--t-swipe-paid);
+  --color-swipe-open:   var(--t-swipe-open);
+  --color-swipe-delete: var(--t-swipe-delete);
+
   /* Chart series: money in / money out, and the balance line. Validated with
      the dataviz skill's validate_palette.js (CVD + contrast) per theme. */
   --color-chart-in:   var(--t-chart-in);
@@ -66,35 +75,29 @@
   --color-chart-want: var(--t-chart-want);
   --color-chart-label: var(--t-chart-label);
 
-  --color-hero:       var(--t-hero);
-  --color-hero-ink:   var(--t-hero-ink);
-  --color-hero-mute:  var(--t-hero-mute);
-  --color-hero-track: var(--t-hero-track);
-  --color-hero-bar:   var(--t-hero-bar);
-  --color-hero-pos:   var(--t-hero-pos);
-  --color-hero-neg:   var(--t-hero-neg);
-  --color-hero-warn:  var(--t-hero-warn);
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
 
-  --radius-sm: 14px;
-  --radius-md: 18px;
-  --radius-lg: 22px;
-
-  --shadow-e1: 0 1px 2px var(--t-shadow-1), 0 4px 14px var(--t-shadow-1);
-  --shadow-e2: 0 10px 28px var(--t-shadow-2), 0 2px 6px var(--t-shadow-1);
+  --shadow-e1: 0 1px 2px var(--t-shadow-1), 0 2px 10px var(--t-shadow-1);
+  --shadow-e2: 0 8px 30px var(--t-shadow-2), 0 1px 4px var(--t-shadow-1);
   --shadow-e3: 0 -10px 36px var(--t-shadow-2);
 
-  /* Type scale in rem so it follows Dynamic Type (see dynamicType.ts):
-     micro 11 · caption 13 · label 15 · body 17 · heading 20 · title · display. */
-  --text-micro: 0.6875rem;   --text-micro--line-height: 0.875rem;
+  /* Type scale in rem so it follows Dynamic Type (see dynamicType.ts), on
+     Apple's text styles: micro 11 (caption 2) · caption 13 (footnote) ·
+     label 15 (subheadline) · body 17 · heading 20 (title 3) · title2 22 ·
+     title 34 (large title) · display (the balance). */
+  --text-micro: 0.6875rem;   --text-micro--line-height: 0.8125rem;
   --text-caption: 0.8125rem; --text-caption--line-height: 1.125rem;
   --text-label: 0.9375rem;   --text-label--line-height: 1.25rem;
-  --text-body: 1.0625rem;    --text-body--line-height: 1.5rem;
-  --text-heading: 1.25rem;   --text-heading--line-height: 1.625rem;
-  --text-title: clamp(30px, 10vw, 40px);     --text-title--line-height: 1.05;
-  --text-display: clamp(34px, 11vw, 46px);   --text-display--line-height: 1;
+  --text-body: 1.0625rem;    --text-body--line-height: 1.375rem;
+  --text-heading: 1.25rem;   --text-heading--line-height: 1.5625rem;
+  --text-title2: 1.375rem;   --text-title2--line-height: 1.75rem;
+  --text-title: 2.125rem;    --text-title--line-height: 2.5rem;
+  --text-display: clamp(36px, 11vw, 44px);   --text-display--line-height: 1.05;
 
   /* Minimum touch target. Physical on purpose: it must not grow with text. */
-  --spacing-tap: 48px;
+  --spacing-tap: 44px;
 }
 
 /* `inline` so the utilities read the variable where they are *used*: a
@@ -111,47 +114,44 @@
 /* ============ Day ========================================================= */
 :root,
 [data-theme="light"] {
-  --t-bg:        #F5F4F0;
+  --t-bg:        #F2F2F7;
   --t-surface:   #FFFFFF;
-  --t-surface-2: #EEEDE8;
-  --t-hairline:  #E3E1DA;
+  --t-surface-2: #EFEFF2;
+  --t-hairline:  #E2E2E7;
   --t-raised:    #FFFFFF;
+  /* The barely-there edge of a card on the grouped background. */
+  --t-card-line: rgba(0, 0, 0, 0.04);
 
-  --t-fg:        #16191C;
-  --t-fg-mute:   #575D63;
-  --t-fg-faint:  #686E74;
+  --t-fg:        #111114;
+  --t-fg-mute:   #6C6C70;
+  --t-fg-faint:  #8E8E93;
 
-  --t-accent:          #155E6E;
-  --t-accent-dim:      rgba(21, 94, 110, 0.10);
-  --t-accent-fill:     #155E6E;
+  --t-accent:          #0A7285;
+  --t-accent-dim:      rgba(10, 114, 133, 0.10);
+  --t-accent-fill:     #0A7285;
   --t-accent-fill-ink: #FFFFFF;
 
-  --t-pos:      #1D6B43;
-  --t-pos-dim:  rgba(29, 107, 67, 0.10);
-  --t-neg:      #A3241C;
-  --t-neg-dim:  rgba(163, 36, 28, 0.08);
-  --t-warn:     #8A5300;
-  --t-warn-dim: #FFF0D0;
+  --t-pos:      #1E7F3B;
+  --t-pos-dim:  rgba(52, 199, 89, 0.14);
+  --t-neg:      #C8231B;
+  --t-neg-dim:  rgba(255, 59, 48, 0.10);
+  --t-warn:     #B04A00;
+  --t-warn-dim: rgba(255, 149, 0, 0.14);
+
+  --t-swipe-paid:   #248A3D;
+  --t-swipe-open:   #8E8E93;
+  --t-swipe-delete: #E5302A;
 
   --t-chart-in:   #22874F;
   --t-chart-out:  #4E66B8;
-  --t-chart-line: #155E6E;
+  --t-chart-line: #0A7285;
   --t-chart-want: #AD5C15;
   /* Text inside a filled chart block: white on the darker day fills, near-black on the lighter night fills. */
   --t-chart-label: #FFFFFF;
 
-  --t-hero:       #10313A;
-  --t-hero-ink:   #FFFFFF;
-  --t-hero-mute:  #A9D3DB;
-  --t-hero-track: rgba(255, 255, 255, 0.16);
-  --t-hero-bar:   #F2C14E;
-  --t-hero-pos:   #8EE0B1;
-  --t-hero-neg:   #FFA79E;
-  --t-hero-warn:  #F7CF74;
-
-  --t-scrim:    rgba(22, 25, 28, 0.42);
-  --t-shadow-1: rgba(22, 25, 28, 0.04);
-  --t-shadow-2: rgba(22, 25, 28, 0.14);
+  --t-scrim:    rgba(0, 0, 0, 0.32);
+  --t-shadow-1: rgba(0, 0, 0, 0.04);
+  --t-shadow-2: rgba(0, 0, 0, 0.12);
 
   --t-tomato-bg: #FFE1DA;   --t-tomato-ink: #9E2F1F;
   --t-carrot-bg: #FFE6CC;   --t-carrot-ink: #8F4A0E;
@@ -165,7 +165,7 @@
   --t-plum-bg: #F3DDF3;     --t-plum-ink: #833A84;
   --t-berry-bg: #FFDDE8;    --t-berry-ink: #A12B5A;
   --t-sand-bg: #F1E7D3;     --t-sand-ink: #6E5530;
-  --t-stone-bg: #E6E6E1;    --t-stone-ink: #4E524D;
+  --t-stone-bg: #E8E8EC;    --t-stone-ink: #4E524D;
 
   /* Chart marks per hue (generated in OKLCH; the six default categories pass
      validate_palette.js for CVD separation and contrast). */
@@ -188,46 +188,42 @@
 
 /* ============ Night ======================================================= */
 [data-theme="dark"] {
-  --t-bg:        #0E1112;
-  --t-surface:   #171B1D;
-  --t-surface-2: #22282B;
-  --t-hairline:  #2C3336;
-  --t-raised:    #2A3135;
+  --t-bg:        #000000;
+  --t-surface:   #1C1C1E;
+  --t-surface-2: #2C2C2E;
+  --t-hairline:  #38383A;
+  --t-raised:    #636366;
+  --t-card-line: transparent;
 
-  --t-fg:        #EEF1F2;
-  --t-fg-mute:   #AEB6BA;
-  --t-fg-faint:  #939BA0;
+  --t-fg:        #FFFFFF;
+  --t-fg-mute:   #AEAEB2;
+  --t-fg-faint:  #8E8E93;
 
-  --t-accent:          #7FCFDC;
-  --t-accent-dim:      rgba(127, 207, 220, 0.14);
-  --t-accent-fill:     #7FCFDC;
-  --t-accent-fill-ink: #06191D;
+  --t-accent:          #5AC8D8;
+  --t-accent-dim:      rgba(90, 200, 216, 0.16);
+  --t-accent-fill:     #5AC8D8;
+  --t-accent-fill-ink: #00262D;
 
-  --t-pos:      #7FD3A0;
-  --t-pos-dim:  rgba(127, 211, 160, 0.14);
-  --t-neg:      #FF8A80;
-  --t-neg-dim:  rgba(255, 138, 128, 0.14);
-  --t-warn:     #F3C969;
-  --t-warn-dim: rgba(243, 201, 105, 0.14);
+  --t-pos:      #4CD07D;
+  --t-pos-dim:  rgba(48, 209, 88, 0.16);
+  --t-neg:      #FF6B61;
+  --t-neg-dim:  rgba(255, 69, 58, 0.16);
+  --t-warn:     #FFA941;
+  --t-warn-dim: rgba(255, 159, 10, 0.16);
+
+  --t-swipe-paid:   #30A14E;
+  --t-swipe-open:   #636366;
+  --t-swipe-delete: #E5302A;
 
   --t-chart-in:   #3A9E66;
   --t-chart-out:  #6F7FD0;
-  --t-chart-line: #7FCFDC;
+  --t-chart-line: #5AC8D8;
   --t-chart-want: #D27830;
-  --t-chart-label: #0E1112;
+  --t-chart-label: #000000;
 
-  --t-hero:       #12343D;
-  --t-hero-ink:   #EEF1F2;
-  --t-hero-mute:  #A2CBD3;
-  --t-hero-track: rgba(255, 255, 255, 0.14);
-  --t-hero-bar:   #F2C14E;
-  --t-hero-pos:   #8EE0B1;
-  --t-hero-neg:   #FFA79E;
-  --t-hero-warn:  #F7CF74;
-
-  --t-scrim:    rgba(0, 0, 0, 0.55);
-  --t-shadow-1: rgba(0, 0, 0, 0.25);
-  --t-shadow-2: rgba(0, 0, 0, 0.45);
+  --t-scrim:    rgba(0, 0, 0, 0.6);
+  --t-shadow-1: rgba(0, 0, 0, 0.3);
+  --t-shadow-2: rgba(0, 0, 0, 0.5);
 
   --t-tomato-bg: #3B2420;   --t-tomato-ink: #FFB3A6;
   --t-carrot-bg: #3A2A1B;   --t-carrot-ink: #FFC48A;
@@ -241,7 +237,7 @@
   --t-plum-bg: #36233A;     --t-plum-ink: #EBB2EC;
   --t-berry-bg: #3A1F2A;    --t-berry-ink: #FFADC8;
   --t-sand-bg: #332B1F;     --t-sand-ink: #E6D1AC;
-  --t-stone-bg: #2A2B29;    --t-stone-ink: #CFD0CB;
+  --t-stone-bg: #2C2C2E;    --t-stone-ink: #D1D1D6;
 
   --t-tomato-chart: #DB6D60;
   --t-carrot-chart: #D27830;
@@ -290,22 +286,30 @@
 
 @utility pb-safe-8 { padding-bottom: calc(2rem + env(safe-area-inset-bottom)); }
 @utility inset-safe-bottom-6 { bottom: calc(24px + env(safe-area-inset-bottom)); }
-/* Clears a bottom bar that floats above the home indicator (the add bar, the FAB). */
+/* Clears a bottom bar that floats above the home indicator. */
 @utility pb-safe-dock { padding-bottom: calc(132px + env(safe-area-inset-bottom)); }
-/* Clears the tab bar, plus the round add button that floats above it. */
-@utility pb-safe-tabs { padding-bottom: calc(168px + env(safe-area-inset-bottom)); }
-/* Above the tab bar. */
-@utility bottom-above-tabs { bottom: calc(76px + env(safe-area-inset-bottom)); }
+/* Clears the floating tab bar (62px + its gap above the home indicator). */
+@utility pb-safe-tabs { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
+/* Just above the floating tab bar. */
+@utility bottom-above-tabs { bottom: calc(86px + env(safe-area-inset-bottom)); }
 
 @utility scrim { background-color: var(--t-scrim); }
 
-/* The display voice: titles, category names, buttons and the big amounts.
-   Sentence case — the face is friendly enough on its own, and German
-   compounds stay readable. */
+/* Titles and headings: SF Pro Display with Apple's size-specific tracking —
+   tighter as the type grows. */
 @utility display {
   font-family: var(--font-display);
   font-optical-sizing: auto;
+  letter-spacing: -0.015em;
+}
+
+/* Money you read at a glance (the balance, category totals, the amount being
+   typed): SF Rounded, tabular, slightly tightened. */
+@utility rounded-num {
+  font-family: var(--font-rounded);
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
+  direction: ltr;
 }
 
 /* Every emoji — category pictures — goes through this, so a platform
@@ -321,13 +325,13 @@
   direction: ltr;
 }
 
-/* Small uppercase label over a group: "Jetzt auf dem Konto", section captions. */
+/* The small label over a value or a group: "Jetzt auf dem Konto", section
+   captions. Sentence case, like iOS's own section headers today. */
 @utility eyebrow {
-  font-size: clamp(11px, 0.75rem, 16px);
+  font-size: clamp(12px, 0.8125rem, 17px);
   line-height: 1.3;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 /* Fades the content out under a docked bottom bar. A gradient, not a blur:
@@ -336,9 +340,27 @@
   background: linear-gradient(to bottom, transparent, var(--t-bg) 40%);
 }
 
+/* A card on the grouped background: no border, no shadow — just a whisper of
+   an edge by day, nothing at night (graphite on black is enough). */
+/* Where scrolling content meets the bar at the top: a short fade to the page. */
+@utility edge-fade-top {
+  background: linear-gradient(to bottom, var(--t-bg), transparent);
+}
+/* Behind the floating tab bar: the list fades out instead of being cut. */
+@utility edge-fade-bottom {
+  background: linear-gradient(to top, var(--t-bg) 35%, transparent);
+}
+
 @utility card-edge {
-  border: 1px solid var(--t-hairline);
-  box-shadow: var(--shadow-e1);
+  box-shadow: 0 0 0 0.5px var(--t-card-line);
+}
+
+/* Floating chrome (the tab bar, nav buttons, the add button): lifted off the
+   page with a soft shadow. Solid, not blurred — backdrop-filter over a
+   scrolling list is the most expensive thing to ask of a WebView. */
+@utility float-chrome {
+  background: var(--t-surface);
+  box-shadow: 0 0 0 0.5px var(--t-hairline), 0 6px 24px var(--t-shadow-2);
 }
 
 @utility ring-focus {
@@ -394,6 +416,7 @@
   body {
     @apply bg-bg text-fg antialiased;
     font-size: 1.0625rem;
+    letter-spacing: -0.005em;
     overscroll-behavior-y: none;
   }
   input, select, button, textarea {

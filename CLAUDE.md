@@ -91,13 +91,29 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
 - Money and dates are formatted with `t.locale` (`de-DE` → `1.050,00 €`).
 - Long German compounds get `wrap-compound`, never `truncate`.
 
-## Styling
+## Styling — calm, native iOS
+- The look is today's iOS: grouped grey background with white cards (black
+  with graphite cards at night), large titles, a floating capsule tab bar,
+  round floating nav buttons, swipe actions. Read the `apple-design` skill
+  before changing interaction or motion.
 - Tailwind utilities inline. **All colours come from tokens in
-  `src/index.css`** — never a literal hex in a component.
+  `src/index.css`** — never a literal hex in a component (`text-on-color` is
+  the white ink on saturated fills).
 - Surfaces `bg-bg` / `bg-surface` / `bg-surface-2`, text `text-fg` /
   `text-fg-mute` / `text-fg-faint`, action `text-accent` / `bg-accent-fill`
-  + `text-accent-fill-ink`. The balance card is `bg-hero` with
-  `text-hero-ink` / `text-hero-mute`.
+  + `text-accent-fill-ink`. Cards are `rounded-md bg-surface card-edge` — no
+  border, no shadow. Floating chrome (tab bar, nav buttons) is `float-chrome`.
+- Type is Apple's system font: `display` for titles (large title
+  `text-title`, sections `text-title2`, card headings `text-heading
+  font-semibold`); `rounded-num` (SF Rounded, tabular) for money read at a
+  glance — the balance, category totals, the amount being typed, key figures
+  in the statistics. `eyebrow` is a sentence-case caption, not uppercase.
+- Rows: status in words in the grey detail line (*offen*, *erwartet*,
+  *überfällig*), never pill badges; open amounts `text-fg-mute`, like a pending
+  card payment. Swipe actions come from `ui/SwipeRow` (touch only — the mouse
+  drags to sort); everything a swipe does must also be reachable without it.
+- Navigation: tapping the month's name opens `MonthPickerSheet`; ‹ › sit in
+  one floating capsule. The add button lives in the tab bar (`TabBar add`).
 - Money colours mean one thing each: `text-pos` income / plus, `text-neg`
   a negative balance or overdue, `text-warn` (+ `bg-warn-dim`) *open*. Expenses
   themselves are plain `text-fg` — a bill is not an error.
@@ -108,8 +124,9 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
 - Type scale in rem (follows Dynamic Type); touch targets in px
   (`min-h-control`, `h-tap`, `w-tap`).
 - Emoji always through the `emoji` utility (or `ui/Picture`).
-- No `hover:` styles (sticky on touch), no `backdrop-filter`, no
-  `filter: blur` on scrolling content.
+- No `hover:` styles (sticky on touch), no `backdrop-filter` (a gradient
+  fade — `edge-fade-top` / `edge-fade-bottom` — stands in for iOS's blurred
+  scroll edges), no `filter: blur` on scrolling content.
 - Anything fixed to the bottom pads with `safe-bottom`; the tab bar is fixed,
   so tab screens use `<Screen tabbed>`.
 

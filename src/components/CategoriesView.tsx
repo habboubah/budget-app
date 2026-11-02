@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Reorder, useDragControls } from 'motion/react';
 import { GripVertical, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
@@ -57,7 +57,8 @@ export function CategoriesView({ categories, entries, language, t, onBack, onEdi
           action={<Button icon={RotateCcw} onClick={() => setConfirmRestore(true)}>{t.restoreDefaults}</Button>}
         />
       ) : (
-        <Reorder.Group axis="y" values={ids} onReorder={onReorder} className="space-y-2">
+        // One grouped list, iOS style; no overflow clipping, so a lifted row can leave it while dragged.
+        <Reorder.Group axis="y" values={ids} onReorder={onReorder} className="rounded-md bg-surface card-edge divide-hairline-inset" style={{ '--sep': '96px' } as React.CSSProperties}>
           {categories.map((c, i) => (
             <CategoryRow
               key={c.id}
@@ -114,8 +115,8 @@ function CategoryRow({ category: c, count, language, t, onEdit, onDelete, onStan
       dragListener={false}
       dragControls={controls}
       data-hue={c.hue}
-      className="relative flex items-center gap-1 rounded-md bg-surface card-edge ps-1 pe-1 py-1 select-none"
-      whileDrag={{ scale: 1.03, boxShadow: 'var(--shadow-e2)' }}
+      className="relative flex items-center gap-1 bg-surface ps-1 pe-1 py-1 select-none first:rounded-t-md last:rounded-b-md"
+      whileDrag={{ scale: 1.03, boxShadow: 'var(--shadow-e2)', borderRadius: 16, zIndex: 10 }}
     >
       <button
         type="button"
@@ -136,14 +137,15 @@ function CategoryRow({ category: c, count, language, t, onEdit, onDelete, onStan
         aria-label={`${t.editCategory}: ${name}, ${sub}`}
         className="flex-1 min-w-0 py-1.5 flex items-center gap-3 text-start rounded-sm active:opacity-60 transition-opacity focus-visible:ring-focus"
       >
-        <Picture emoji={c.emoji} name={name} size="md" />
+        <Picture emoji={c.emoji} name={name} size="sm" />
         <span className="flex-1 min-w-0">
-          <span className="block display text-body font-bold text-fg wrap-compound">{name}</span>
+          <span className="block display text-body font-semibold text-fg wrap-compound">{name}</span>
           <span className="block text-caption text-fg-mute">{sub}</span>
         </span>
       </button>
       <Switch checked={standard} onChange={onStandard} label={fmt(t.inNewMonthsNamed, { name })} />
-      <IconButton label={fmt(t.deleteCategoryNamed, { name })} icon={Trash2} tone="danger" onClick={onDelete} />
+      {/* Quiet grey, not red on every row: deleting asks first or can be undone. */}
+      <IconButton label={fmt(t.deleteCategoryNamed, { name })} icon={Trash2} tone="default" onClick={onDelete} />
     </Reorder.Item>
   );
 }

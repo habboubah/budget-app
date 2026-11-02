@@ -24,8 +24,8 @@ export default defineConfig(() => {
           name: 'Spartopf – Haushaltsbuch',
           short_name: 'Spartopf',
           description: 'A simple, private budget book. No account, everything stays on your phone.',
-          theme_color: '#F5F4F0',
-          background_color: '#F5F4F0',
+          theme_color: '#F2F2F7',
+          background_color: '#F2F2F7',
           display: 'standalone',
           orientation: 'portrait',
           icons: [

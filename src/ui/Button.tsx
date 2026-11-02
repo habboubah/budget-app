@@ -17,16 +17,17 @@ interface Props extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'cla
 // button instead of being clipped by it.
 const sizes: Record<Size, string> = {
   md: 'min-h-control py-2 px-5 text-body',
-  lg: 'min-h-chrome py-3 px-6 text-heading',
+  lg: 'min-h-[54px] py-3 px-6 text-body',
 };
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent-fill text-accent-fill-ink shadow-e1',
-  secondary: 'bg-surface-2 text-fg',
+  primary: 'bg-accent-fill text-accent-fill-ink',
+  /** iOS "gray" button: a quiet fill with the tint as its text. */
+  secondary: 'bg-surface-2 text-accent',
   danger: 'bg-neg-dim text-neg',
   ghost: 'bg-transparent text-accent active:bg-accent-dim',
   /** The ink-black call to action: sits beside the petrol one without competing. */
-  ink: 'bg-fg text-bg shadow-e1',
+  ink: 'bg-fg text-bg',
 };
 
 export function Button({
@@ -44,7 +45,7 @@ export function Button({
       onMouseDown={e => e.preventDefault()}
       onClick={e => { if (!disabled) { tapLight(); onClick?.(e); } }}
       className={[
-        'inline-flex items-center justify-center gap-2 rounded-md display font-bold',
+        'inline-flex items-center justify-center gap-2 rounded-full font-semibold',
         'transition-[transform,opacity] duration-100 select-none active:scale-[0.97] focus-visible:ring-focus',
         sizes[size],
         disabled ? 'bg-surface-2 text-fg-faint cursor-not-allowed active:scale-100' : variants[variant],
@@ -62,7 +63,8 @@ interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElem
   /** Required: an unlabelled icon button is invisible to VoiceOver. */
   label: string;
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-  tone?: 'default' | 'accent' | 'danger' | 'filled';
+  /** `glass`: the round floating button of an iOS navigation bar. */
+  tone?: 'default' | 'accent' | 'danger' | 'filled' | 'glass';
   className?: string;
 }
 
@@ -72,6 +74,7 @@ export function IconButton({ label, icon: Icon, tone = 'default', onClick, class
     accent: 'text-accent active:bg-accent-dim',
     danger: 'text-neg active:bg-neg-dim',
     filled: 'bg-surface text-fg card-edge !rounded-sm active:bg-surface-2',
+    glass: 'float-chrome text-fg',
   };
   return (
     <button

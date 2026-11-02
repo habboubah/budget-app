@@ -4,7 +4,7 @@ import { AppData } from '../types';
 import { Strings } from '../translations';
 import { isoDay, makeBackup, parseBackup, toCsv } from '../logic';
 import { downloadFile } from '../export';
-import { Group, Row } from '../ui/Screen';
+import { Group, Row, IconTile } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
 
 /**
@@ -52,12 +52,12 @@ export function BackupGroup({ data, language, t, onImport, onImportExcel, toast 
   return (
     <>
       <Group title={t.backup} footer={t.backupHint}>
-        <Row label={t.exportData} leading={<Download className="w-5 h-5 text-accent" aria-hidden="true" />} onClick={exportNow} />
-        <Row label={t.importData} leading={<Upload className="w-5 h-5 text-accent" aria-hidden="true" />} onClick={() => file.current?.click()} />
+        <Row label={t.exportData} leading={<IconTile icon={Download} hue="blue" />} onClick={exportNow} />
+        <Row label={t.importData} leading={<IconTile icon={Upload} hue="sky" />} onClick={() => file.current?.click()} />
       </Group>
       <Group title={t.excelSection} footer={t.excelHint}>
-        <Row label={t.importExcel} sub={t.importExcelSub} leading={<FileUp className="w-5 h-5 text-accent" aria-hidden="true" />} onClick={onImportExcel} />
-        <Row label={t.exportCsv} leading={<FileDown className="w-5 h-5 text-accent" aria-hidden="true" />} onClick={exportCsv} />
+        <Row label={t.importExcel} sub={t.importExcelSub} leading={<IconTile icon={FileUp} hue="leaf" />} onClick={onImportExcel} />
+        <Row label={t.exportCsv} leading={<IconTile icon={FileDown} hue="mint" />} onClick={exportCsv} />
       </Group>
       <input ref={file} type="file" accept="application/json,.json" className="sr-only" tabIndex={-1} aria-hidden="true"
         onChange={e => void onFile(e.target.files?.[0])} />

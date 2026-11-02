@@ -155,7 +155,7 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
         <div className="text-center pt-1">
           <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
           <div className="mt-1 flex items-baseline justify-center gap-1.5">
-            <span className={`display text-title font-bold ${income ? 'text-pos' : 'text-fg-mute'}`} aria-hidden="true">
+            <span className={`rounded-num text-[32px] font-semibold ${income ? 'text-pos' : 'text-fg-mute'}`} aria-hidden="true">
               {income ? '+' : '−'}
             </span>
             <input
@@ -170,11 +170,10 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
               aria-invalid={showError && amount === null}
               aria-describedby={showError && amount === null ? `${amountId}-err` : undefined}
               style={{ width: `${Math.max(4, amountText.length || 4) + 0.6}ch` }}
-              className="min-w-0 max-w-full bg-transparent display text-display font-bold num text-center text-fg placeholder:text-fg-faint outline-none"
+              className="min-w-0 max-w-full bg-transparent rounded-num text-[clamp(40px,13vw,52px)] leading-[1.15] font-bold text-center text-fg placeholder:text-fg-faint/60 caret-accent outline-none"
             />
-            <span className="display text-title font-bold text-fg-mute" aria-hidden="true">€</span>
+            <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">€</span>
           </div>
-          <div className="mx-auto mt-1 h-0.5 w-40 rounded-full bg-hairline" aria-hidden="true" />
           {showError && amount === null && (
             <p id={`${amountId}-err`} role="alert" className="text-caption text-neg mt-2">{t.amountInvalid}</p>
           )}
@@ -208,7 +207,7 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
                       if (!touched.repeat) setRepeat(s.last.repeat);
                     }
                   }}
-                  className="shrink-0 min-h-[40px] px-4 rounded-full bg-surface-2 text-label font-semibold text-fg active:scale-[0.97] transition-transform focus-visible:ring-focus"
+                  className="shrink-0 min-h-[38px] px-4 rounded-full bg-surface-2 text-label font-medium text-fg active:scale-[0.97] transition-transform focus-visible:ring-focus"
                 >
                   {s.name}
                 </button>
@@ -231,8 +230,8 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
                   aria-checked={on}
                   data-hue={c.hue}
                   onClick={() => pickCategory(c)}
-                  className={`shrink-0 min-h-[44px] ps-2 pe-4 rounded-full inline-flex items-center gap-2 text-label font-semibold border-2 transition-colors focus-visible:ring-focus ${
-                    on ? 'bg-hue-bg text-hue-ink border-current' : 'bg-surface-2 text-fg border-transparent'}`}
+                  className={`shrink-0 min-h-[44px] ps-2 pe-4 rounded-full inline-flex items-center gap-2 text-label border-2 transition-colors focus-visible:ring-focus ${
+                    on ? 'bg-hue-bg text-hue-ink border-current font-semibold' : 'bg-surface-2 text-fg border-transparent font-medium'}`}
                 >
                   <span className="emoji text-[20px]" aria-hidden="true">{c.emoji}</span>
                   {cname}

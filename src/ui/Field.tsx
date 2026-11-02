@@ -20,8 +20,8 @@ export function Field({ label, value, onChange, hideLabel, trailing, autoFocus, 
   }, [autoFocus]);
   return (
     <div>
-      <label htmlFor={id} className={hideLabel ? 'sr-only' : 'block text-caption font-semibold text-fg-mute mb-1.5 px-1'}>{label}</label>
-      <div className="flex items-center gap-2 bg-surface-2 rounded-md px-4 min-h-control focus-within:ring-2 focus-within:ring-accent">
+      <label htmlFor={id} className={hideLabel ? 'sr-only' : 'block eyebrow text-fg-mute mb-1.5 px-1'}>{label}</label>
+      <div className="flex items-center gap-2 bg-surface-2 rounded-sm px-4 min-h-control focus-within:ring-2 focus-within:ring-accent">
         <input
           ref={ref}
           id={id}
@@ -36,7 +36,7 @@ export function Field({ label, value, onChange, hideLabel, trailing, autoFocus, 
   );
 }
 
-/** iOS-style segmented control. */
+/** iOS segmented control: a capsule track with a sliding capsule thumb. */
 export function Segmented<T extends string>({ label, value, options, onChange }: {
   label: string;
   value: T;
@@ -44,7 +44,7 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
   onChange: (v: T) => void;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="flex bg-surface-2 rounded-sm p-1 gap-1">
+    <div role="radiogroup" aria-label={label} className="flex bg-surface-2 rounded-full p-1 gap-1">
       {options.map(o => {
         const on = o.value === value;
         return (
@@ -54,8 +54,8 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
             role="radio"
             aria-checked={on}
             onClick={() => { tapLight(); onChange(o.value); }}
-            className={`flex-1 min-h-[40px] px-2 rounded-[10px] text-label font-semibold transition-colors focus-visible:ring-focus wrap-compound ${
-              on ? 'bg-raised text-fg shadow-e1' : 'text-fg-mute active:bg-raised/60'}`}
+            className={`flex-1 min-h-[38px] px-2 rounded-full text-label transition-colors focus-visible:ring-focus wrap-compound ${
+              on ? 'bg-raised text-fg font-semibold shadow-e1' : 'text-fg font-medium active:bg-raised/60'}`}
           >
             {o.label}
           </button>
@@ -67,5 +67,5 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
 
 /** A small caption above a group of controls inside a sheet. */
 export function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
-  return <label htmlFor={htmlFor} className="block text-caption font-semibold text-fg-mute mb-1.5 px-1">{children}</label>;
+  return <label htmlFor={htmlFor} className="block eyebrow text-fg-mute mb-1.5 px-1">{children}</label>;
 }

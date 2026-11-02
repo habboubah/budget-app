@@ -35,7 +35,7 @@ export function ExcelImportSheet({ plan, fileName, replaced, categories, languag
         <div className="space-y-5">
           <div>
             <p className="text-label text-fg-mute wrap-compound">{fileName}</p>
-            <p className="display text-heading font-bold text-fg mt-0.5">
+            <p className="display text-heading font-semibold text-fg mt-0.5">
               {plural(n, t.excelMonthsOne, t.excelMonthsMany)} · {plural(plan.entryCount, t.entriesOne, t.entriesMany)}
             </p>
             {first && (

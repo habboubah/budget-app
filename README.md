@@ -8,7 +8,13 @@ month, and the two numbers that matter: **what is on the account now** and
 
 ## What it does
 
-- **One month per page.** ‹ › switch months; "Zum aktuellen Monat" jumps back.
+- **Looks and feels like an iPhone app.** Apple's own font (SF Pro, with SF
+  Rounded for the money), the grouped grey background with white cards, a
+  floating tab bar with the add button beside it, swipe actions, light and
+  dark mode.
+- **One month per page.** ‹ › switch months, or tap the month's name to pick
+  any month (each shown with what it ended on); "Zum aktuellen Monat" jumps
+  back.
   The month reads in the order money moves: **Einkommen** first, then
   **Fixkosten**, **Auto**, **Sonderkosten**, **Lebensmittel und Drogerie**,
   **Familie** — each a card with its total and what is still open. Each month
@@ -24,13 +30,14 @@ month, and the two numbers that matter: **what is on the account now** and
   it there (undoable). A line shows where it lands, and the page scrolls along
   near the edges. The order is kept per month and comes along with recurring
   entries. Keyboard: Alt + ↑ / ↓.
-- **Two balances.** *Jetzt auf dem Konto* counts what is paid / received.
-  *Am Monatsende* also counts everything still open. Below them: how many of the
-  month's bills are paid, and the carry-over, income and expenses that add up to
-  the end balance.
-- **Paid or open.** Every entry has a ring in front: dashed = still open (rent
-  not paid yet, salary expected), filled = paid. One tap toggles it. With a due
-  day ("am 14."), open entries turn **überfällig** once the day has passed.
+- **Two balances.** *Jetzt auf dem Konto* counts what is paid / received, with
+  a ring for how many of the month's bills are paid. Below it the month reads
+  like a sum — carry-over, income, expenses — down to *Am Monatsende*, which
+  also counts everything still open.
+- **Paid or open.** Every entry has a circle in front: empty = still open (rent
+  not paid yet, salary expected), filled = paid. One tap toggles it — or swipe
+  the entry to the right. Swipe left to delete (undoable). With a due day
+  ("am 14."), open entries turn **überfällig** once the day has passed.
 - **Fast entry.** The amount comes first (German or English number format both
   work: `1.050,00`, `45,12`, `12.5`). Name suggestions come from earlier months
   and a built-in list per category; tapping "Miete" fills in last month's amount

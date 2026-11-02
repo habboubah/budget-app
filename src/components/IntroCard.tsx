@@ -18,7 +18,7 @@ export function IntroCard({ t, needsStart, onStartingBalance, onImportExcel, onD
   const steps = [t.introStep1, t.introStep2, t.introStep3, t.introStep4, t.introStep5];
   return (
     <section className="rounded-md bg-surface card-edge p-5" aria-labelledby="intro-title">
-      <h2 id="intro-title" className="display text-heading font-bold text-fg wrap-compound">{t.introTitle}</h2>
+      <h2 id="intro-title" className="display text-heading font-semibold text-fg wrap-compound">{t.introTitle}</h2>
       <ol className="mt-3 space-y-2.5">
         {steps.map((s, i) => (
           <li key={i} className="flex gap-3">

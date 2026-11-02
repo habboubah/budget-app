@@ -35,7 +35,7 @@ export function StartMonthCard({ month, from, candidates, categories, t, onStart
           <CalendarPlus className="w-6 h-6" />
         </span>
         <div className="min-w-0">
-          <h2 id="start-title" className="display text-heading font-bold text-fg wrap-compound">
+          <h2 id="start-title" className="display text-heading font-semibold text-fg wrap-compound">
             {fmt(t.notStartedTitle, { month: monthLabel(month, t.locale) })}
           </h2>
           <p className="text-label text-fg-mute mt-1 wrap-prose">

@@ -142,13 +142,13 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
       </details>
 
       {/* ------------------------------------------------------ insights */}
-      <h2 className="px-2 pt-3 display text-title font-extrabold text-fg">{t.insightsTitle}</h2>
+      <h2 className="px-1 pt-2 display text-title2 font-bold text-fg">{t.insightsTitle}</h2>
       {finished.length < 2 && <p className="px-2 -mt-2 text-label text-fg-mute wrap-prose">{t.needMoreMonths}</p>}
 
       <div className="grid gap-5 sm:grid-cols-2">
         {sv.rate !== null && (
           <Card title={t.savingsRateTitle}>
-            <p className={`text-[2.25rem] leading-none font-semibold tracking-tight ${sv.rate < 0 ? 'text-neg' : 'text-fg'}`}>
+            <p className={`rounded-num text-[2.25rem] leading-none font-bold ${sv.rate < 0 ? 'text-neg' : 'text-fg'}`}>
               {Math.round(sv.rate * 100)} %
             </p>
             <p className="text-label text-fg-mute mt-2 wrap-prose">
@@ -160,7 +160,7 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
 
         {reserve !== null && (
           <Card title={t.reserveTitle}>
-            <p className="text-[2.25rem] leading-none font-semibold tracking-tight text-fg">
+            <p className="rounded-num text-[2.25rem] leading-none font-bold text-fg">
               {fmt(t.reserveValue, { n: new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1 }).format(reserve) })}
             </p>
             <ReserveMeter months={shownReserve} />
@@ -323,13 +323,15 @@ function MonthDetail({ month, balances, data, language, t, onMonth }: Props) {
 
   return (
     <>
-      <div className="pt-3 flex items-end gap-2">
-        <div className="min-w-0 flex-1 px-2">
+      <div className="pt-2 flex items-end gap-2">
+        <div className="min-w-0 flex-1 px-1">
           <p className="eyebrow text-fg-mute">{t.monthDetail}</p>
-          <h2 className="display text-title font-extrabold text-fg wrap-compound">{monthLabel(month, t.locale)}</h2>
+          <h2 className="display text-title2 font-bold text-fg wrap-compound">{monthLabel(month, t.locale)}</h2>
         </div>
-        <IconButton label={t.prevMonth} icon={ChevronLeft} tone="filled" className="rtl:rotate-180" onClick={() => onMonth(addMonths(month, -1))} />
-        <IconButton label={t.nextMonth} icon={ChevronRight} tone="filled" className="rtl:rotate-180" onClick={() => onMonth(addMonths(month, 1))} />
+        <span className="inline-flex rounded-full float-chrome shrink-0">
+          <IconButton label={t.prevMonth} icon={ChevronLeft} className="rtl:rotate-180 !text-fg" onClick={() => onMonth(addMonths(month, -1))} />
+          <IconButton label={t.nextMonth} icon={ChevronRight} className="rtl:rotate-180 !text-fg" onClick={() => onMonth(addMonths(month, 1))} />
+        </span>
       </div>
 
       {b.count === 0 ? (
@@ -339,7 +341,7 @@ function MonthDetail({ month, balances, data, language, t, onMonth }: Props) {
           {/* The month in three numbers; "saved" is the one it leads with. */}
           <section className="rounded-md bg-surface card-edge p-5">
             <p className="eyebrow text-fg-mute">{saved >= 0 ? t.saved : t.overspent}</p>
-            <p className={`text-[2.5rem] leading-none font-semibold tracking-tight mt-2 ${saved < 0 ? 'text-neg' : 'text-fg'}`}>
+            <p className={`rounded-num text-[2.5rem] leading-none font-bold mt-2 ${saved < 0 ? 'text-neg' : 'text-fg'}`}>
               {money(saved < 0 ? -saved : saved)}
             </p>
             {rate !== null && saved > 0 && <p className="text-label text-fg-mute mt-1.5">{fmt(t.savingsRate, { p: rate })}</p>}
@@ -357,7 +359,7 @@ function MonthDetail({ month, balances, data, language, t, onMonth }: Props) {
 
           {expenses > 0 && (
             <section className="space-y-3">
-              <h3 className="px-2 display text-heading font-bold text-fg">{t.whereMoneyWent}</h3>
+              <h3 className="px-1 display text-heading font-semibold text-fg">{t.whereMoneyWent}</h3>
               <Segmented<'category' | 'name'> label={t.whereMoneyWent} value={by} onChange={setBy}
                 options={[{ value: 'category', label: t.byCategory }, { value: 'name', label: t.byName }]} />
               <div className="rounded-md bg-surface card-edge overflow-hidden divide-hairline-inset">

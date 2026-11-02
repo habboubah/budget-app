@@ -13,82 +13,119 @@ interface Props {
 }
 
 /**
- * The dark card at the top of a month: the two numbers the app is opened for.
- * "Jetzt" counts only what is ticked as paid; "Monatsende" also counts what is
- * still open. Below them, how far the month's bills are paid, and the three
- * numbers that explain the end balance: carry-over, income, expenses.
+ * The card at the top of a month: the two numbers the app is opened for.
+ *
+ * On top, big, what is on the account now (only what is ticked as paid), with
+ * a ring for how many of the month's bills are paid. Below it the month reads
+ * like a sum on paper — carry-over, plus income, minus expenses — down to the
+ * result: what will be left at the end of the month once everything open is
+ * settled.
  */
 export function BalanceCard({ balance: b, t, onOpening }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   const income = b.incomePaid + b.incomeOpen;
   const expenses = b.expensePaid + b.expenseOpen;
-  const ratio = b.expenseCount ? b.expensePaidCount / b.expenseCount : 0;
   const carryLabel = b.overridden
     ? t.carryManual
     : b.prevKey
-      ? fmt(t.carryFrom, { month: monthLabel(b.prevKey, t.locale, 'long') })
+      ? fmt(t.carryFrom, { month: b.prevKey.slice(0, 4) === b.key.slice(0, 4)
+        // Same year: the month's name says it all ("aus Oktober").
+        ? new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(Number(b.prevKey.slice(0, 4)), Number(b.prevKey.slice(5, 7)) - 1, 1))
+        : monthLabel(b.prevKey, t.locale, 'long') })
       : t.startingBalance;
 
   return (
-    <section className="rounded-lg bg-hero text-hero-ink p-5 shadow-e2" aria-label={`${t.balanceNow}, ${t.balanceEnd}`}>
-      <p className="eyebrow text-hero-mute">{t.balanceNow}</p>
-      <p className={`display text-display font-bold num mt-2 wrap-prose ${b.now < 0 ? 'text-hero-neg' : ''}`}>{money(b.now)}</p>
+    <section className="rounded-lg bg-surface card-edge overflow-hidden" aria-label={`${t.balanceNow}, ${t.balanceEnd}`}>
+      <div className="px-5 pt-5 pb-4 flex items-start gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="eyebrow text-fg-mute">{t.balanceNow}</p>
+          <BigMoney text={money(b.now)} negative={b.now < 0} />
+        </div>
+        {b.expenseCount > 0 && (
+          <PaidRing paid={b.expensePaidCount} total={b.expenseCount} label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })} />
+        )}
+      </div>
 
-      <div className="mt-5 flex items-end justify-between gap-x-4 gap-y-1 flex-wrap">
-        <div className="min-w-0">
-          <p className="eyebrow text-hero-mute">{t.balanceEnd}</p>
+      {/* The sum behind "Monatsende": carry-over + income − expenses = end. */}
+      <div className="mx-5 hairline-t" />
+      <button
+        type="button"
+        onClick={() => { tapLight(); onOpening(); }}
+        className="w-full px-5 min-h-[46px] flex items-center gap-2 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+      >
+        <span className="min-w-0 flex-1 text-label text-fg-mute wrap-prose">{carryLabel}</span>
+        <span className={`text-label font-semibold num ${b.openingNow < 0 ? 'text-neg' : 'text-fg'}`}>{money(b.openingNow)}</span>
+        <ChevronRight className="w-4 h-4 shrink-0 text-fg-faint rtl:rotate-180" aria-hidden="true" />
+      </button>
+      <div className="px-5 pb-1">
+        <div className="min-h-[34px] flex items-center gap-2">
+          <span className="min-w-0 flex-1 text-label text-fg-mute">{t.income}</span>
+          <span className="text-label font-semibold num text-pos me-6">{money(income, 'exceptZero')}</span>
+        </div>
+        <div className="min-h-[34px] flex items-center gap-2">
+          <span className="min-w-0 flex-1 text-label text-fg-mute">{t.expenses}</span>
+          <span className="text-label font-semibold num text-fg me-6">{money(expenses ? -expenses : 0)}</span>
+        </div>
+      </div>
+
+      <div className="mx-5 hairline-t" />
+      <div className="px-5 pt-3 pb-4 flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-body font-semibold text-fg">{t.balanceEnd}</p>
           {b.count > 0 && (
-            <p className="text-caption text-hero-mute mt-1 wrap-prose">
+            <p className={`text-caption mt-0.5 wrap-prose ${b.openCount ? 'text-warn' : 'text-fg-mute'}`}>
               {b.openCount ? plural(b.openCount, t.afterOpenOne, t.afterOpenMany) : t.allSettled}
             </p>
           )}
         </div>
-        <p className={`display text-heading font-bold num ${b.end < 0 ? 'text-hero-neg' : ''}`}>{money(b.end)}</p>
-      </div>
-
-      {b.expenseCount > 0 && (
-        <div className="mt-4">
-          <div
-            className="h-2 rounded-full bg-hero-track overflow-hidden" role="progressbar"
-            aria-valuemin={0} aria-valuemax={b.expenseCount} aria-valuenow={b.expensePaidCount}
-            aria-label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })}
-          >
-            <motion.div
-              className="h-full rounded-full bg-hero-bar"
-              initial={false}
-              animate={{ width: `${Math.round(ratio * 100)}%` }}
-              transition={{ type: 'spring', duration: 0.5, bounce: 0.15 }}
-            />
-          </div>
-          <p className="text-caption text-hero-mute mt-1.5">
-            {fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })}
-          </p>
-        </div>
-      )}
-
-      {/* The sum behind "Monatsende": carry-over + income − expenses. */}
-      <div className="mt-4 pt-1 border-t border-hero-track">
-        <button
-          type="button"
-          onClick={() => { tapLight(); onOpening(); }}
-          className="w-full -mx-2 px-2 min-h-control rounded-sm flex items-center gap-2 text-start active:bg-hero-track transition-colors focus-visible:ring-focus"
-          style={{ width: 'calc(100% + 1rem)' }}
-        >
-          <span className="min-w-0 flex-1 text-label text-hero-mute wrap-prose">{carryLabel}</span>
-          <span className={`text-label font-bold num ${b.openingNow < 0 ? 'text-hero-neg' : ''}`}>{money(b.openingNow)}</span>
-          <ChevronRight className="w-4 h-4 shrink-0 text-hero-mute rtl:rotate-180" aria-hidden="true" />
-        </button>
-        <div className="grid grid-cols-2 gap-3 pt-1">
-          <div className="min-w-0">
-            <span className="block text-caption text-hero-mute">{t.income}</span>
-            <span className="block text-label font-bold num mt-0.5 text-hero-pos">{money(income, 'exceptZero')}</span>
-          </div>
-          <div className="min-w-0">
-            <span className="block text-caption text-hero-mute">{t.expenses}</span>
-            <span className="block text-label font-bold num mt-0.5">{money(expenses ? -expenses : 0)}</span>
-          </div>
-        </div>
+        <p className={`rounded-num text-heading font-bold me-6 ${b.end < 0 ? 'text-neg' : 'text-fg'}`}>{money(b.end)}</p>
       </div>
     </section>
+  );
+}
+
+/**
+ * The balance, as large as it fits: the figure in SF Rounded, the currency
+ * sign smaller and quieter beside it ("35.773,20 €", "€35,773.20").
+ */
+function BigMoney({ text, negative }: { text: string; negative: boolean }) {
+  const m = /^([^\d−-]*?)\s*([−-]?[\d.,\u00a0\u202f]*\d)\s*([^\d]*)$/.exec(text);
+  const [before, figure, after] = m ? [m[1], m[2], m[3]] : ['', text, ''];
+  const sign = 'text-[0.6em] font-semibold text-fg-mute';
+  return (
+    <p className={`rounded-num font-bold mt-1 text-[clamp(30px,9.5vw,42px)] leading-[1.1] wrap-prose ${negative ? 'text-neg' : 'text-fg'}`}>
+      {before && <span className={`${sign} me-1`}>{before}</span>}
+      {figure}
+      {after && <span className={`${sign} ms-1`}>{after}</span>}
+    </p>
+  );
+}
+
+/** Apple-Fitness-style ring: how many of the month's bills are paid. */
+function PaidRing({ paid, total, label }: { paid: number; total: number; label: string }) {
+  const r = 22;
+  const c = 2 * Math.PI * r;
+  const ratio = total ? paid / total : 0;
+  return (
+    <div
+      className="shrink-0 relative w-[60px] h-[60px]"
+      role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={paid} aria-label={label} title={label}
+    >
+      <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90" aria-hidden="true">
+        <circle cx="30" cy="30" r={r} fill="none" strokeWidth="7" className="stroke-surface-2" />
+        <motion.circle
+          cx="30" cy="30" r={r} fill="none" strokeWidth="7" strokeLinecap="round"
+          className="stroke-accent-fill"
+          style={{ opacity: ratio > 0 ? 1 : 0 }}
+          strokeDasharray={c}
+          initial={false}
+          animate={{ strokeDashoffset: c * (1 - ratio) }}
+          transition={{ type: 'spring', duration: 0.6, bounce: 0 }}
+        />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center rounded-num text-caption font-bold text-fg" aria-hidden="true">
+        {paid}/{total}
+      </span>
+    </div>
   );
 }

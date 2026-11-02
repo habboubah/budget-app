@@ -1,8 +1,6 @@
 import { Component, ReactNode, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MotionConfig } from 'motion/react';
-// Bundled by Vite, never fetched: the app must look right offline.
-import '@fontsource-variable/bricolage-grotesque/wght.css';
 import App from './App.tsx';
 import { applyDynamicType } from './dynamicType.ts';
 import { downloadFile } from './export.ts';

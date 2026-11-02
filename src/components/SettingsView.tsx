@@ -1,8 +1,8 @@
 import { ReactNode, useState } from 'react';
-import { ChevronRight, RotateCcw, Trash2 } from 'lucide-react';
+import { ChevronRight, Palette, Languages, RotateCcw, Tags, Trash2 } from 'lucide-react';
 import { ThemeMode } from '../types';
 import translations, { Language, Strings, fmt, languages } from '../translations';
-import { Screen, Group, Row } from '../ui/Screen';
+import { Screen, Group, IconTile, Row } from '../ui/Screen';
 import { Segmented } from '../ui/Field';
 import { Confirm } from '../ui/Sheet';
 
@@ -30,16 +30,16 @@ export function SettingsView(p: Props) {
     <Screen title={t.settingsTitle} tabbed>
       <Group>
         <Row
-          label={<span className="font-semibold">{t.categories}</span>}
+          label={t.categories}
           sub={t.categoriesSub}
-          leading={<span className="emoji text-[24px] w-11 h-11 rounded-sm bg-surface-2 inline-flex items-center justify-center" aria-hidden="true">🗂️</span>}
-          trailing={<span className="flex items-center gap-1 text-fg-faint"><span className="num text-label">{p.categoryCount}</span><ChevronRight className="w-5 h-5 rtl:rotate-180" aria-hidden="true" /></span>}
+          leading={<IconTile icon={Tags} hue="lavender" />}
+          trailing={<span className="flex items-center gap-1 text-fg-mute"><span className="num text-body">{p.categoryCount}</span><ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" /></span>}
           onClick={p.onCategories}
         />
       </Group>
 
       <section className="space-y-2">
-        <h2 className="px-2 text-label font-semibold text-fg-mute">{t.language}</h2>
+        <h2 className="px-4 eyebrow text-fg-mute flex items-center gap-2"><Languages className="w-4 h-4" aria-hidden="true" />{t.language}</h2>
         <Segmented<Language>
           label={t.language}
           value={p.language}
@@ -49,7 +49,7 @@ export function SettingsView(p: Props) {
       </section>
 
       <section className="space-y-2">
-        <h2 className="px-2 text-label font-semibold text-fg-mute">{t.appearance}</h2>
+        <h2 className="px-4 eyebrow text-fg-mute flex items-center gap-2"><Palette className="w-4 h-4" aria-hidden="true" />{t.appearance}</h2>
         <Segmented<ThemeMode>
           label={t.appearance}
           value={p.themeMode}
@@ -65,13 +65,13 @@ export function SettingsView(p: Props) {
       {p.backup}
 
       <Group title={t.resetSection}>
-        <Row label={t.restoreDefaults} sub={t.restoreDefaultsSub} leading={<RotateCcw className="w-5 h-5 text-accent" aria-hidden="true" />} onClick={() => setConfirmRestore(true)} />
-        <Row label={t.deleteAll} danger leading={<Trash2 className="w-5 h-5 text-neg" aria-hidden="true" />} onClick={() => setConfirmDelete(true)} />
+        <Row label={t.restoreDefaults} sub={t.restoreDefaultsSub} leading={<IconTile icon={RotateCcw} hue="stone" />} onClick={() => setConfirmRestore(true)} />
+        <Row label={t.deleteAll} danger leading={<IconTile icon={Trash2} hue="tomato" />} onClick={() => setConfirmDelete(true)} />
       </Group>
 
       <section className="text-center pt-4 pb-2 px-6">
         <img src="/icon.svg" alt="" className="w-14 h-14 rounded-[14px] mx-auto" />
-        <p className="display text-heading font-bold text-fg mt-3">{t.about}</p>
+        <p className="display text-heading font-semibold text-fg mt-3">{t.about}</p>
         <p className="text-label text-fg-mute mt-1 wrap-prose">{t.aboutBody}</p>
         <p className="text-caption text-fg-mute mt-3 num">{fmt(t.version, { v: __APP_VERSION__ })}</p>
       </section>

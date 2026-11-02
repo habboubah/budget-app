@@ -8,6 +8,7 @@ import translations, { fmt } from './translations';
 import { Category, Entry, EntryDraft, MonthKey } from './types';
 import { balanceFor, carryCandidates, displayName, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { MonthView } from './components/MonthView';
+import { MonthPickerSheet } from './components/MonthPickerSheet';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
 import { MonthActionsSheet } from './components/MonthActionsSheet';
@@ -20,7 +21,6 @@ import { BackupGroup } from './components/BackupGroup';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
 import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
-import { AddButton } from './ui/AddButton';
 import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
 import { Confirm } from './ui/Sheet';
@@ -34,6 +34,7 @@ export default function App() {
 
   const [tab, setTab] = useState<'month' | 'stats' | 'settings'>('month');
   const [showCategories, setShowCategories] = useState(false);
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false);
   const [categorySheet, setCategorySheet] = useState<CategorySheetMode>(null);
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
   /** A category created from the month page also joins that month. */
@@ -299,6 +300,8 @@ export default function App() {
             onAdd={categoryId => setEntrySheet({ kind: 'new', month, categoryId })}
             onEdit={entry => setEntrySheet({ kind: 'edit', entry })}
             onToggle={toggle}
+            onDelete={e => deleteEntry(e.id)}
+            onPickMonth={() => setMonthPickerOpen(true)}
             onOpening={() => setOpeningOpen(true)}
             onDismissIntro={store.dismissIntro}
             onCategories={() => { setTab('settings'); setShowCategories(true); }}
@@ -323,11 +326,20 @@ export default function App() {
           { id: 'stats', label: t.tabStats, icon: BarChart3 },
           { id: 'settings', label: t.tabSettings, icon: Settings },
         ]}
+        // On every tab: a receipt can be noted down from anywhere, into the month shown.
+        add={quickAddCategory && balance.started
+          ? { label: t.addEntry, onClick: () => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory }) }
+          : null}
       />
 
-      {tab === 'month' && quickAddCategory && balance.started && (
-        <AddButton aboveTabs label={t.addEntry} onClick={() => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory })} />
-      )}
+      <MonthPickerSheet
+        open={monthPickerOpen}
+        selected={month}
+        balances={balances}
+        t={t}
+        onPick={setMonth}
+        onClose={() => setMonthPickerOpen(false)}
+      />
 
       <EntrySheet
         mode={entrySheet}

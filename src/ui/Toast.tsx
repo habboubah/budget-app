@@ -30,7 +30,7 @@ export function Toast({ toast, onDone, raised }: { toast: ToastState | null; onD
   return createPortal(
     <div
       className="fixed inset-x-0 z-[55] flex justify-center px-4 pointer-events-none"
-      style={{ bottom: `calc(${raised ? 92 : 24}px + env(safe-area-inset-bottom))` }}
+      style={{ bottom: `calc(${raised ? 96 : 24}px + env(safe-area-inset-bottom))` }}
     >
       <AnimatePresence mode="popLayout">
         {toast && (
@@ -48,7 +48,7 @@ export function Toast({ toast, onDone, raised }: { toast: ToastState | null; onD
               <button
                 type="button"
                 onClick={() => { toast.action?.run(); onDone(); }}
-                className="shrink-0 min-h-[40px] px-4 rounded-full bg-accent-fill text-accent-fill-ink display font-bold text-label active:scale-[0.96] transition-transform focus-visible:ring-focus"
+                className="shrink-0 min-h-[40px] px-4 rounded-full bg-accent-fill text-accent-fill-ink font-semibold text-label active:scale-[0.96] transition-transform focus-visible:ring-focus"
               >
                 {toast.action.label}
               </button>

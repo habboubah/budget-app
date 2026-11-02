@@ -1,12 +1,13 @@
 import React, { useId } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, ChevronDown, Plus, Repeat as RepeatIcon, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, Circle, Plus, Repeat as RepeatIcon, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
 import { displayName, formatMoney, isOverdue } from '../logic';
 import { Strings, fmt, plural } from '../translations';
 import { Picture } from '../ui/Picture';
 import { tapLight } from '../ui/haptics';
 import { IconButton } from '../ui/Button';
+import { SwipeRow } from '../ui/SwipeRow';
 
 interface Props {
   category: Category;
@@ -23,6 +24,8 @@ interface Props {
   onAdd: () => void;
   onEdit: (e: Entry) => void;
   onToggle: (e: Entry) => void;
+  /** Swipe left: delete (undoable). */
+  onDelete: (e: Entry) => void;
   /** The entry being dragged right now (from any category), if any. */
   dragId: string | null;
   /** Where the dragged entry would land in this category, if it is over it. */
@@ -41,10 +44,10 @@ interface Props {
  *
  * Entries can be dragged (press and hold): within the card to sort them, or
  * onto another card to move them there. While one is dragged over this card,
- * a line shows where it would land.
+ * a line shows where it would land. A swipe marks one paid or deletes it.
  */
 export function CategorySection({
-  category, entries, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle,
+  category, entries, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle, onDelete,
   dragId, dropIndex, dragProps, onMoveBy,
 }: Props) {
   const bodyId = useId();
@@ -82,15 +85,26 @@ export function CategorySection({
         transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
         className="overflow-hidden"
       >
-        <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)} lifted={e.id === dragId}
-          dragProps={dragProps(e.id)}
-          onEdit={() => onEdit(e)} onToggle={() => onToggle(e)}
-          onMoveBy={delta => {
-            onMoveBy(e, delta);
-            // Moving the row in the DOM takes the focus with it; put it back.
-            requestAnimationFrame(() =>
-              document.querySelector<HTMLElement>(`[data-entry-row="${e.id}"] [data-entry-body]`)?.focus());
-          }} />
+        <SwipeRow
+          locked={dragId !== null}
+          leading={{
+            label: e.paid ? t.swipeOpen : income ? t.swipeReceived : t.swipePaid,
+            icon: e.paid ? Circle : Check,
+            className: e.paid ? 'bg-swipe-open' : 'bg-swipe-paid',
+            run: () => onToggle(e),
+          }}
+          trailing={{ label: t.delete, icon: Trash2, className: 'bg-swipe-delete', run: () => onDelete(e) }}
+        >
+          <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)} lifted={e.id === dragId}
+            dragProps={dragProps(e.id)}
+            onEdit={() => onEdit(e)} onToggle={() => onToggle(e)}
+            onMoveBy={delta => {
+              onMoveBy(e, delta);
+              // Moving the row in the DOM takes the focus with it; put it back.
+              requestAnimationFrame(() =>
+                document.querySelector<HTMLElement>(`[data-entry-row="${e.id}"] [data-entry-body]`)?.focus());
+            }} />
+        </SwipeRow>
       </motion.li>,
     );
   }
@@ -112,25 +126,26 @@ export function CategorySection({
           aria-expanded={!collapsed}
           aria-controls={bodyId}
           title={collapsed ? t.expand : t.collapse}
-          className="flex-1 min-w-0 flex items-center gap-3 ps-4 pe-3 pt-3.5 pb-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+          className="flex-1 min-w-0 flex items-center gap-3 ps-4 pe-3 py-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
         >
-          <Picture emoji={category.emoji} name={name} size="md" />
+          <Picture emoji={category.emoji} name={name} size="sm" />
           <span className="min-w-0 flex-1">
-            <span className="block display text-heading font-bold text-fg wrap-compound">{name}</span>
+            <span className="block text-body font-semibold text-fg wrap-compound">{name}</span>
             {(open > 0 || (collapsed && entries.length > 0)) && (
-              <span className="flex flex-wrap gap-x-2 text-caption font-semibold num">
+              <span className="flex flex-wrap gap-x-2 text-caption num">
                 {collapsed && entries.length > 0 && (
                   <span className="text-fg-mute whitespace-nowrap">{plural(entries.length, t.entriesOne, t.entriesMany)}</span>
                 )}
-                {open > 0 && <span className="text-warn whitespace-nowrap">{fmt(t.sectionOpen, { amount: money(open) })}</span>}
+                {open > 0 && <span className="text-warn font-medium whitespace-nowrap">{fmt(t.sectionOpen, { amount: money(open) })}</span>}
               </span>
             )}
           </span>
-          <span className={`display text-heading font-bold num shrink-0 ${income && total ? 'text-pos' : total ? 'text-fg' : 'text-fg-mute'}`}>
+          <span className={`rounded-num text-body font-semibold shrink-0 ${income && total ? 'text-pos' : total ? 'text-fg' : 'text-fg-mute'}`}>
             {money(total)}
           </span>
           <ChevronDown
-            className={`w-5 h-5 shrink-0 text-fg-mute transition-transform duration-200 ${collapsed ? '-rotate-90 rtl:rotate-90' : ''}`}
+            className={`w-[18px] h-[18px] shrink-0 text-fg-faint transition-transform duration-200 ${collapsed ? '-rotate-90 rtl:rotate-90' : ''}`}
+            strokeWidth={2.4}
             aria-hidden="true"
           />
         </button>
@@ -152,7 +167,7 @@ export function CategorySection({
             className="overflow-hidden"
           >
             {rows.length > 0 && (
-              <ul className="hairline-t divide-hairline-inset" style={{ '--sep': '60px' } as React.CSSProperties}>
+              <ul className="hairline-t divide-hairline-inset" style={{ '--sep': '52px' } as React.CSSProperties}>
                 <AnimatePresence initial={false}>{rows}</AnimatePresence>
               </ul>
             )}
@@ -161,12 +176,12 @@ export function CategorySection({
               type="button"
               onClick={() => { tapLight(); onAdd(); }}
               aria-label={fmt(t.addTo, { name })}
-              className="w-full min-h-chrome px-4 flex items-center gap-3 hairline-t text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus"
+              className="w-full min-h-[48px] ps-[14px] pe-4 flex items-center gap-3 hairline-t text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus"
             >
-              <span className="w-7 h-7 ms-0.5 rounded-full bg-accent-dim inline-flex items-center justify-center shrink-0" aria-hidden="true">
-                <Plus className="w-4 h-4" strokeWidth={2.75} />
+              <span className="w-6 h-6 rounded-full bg-accent-fill text-accent-fill-ink inline-flex items-center justify-center shrink-0" aria-hidden="true">
+                <Plus className="w-4 h-4" strokeWidth={3} />
               </span>
-              <span className="text-label font-semibold">{entries.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
+              <span className="text-body">{entries.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
             </button>
           </motion.div>
         )}
@@ -192,6 +207,14 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
   onMoveBy: (delta: -1 | 1) => void;
 }) {
   const meta: React.ReactNode[] = [];
+  // Status in words first, coloured — never colour or shape alone.
+  if (!e.paid) {
+    meta.push(
+      <span key="state" className={`font-medium ${overdue ? 'text-neg' : 'text-warn'}`}>
+        {overdue ? t.overdue : income ? t.expected : t.open}
+      </span>,
+    );
+  }
   if (e.dueDay) meta.push(<span key="due">{fmt(t.dueOn, { day: e.dueDay })}</span>);
   if (e.repeat !== 'none') {
     meta.push(
@@ -205,7 +228,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;
 
   return (
-    <div className={`flex items-stretch min-h-chrome transition-opacity duration-150 ${lifted ? 'opacity-35' : ''}`}>
+    <div className={`flex items-stretch min-h-[56px] transition-opacity duration-150 ${lifted ? 'opacity-35' : ''}`}>
       <button
         type="button"
         role="checkbox"
@@ -213,11 +236,11 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
         aria-label={toggleLabel}
         title={toggleLabel}
         onClick={onToggle}
-        className="w-[60px] shrink-0 flex items-center justify-center active:bg-surface-2 transition-colors focus-visible:ring-focus"
+        className="w-[52px] shrink-0 flex items-center justify-center active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         <span
-          className={`w-7 h-7 rounded-full inline-flex items-center justify-center transition-colors duration-200 ${
-            e.paid ? 'bg-accent-fill text-accent-fill-ink' : `border-2 border-dashed ${overdue ? 'border-neg' : 'border-warn'}`}`}
+          className={`w-[24px] h-[24px] rounded-full inline-flex items-center justify-center transition-colors duration-200 ${
+            e.paid ? 'bg-accent-fill text-accent-fill-ink' : `border-[1.75px] ${overdue ? 'border-neg' : 'border-fg-faint'}`}`}
           aria-hidden="true"
         >
           <AnimatePresence initial={false}>
@@ -227,7 +250,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
                 transition={{ type: 'spring', duration: 0.3, bounce: 0.4 }}
                 className="inline-flex"
               >
-                <Check className="w-4 h-4" strokeWidth={3.25} />
+                <Check className="w-[15px] h-[15px]" strokeWidth={3.25} />
               </motion.span>
             )}
           </AnimatePresence>
@@ -258,16 +281,9 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
             </span>
           )}
         </span>
-        <span className="shrink-0 text-end">
-          <span className={`block text-body font-semibold num ${e.paid ? (income ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
-            {formatMoney(e.amount, t.locale)}
-          </span>
-          {!e.paid && (
-            <span className={`inline-block mt-0.5 px-2 py-px rounded-full text-micro font-bold ${
-              overdue ? 'bg-neg-dim text-neg' : 'bg-warn-dim text-warn'}`}>
-              {overdue ? t.overdue : income ? t.expected : t.open}
-            </span>
-          )}
+        {/* Open money is grey, like a pending card payment; it turns solid once paid. */}
+        <span className={`shrink-0 text-body font-medium num ${e.paid ? (income ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
+          {formatMoney(e.amount, t.locale)}
         </span>
       </button>
     </div>

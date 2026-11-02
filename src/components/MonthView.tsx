@@ -1,8 +1,8 @@
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { AlertCircle, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react';
 import { Category, Entry, MonthKey } from '../types';
-import { MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, sortEntries } from '../logic';
+import { MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, parseMonthKey, sortEntries } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
@@ -32,6 +32,10 @@ interface Props {
   onAdd: (categoryId: string) => void;
   onEdit: (e: Entry) => void;
   onToggle: (e: Entry) => void;
+  /** Swipe left on a row (undoable). */
+  onDelete: (e: Entry) => void;
+  /** Tap the month's name: the month picker. */
+  onPickMonth: () => void;
   onOpening: () => void;
   onDismissIntro: () => void;
   /** Opens Settings → Kategorien (when there are none left). */
@@ -62,6 +66,8 @@ export function MonthView(p: Props) {
   const current = monthKeyOf(today);
   const mine = entriesOf(entries, month);
   const label = monthLabel(month, t.locale);
+  const { year, month: mm } = parseMonthKey(month);
+  const monthName = new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(year, mm - 1, 1));
 
   const inCategory = (categoryId: string) => sortEntries(mine.filter(e => e.categoryId === categoryId));
 
@@ -98,11 +104,41 @@ export function MonthView(p: Props) {
           {t.toThisMonth} →
         </button>
       )}
+      titleSlot={
+        <h1>
+          <button
+            type="button"
+            onClick={() => { tapLight(); p.onPickMonth(); }}
+            aria-haspopup="dialog"
+            aria-label={`${label}, ${t.pickMonth}`}
+            className="-mx-1 px-1 rounded-sm flex items-baseline gap-2 text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
+          >
+            <span className="display text-title font-bold text-fg tracking-[-0.025em] wrap-compound">{monthName}</span>
+            <span className="display text-title font-bold text-fg-faint tracking-[-0.025em] num">{year}</span>
+            <ChevronDown className="w-5 h-5 text-accent self-center mt-1 shrink-0" strokeWidth={2.6} aria-hidden="true" />
+          </button>
+        </h1>
+      }
       actions={
         <>
-          <IconButton label={t.monthActions} icon={MoreHorizontal} tone="accent" onClick={p.onActions} />
-          <IconButton label={t.prevMonth} icon={ChevronLeft} tone="accent" className="rtl:rotate-180" onClick={() => p.onMonth(addMonths(month, -1))} />
-          <IconButton label={t.nextMonth} icon={ChevronRight} tone="accent" className="rtl:rotate-180" onClick={() => p.onMonth(addMonths(month, 1))} />
+          {/* ‹ › as one floating capsule, the way iOS groups related bar buttons. */}
+          <span className="inline-flex rounded-full float-chrome">
+            <button
+              type="button" aria-label={t.prevMonth} title={t.prevMonth}
+              onClick={() => { tapLight(); p.onMonth(addMonths(month, -1)); }}
+              className="h-tap w-tap inline-flex items-center justify-center rounded-full text-fg active:bg-surface-2 transition-colors focus-visible:ring-focus"
+            >
+              <ChevronLeft className="w-[22px] h-[22px] rtl:rotate-180" strokeWidth={2.2} />
+            </button>
+            <button
+              type="button" aria-label={t.nextMonth} title={t.nextMonth}
+              onClick={() => { tapLight(); p.onMonth(addMonths(month, 1)); }}
+              className="h-tap w-tap inline-flex items-center justify-center rounded-full text-fg active:bg-surface-2 transition-colors focus-visible:ring-focus"
+            >
+              <ChevronRight className="w-[22px] h-[22px] rtl:rotate-180" strokeWidth={2.2} />
+            </button>
+          </span>
+          <IconButton label={t.monthActions} icon={MoreHorizontal} tone="glass" onClick={p.onActions} />
         </>
       }
     >
@@ -133,7 +169,7 @@ export function MonthView(p: Props) {
             <button
               type="button"
               onClick={() => { tapLight(); p.onMonth(oldestOpen.month); }}
-              className="w-full rounded-md bg-warn-dim p-4 flex items-start gap-3 text-start active:scale-[0.99] transition-transform focus-visible:ring-focus"
+              className="w-full rounded-md bg-warn-dim px-4 py-3.5 flex items-start gap-3 text-start active:scale-[0.99] transition-transform focus-visible:ring-focus"
             >
               <AlertCircle className="w-5 h-5 text-warn shrink-0 mt-0.5" aria-hidden="true" />
               <span className="min-w-0 flex-1">
@@ -172,6 +208,7 @@ export function MonthView(p: Props) {
               onAdd={() => p.onAdd(c.id)}
               onEdit={p.onEdit}
               onToggle={p.onToggle}
+              onDelete={p.onDelete}
               dragId={drag.dragging}
               dropIndex={drag.target?.categoryId === c.id ? drag.target.index : null}
               dragProps={drag.bind}
@@ -183,7 +220,7 @@ export function MonthView(p: Props) {
           <button
             type="button"
             onClick={() => { tapLight(); p.onAddCategory(); }}
-            className="w-full min-h-chrome rounded-md border-2 border-dashed border-hairline px-4 flex items-center justify-center gap-2 text-label font-semibold text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus"
+            className="w-full min-h-[52px] rounded-md bg-surface/60 border-[1.5px] border-dashed border-hairline px-4 flex items-center justify-center gap-2 text-body text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus"
           >
             <Plus className="w-5 h-5" aria-hidden="true" />
             {t.addCategoryToMonth}
