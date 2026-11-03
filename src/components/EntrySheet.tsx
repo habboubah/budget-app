@@ -1,8 +1,8 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { Category, Entry, EntryDraft, MonthKey, Repeat } from '../types';
-import { amountToInput, cleanText, displayName, monthKeyOf, parseAmount, suggestNames, normalizeDigits } from '../logic';
-import { Strings } from '../translations';
+import { amountToInput, cleanText, daysInMonth, defaultEntryDate, displayName, isIsoDay, monthKeyOf, parseAmount, suggestNames, normalizeDigits } from '../logic';
+import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field, Label, Segmented } from '../ui/Field';
 import { Button } from '../ui/Button';
@@ -16,6 +16,8 @@ export type EntrySheetMode =
 interface Props {
   mode: EntrySheetMode;
   categories: Category[];
+  /** The categories of the month the entry goes into — shown first; the rest behind "More". */
+  featured: string[];
   /** All entries — the name suggestions come from earlier months. */
   entries: Entry[];
   language: string;
@@ -32,7 +34,7 @@ interface Props {
  * when the amount is still empty. Paid / open, repeat and the due day default
  * from the category, so most entries are amount + name + save.
  */
-export function EntrySheet({ mode, categories, entries, language, t, onClose, onCreate, onSave, onDelete }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -42,11 +44,12 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
   const [paid, setPaid] = useState(true);
   const [repeat, setRepeat] = useState<Repeat>('none');
   const [dueText, setDueText] = useState('');
+  const [dateText, setDateText] = useState('');
   const [note, setNote] = useState('');
+  const [allCategories, setAllCategories] = useState(false);
   const [touched, setTouched] = useState({ paid: false, repeat: false });
   const [showError, setShowError] = useState(false);
   const amountRef = useRef<HTMLInputElement>(null);
-  const railRef = useRef<HTMLDivElement>(null);
   const amountId = useId();
 
   const category = categories.find(c => c.id === categoryId);
@@ -63,9 +66,11 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
     setPaid(defaultPaid(c));
     setRepeat(c?.repeat ?? 'none');
     setDueText('');
+    setDateText(defaultEntryDate(month));
     setNote('');
     setTouched({ paid: false, repeat: false });
     setShowError(false);
+    setAllCategories(false);
   };
 
   useEffect(() => {
@@ -78,7 +83,9 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
       setPaid(e.paid);
       setRepeat(e.repeat);
       setDueText(e.dueDay ? String(e.dueDay) : '');
+      setDateText(e.date ?? '');
       setNote(e.note ?? '');
+      setAllCategories(false);
       setTouched({ paid: true, repeat: true });
       setShowError(false);
     } else {
@@ -88,27 +95,25 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
     }
   }, [mode]);
 
-  // The chosen category may sit off-screen in the rail (Einkaufen is fifth):
-  // bring it into view whenever the sheet opens on it.
-  useEffect(() => {
-    if (!mode) return;
-    const id = requestAnimationFrame(() => {
-      const chip = railRef.current?.querySelector<HTMLElement>('[aria-checked="true"]');
-      const rail = railRef.current;
-      if (chip && rail) rail.scrollTo({ left: chip.offsetLeft - rail.clientWidth / 2 + chip.clientWidth / 2 });
-    });
-    return () => cancelAnimationFrame(id);
-  }, [mode, categoryId]);
-
   const amount = parseAmount(amountText, t.locale);
   const due = /^\d{1,2}$/.test(dueText.trim()) ? Number(dueText) : undefined;
   const dueValid = dueText.trim() === '' || (due !== undefined && due >= 1 && due <= 31);
-  const valid = amount !== null && !!category && dueValid;
+  // A date inside the entry's month, or none (entries from before dates existed).
+  const firstDay = `${month}-01`;
+  const lastDay = `${month}-${String(daysInMonth(month)).padStart(2, '0')}`;
+  const dateValid = dateText === '' || (isIsoDay(dateText) && dateText >= firstDay && dateText <= lastDay);
+  const valid = amount !== null && !!category && dueValid && dateValid;
 
   const suggestions = useMemo(
-    () => (editing || !categoryId ? [] : suggestNames({ entries, categoryId, query: name, lang: language, limit: 10 })),
+    // From every month and category, narrowed with each letter typed.
+    () => (editing || !categoryId ? [] : suggestNames({ entries, categoryId, query: name, lang: language, limit: name.trim() ? 16 : 12 })),
     [editing, entries, categoryId, name, language],
   );
+  // This month's categories at once, the rest behind "More" — and the chosen
+  // one always in view.
+  const inView = categories.filter(c => featured.includes(c.id) || c.id === categoryId);
+  const shownCategories = allCategories ? categories : inView;
+  const hiddenCount = categories.length - inView.length;
 
   const pickCategory = (c: Category) => {
     tapLight();
@@ -127,6 +132,7 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
       repeat,
     };
     if (due !== undefined) d.dueDay = due;
+    if (dateText) d.date = dateText;
     const n = cleanText(note, 200);
     if (n) d.note = n;
     return d;
@@ -138,7 +144,9 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
     if (editing) onSave(editing.id, d);
     else onCreate(month, d);
     if (next) {
+      const keepDate = dateText;
       reset(categoryId);
+      setDateText(keepDate); // a stack of receipts is usually from one day
       setPaid(paid);
       setTouched({ paid: true, repeat: false });
       amountRef.current?.focus({ preventScroll: true });
@@ -192,7 +200,7 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
             autoCapitalize="sentences"
           />
           {suggestions.length > 0 && (
-            <div className="mt-2 -mx-5 px-5 flex gap-2 overflow-x-auto no-scrollbar" role="group" aria-label={t.suggestions}>
+            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t.suggestions}>
               {suggestions.map(s => (
                 <button
                   key={s.name}
@@ -201,6 +209,9 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
                   onClick={() => {
                     tapLight();
                     setName(s.name);
+                    // A name that belongs to another category takes the entry there ("Lidl" → Lebensmittel).
+                    const home = s.categoryId !== categoryId ? categories.find(c => c.id === s.categoryId) : undefined;
+                    if (home) pickCategory(home);
                     if (s.last) {
                       // What it was last time — only where nothing was typed yet.
                       if (!amountText.trim() && s.last.repeat !== 'none') setAmountText(amountToInput(s.last.amount, t.locale));
@@ -208,7 +219,7 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
                       if (!touched.repeat) setRepeat(s.last.repeat);
                     }
                   }}
-                  className="shrink-0 min-h-[38px] px-4 rounded-full bg-surface-2 text-label font-medium text-fg active:scale-[0.97] transition-transform focus-visible:ring-focus"
+                  className="min-h-[36px] max-w-full px-3.5 rounded-full bg-surface-2 text-label font-medium text-fg active:scale-[0.97] transition-transform focus-visible:ring-focus wrap-compound text-start"
                 >
                   {s.name}
                 </button>
@@ -219,8 +230,9 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
 
         <div>
           <Label>{t.category}</Label>
-          <div ref={railRef} className="relative -mx-5 px-5 flex gap-2 overflow-x-auto no-scrollbar" role="radiogroup" aria-label={t.category}>
-            {categories.map(c => {
+          {/* All at a glance, wrapping — no sideways sliding. */}
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.category}>
+            {shownCategories.map(c => {
               const on = c.id === categoryId;
               const cname = displayName(c.names, language);
               return (
@@ -231,14 +243,27 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
                   aria-checked={on}
                   data-hue={c.hue}
                   onClick={() => pickCategory(c)}
-                  className={`shrink-0 min-h-[44px] ps-2 pe-4 rounded-full inline-flex items-center gap-2 text-label border-2 transition-colors focus-visible:ring-focus ${
+                  className={`min-h-[40px] max-w-full ps-1.5 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label border-2 transition-colors focus-visible:ring-focus ${
                     on ? 'bg-hue-bg text-hue-ink border-current font-semibold' : 'bg-surface-2 text-fg border-transparent font-medium'}`}
                 >
-                  <span className="emoji text-[20px]" aria-hidden="true">{c.emoji}</span>
-                  {cname}
+                  <span className="emoji text-[18px] w-7 text-center" aria-hidden="true">{c.emoji}</span>
+                  <span className="min-w-0 wrap-compound text-start">{cname}</span>
                 </button>
               );
             })}
+            {hiddenCount > 0 && (
+              <button
+                type="button"
+                aria-expanded={allCategories}
+                onClick={() => { tapLight(); setAllCategories(v => !v); }}
+                className="min-h-[40px] px-3.5 rounded-full inline-flex items-center gap-1 text-label font-semibold text-accent bg-accent-dim active:opacity-70 focus-visible:ring-focus"
+              >
+                {allCategories ? t.fewerCategories : fmt(t.moreCategories, { n: hiddenCount })}
+                {allCategories
+                  ? <ChevronUp className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
+                  : <ChevronDown className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
+              </button>
+            )}
           </div>
         </div>
 
@@ -272,7 +297,16 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
           </p>
         </div>
 
-        <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_7.5rem] gap-3">
+          <Field
+            label={t.date}
+            type="date"
+            value={dateText}
+            onChange={setDateText}
+            min={firstDay}
+            max={lastDay}
+            aria-invalid={!dateValid}
+          />
           <Field
             label={t.dueDay}
             value={dueText}
@@ -283,8 +317,9 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
             aria-invalid={!dueValid}
             title={t.dueDayHint}
           />
-          <Field label={t.note} value={note} onChange={setNote} placeholder={t.notePlaceholder} maxLength={200} />
         </div>
+        {!dateValid && <p role="alert" className="text-caption text-neg -mt-4 px-1">{t.dateHint}</p>}
+        <Field label={t.note} value={note} onChange={setNote} placeholder={t.notePlaceholder} maxLength={200} />
         {!dueValid && <p role="alert" className="text-caption text-neg -mt-4 px-1">{t.dueDayHint}</p>}
 
         <div className="grid gap-2 pt-1">

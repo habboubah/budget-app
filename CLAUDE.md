@@ -72,6 +72,14 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   editor drops it. The gesture is `ui/useEntryDrag.ts` (long press on touch,
   drag with a mouse, auto-scroll near the edges); it finds the drop spot via
   `data-drop-category` / `data-entry-row`, so keep those on the cards and rows.
+- **Entry date:** `Entry.date` (YYYY-MM-DD, always inside `month`) defaults to
+  today (`defaultEntryDate`), carries over to the same day of the next month,
+  and goes out as the last CSV column. Older entries have none. `dueDay` stays
+  separate (when a bill is due; shown on the row only while open).
+- **Name suggestions** (`suggestNames`) come from every entry of every month:
+  this category's names, then its built-in ideas, then other categories'
+  names; each remembers its category, and picking one from elsewhere moves the
+  entry there.
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /

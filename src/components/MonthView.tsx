@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react';
@@ -70,13 +71,23 @@ export function MonthView(p: Props) {
   const monthName = new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(year, mm - 1, 1));
 
   const inCategory = (categoryId: string) => sortEntries(mine.filter(e => e.categoryId === categoryId));
+  // Categories showing only what is still open (kept while switching months).
+  const [openOnly, setOpenOnly] = useState<string[]>([]);
 
   // Dropping an entry where it already is changes nothing — not even its order.
   const drag = useEntryDrag((id, to) => {
     const e = mine.find(x => x.id === id);
     if (!e) return;
-    if (e.categoryId === to.categoryId && inCategory(e.categoryId).findIndex(x => x.id === id) === to.index) return;
-    p.onMoveEntry(id, to.categoryId, to.index);
+    // With the filter on, the drop spot counts only the open rows shown:
+    // land before the same row in the full list.
+    let index = to.index;
+    if (openOnly.includes(to.categoryId)) {
+      const others = inCategory(to.categoryId).filter(x => x.id !== id);
+      const shown = others.filter(x => !x.paid);
+      index = index < shown.length ? others.indexOf(shown[index]) : others.length;
+    }
+    if (e.categoryId === to.categoryId && inCategory(e.categoryId).findIndex(x => x.id === id) === index) return;
+    p.onMoveEntry(id, to.categoryId, index);
   });
   const moveBy = (e: Entry, delta: -1 | 1) => {
     const list = inCategory(e.categoryId);
@@ -209,6 +220,8 @@ export function MonthView(p: Props) {
               onEdit={p.onEdit}
               onToggle={p.onToggle}
               onDelete={p.onDelete}
+              openOnly={openOnly.includes(c.id)}
+              onOpenOnly={() => setOpenOnly(xs => (xs.includes(c.id) ? xs.filter(x => x !== c.id) : [...xs, c.id]))}
               dragId={drag.dragging}
               dropIndex={drag.target?.categoryId === c.id ? drag.target.index : null}
               dragProps={drag.bind}

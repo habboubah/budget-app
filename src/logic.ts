@@ -177,6 +177,24 @@ export function daysInMonth(key: MonthKey): number {
   return new Date(year, month, 0).getDate();
 }
 
+export const isIsoDay = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(v);
+
+/** Day `day` of a month, kept inside it ("31" in February is the 28th / 29th), as YYYY-MM-DD. */
+export function dayInMonth(key: MonthKey, day: number): string {
+  return `${key}-${String(Math.max(1, Math.min(day, daysInMonth(key)))).padStart(2, '0')}`;
+}
+
+/** A new entry's date: today in the current month, else the same day of the month it goes into. */
+export function defaultEntryDate(key: MonthKey, today = new Date()): string {
+  return dayInMonth(key, today.getDate());
+}
+
+/** "3. Nov." / "3 Nov" — an entry's date on the month page, where the year goes without saying. */
+export function dayLabel(date: string, locale: string): string {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(y, m - 1, d));
+}
+
 /** "November 2026" / "Nov. 26" in the app language. */
 export function monthLabel(key: MonthKey, locale: string, style: 'long' | 'short' | 'month' = 'long'): string {
   const { year, month } = parseMonthKey(key);
@@ -419,6 +437,8 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
       createdAt: now + i,
     };
     if (e.dueDay !== undefined) copy.dueDay = e.dueDay;
+    // The same day of the new month (rent on the 1st stays on the 1st).
+    if (e.date) copy.date = dayInMonth(key, Number(e.date.slice(8, 10)));
     if (e.note) copy.note = e.note;
     if (e.order !== undefined) copy.order = e.order;
     return copy;
@@ -429,16 +449,20 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
 
 export interface NameSuggestion {
   name: string;
-  /** How often it was entered in this category. 0 for a built-in suggestion. */
+  /** How often it was entered, in any category. 0 for a built-in suggestion. */
   count: number;
-  /** The most recent entry with this name, if any — for prefilling. */
+  /** The category it was last entered in (the asked-for one if it was ever used there). */
+  categoryId: string;
+  /** The most recent entry with this name (in that category), if any — for prefilling. */
   last?: Pick<Entry, 'amount' | 'repeat' | 'dueDay'>;
 }
 
 /**
- * Names for the entry sheet's chips: what the user entered in this category
- * before (most often first, then most recent), then the built-in ideas for a
- * built-in category. Filtered by what is typed so far.
+ * Names for the entry sheet's chips, from every entry of every month: first
+ * what was entered in this category before, then the built-in ideas for a
+ * built-in category, then names from the other categories (each most often
+ * first, then most recent). While typing, names that start with the
+ * letters so far come first, then names that contain them.
  */
 export function suggestNames({ entries, categoryId, query = '', lang, limit = 12 }: {
   entries: Entry[];
@@ -448,29 +472,38 @@ export function suggestNames({ entries, categoryId, query = '', lang, limit = 12
   limit?: number;
 }): NameSuggestion[] {
   const q = normalizeName(query);
-  const groups = new Map<string, { name: string; count: number; latest: Entry }>();
+  const newer = (a: Entry, b: Entry) => a.month > b.month || (a.month === b.month && a.createdAt > b.createdAt);
+  const groups = new Map<string, { name: string; count: number; here: number; latest: Entry; latestHere?: Entry }>();
   for (const e of entries) {
-    if (e.categoryId !== categoryId) continue;
     const k = normalizeName(e.name);
     if (!k) continue;
+    const isHere = e.categoryId === categoryId;
     const g = groups.get(k);
-    if (!g) groups.set(k, { name: e.name, count: 1, latest: e });
-    else {
-      g.count++;
-      if (e.month > g.latest.month || (e.month === g.latest.month && e.createdAt > g.latest.createdAt)) {
-        g.latest = e;
-        g.name = e.name;
-      }
+    if (!g) {
+      groups.set(k, { name: e.name, count: 1, here: isHere ? 1 : 0, latest: e, latestHere: isHere ? e : undefined });
+      continue;
     }
+    g.count++;
+    if (isHere) {
+      g.here++;
+      if (!g.latestHere || newer(e, g.latestHere)) g.latestHere = e;
+    }
+    if (newer(e, g.latest)) { g.latest = e; g.name = e.name; }
   }
   const history = [...groups.entries()]
-    .sort(([, a], [, b]) => b.count - a.count || (b.latest.month > a.latest.month ? 1 : b.latest.month < a.latest.month ? -1 : b.latest.createdAt - a.latest.createdAt))
-    .map(([k, g]) => ({ k, s: { name: g.name, count: g.count, last: { amount: g.latest.amount, repeat: g.latest.repeat, dueDay: g.latest.dueDay } } as NameSuggestion }));
+    .sort(([, a], [, b]) => (b.here ? 1 : 0) - (a.here ? 1 : 0) || b.here - a.here || b.count - a.count
+      || (newer(b.latest, a.latest) ? 1 : newer(a.latest, b.latest) ? -1 : 0))
+    .map(([k, g]) => {
+      const from = g.latestHere ?? g.latest;
+      return { k, s: { name: g.name, count: g.count, categoryId: from.categoryId, last: { amount: from.amount, repeat: from.repeat, dueDay: from.dueDay } } as NameSuggestion };
+    });
   const builtin = (NAME_SUGGESTIONS[categoryId] ?? [])
     .map(names => displayName(names, lang))
-    .map(name => ({ k: normalizeName(name), s: { name, count: 0 } as NameSuggestion }))
+    .map(name => ({ k: normalizeName(name), s: { name, count: 0, categoryId } as NameSuggestion }))
     .filter(x => !groups.has(x.k));
-  const all = [...history, ...builtin];
+  const here = history.filter(x => x.s.categoryId === categoryId && groups.get(x.k)!.here > 0);
+  const elsewhere = history.filter(x => groups.get(x.k)!.here === 0);
+  const all = [...here, ...builtin, ...elsewhere];
   if (!q) return all.slice(0, limit).map(x => x.s);
   const starts = all.filter(x => x.k.startsWith(q) && x.k !== q);
   const contains = all.filter(x => !x.k.startsWith(q) && x.k.includes(q));
@@ -608,6 +641,7 @@ function normalizeEntry(v: unknown): Entry | null {
     createdAt: typeof v.createdAt === 'number' && Number.isFinite(v.createdAt) ? v.createdAt : 0,
   };
   if (due !== undefined) e.dueDay = due;
+  if (isIsoDay(v.date) && v.date.slice(0, 7) === e.month) e.date = v.date;
   const note = cleanText(str(v.note) ?? '', 200);
   if (note) e.note = note;
   if (typeof v.paidAt === 'number' && Number.isFinite(v.paidAt)) e.paidAt = v.paidAt;
@@ -789,6 +823,7 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
     lines.push([
       e.month, displayName(c?.names, lang), kind === 'income' ? labels.income : labels.expense, e.name, value,
       e.paid ? labels.paid : labels.open, labels.repeat[e.repeat], e.dueDay ? String(e.dueDay) : '', e.note ?? '',
+      e.date ? `${e.date.slice(8, 10)}.${e.date.slice(5, 7)}.${e.date.slice(0, 4)}` : '',
     ].map(cell).join(';'));
   }
   // BOM, so Excel reads the umlauts as UTF-8.

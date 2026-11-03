@@ -28,12 +28,12 @@ interface Props {
 type Range = 'last12' | 'all';
 
 /**
- * Statistics, from the long view to the single month:
+ * Statistics, from the long view to the single month, the reading last:
  *  1. all months — income vs expenses, balance at month end, the average per
  *     category, and each category per month;
- *  2. insights — savings rate, emergency reserve, forecast, 50/30/20, fixed
- *     commitments, what was unusual, best and weakest month;
- *  3. one month in detail — what was saved, where the money went.
+ *  2. one month in detail — what was saved, where the money went;
+ *  3. insights — savings rate, emergency reserve, forecast, 50/30/20, fixed
+ *     commitments, what was unusual, best and weakest month.
  */
 export function StatsView({ month, balances, data, language, t, onMonth }: Props) {
   const { entries, categories } = data;
@@ -140,6 +140,9 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
           </table>
         </div>
       </details>
+
+      {/* --------------------------------------------- one month in detail */}
+      <MonthDetail month={month} balances={balances} data={data} language={language} t={t} onMonth={onMonth} />
 
       {/* ------------------------------------------------------ insights */}
       <h2 className="px-1 pt-2 display text-title2 font-bold text-fg">{t.insightsTitle}</h2>
@@ -276,9 +279,6 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
           </Card>
         )}
       </div>
-
-      {/* --------------------------------------------- one month in detail */}
-      <MonthDetail month={month} balances={balances} data={data} language={language} t={t} onMonth={onMonth} />
     </Screen>
   );
 }

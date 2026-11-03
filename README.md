@@ -25,43 +25,51 @@ month, and the two numbers that matter: **what is on the account now** and
   category in — as does picking it when entering something. A category with
   entries always stays. Tap a card's header to fold it
   down to that one line (remembered per category, in every month); "⋯" folds
-  or unfolds them all.
+  or unfolds them all. The filter button on a card shows only what is still
+  open there.
 - **Drag to sort.** Press and hold an entry (with a mouse: just drag it) and
   move it — within its card to change the order, or onto another card to move
   it there (undoable). A line shows where it lands, and the page scrolls along
   near the edges. The order is kept per month and comes along with recurring
   entries. Keyboard: Alt + ↑ / ↓.
-- **Two balances.** *Jetzt auf dem Konto* counts what is paid / received, with
-  a ring for how many of the month's bills are paid. Below it the month reads
-  like a sum — carry-over, then income and expenses each in two columns,
-  *Bezahlt* and *Offen* — down to *Am Monatsende*, which also counts
-  everything still open.
+- **Two balances.** *Kontostand jetzt* — the bank balance, counting what is
+  paid / received — with a ring for how many of the month's bills are paid and,
+  small beneath it, what was carried over (tap to correct it). Below, income
+  and expenses in two columns, *Bezahlt* and *Offen*, down to *Am Monatsende*
+  in both columns, and the two together: what is left once everything open is
+  settled.
 - **Paid or open.** Every entry has a circle in front: empty = still open (rent
   not paid yet, salary expected), filled = paid. One tap toggles it — or swipe
-  the entry to the right. Swipe left to delete (undoable). With a due day
-  ("am 14."), open entries turn **überfällig** once the day has passed.
+  the entry to the right. Swipe left to delete (undoable). Every entry has a
+  **date** (today unless you pick another day of the month), shown on its row.
+  With a due day ("fällig am 14."), open entries turn **überfällig** once the
+  day has passed. How often an entry repeats shows in the editor only.
 - **Fast entry.** The amount comes first (German or English number format both
-  work: `1.050,00`, `45,12`, `12.5`). Name suggestions come from earlier months
-  and a built-in list per category; tapping "Miete" fills in last month's amount
-  and due day. "Sichern & nächster" for a stack of receipts. Deleting is undoable.
+  work: `1.050,00`, `45,12`, `12.5`). Name suggestions come from every entry in
+  every month (this category's first, then the built-in ideas, then other
+  categories') and narrow with each letter typed; tapping "Miete" fills in last
+  month's amount and due day, and a name from another category ("Lidl") moves
+  the entry there. All of this month's categories show at once, the rest behind
+  *Weitere*. "Sichern & nächster" for a stack of receipts (keeps the date).
+  Deleting is undoable.
 - **Carry-over.** Mark entries **monatlich** or **jährlich**. Starting the next
   month shows exactly which ones come along and copies them in as *open*. The
   balance is carried over automatically — set it by hand for the first month or
   when the real account has drifted ("⋯" → Kontostand am Monatsanfang). Open
   entries left in earlier months are flagged with a link to them.
-- **Statistics.** From the long view down to one month:
+- **Statistics.** From the long view down to one month, the reading last:
   - *all months* (last 12, or all): income vs. expenses, the balance at each
     month's end, the average per category, and every category per month as
     grouped columns (tap the legend to hide one; switch to income) — hover /
     tap for values, or open the table;
+  - *one month in detail*: what was saved and where the money went, by
+    category (paid vs. open) or by payee ("Lidl · 6×");
   - *insights* (Auswertung): savings rate, emergency reserve in months of
     spending (3–6 is the usual advice), a forecast for the year's end and 12
     months out, the 50/30/20 rule (needs / wants / saved — set per category
     whether it counts as *Bedarf*, *Wünsche* or *Sparen*, so an ETF plan in
     *Geldanlage* is saved, not spent), fixed commitments per month and per year,
-    what was unusual this month, and the best and weakest month;
-  - *one month in detail*: what was saved and where the money went, by
-    category (paid vs. open) or by payee ("Lidl · 6×").
+    what was unusual this month, and the best and weakest month.
 - **Settings.** Categories — besides the six above, the usual categories of a
   German banking app are built in, switched off for new months until you want
   them: *Bekleidung, Einkäufe, Telekommunikation, Mobilität, Reisen, Freizeit

@@ -345,6 +345,7 @@ export default function App() {
         mode={entrySheet}
         // This month's categories first; the rest after them (picking one adds it to the month).
         categories={[...shownCategories, ...hiddenCategories]}
+        featured={shownCategories.map(c => c.id)}
         entries={entries}
         language={language}
         t={t}

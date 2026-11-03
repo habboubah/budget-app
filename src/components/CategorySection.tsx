@@ -1,8 +1,8 @@
 import React, { useId } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, ChevronDown, Circle, Plus, Repeat as RepeatIcon, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, Circle, ListFilter, Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
-import { displayName, formatMoney, isOverdue } from '../logic';
+import { dayLabel, displayName, formatMoney, isOverdue } from '../logic';
 import { Strings, fmt, plural } from '../translations';
 import { Picture } from '../ui/Picture';
 import { tapLight } from '../ui/haptics';
@@ -26,6 +26,9 @@ interface Props {
   onToggle: (e: Entry) => void;
   /** Swipe left: delete (undoable). */
   onDelete: (e: Entry) => void;
+  /** Showing only what is still open (the filter button in the header). */
+  openOnly: boolean;
+  onOpenOnly: () => void;
   /** The entry being dragged right now (from any category), if any. */
   dragId: string | null;
   /** Where the dragged entry would land in this category, if it is over it. */
@@ -48,14 +51,16 @@ interface Props {
  * a line shows where it would land. A swipe marks one paid or deletes it.
  */
 export function CategorySection({
-  category, entries, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle, onDelete,
-  dragId, dropIndex, dragProps, onMoveBy,
+  category, entries: all, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle, onDelete,
+  openOnly, onOpenOnly, dragId, dropIndex, dragProps, onMoveBy,
 }: Props) {
+  // The filter hides what is paid; totals still count everything.
+  const entries = openOnly ? all.filter(e => !e.paid || e.id === dragId) : all;
   const bodyId = useId();
   const name = displayName(category.names, language);
   const income = category.kind === 'income';
-  const total = entries.reduce((s, e) => s + e.amount, 0);
-  const open = entries.reduce((s, e) => s + (e.paid ? 0 : e.amount), 0);
+  const total = all.reduce((s, e) => s + e.amount, 0);
+  const open = all.reduce((s, e) => s + (e.paid ? 0 : e.amount), 0);
   const paid = total - open;
   const money = (c: number) => formatMoney(c, t.locale);
 
@@ -133,8 +138,8 @@ export function CategorySection({
           <Picture emoji={category.emoji} name={name} size="sm" />
           <span className="min-w-0 flex-1">
             <span className="block text-body font-semibold text-fg wrap-compound">{name}</span>
-            {collapsed && entries.length > 0 && (
-              <span className="block text-caption text-fg-mute tabular-nums">{plural(entries.length, t.entriesOne, t.entriesMany)}</span>
+            {collapsed && all.length > 0 && (
+              <span className="block text-caption text-fg-mute tabular-nums">{plural(all.length, t.entriesOne, t.entriesMany)}</span>
             )}
           </span>
           {/* What is paid, big; below it, small and yellow, everything including what is still open. */}
@@ -152,7 +157,20 @@ export function CategorySection({
             aria-hidden="true"
           />
         </button>
-        {onRemove && entries.length === 0 && (
+        {!collapsed && all.length > 0 && (open > 0 || openOnly) && (
+          <button
+            type="button"
+            aria-pressed={openOnly}
+            aria-label={`${openOnly ? t.showAllEntries : t.showOpenOnly} — ${name}`}
+            title={openOnly ? t.showAllEntries : t.showOpenOnly}
+            onClick={() => { tapLight(); onOpenOnly(); }}
+            className={`shrink-0 me-1.5 w-9 h-9 rounded-full inline-flex items-center justify-center transition-colors focus-visible:ring-focus ${
+              openOnly ? 'bg-warn-dim text-warn' : 'text-fg-faint active:bg-surface-2'}`}
+          >
+            <ListFilter className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
+          </button>
+        )}
+        {onRemove && all.length === 0 && (
           /* Quiet, not red: a new month has several empty categories, and it is undoable. */
           <IconButton label={fmt(t.removeFromMonth, { name })} icon={Trash2} tone="default" className="me-1" onClick={onRemove} />
         )}
@@ -169,6 +187,9 @@ export function CategorySection({
             transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
             className="overflow-hidden"
           >
+            {openOnly && entries.length === 0 && (
+              <p className="hairline-t px-4 py-3 text-label text-fg-mute">{t.nothingOpen}</p>
+            )}
             {rows.length > 0 && (
               <ul className="hairline-t divide-hairline-inset" style={{ '--sep': '52px' } as React.CSSProperties}>
                 <AnimatePresence initial={false}>{rows}</AnimatePresence>
@@ -184,7 +205,7 @@ export function CategorySection({
               <span className="w-6 h-6 rounded-full bg-accent-fill text-accent-fill-ink inline-flex items-center justify-center shrink-0" aria-hidden="true">
                 <Plus className="w-4 h-4" strokeWidth={3} />
               </span>
-              <span className="text-body">{entries.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
+              <span className="text-body">{all.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
             </button>
           </motion.div>
         )}
@@ -210,22 +231,17 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
   onMoveBy: (delta: -1 | 1) => void;
 }) {
   const meta: React.ReactNode[] = [];
-  // Status in words first, coloured — never colour or shape alone.
+  // The date first; then, while open, the status in words, coloured — never
+  // colour or shape alone — and when it is due. How often it repeats is for
+  // the editor, not the list.
+  if (e.date) meta.push(<span key="date" className="whitespace-nowrap">{dayLabel(e.date, t.locale)}</span>);
   if (!e.paid) {
     meta.push(
       <span key="state" className={`font-medium ${overdue ? 'text-neg' : 'text-warn'}`}>
         {overdue ? t.overdue : income ? t.expected : t.open}
       </span>,
     );
-  }
-  if (e.dueDay) meta.push(<span key="due">{fmt(t.dueOn, { day: e.dueDay })}</span>);
-  if (e.repeat !== 'none') {
-    meta.push(
-      <span key="rep" className="inline-flex items-center gap-1">
-        <RepeatIcon className="w-3 h-3" aria-hidden="true" />
-        {e.repeat === 'monthly' ? t.repeatsMonthly : t.repeatsYearly}
-      </span>,
-    );
+    if (e.dueDay) meta.push(<span key="due">{fmt(t.dueOn, { day: e.dueDay })}</span>);
   }
   if (e.note) meta.push(<span key="note" className="wrap-compound">{e.note}</span>);
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;

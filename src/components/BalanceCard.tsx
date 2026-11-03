@@ -16,13 +16,16 @@ interface Props {
  * The card at the top of a month: the two numbers the app is opened for.
  *
  * On top, big, what is on the account now (only what is ticked as paid), with
- * a ring for how many of the month's bills are paid. Below it the month reads
- * like a sum on paper — carry-over, plus income, minus expenses, each split
- * into what is paid and what is still open — down to the result: what will be
- * left at the end of the month once everything open is settled.
+ * a ring for how many of the month's bills are paid, and small beneath it
+ * what was carried over. Below, the month in two columns, paid and still open
+ * — income, expenses, down to the month end — and the two together: what will
+ * be left once everything open is settled.
  */
 export function BalanceCard({ balance: b, t, onOpening }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
+  // Open bills of earlier months still to settle, and everything open in all.
+  const carryOpen = b.openingEnd - b.openingNow;
+  const endOpen = b.end - b.now;
   const carryLabel = b.overridden
     ? t.carryManual
     : b.prevKey
@@ -38,70 +41,75 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
         <div className="min-w-0 flex-1">
           <p className="eyebrow text-fg-mute">{t.balanceNow}</p>
           <BigMoney text={money(b.now)} negative={b.now < 0} />
+          {/* Where the month started from — small, in the accent, tap to correct it. */}
+          <button
+            type="button"
+            onClick={() => { tapLight(); onOpening(); }}
+            className="mt-1.5 -mx-1 px-1 rounded-sm inline-flex flex-wrap items-center gap-x-1.5 text-caption text-start active:opacity-60 focus-visible:ring-focus"
+          >
+            <span className="text-accent font-medium">{carryLabel}</span>
+            <span className={`num font-semibold ${b.openingNow < 0 ? 'text-neg' : 'text-accent'}`}>{money(b.openingNow)}</span>
+            {carryOpen !== 0 && <span className="text-warn font-medium tabular-nums">· {fmt(t.inclOpen, { amount: money(carryOpen) })}</span>}
+            <ChevronRight className="w-3.5 h-3.5 text-accent rtl:rotate-180" strokeWidth={2.5} aria-hidden="true" />
+          </button>
         </div>
         {b.expenseCount > 0 && (
           <PaidRing paid={b.expensePaidCount} total={b.expenseCount} label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })} />
         )}
       </div>
 
-      {/* The sum behind "Monatsende": carry-over + income − expenses = end. */}
+      {/* Income and expenses, paid and still open side by side, down to the
+          month end in both columns (with the carry-over above); both together
+          make the month-end balance. */}
       <div className="mx-5 hairline-t" />
-      <button
-        type="button"
-        onClick={() => { tapLight(); onOpening(); }}
-        className="w-full px-5 min-h-[46px] flex items-center gap-2 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
-      >
-        <span className="min-w-0 flex-1 text-label text-fg-mute wrap-prose">{carryLabel}</span>
-        <span className={`text-label font-semibold num ${b.openingNow < 0 ? 'text-neg' : 'text-fg'}`}>{money(b.openingNow)}</span>
-        <ChevronRight className="w-4 h-4 shrink-0 text-fg-faint rtl:rotate-180" aria-hidden="true" />
-      </button>
-      {/* Income and expenses, paid and still open side by side; the open
-          column is the money that only counts at the end of the month. */}
-      <div className="ps-5 pe-11 pb-2">
+      <div className="px-5 pt-2.5">
         <table className="w-full text-label">
           <thead>
             <tr className="text-caption text-fg-mute">
               <td />
-              <th scope="col" className="ps-3 pb-0.5 text-end font-medium">{t.colPaid}</th>
-              <th scope="col" className="ps-3 pb-0.5 text-end font-medium">{t.colOpen}</th>
+              <th scope="col" className="ps-3 pb-1 text-end font-medium">{t.colPaid}</th>
+              <th scope="col" className="ps-3 pb-1 text-end font-medium">{t.colOpen}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <th scope="row" className="py-1.5 text-start font-normal text-fg-mute">{t.income}</th>
-              <td className={`py-1.5 ps-3 text-end font-semibold num whitespace-nowrap ${b.incomePaid ? 'text-pos' : 'text-fg-mute'}`}>
-                {money(b.incomePaid, 'exceptZero')}
-              </td>
-              <td className={`py-1.5 ps-3 text-end font-semibold num whitespace-nowrap ${b.incomeOpen ? 'text-warn' : 'text-fg-mute'}`}>
-                {money(b.incomeOpen, 'exceptZero')}
-              </td>
+              <MoneyCell text={money(b.incomePaid, 'exceptZero')} tone={b.incomePaid ? 'text-pos' : 'text-fg-mute'} />
+              <MoneyCell text={money(b.incomeOpen, 'exceptZero')} tone={b.incomeOpen ? 'text-warn' : 'text-fg-mute'} />
             </tr>
             <tr>
               <th scope="row" className="py-1.5 text-start font-normal text-fg-mute">{t.expenses}</th>
-              <td className={`py-1.5 ps-3 text-end font-semibold num whitespace-nowrap ${b.expensePaid ? 'text-fg' : 'text-fg-mute'}`}>
-                {money(b.expensePaid ? -b.expensePaid : 0)}
-              </td>
-              <td className={`py-1.5 ps-3 text-end font-semibold num whitespace-nowrap ${b.expenseOpen ? 'text-warn' : 'text-fg-mute'}`}>
-                {money(b.expenseOpen ? -b.expenseOpen : 0)}
-              </td>
+              <MoneyCell text={money(b.expensePaid ? -b.expensePaid : 0)} tone={b.expensePaid ? 'text-fg' : 'text-fg-mute'} />
+              <MoneyCell text={money(b.expenseOpen ? -b.expenseOpen : 0)} tone={b.expenseOpen ? 'text-warn' : 'text-fg-mute'} />
             </tr>
           </tbody>
+          <tfoot>
+            <tr className="border-t border-hairline">
+              <th scope="row" className="pt-2.5 pb-1.5 text-start font-semibold text-fg">{t.balanceEnd}</th>
+              <MoneyCell text={money(b.now)} tone={b.now < 0 ? 'text-neg' : 'text-fg'} strong />
+              <MoneyCell text={money(endOpen, 'exceptZero')} tone={endOpen ? 'text-warn' : 'text-fg-mute'} strong />
+            </tr>
+          </tfoot>
         </table>
       </div>
 
-      <div className="mx-5 hairline-t" />
-      <div className="px-5 pt-3 pb-4 flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-body font-semibold text-fg">{t.balanceEnd}</p>
-          {b.count > 0 && (
-            <p className={`text-caption mt-0.5 wrap-prose ${b.openCount ? 'text-warn' : 'text-fg-mute'}`}>
-              {b.openCount ? plural(b.openCount, t.afterOpenOne, t.afterOpenMany) : t.allSettled}
-            </p>
-          )}
-        </div>
-        <p className={`rounded-num text-heading font-bold me-6 ${b.end < 0 ? 'text-neg' : 'text-fg'}`}>{money(b.end)}</p>
+      {/* Both columns together: what will be left once everything open is settled. */}
+      <div className="px-5 pt-1 pb-4 flex items-end gap-3">
+        <p className={`min-w-0 flex-1 text-caption wrap-prose ${b.openCount ? 'text-warn' : 'text-fg-mute'}`}>
+          {b.count > 0 ? (b.openCount ? plural(b.openCount, t.afterOpenOne, t.afterOpenMany) : t.allSettled) : null}
+        </p>
+        <p className={`rounded-num text-heading font-bold ${b.end < 0 ? 'text-neg' : 'text-fg'}`} aria-label={`${t.balanceEnd}: ${money(b.end)}`}>
+          <span className="text-fg-faint font-semibold me-1" aria-hidden="true">=</span>{money(b.end)}
+        </p>
       </div>
     </section>
+  );
+}
+
+/** One amount in the paid / open table. */
+function MoneyCell({ text, tone, strong }: { text: string; tone: string; strong?: boolean }) {
+  return (
+    <td className={`ps-3 text-end num whitespace-nowrap ${strong ? 'pt-2.5 pb-1.5 font-bold' : 'py-1.5 font-semibold'} ${tone}`}>{text}</td>
   );
 }
 

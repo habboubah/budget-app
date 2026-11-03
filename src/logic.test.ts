@@ -229,6 +229,14 @@ describe('suggestions', () => {
     expect(suggestNames({ entries, categoryId: 'fixed', query: 'strom', lang: 'de' })).toHaveLength(0);
     expect(suggestNames({ entries, categoryId: 'income', lang: 'en' })[0].name).toBe('Salary');
   });
+  it('suggests names from every category, this one first, and remembers where a name belongs', () => {
+    const all = [e('2026-09', 'groceries', 'Lidl', 3000, true), e('2026-10', 'groceries', 'Lidl', 4000, true), e('2026-10', 'extra', 'Libri', 1500, true)];
+    const s = suggestNames({ entries: all, categoryId: 'extra', query: 'li', lang: 'de' });
+    // Starting with "li": this category's own first, then other categories'; "Online-Kurs" (contains it) after.
+    expect(s.map(x => [x.name, x.categoryId])).toEqual([['Libri', 'extra'], ['Lidl', 'groceries'], ['Online-Kurs', 'extra']]);
+    expect(s[1].last?.amount).toBe(4000);
+    expect(suggestNames({ entries: all, categoryId: 'extra', lang: 'de', limit: 40 }).length).toBeGreaterThan(5);
+  });
 });
 
 describe('statistics', () => {
@@ -322,8 +330,8 @@ describe('CSV export', () => {
       repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' },
     });
     const lines = csv.replace('﻿', '').trim().split('\r\n');
-    expect(lines[1]).toBe('2026-11;Einkommen;Einnahme;Gehalt;4164,59;bezahlt;einmalig;;');
-    expect(lines[2]).toBe('2026-11;Wohnen;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;');
+    expect(lines[1]).toBe('2026-11;Einkommen;Einnahme;Gehalt;4164,59;bezahlt;einmalig;;;');
+    expect(lines[2]).toBe('2026-11;Wohnen;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;;');
   });
 });
 

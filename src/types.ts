@@ -54,6 +54,9 @@ export interface Entry {
   repeat: Repeat;
   /** Day of the month it is due, 1–31. */
   dueDay?: number;
+  /** The day it belongs to, YYYY-MM-DD, inside `month` — today when entered,
+   *  changeable in the editor. Entries from before dates existed have none. */
+  date?: string;
   note?: string;
   /** Shared by the copies of one recurring entry across months ("Miete" in
    *  October and in November), so carrying over never duplicates. */
@@ -102,5 +105,6 @@ export interface EntryDraft {
   paid: boolean;
   repeat: Repeat;
   dueDay?: number;
+  date?: string;
   note?: string;
 }

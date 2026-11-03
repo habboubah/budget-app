@@ -28,16 +28,6 @@ export function SettingsView(p: Props) {
 
   return (
     <Screen title={t.settingsTitle} tabbed>
-      <Group>
-        <Row
-          label={t.categories}
-          sub={t.categoriesSub}
-          leading={<IconTile icon={Tags} hue="lavender" />}
-          trailing={<span className="flex items-center gap-1 text-fg-mute"><span className="num text-body">{p.categoryCount}</span><ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" /></span>}
-          onClick={p.onCategories}
-        />
-      </Group>
-
       <section className="space-y-2">
         <h2 className="px-4 eyebrow text-fg-mute flex items-center gap-2"><Languages className="w-4 h-4" aria-hidden="true" />{t.language}</h2>
         <Segmented<Language>
@@ -61,6 +51,16 @@ export function SettingsView(p: Props) {
           ]}
         />
       </section>
+
+      <Group>
+        <Row
+          label={t.categories}
+          sub={t.categoriesSub}
+          leading={<IconTile icon={Tags} hue="lavender" />}
+          trailing={<span className="flex items-center gap-1 text-fg-mute"><span className="num text-body">{p.categoryCount}</span><ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" /></span>}
+          onClick={p.onCategories}
+        />
+      </Group>
 
       {p.backup}
 
