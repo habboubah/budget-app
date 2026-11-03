@@ -58,7 +58,7 @@ function loadInitial(): AppData {
     months: readJson(K.months),
   });
   // Saved by an older version: new built-in categories, updated looks.
-  if (!missing && (meta?.schemaVersion ?? 1) < 2) data.categories = upgradeCategories(data.categories);
+  if (!missing) data.categories = upgradeCategories(data.categories, meta?.schemaVersion ?? 1);
   if (meta?.seeded || data.months.length) return data;
   return { ...data, months: [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(data.categories) }] };
 }

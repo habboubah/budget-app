@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Category, Entry, EntryDraft, MonthKey, Repeat } from '../types';
-import { amountToInput, cleanText, displayName, monthKeyOf, parseAmount, suggestNames } from '../logic';
+import { amountToInput, cleanText, displayName, monthKeyOf, parseAmount, suggestNames, normalizeDigits } from '../logic';
 import { Strings } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field, Label, Segmented } from '../ui/Field';
@@ -154,7 +154,8 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
         {/* Amount — the one thing every entry needs. */}
         <div className="text-center pt-1">
           <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
-          <div className="mt-1 flex items-baseline justify-center gap-1.5">
+          {/* Written the way amounts are shown everywhere: "−45,12 €", left to right. */}
+          <div dir="ltr" className="mt-1 flex items-baseline justify-center gap-1.5">
             <span className={`rounded-num text-[32px] font-semibold ${income ? 'text-pos' : 'text-fg-mute'}`} aria-hidden="true">
               {income ? '+' : '−'}
             </span>
@@ -166,7 +167,7 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
               enterKeyHint="next"
               placeholder="0,00"
               value={amountText}
-              onChange={e => { setAmountText(e.target.value); setShowError(false); }}
+              onChange={e => { setAmountText(normalizeDigits(e.target.value)); setShowError(false); }}
               aria-invalid={showError && amount === null}
               aria-describedby={showError && amount === null ? `${amountId}-err` : undefined}
               style={{ width: `${Math.max(4, amountText.length || 4) + 0.6}ch` }}
@@ -275,7 +276,7 @@ export function EntrySheet({ mode, categories, entries, language, t, onClose, on
           <Field
             label={t.dueDay}
             value={dueText}
-            onChange={v => setDueText(v.replace(/\D/g, '').slice(0, 2))}
+            onChange={v => setDueText(normalizeDigits(v).replace(/\D/g, '').slice(0, 2))}
             placeholder={t.dueDayPlaceholder}
             inputMode="numeric"
             maxLength={2}

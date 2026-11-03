@@ -380,8 +380,8 @@
   & > :not(:last-child)::after {
     content: "";
     position: absolute;
-    left: var(--sep, 1rem);
-    right: 0;
+    inset-inline-start: var(--sep, 1rem);
+    inset-inline-end: 0;
     bottom: 0;
     height: 1px;
     background: var(--t-hairline);
@@ -407,6 +407,13 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Right to left (Arabic). Amounts stay left to right (`num`, `rounded-num`);
+   where one fills a block, the block still lines up with the page's start. */
+[dir="rtl"] :is(.num, .rounded-num):not(.text-center) { text-align: right; }
+
+/* Arabic is a joined script: tracking would pull its letters apart. */
+*:lang(ar) { letter-spacing: normal !important; }
 
 @layer base {
   html {

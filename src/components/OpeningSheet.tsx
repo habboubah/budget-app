@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { MonthKey } from '../types';
-import { amountToInput, formatMoney, monthLabel, parseAmount } from '../logic';
+import { amountToInput, formatMoney, monthLabel, parseAmount, normalizeDigits } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
@@ -53,7 +53,7 @@ export function OpeningSheet({ open, month, current, overridden, prevKey, carrie
         <Field
           label={prevKey ? t.carryManual : t.startingBalance}
           value={text}
-          onChange={setText}
+          onChange={v => setText(normalizeDigits(v))}
           placeholder={carried !== undefined ? amountToInput(carried, t.locale) : '0,00'}
           inputMode="decimal"
           autoFocus

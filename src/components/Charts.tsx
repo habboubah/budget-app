@@ -105,7 +105,7 @@ function ChartFrame({ months, minSlot, ticks, y, selected, t, label, onPick, mar
     : Math.max(scrollLeft, Math.min(cx(active) - tipW / 2, scrollLeft + visible - tipW));
 
   return (
-    <div ref={box} className="relative flex" onPointerLeave={() => setActive(null)}>
+    <div ref={box} dir="ltr" className="relative flex" onPointerLeave={() => setActive(null)}>
       <svg width={AXIS_W} height={H} className="shrink-0" aria-hidden="true">
         {ticks.map(v => (
           <text key={v} x={AXIS_W - 6} y={y(v)} dy="0.32em" textAnchor="end" className="fill-fg-mute text-micro num">{compact(v, t.locale)}</text>
@@ -426,7 +426,7 @@ export function BudgetSplitBar({ split, t }: { split: BudgetSplit; t: Strings })
               <span className="truncate">{p.label}</span>
             </span>
             <span className="block text-label font-bold text-fg num mt-0.5">{split.income > 0 ? `${pct(p.key === 'saved' ? split.saved : p.value)} %` : '–'}</span>
-            <span className="block text-caption text-fg-mute num">{fmt(t.targetPct, { p: p.target })}</span>
+            <span className="block text-caption text-fg-mute tabular-nums">{fmt(t.targetPct, { p: p.target })}</span>
           </li>
         ))}
       </ul>

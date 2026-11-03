@@ -50,9 +50,9 @@ export function ExcelImportSheet({ plan, fileName, replaced, categories, languag
               <li key={m.key} className="relative px-4 py-2.5" style={{ '--sep': '1rem' } as CSSProperties}>
                 <div className="flex items-baseline gap-3">
                   <span className="min-w-0 flex-1 text-body text-fg">{monthLabel(m.key, t.locale)}</span>
-                  <span className="text-caption text-fg-mute num">{plural(m.entries.length, t.entriesOne, t.entriesMany)}</span>
+                  <span className="text-caption text-fg-mute tabular-nums">{plural(m.entries.length, t.entriesOne, t.entriesMany)}</span>
                 </div>
-                <div className="flex flex-wrap gap-x-3 text-caption num">
+                <div className="flex flex-wrap gap-x-3 text-caption tabular-nums">
                   <span className="text-pos">+{money(m.income)}</span>
                   <span className="text-fg-mute">−{money(m.expense)}</span>
                   {m.correctedFrom && <span className="text-warn font-semibold">{fmt(t.excelTab, { sheet: m.sheet })} → {monthLabel(m.key, t.locale, 'short')}</span>}

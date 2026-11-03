@@ -54,7 +54,8 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   (`clothing` … `other`) ship with `standard: false` — keep it that way, or
   every month fills up with empty cards. Only an empty category can be taken
   out of a month (`canRemoveFromMonth`).
-- **Schema 2** added those built-ins. `upgradeCategories()` (run once by
+- **Schema 2** added those built-ins; **schema 3** gives built-ins still named
+  as shipped their Arabic names. `upgradeCategories()` (run once by
   `loadInitial` for storage below version 2, and by `parseBackup` for older
   backups) appends the missing ones and applies renamed names / emoji
   (`SHIPPED_V1` in `defaults.ts`) only where the user kept what v1 shipped.
@@ -82,8 +83,19 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   where a lot goes at once (a category with entries).
 
 ## i18n
-- `src/translations.ts`: one flat object per language (`de`, `en`). Default
-  `de`; first run follows the device language. Add every key to every block.
+- `src/translations.ts`: one flat object per language (`de`, `en`, `ar`).
+  Default `de`; first run follows the device language. Add every key to every
+  block.
+- **Arabic is right to left.** `store.ts` sets `<html dir lang>`; write layout
+  with logical classes only (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`,
+  `text-start`/`text-end`, `rtl:rotate-180` on chevrons) — never `left`/`right`.
+  Amounts stay left to right: `num` / `rounded-num` force `direction: ltr`, so
+  put them only on pure amounts; text that contains words gets `tabular-nums`
+  instead, or an Arabic word reads backwards. The scrolling charts are
+  `dir="ltr"` (time runs left to right). Arabic uses Western digits
+  (`ar-u-nu-latn`); input goes through `normalizeDigits()` so ٤٥٫١٢ from an
+  Arabic keyboard reads as 45.12. Arabic strings avoid count-dependent plurals
+  ("البنود: {n}"). No letter-spacing on Arabic (index.css resets it).
 - Access via `const t = translations[language]`. Never inline
   `language === 'de' ? …`.
 - Built-in categories carry a name per language (`names`); user-created ones

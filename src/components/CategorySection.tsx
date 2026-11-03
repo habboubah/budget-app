@@ -134,7 +134,7 @@ export function CategorySection({
           <span className="min-w-0 flex-1">
             <span className="block text-body font-semibold text-fg wrap-compound">{name}</span>
             {collapsed && entries.length > 0 && (
-              <span className="block text-caption text-fg-mute num">{plural(entries.length, t.entriesOne, t.entriesMany)}</span>
+              <span className="block text-caption text-fg-mute tabular-nums">{plural(entries.length, t.entriesOne, t.entriesMany)}</span>
             )}
           </span>
           {/* What is paid, big; below it, small and yellow, everything including what is still open. */}
@@ -143,7 +143,7 @@ export function CategorySection({
               {money(paid)}
             </span>
             {open > 0 && (
-              <span className="block text-caption font-medium text-warn num whitespace-nowrap">{fmt(t.sectionInclOpen, { amount: money(total) })}</span>
+              <span className="block text-caption font-medium text-warn tabular-nums whitespace-nowrap">{fmt(t.sectionInclOpen, { amount: money(total) })}</span>
             )}
           </span>
           <ChevronDown

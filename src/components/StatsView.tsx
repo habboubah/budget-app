@@ -116,7 +116,7 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
           {t.showTable}
         </summary>
         <div className="overflow-x-auto px-4 pb-4">
-          <table className="w-full text-caption num">
+          <table className="w-full text-caption tabular-nums">
             <thead className="text-fg-mute">
               <tr>
                 <th className="text-start font-semibold py-1.5 pe-2">{t.tabMonth}</th>
@@ -206,7 +206,7 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
             <p className="text-label text-fg-mute wrap-prose">{t.commitmentsNone}</p>
           ) : (
             <>
-              <p className="text-heading font-semibold text-fg num">{fmt(t.commitmentsLine, { monthly: money(fixed.monthly), yearly: money(fixed.yearly) })}</p>
+              <p className="text-heading font-semibold text-fg tabular-nums">{fmt(t.commitmentsLine, { monthly: money(fixed.monthly), yearly: money(fixed.yearly) })}</p>
               {sv.averageIncome > 0 && (
                 <p className="text-caption text-fg-mute mt-1 wrap-prose">{fmt(t.commitmentsShare, { p: Math.round((fixed.monthly / sv.averageIncome) * 100) })}</p>
               )}
@@ -218,7 +218,7 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
                       <span className="emoji text-[15px] mt-0.5" aria-hidden="true">{c?.emoji}</span>
                       <span className="min-w-0 flex-1">
                         <span className="block text-label text-fg wrap-compound">{i.name}</span>
-                        <span className="block text-caption text-fg-mute num">
+                        <span className="block text-caption text-fg-mute tabular-nums">
                           {i.repeat === 'yearly' ? t.repeatsYearly : fmt(t.perYear, { amount: money(i.yearly) })}
                         </span>
                       </span>
@@ -248,7 +248,7 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
                           <span className="min-w-0 flex-1 text-label text-fg wrap-compound">{displayName(u.category.names, language)}</span>
                           <span className="text-label font-semibold text-fg num">{money(u.total)}</span>
                         </div>
-                        <p className={`flex items-center gap-1 text-caption font-semibold num ${up ? 'text-warn' : 'text-pos'}`}>
+                        <p className={`flex items-center gap-1 text-caption font-semibold tabular-nums ${up ? 'text-warn' : 'text-pos'}`}>
                           <Icon className="w-3.5 h-3.5" aria-hidden="true" />
                           {fmt(up ? t.unusualMore : t.unusualLess, { pct: Math.round(Math.abs(u.diff) / u.usual * 100), usual: money(u.usual) })}
                         </p>
@@ -287,7 +287,7 @@ function Card({ title, sub, children }: { title: string; sub?: string; children:
   return (
     <section className="rounded-md bg-surface card-edge p-4">
       <h3 className="text-label font-semibold text-fg wrap-compound">{title}</h3>
-      {sub && <p className="text-caption text-fg-mute mt-0.5 num wrap-prose">{sub}</p>}
+      {sub && <p className="text-caption text-fg-mute mt-0.5 tabular-nums wrap-prose">{sub}</p>}
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -298,9 +298,9 @@ function ReserveMeter({ months }: { months: number }) {
   const pct = (m: number) => `${(Math.min(m, 12) / 12) * 100}%`;
   return (
     <div className="relative mt-3 h-2 rounded-full bg-surface-2" aria-hidden="true">
-      <div className="absolute inset-y-0 rounded-full bg-pos-dim" style={{ left: pct(3), width: `${(3 / 12) * 100}%` }} />
-      <div className={`absolute inset-y-0 left-0 rounded-full ${months < 3 ? 'bg-warn' : 'bg-pos'}`} style={{ width: pct(months) }} />
-      {[3, 6].map(m => <div key={m} className="absolute -top-1 -bottom-1 w-px bg-fg-faint" style={{ left: pct(m) }} />)}
+      <div className="absolute inset-y-0 rounded-full bg-pos-dim" style={{ insetInlineStart: pct(3), width: `${(3 / 12) * 100}%` }} />
+      <div className={`absolute inset-y-0 start-0 rounded-full ${months < 3 ? 'bg-warn' : 'bg-pos'}`} style={{ width: pct(months) }} />
+      {[3, 6].map(m => <div key={m} className="absolute -top-1 -bottom-1 w-px bg-fg-faint" style={{ insetInlineStart: pct(m) }} />)}
     </div>
   );
 }
@@ -375,7 +375,7 @@ function MonthDetail({ month, balances, data, language, t, onMonth }: Props) {
                             <span className="text-body font-semibold text-fg num">{money(s.total)}</span>
                           </div>
                           <SplitBar paid={s.paid} open={s.open} max={maxSlice} />
-                          <p className="text-caption text-fg-mute mt-1 num">
+                          <p className="text-caption text-fg-mute mt-1 tabular-nums">
                             {fmt(t.ofExpenses, { p: Math.round((s.total / expenses) * 100) })}
                             {s.open > 0 && <> · <span className="text-warn font-semibold">{fmt(t.inclOpen, { amount: money(s.open) })}</span></>}
                           </p>
@@ -391,7 +391,7 @@ function MonthDetail({ month, balances, data, language, t, onMonth }: Props) {
                           {c && <span className="emoji text-[17px] self-center" title={displayName(c.names, language)} aria-hidden="true">{c.emoji}</span>}
                           <span className="min-w-0 flex-1 text-body text-fg wrap-compound">
                             {n.name}
-                            {n.count > 1 && <span className="text-caption text-fg-mute num"> · {fmt(t.timesCount, { n: n.count })}</span>}
+                            {n.count > 1 && <span className="text-caption text-fg-mute tabular-nums"> · {fmt(t.timesCount, { n: n.count })}</span>}
                           </span>
                           <span className="text-body font-semibold text-fg num">{money(n.total)}</span>
                         </div>

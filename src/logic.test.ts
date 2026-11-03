@@ -4,6 +4,7 @@ import {
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, upgradeCategories,
+  normalizeDigits,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -395,7 +396,8 @@ describe('upgrading categories saved before schema 2', () => {
   it('adds the new built-ins, not in new months, and updates what the user left as shipped', () => {
     const up = upgradeCategories(v1());
     expect(up.slice(0, 4).map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries']);
-    expect(up.find(c => c.id === 'groceries')!.names).toEqual({ de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore' });
+    expect(up.find(c => c.id === 'groceries')!.names).toEqual({ de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore', ar: 'البقالة والعناية الشخصية' });
+    expect(up.find(c => c.id === 'fixed')!.names.ar).toBe('التكاليف الثابتة');
     expect(up.find(c => c.id === 'extra')!.emoji).toBe('🧾');
     expect(up.map(c => c.id).slice(4)).toEqual([
       'clothing', 'shopping', 'home', 'telecom', 'mobility', 'travel', 'leisure', 'sport', 'health', 'education',
@@ -428,5 +430,32 @@ describe('upgrading categories saved before schema 2', () => {
     expect(parsed.ok && parsed.data.categories.length).toBe(19);
     const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 2 }));
     expect(current.ok && current.data.categories.length).toBe(4);
+  });
+});
+
+describe('Arabic', () => {
+  it('gives built-ins still named as shipped their Arabic names (schema 3), and leaves renamed ones alone', () => {
+    const v2: Category[] = defaultCategories().slice(0, 3).map(c => ({ ...c, names: { de: c.names.de, en: c.names.en } }));
+    v2[1] = { ...v2[1], names: { de: 'Wohnen' } };
+    const up = upgradeCategories(v2, 2);
+    expect(up.map(c => c.names.ar)).toEqual(['الدخل', undefined, 'السيارة']);
+    expect(up[1].names).toEqual({ de: 'Wohnen' });
+    expect(up).toHaveLength(3);
+    expect(upgradeCategories(up, 3)).toBe(up);
+  });
+  it('reads amounts typed on an Arabic keyboard', () => {
+    expect(normalizeDigits('١٬٠٥٠٫٥٠')).toBe('1,050.50');
+    expect(parseAmount('١٬٠٥٠٫٥٠', 'ar-u-nu-latn')).toBe(105050);
+    expect(parseAmount('١٢٫٥', 'ar-u-nu-latn')).toBe(1250);
+    expect(parseAmount('۴۵', 'ar-u-nu-latn')).toBe(4500);
+    expect(parseAmount('12.50', 'ar-u-nu-latn')).toBe(1250);
+    expect(parseAmount('1,050.00', 'ar-u-nu-latn')).toBe(105000);
+    expect(normalizeDigits('١٨')).toBe('18');
+  });
+  it('formats money with Western digits, and the minus as a true minus', () => {
+    const s = formatMoney(-105050, 'ar-u-nu-latn');
+    expect(s).toMatch(/1,050\.50/);
+    expect(s).toContain('−');
+    expect(s).not.toMatch(/[٠-٩]/);
   });
 });

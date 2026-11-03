@@ -4,7 +4,7 @@ import {
 import { NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, defaultCategories } from './data/defaults';
 
 /** Bump when a stored shape changes, and migrate in `normalizeState`. */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -58,15 +58,29 @@ export function isoDay(d = new Date()): string {
 const MAX_CENTS = 10_000_000_000;
 
 /**
+ * What an Arabic keyboard types, as ASCII: Arabic-Indic digits (٠–٩ and the
+ * Persian ۰–۹) become 0–9, the Arabic decimal mark ٫ a dot, the thousands mark
+ * ٬ and the Arabic comma ، a comma; invisible direction marks are dropped.
+ */
+export function normalizeDigits(text: string): string {
+  return text
+    .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x06F0))
+    .replace(/٫/g, '.')
+    .replace(/[٬،]/g, ',')
+    .replace(/[‎‏؜]/g, '');
+}
+
+/**
  * What the user typed → integer cents, or null if it isn't an amount.
  * Reads both German and English writing: "1.050,50", "1050,5", "1050.50",
- * "1,050.50", "12", "€ 9,99". With a single separator, three digits after the
- * locale's grouping mark mean thousands ("1.050" in German is 1050 €); any
- * other single separator is the decimal point, whichever one the keyboard
- * happened to offer.
+ * "1,050.50", "12", "€ 9,99" — and Arabic-Indic digits ("١٢٫٥٠"). With a
+ * single separator, three digits after the locale's grouping mark mean
+ * thousands ("1.050" in German is 1050 €); any other single separator is the
+ * decimal point, whichever one the keyboard happened to offer.
  */
 export function parseAmount(text: string, locale = 'de-DE'): number | null {
-  const s = text.replace(/[\s €]/g, '').replace(/^\+/, '');
+  const s = normalizeDigits(text).replace(/[\s €]/g, '').replace(/^\+/, '');
   if (!s || !/^(\d[\d.,]*|[.,]\d+)$/.test(s)) return null;
   const group = locale.startsWith('de') ? '.' : ',';
   const lastComma = s.lastIndexOf(',');
@@ -644,24 +658,31 @@ const sameNames = (a: Names, b: Names) =>
   Object.keys(a).length > 0 && Object.entries(a).every(([lang, n]) => b[lang] === n);
 
 /**
- * Categories saved before schema 2, brought up to date once: the new built-in
- * categories are added (before "Sonstiges" if it is there, else at the end;
- * not in any month), and a built-in whose name or emoji changed gets the new
- * one — only where the user still has exactly what the app shipped, so
- * nothing they renamed or repainted is touched. An empty list stays empty.
+ * Categories saved by an older schema, brought up to date once — only where
+ * the user still has exactly what the app shipped, so nothing they renamed or
+ * repainted is touched. An empty list stays empty.
+ *   below 2: the banking-app built-ins are added (before "Sonstiges" if it is
+ *            there, else at the end; not in any month), and built-ins whose
+ *            name or emoji changed get the new one;
+ *   below 3: built-ins still named as shipped get the names in every language
+ *            the app now speaks (Arabic).
  */
-export function upgradeCategories(categories: Category[]): Category[] {
-  if (!categories.length) return categories;
+export function upgradeCategories(categories: Category[], from = 1): Category[] {
+  if (!categories.length || from >= SCHEMA_VERSION) return categories;
   const shipped = new Map(defaultCategories().map(c => [c.id, c]));
   const out = categories.map(c => {
     const now = shipped.get(c.id);
     if (!now) return c;
-    const old = SHIPPED_V1[c.id];
     const next: Category = { ...c, builtin: true };
-    if (old?.names && sameNames(c.names, old.names)) next.names = { ...now.names };
-    if (old?.emoji && c.emoji === old.emoji) next.emoji = now.emoji;
+    if (from < 2) {
+      const old = SHIPPED_V1[c.id];
+      if (old?.names && sameNames(c.names, old.names)) next.names = { ...now.names };
+      if (old?.emoji && c.emoji === old.emoji) next.emoji = now.emoji;
+    }
+    if (sameNames(next.names, now.names)) next.names = { ...now.names };
     return next;
   });
+  if (from >= 2) return out;
   const have = new Set(out.map(c => c.id));
   const added = NEW_IN_V2.filter(id => !have.has(id)).map(id => shipped.get(id)!);
   const other = out.findIndex(c => c.id === OTHER_CATEGORY.id);
@@ -680,7 +701,7 @@ export function parseBackup(text: string): { ok: true; data: AppData } | { ok: f
   if (typeof raw.schemaVersion === 'number' && raw.schemaVersion > SCHEMA_VERSION) return { ok: false, error: 'backupTooNew' };
   const data = normalizeState(raw);
   const version = typeof raw.schemaVersion === 'number' ? raw.schemaVersion : 1;
-  return { ok: true, data: version < 2 ? { ...data, categories: upgradeCategories(data.categories) } : data };
+  return { ok: true, data: { ...data, categories: upgradeCategories(data.categories, version) } };
 }
 
 /**

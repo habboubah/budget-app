@@ -70,7 +70,9 @@ month, and the two numbers that matter: **what is on the account now** and
   und Gebühren, Sonstiges*, each with its own name suggestions. Create your own
   (income or expense, default repeat, emoji, colour), edit, drag to reorder,
   delete (undoable; asks first if entries go with it), *Standard
-  wiederherstellen*. Deutsch / English, light / dark / automatic.
+  wiederherstellen*. Deutsch / English / العربية (right to left, with Arabic
+  category names; amounts typed with Arabic digits are understood), light /
+  dark / automatic.
 - **Import from Excel.** *Einstellungen → Excel → Aus Excel importieren* (or the
   button on the first month) reads a budget sheet laid out like
   `My_expense.xlsx`: one tab per month ("11.2026"), the categories in row 1,

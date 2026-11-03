@@ -41,7 +41,7 @@ export function Toast({ toast, onDone, raised }: { toast: ToastState | null; onD
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98, transition: { duration: 0.15 } }}
             transition={{ type: 'spring', duration: 0.35, bounce: 0.2 }}
-            className="pointer-events-auto flex items-center gap-2 bg-fg text-bg rounded-full pl-5 pr-2 py-1.5 shadow-e2 max-w-full"
+            className="pointer-events-auto flex items-center gap-2 bg-fg text-bg rounded-full ps-5 pe-2 py-1.5 shadow-e2 max-w-full"
           >
             <span className="text-label font-semibold py-2 min-w-0 wrap-compound">{toast.label}</span>
             {toast.action ? (

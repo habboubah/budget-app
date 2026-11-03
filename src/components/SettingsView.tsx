@@ -73,7 +73,7 @@ export function SettingsView(p: Props) {
         <img src="/icon.svg" alt="" className="w-14 h-14 rounded-[14px] mx-auto" />
         <p className="display text-heading font-semibold text-fg mt-3">{t.about}</p>
         <p className="text-label text-fg-mute mt-1 wrap-prose">{t.aboutBody}</p>
-        <p className="text-caption text-fg-mute mt-3 num">{fmt(t.version, { v: __APP_VERSION__ })}</p>
+        <p className="text-caption text-fg-mute mt-3 tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
       </section>
 
       <Confirm
