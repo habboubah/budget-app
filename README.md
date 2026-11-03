@@ -17,7 +17,8 @@ month, and the two numbers that matter: **what is on the account now** and
   back.
   The month reads in the order money moves: **Einkommen** first, then
   **Fixkosten**, **Auto**, **Sonderkosten**, **Lebensmittel und Drogerie**,
-  **Familie** — each a card with its total and what is still open. Each month
+  **Familie** — each a card with what is paid so far and, small and yellow
+  below it, the total including what is still open. Each month
   has its own set of categories: a new month gets the ones switched on under
   *Einstellungen → Kategorien → In jedem neuen Monat*; an empty category can
   be removed from a month (undoable), and *Kategorie hinzufügen* brings any
@@ -32,8 +33,9 @@ month, and the two numbers that matter: **what is on the account now** and
   entries. Keyboard: Alt + ↑ / ↓.
 - **Two balances.** *Jetzt auf dem Konto* counts what is paid / received, with
   a ring for how many of the month's bills are paid. Below it the month reads
-  like a sum — carry-over, income, expenses — down to *Am Monatsende*, which
-  also counts everything still open.
+  like a sum — carry-over, then income and expenses each in two columns,
+  *Bezahlt* and *Offen* — down to *Am Monatsende*, which also counts
+  everything still open.
 - **Paid or open.** Every entry has a circle in front: empty = still open (rent
   not paid yet, salary expected), filled = paid. One tap toggles it — or swipe
   the entry to the right. Swipe left to delete (undoable). With a due day

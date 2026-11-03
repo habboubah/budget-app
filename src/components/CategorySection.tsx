@@ -37,8 +37,9 @@ interface Props {
 }
 
 /**
- * One category of a month — one column of the Excel sheet: its total, how much
- * of it is still open, its entries, and an add row at the bottom. Tapping the
+ * One category of a month — one column of the Excel sheet: what of it is paid
+ * (and, small and yellow below, the total including what is still open), its
+ * entries, and an add row at the bottom. Tapping the
  * header folds the card down to that header and back; the state is kept per
  * category, so a category minimised stays minimised in every month.
  *
@@ -55,6 +56,7 @@ export function CategorySection({
   const income = category.kind === 'income';
   const total = entries.reduce((s, e) => s + e.amount, 0);
   const open = entries.reduce((s, e) => s + (e.paid ? 0 : e.amount), 0);
+  const paid = total - open;
   const money = (c: number) => formatMoney(c, t.locale);
 
   // Index among the *other* entries, the way the drop target counts.
@@ -131,17 +133,18 @@ export function CategorySection({
           <Picture emoji={category.emoji} name={name} size="sm" />
           <span className="min-w-0 flex-1">
             <span className="block text-body font-semibold text-fg wrap-compound">{name}</span>
-            {(open > 0 || (collapsed && entries.length > 0)) && (
-              <span className="flex flex-wrap gap-x-2 text-caption num">
-                {collapsed && entries.length > 0 && (
-                  <span className="text-fg-mute whitespace-nowrap">{plural(entries.length, t.entriesOne, t.entriesMany)}</span>
-                )}
-                {open > 0 && <span className="text-warn font-medium whitespace-nowrap">{fmt(t.sectionOpen, { amount: money(open) })}</span>}
-              </span>
+            {collapsed && entries.length > 0 && (
+              <span className="block text-caption text-fg-mute num">{plural(entries.length, t.entriesOne, t.entriesMany)}</span>
             )}
           </span>
-          <span className={`rounded-num text-body font-semibold shrink-0 ${income && total ? 'text-pos' : total ? 'text-fg' : 'text-fg-mute'}`}>
-            {money(total)}
+          {/* What is paid, big; below it, small and yellow, everything including what is still open. */}
+          <span className="shrink-0 text-end">
+            <span className={`block rounded-num text-body font-semibold ${income && paid ? 'text-pos' : paid ? 'text-fg' : 'text-fg-mute'}`}>
+              {money(paid)}
+            </span>
+            {open > 0 && (
+              <span className="block text-caption font-medium text-warn num whitespace-nowrap">{fmt(t.sectionInclOpen, { amount: money(total) })}</span>
+            )}
           </span>
           <ChevronDown
             className={`w-[18px] h-[18px] shrink-0 text-fg-faint transition-transform duration-200 ${collapsed ? '-rotate-90 rtl:rotate-90' : ''}`}

@@ -17,14 +17,12 @@ interface Props {
  *
  * On top, big, what is on the account now (only what is ticked as paid), with
  * a ring for how many of the month's bills are paid. Below it the month reads
- * like a sum on paper — carry-over, plus income, minus expenses — down to the
- * result: what will be left at the end of the month once everything open is
- * settled.
+ * like a sum on paper — carry-over, plus income, minus expenses, each split
+ * into what is paid and what is still open — down to the result: what will be
+ * left at the end of the month once everything open is settled.
  */
 export function BalanceCard({ balance: b, t, onOpening }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
-  const income = b.incomePaid + b.incomeOpen;
-  const expenses = b.expensePaid + b.expenseOpen;
   const carryLabel = b.overridden
     ? t.carryManual
     : b.prevKey
@@ -57,15 +55,38 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
         <span className={`text-label font-semibold num ${b.openingNow < 0 ? 'text-neg' : 'text-fg'}`}>{money(b.openingNow)}</span>
         <ChevronRight className="w-4 h-4 shrink-0 text-fg-faint rtl:rotate-180" aria-hidden="true" />
       </button>
-      <div className="px-5 pb-1">
-        <div className="min-h-[34px] flex items-center gap-2">
-          <span className="min-w-0 flex-1 text-label text-fg-mute">{t.income}</span>
-          <span className="text-label font-semibold num text-pos me-6">{money(income, 'exceptZero')}</span>
-        </div>
-        <div className="min-h-[34px] flex items-center gap-2">
-          <span className="min-w-0 flex-1 text-label text-fg-mute">{t.expenses}</span>
-          <span className="text-label font-semibold num text-fg me-6">{money(expenses ? -expenses : 0)}</span>
-        </div>
+      {/* Income and expenses, paid and still open side by side; the open
+          column is the money that only counts at the end of the month. */}
+      <div className="ps-5 pe-11 pb-2">
+        <table className="w-full text-label">
+          <thead>
+            <tr className="text-caption text-fg-mute">
+              <td />
+              <th scope="col" className="ps-3 pb-0.5 text-end font-medium">{t.colPaid}</th>
+              <th scope="col" className="ps-3 pb-0.5 text-end font-medium">{t.colOpen}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" className="py-1.5 text-start font-normal text-fg-mute">{t.income}</th>
+              <td className={`py-1.5 ps-3 text-end font-semibold num whitespace-nowrap ${b.incomePaid ? 'text-pos' : 'text-fg-mute'}`}>
+                {money(b.incomePaid, 'exceptZero')}
+              </td>
+              <td className={`py-1.5 ps-3 text-end font-semibold num whitespace-nowrap ${b.incomeOpen ? 'text-warn' : 'text-fg-mute'}`}>
+                {money(b.incomeOpen, 'exceptZero')}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row" className="py-1.5 text-start font-normal text-fg-mute">{t.expenses}</th>
+              <td className={`py-1.5 ps-3 text-end font-semibold num whitespace-nowrap ${b.expensePaid ? 'text-fg' : 'text-fg-mute'}`}>
+                {money(b.expensePaid ? -b.expensePaid : 0)}
+              </td>
+              <td className={`py-1.5 ps-3 text-end font-semibold num whitespace-nowrap ${b.expenseOpen ? 'text-warn' : 'text-fg-mute'}`}>
+                {money(b.expenseOpen ? -b.expenseOpen : 0)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div className="mx-5 hairline-t" />
@@ -123,7 +144,12 @@ function PaidRing({ paid, total, label }: { paid: number; total: number; label: 
           transition={{ type: 'spring', duration: 0.6, bounce: 0 }}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center rounded-num text-caption font-bold text-fg" aria-hidden="true">
+      {/* The count shrinks as it grows, so "25/29" stays inside the ring. */}
+      <span
+        className={`absolute inset-0 flex items-center justify-center rounded-num font-bold text-fg ${
+          `${paid}/${total}`.length <= 3 ? 'text-caption' : `${paid}/${total}`.length <= 5 ? 'text-[11px]' : 'text-[9px]'}`}
+        aria-hidden="true"
+      >
         {paid}/{total}
       </span>
     </div>
