@@ -1,10 +1,10 @@
 import {
   AppData, Backup, Category, CategoryKind, Entry, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
 } from './types';
-import { NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, defaultCategories } from './data/defaults';
+import { MERGED_V4, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 
 /** Bump when a stored shape changes, and migrate in `normalizeState`. */
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -685,8 +685,52 @@ export function upgradeCategories(categories: Category[], from = 1): Category[] 
   if (from >= 2) return out;
   const have = new Set(out.map(c => c.id));
   const added = NEW_IN_V2.filter(id => !have.has(id)).map(id => shipped.get(id)!);
-  const other = out.findIndex(c => c.id === OTHER_CATEGORY.id);
+  // Before the old "Sonstiges" (id `other`, merged away in schema 4), as it was then.
+  const other = out.findIndex(c => c.id === 'other');
   return other < 0 ? [...out, ...added] : [...out.slice(0, other), ...added, ...out.slice(other)];
+}
+
+/**
+ * Everything saved by an older schema, brought up to date once: the
+ * categories (`upgradeCategories`), then, below 4, the merges — "Wohnen und
+ * Garten" into "Wohnen" (id `fixed`), the old "Sonstiges" into the new one
+ * (id `extra`) — with their entries and month lists moving along (a moved
+ * entry loses its place in the old order), and finally the built-ins renamed
+ * in schema 4, where the user still has the old name or picture.
+ */
+export function upgradeData(data: AppData, from = 1): AppData {
+  if (from >= SCHEMA_VERSION) return data;
+  let categories = upgradeCategories(data.categories, from);
+  let { entries, months } = data;
+  if (from < 4 && categories.length) {
+    const shipped = new Map(defaultCategories().map(c => [c.id, c]));
+    for (const [gone, into] of Object.entries(MERGED_V4)) {
+      const old = categories.find(c => c.id === gone);
+      if (!old) continue;
+      categories = categories.some(c => c.id === into)
+        ? categories.filter(c => c.id !== gone)
+        // Its replacement was deleted: the old one takes over its place and role.
+        : categories.map(c => (c.id === gone ? { ...shipped.get(into)!, standard: old.standard } : c));
+      entries = entries.map(e => {
+        if (e.categoryId !== gone) return e;
+        const { order: _order, ...rest } = e;
+        return { ...rest, categoryId: into };
+      });
+      months = months.map(m => (m.categories
+        ? { ...m, categories: [...new Set(m.categories.map(id => (id === gone ? into : id)))] }
+        : m));
+    }
+    categories = categories.map(c => {
+      const was = SHIPPED_V3[c.id];
+      const now = shipped.get(c.id);
+      if (!was || !now) return c;
+      const next = { ...c };
+      if (sameNames(c.names, was.names)) next.names = { ...now.names };
+      if (was.emoji?.includes(c.emoji)) next.emoji = now.emoji;
+      return next;
+    });
+  }
+  return { categories, entries, months };
 }
 
 export function makeBackup(data: AppData, now = new Date()): Backup {
@@ -701,7 +745,7 @@ export function parseBackup(text: string): { ok: true; data: AppData } | { ok: f
   if (typeof raw.schemaVersion === 'number' && raw.schemaVersion > SCHEMA_VERSION) return { ok: false, error: 'backupTooNew' };
   const data = normalizeState(raw);
   const version = typeof raw.schemaVersion === 'number' ? raw.schemaVersion : 1;
-  return { ok: true, data: { ...data, categories: upgradeCategories(data.categories, version) } };
+  return { ok: true, data: upgradeData(data, version) };
 }
 
 /**

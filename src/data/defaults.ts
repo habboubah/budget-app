@@ -2,9 +2,13 @@ import { Category, Names } from '../types';
 
 /**
  * The categories a first launch starts with, in the order the month page
- * reads: income first, then what goes out every month, then the car, the
- * extras, groceries and the family — the columns of My_expense.xlsx. These
- * six are part of every new month.
+ * reads: income first, then home (rent and what goes out every month), the
+ * car, others, groceries and the family — the columns of My_expense.xlsx.
+ * These six are part of every new month.
+ *
+ * Ids are history: `fixed` is "Wohnen / Home" and `extra` is "Sonstiges /
+ * Others" (schema 4 merged the former "Wohnen und Garten" and "Sonstiges"
+ * into them), so entries, statistics and the Excel mapping carry on.
  *
  * After them, the usual categories of a German banking app (Bekleidung,
  * Mobilität, Geldanlage …): there to pick when entering something, or to
@@ -18,15 +22,14 @@ import { Category, Names } from '../types';
  */
 const CATEGORIES: Category[] = [
   { id: 'income', names: { de: 'Einkommen', en: 'Income', ar: 'الدخل' }, emoji: '💶', hue: 'leaf', kind: 'income', repeat: 'monthly', builtin: true },
-  { id: 'fixed', names: { de: 'Fixkosten', en: 'Fixed costs', ar: 'التكاليف الثابتة' }, emoji: '🏠', hue: 'sky', kind: 'expense', repeat: 'monthly', budget: 'need', builtin: true },
+  { id: 'fixed', names: { de: 'Wohnen', en: 'Home', ar: 'المنزل' }, emoji: '🏠', hue: 'sky', kind: 'expense', repeat: 'monthly', budget: 'need', builtin: true },
   { id: 'car', names: { de: 'Auto', en: 'Car', ar: 'السيارة' }, emoji: '🚗', hue: 'carrot', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
-  { id: 'extra', names: { de: 'Sonderkosten', en: 'Extras', ar: 'مصاريف إضافية' }, emoji: '🧾', hue: 'lavender', kind: 'expense', repeat: 'none', budget: 'want', builtin: true },
+  { id: 'extra', names: { de: 'Sonstiges', en: 'Others', ar: 'أخرى' }, emoji: '📦', hue: 'lavender', kind: 'expense', repeat: 'none', budget: 'want', builtin: true },
   { id: 'groceries', names: { de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore', ar: 'البقالة والعناية الشخصية' }, emoji: '🛒', hue: 'lime', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
   { id: 'family', names: { de: 'Familie', en: 'Family', ar: 'العائلة' }, emoji: '👨‍👩‍👦', hue: 'berry', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
 
   { id: 'clothing', names: { de: 'Bekleidung', en: 'Clothing', ar: 'الملابس' }, emoji: '👕', hue: 'plum', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
   { id: 'shopping', names: { de: 'Einkäufe', en: 'Shopping', ar: 'المشتريات' }, emoji: '🛍️', hue: 'stone', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
-  { id: 'home', names: { de: 'Wohnen und Garten', en: 'Home & garden', ar: 'المنزل والحديقة' }, emoji: '🏡', hue: 'mint', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
   { id: 'telecom', names: { de: 'Telekommunikation', en: 'Phone & internet', ar: 'الاتصالات' }, emoji: '📞', hue: 'mint', kind: 'expense', repeat: 'monthly', budget: 'need', standard: false, builtin: true },
   { id: 'mobility', names: { de: 'Mobilität', en: 'Transport', ar: 'المواصلات' }, emoji: '🚌', hue: 'blue', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
   { id: 'travel', names: { de: 'Reisen', en: 'Travel', ar: 'السفر' }, emoji: '🌍', hue: 'sand', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
@@ -35,10 +38,9 @@ const CATEGORIES: Category[] = [
   { id: 'health', names: { de: 'Gesundheit und Wellness', en: 'Health & wellness', ar: 'الصحة والعافية' }, emoji: '🩺', hue: 'tomato', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
   { id: 'education', names: { de: 'Bildung und Erziehung', en: 'Education & childcare', ar: 'التعليم والتربية' }, emoji: '🎓', hue: 'stone', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
   { id: 'investment', names: { de: 'Geldanlage', en: 'Investments', ar: 'الاستثمار' }, emoji: '🐷', hue: 'sand', kind: 'expense', repeat: 'monthly', budget: 'save', standard: false, builtin: true },
-  { id: 'insurance', names: { de: 'Absicherung und Vorsorge', en: 'Insurance & pensions', ar: 'التأمين والتقاعد' }, emoji: '🛡️', hue: 'lemon', kind: 'expense', repeat: 'monthly', budget: 'need', standard: false, builtin: true },
+  { id: 'insurance', names: { de: 'Versicherungen', en: 'Insurance', ar: 'التأمين' }, emoji: '🛡️', hue: 'lemon', kind: 'expense', repeat: 'monthly', budget: 'need', standard: false, builtin: true },
   { id: 'cash', names: { de: 'Bargeld', en: 'Cash', ar: 'النقد' }, emoji: '🪙', hue: 'lemon', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
   { id: 'taxes', names: { de: 'Steuern und Gebühren', en: 'Taxes & fees', ar: 'الضرائب والرسوم' }, emoji: '🏛️', hue: 'blue', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
-  { id: 'other', names: { de: 'Sonstiges', en: 'Other', ar: 'أخرى' }, emoji: '📦', hue: 'stone', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
 ];
 
 /** A fresh copy of the built-in categories. */
@@ -46,8 +48,8 @@ export function defaultCategories(): Category[] {
   return CATEGORIES.map(c => ({ ...c, names: { ...c.names } }));
 }
 
-/** The category orphaned entries (from an old backup) are put into. */
-export const OTHER_CATEGORY: Category = CATEGORIES.find(c => c.id === 'other')!;
+/** The category orphaned entries (from an old backup) are put into: "Sonstiges". */
+export const OTHER_CATEGORY: Category = CATEGORIES.find(c => c.id === 'extra')!;
 
 /**
  * Schema 2 (the banking-app categories). Data saved before it gets the new
@@ -55,12 +57,26 @@ export const OTHER_CATEGORY: Category = CATEGORIES.find(c => c.id === 'other')!;
  * field by field, only where the user still has what the app shipped.
  */
 export const NEW_IN_V2 = [
-  'clothing', 'shopping', 'home', 'telecom', 'mobility', 'travel', 'leisure', 'sport', 'health', 'education',
-  'investment', 'insurance', 'cash', 'taxes', 'other',
+  'clothing', 'shopping', 'telecom', 'mobility', 'travel', 'leisure', 'sport', 'health', 'education',
+  'investment', 'insurance', 'cash', 'taxes',
 ];
 export const SHIPPED_V1: Record<string, Partial<Pick<Category, 'names' | 'emoji'>>> = {
   groceries: { names: { de: 'Einkaufen', en: 'Groceries' } },
   extra: { emoji: '🛍️' },
+};
+
+/**
+ * Schema 4: "Wohnen" replaces "Fixkosten" (and takes in "Wohnen und Garten"),
+ * "Sonstiges" replaces "Sonderkosten" (and takes in the old "Sonstiges"),
+ * "Absicherung und Vorsorge" becomes "Versicherungen". `MERGED_V4` maps a
+ * category that is gone to the one its entries move into; `SHIPPED_V3` holds
+ * the names and emoji to replace where the user still has them.
+ */
+export const MERGED_V4: Record<string, string> = { home: 'fixed', other: 'extra' };
+export const SHIPPED_V3: Record<string, { names: Names; emoji?: string[] }> = {
+  fixed: { names: { de: 'Fixkosten', en: 'Fixed costs', ar: 'التكاليف الثابتة' } },
+  extra: { names: { de: 'Sonderkosten', en: 'Extras', ar: 'مصاريف إضافية' }, emoji: ['🧾', '🛍️'] },
+  insurance: { names: { de: 'Absicherung und Vorsorge', en: 'Insurance & pensions', ar: 'التأمين والتقاعد' } },
 };
 
 /** Built-in expense categories that are basic needs, for data saved before `budget` existed. */
@@ -81,7 +97,8 @@ export const NAME_SUGGESTIONS: Record<string, Names[]> = {
     { de: 'Miete', en: 'Rent', ar: 'إيجار' }, { de: 'Strom', en: 'Electricity', ar: 'كهرباء' }, { de: 'Gas', en: 'Gas', ar: 'غاز' }, { de: 'Internet', en: 'Internet', ar: 'إنترنت' },
     { de: 'Handy', en: 'Mobile phone', ar: 'هاتف محمول' }, { de: 'Rundfunkbeitrag', en: 'TV licence', ar: 'رسوم البث' }, { de: 'Versicherung', en: 'Insurance', ar: 'تأمين' },
     { de: 'Fitnessstudio', en: 'Gym', ar: 'نادٍ رياضي' }, { de: 'Streaming', en: 'Streaming', ar: 'بث' }, { de: 'Kontogebühren', en: 'Bank fees', ar: 'رسوم البنك' },
-    { de: 'Cloud-Speicher', en: 'Cloud storage', ar: 'تخزين سحابي' },
+    { de: 'Cloud-Speicher', en: 'Cloud storage', ar: 'تخزين سحابي' }, { de: 'Nebenkosten', en: 'Service charges', ar: 'تكاليف إضافية للسكن' },
+    { de: 'IKEA' }, { de: 'Möbel', en: 'Furniture', ar: 'أثاث' }, { de: 'Haushaltswaren', en: 'Household goods', ar: 'أدوات منزلية' },
   ],
   car: [
     { de: 'Tanken', en: 'Fuel', ar: 'وقود' }, { de: 'Kfz-Versicherung', en: 'Car insurance', ar: 'تأمين السيارة' }, { de: 'Kfz-Steuer', en: 'Car tax', ar: 'ضريبة السيارة' },
@@ -106,10 +123,6 @@ export const NAME_SUGGESTIONS: Record<string, Names[]> = {
   shopping: [
     { de: 'Amazon' }, { de: 'MediaMarkt' }, { de: 'Otto' }, { de: 'eBay' }, { de: 'Kleinanzeigen' },
     { de: 'Elektronik', en: 'Electronics', ar: 'إلكترونيات' }, { de: 'Geschenk', en: 'Gift', ar: 'هدية' },
-  ],
-  home: [
-    { de: 'IKEA' }, { de: 'OBI' }, { de: 'Bauhaus' }, { de: 'Möbel', en: 'Furniture', ar: 'أثاث' }, { de: 'Haushaltswaren', en: 'Household goods', ar: 'أدوات منزلية' },
-    { de: 'Garten', en: 'Garden', ar: 'حديقة' }, { de: 'Renovierung', en: 'Renovation', ar: 'ترميم' },
   ],
   telecom: [
     { de: 'Vodafone' }, { de: 'Telekom' }, { de: 'O2' }, { de: '1&1' }, { de: 'Handyvertrag', en: 'Phone contract', ar: 'عقد الهاتف' },

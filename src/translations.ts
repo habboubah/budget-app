@@ -115,8 +115,8 @@ const de = {
   // Intro (first month)
   introTitle: 'So funktioniert dein Spartopf',
   introStep1: 'Trag dein Gehalt unter Einkommen ein.',
-  introStep2: 'Dann die Fixkosten – Miete, Strom, Handy …',
-  introStep3: 'Dann Auto und Extras, wenn sie anfallen.',
+  introStep2: 'Dann Wohnen – Miete, Strom, Handy …',
+  introStep3: 'Dann Auto und Sonstiges, wenn es anfällt.',
   introStep4: 'Tippe auf den Kreis, sobald etwas bezahlt ist. Markiere wiederkehrende Posten als „monatlich“ – sie kommen im nächsten Monat von selbst wieder.',
   introStep5: 'Halte einen Eintrag gedrückt und zieh ihn – zum Sortieren oder in eine andere Kategorie.',
   introDismiss: 'Verstanden',
@@ -426,8 +426,8 @@ const en: Strings = {
 
   introTitle: 'How your Spartopf works',
   introStep1: 'Enter your salary under Income.',
-  introStep2: 'Then the fixed costs – rent, electricity, phone …',
-  introStep3: 'Then car and extras as they come up.',
+  introStep2: 'Then home – rent, electricity, phone …',
+  introStep3: 'Then the car and others as they come up.',
   introStep4: 'Tap the circle as soon as something is paid. Mark recurring items as “monthly” – they come back next month on their own.',
   introStep5: 'Press and hold an entry, then drag it – to sort, or into another category.',
   introDismiss: 'Got it',
@@ -739,8 +739,8 @@ const ar: Strings = {
   // Intro (first month)
   introTitle: 'هكذا يعمل Spartopf',
   introStep1: 'أدخل راتبك تحت الدخل.',
-  introStep2: 'ثم التكاليف الثابتة – الإيجار والكهرباء والهاتف …',
-  introStep3: 'ثم السيارة والمصاريف الإضافية عند حدوثها.',
+  introStep2: 'ثم المنزل – الإيجار والكهرباء والهاتف …',
+  introStep3: 'ثم السيارة وغيرها عند حدوثها.',
   introStep4: 'اضغط على الدائرة حين تدفع شيئًا. حدّد البنود المتكررة كـ«شهري» – فتعود تلقائيًا في الشهر التالي.',
   introStep5: 'اضغط مطولًا على بند واسحبه – لترتيبه أو لنقله إلى فئة أخرى.',
   introDismiss: 'فهمت',

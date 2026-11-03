@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppData, Category, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
-  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, upgradeCategories, carryOver, computeBalances, monthKeyOf, moveEntry as move, normalizeState,
+  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, upgradeData, carryOver, computeBalances, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, standardCategoryIds, uid,
 } from './logic';
 import { defaultCategories } from './data/defaults';
@@ -52,13 +52,13 @@ function loadInitial(): AppData {
   // Not seeded yet: the defaults go in *before* normalising, or entries from
   // a half-written first launch would all be filed under "Sonstiges".
   const missing = !meta?.seeded && (!Array.isArray(rawCategories) || rawCategories.length === 0);
-  const data = normalizeState({
+  const loaded = normalizeState({
     categories: missing ? defaultCategories() : rawCategories,
     entries: readJson(K.entries),
     months: readJson(K.months),
   });
-  // Saved by an older version: new built-in categories, updated looks.
-  if (!missing) data.categories = upgradeCategories(data.categories, meta?.schemaVersion ?? 1);
+  // Saved by an older version: new and renamed built-in categories, merges.
+  const data = missing ? loaded : upgradeData(loaded, meta?.schemaVersion ?? 1);
   if (meta?.seeded || data.months.length) return data;
   return { ...data, months: [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(data.categories) }] };
 }

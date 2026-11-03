@@ -40,7 +40,7 @@ ZWEI ZAHLEN, DIE ZÄHLEN
 Oben steht, was jetzt auf deinem Konto ist – und was am Monatsende übrig bleibt, wenn alles Offene bezahlt ist.
 
 DER MONAT IN DER RICHTIGEN REIHENFOLGE
-Erst das Gehalt, dann die Fixkosten wie Miete, Strom und Handy, dann Auto, Extras, Lebensmittel und Familie. Jeder Eintrag ist entweder bezahlt oder noch offen – ein Tipp auf den Kreis hakt ihn ab. Mit Fälligkeitstag siehst du sofort, was überfällig ist.
+Erst das Gehalt, dann Wohnen mit Miete, Strom und Handy, dann Auto, Sonstiges, Lebensmittel und Familie. Jeder Eintrag ist entweder bezahlt oder noch offen – ein Tipp auf den Kreis hakt ihn ab. Mit Fälligkeitstag siehst du sofort, was überfällig ist.
 
 WIEDERKEHRENDES KOMMT VON SELBST
 Markiere Miete, Gehalt oder Versicherungen als „monatlich“ oder „jährlich“. Startest du den nächsten Monat, sind sie schon da – als offen, bis du sie abhakst. Der Kontostand wird automatisch übertragen.
@@ -49,7 +49,7 @@ WOHIN GEHT DEIN GELD?
 Die Statistik zeigt, was du gespart hast, wofür das Geld ausgegeben wurde – nach Kategorie oder Laden – und wie sich dein Kontostand über die letzten zwölf Monate entwickelt.
 
 DEINE KATEGORIEN
-Einkommen, Fixkosten, Auto, Sonderkosten, Lebensmittel und Familie sind schon da – dazu die üblichen Kategorien wie Bekleidung, Mobilität, Reisen, Gesundheit oder Geldanlage, die du nach Bedarf einschaltest. Leg eigene an, gib ihnen Farbe und Emoji, sortiere oder lösche sie.
+Einkommen, Wohnen, Auto, Sonstiges, Lebensmittel und Familie sind schon da – dazu die üblichen Kategorien wie Bekleidung, Mobilität, Reisen, Gesundheit oder Geldanlage, die du nach Bedarf einschaltest. Leg eigene an, gib ihnen Farbe und Emoji, sortiere oder lösche sie.
 
 PRIVAT
 Kein Konto, keine Anmeldung, keine Werbung, kein Tracking. Alles bleibt auf deinem iPhone. Sicherung als Datei, Export als CSV für Excel.
@@ -64,7 +64,7 @@ THE TWO NUMBERS THAT MATTER
 At the top: what is on your account right now – and what will be left at the end of the month once everything open is paid.
 
 THE MONTH IN THE RIGHT ORDER
-Salary first, then fixed costs like rent, electricity and phone, then car, extras, groceries and family. Every entry is either paid or still open – one tap on the circle ticks it off. Give it a due day and you see at once what is overdue.
+Salary first, then home with rent, electricity and phone, then car, others, groceries and family. Every entry is either paid or still open – one tap on the circle ticks it off. Give it a due day and you see at once what is overdue.
 
 RECURRING ITEMS COME BACK ON THEIR OWN
 Mark rent, salary or insurance as "monthly" or "yearly". When you start the next month, they are already there – open until you tick them off. The balance carries over automatically.
@@ -73,7 +73,7 @@ WHERE DOES YOUR MONEY GO?
 The statistics show what you saved, what the money was spent on – by category or by shop – and how your balance developed over the last twelve months.
 
 YOUR CATEGORIES
-Income, fixed costs, car, extras, groceries and family are ready to go – plus the usual categories like clothing, transport, travel, health or investments, switched on when you need them. Add your own, give them a colour and an emoji, reorder or delete them.
+Income, home, car, others, groceries and family are ready to go – plus the usual categories like clothing, transport, travel, health or investments, switched on when you need them. Add your own, give them a colour and an emoji, reorder or delete them.
 
 PRIVATE
 No account, no sign-up, no ads, no tracking. Everything stays on your iPhone. Back up to a file, export as CSV for Excel.

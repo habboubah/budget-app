@@ -82,9 +82,9 @@ export function fixYears(keys: MonthKey[]): MonthKey[] {
 /** Header aliases for the built-in categories (the Excel's own spellings included). */
 const ALIASES: Record<string, string[]> = {
   income: ['einkommen', 'einnahmen', 'income', 'gehalt', 'lohn'],
-  fixed: ['fixed kosten', 'fixkosten', 'fixe kosten', 'fixed costs', 'fixed', 'fixkosten monatlich'],
+  fixed: ['fixed kosten', 'fixkosten', 'fixe kosten', 'fixed costs', 'fixed', 'fixkosten monatlich', 'wohnen', 'home', 'miete'],
   car: ['auto', 'car', 'kfz', 'fahrzeug'],
-  extra: ['sonder kosten', 'sonderkosten', 'extras', 'extra', 'sonstiges'],
+  extra: ['sonder kosten', 'sonderkosten', 'extras', 'extra', 'sonstiges', 'others', 'other'],
   groceries: ['einkaufen', 'groceries', 'lebensmittel', 'einkauf'],
   family: ['family', 'familie', 'kinder'],
 };

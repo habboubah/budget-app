@@ -16,7 +16,7 @@ month, and the two numbers that matter: **what is on the account now** and
   any month (each shown with what it ended on); "Zum aktuellen Monat" jumps
   back.
   The month reads in the order money moves: **Einkommen** first, then
-  **Fixkosten**, **Auto**, **Sonderkosten**, **Lebensmittel und Drogerie**,
+  **Wohnen** (rent, utilities, phone …), **Auto**, **Sonstiges**, **Lebensmittel und Drogerie**,
   **Familie** — each a card with what is paid so far and, small and yellow
   below it, the total including what is still open. Each month
   has its own set of categories: a new month gets the ones switched on under
@@ -64,10 +64,10 @@ month, and the two numbers that matter: **what is on the account now** and
     category (paid vs. open) or by payee ("Lidl · 6×").
 - **Settings.** Categories — besides the six above, the usual categories of a
   German banking app are built in, switched off for new months until you want
-  them: *Bekleidung, Einkäufe, Wohnen und Garten, Telekommunikation, Mobilität,
-  Reisen, Freizeit und Unterhaltung, Sport und Hobby, Gesundheit und Wellness,
-  Bildung und Erziehung, Geldanlage, Absicherung und Vorsorge, Bargeld, Steuern
-  und Gebühren, Sonstiges*, each with its own name suggestions. Create your own
+  them: *Bekleidung, Einkäufe, Telekommunikation, Mobilität, Reisen, Freizeit
+  und Unterhaltung, Sport und Hobby, Gesundheit und Wellness, Bildung und
+  Erziehung, Geldanlage, Versicherungen, Bargeld, Steuern und Gebühren*, each
+  with its own name suggestions. Create your own
   (income or expense, default repeat, emoji, colour), edit, drag to reorder,
   delete (undoable; asks first if entries go with it), *Standard
   wiederherstellen*. Deutsch / English / العربية (right to left, with Arabic

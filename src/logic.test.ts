@@ -4,7 +4,7 @@ import {
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, upgradeCategories,
-  normalizeDigits,
+  normalizeDigits, upgradeData,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -282,12 +282,12 @@ describe('storage', () => {
       ],
       months: [{ key: '2026-11', opening: 12.4 }, { key: '2026-11' }],
     });
-    expect(s.categories.map(c => c.id)).toEqual(['fixed', 'other']);
+    expect(s.categories.map(c => c.id)).toEqual(['fixed', 'extra']);
     expect(s.categories[0]).toMatchObject({ hue: 'stone', repeat: 'none' });
     expect(s.entries).toHaveLength(2);
     expect(s.entries[0]).toMatchObject({ name: 'Miete', amount: 105000, paid: true, seriesId: 'a' });
     expect(s.entries[0].dueDay).toBeUndefined();
-    expect(s.entries[1].categoryId).toBe('other');
+    expect(s.entries[1].categoryId).toBe('extra');
     expect(s.months.map(m => m.key)).toEqual(['2026-09', '2026-11']);
     expect(s.months[1].opening).toBe(12);
   });
@@ -306,7 +306,7 @@ describe('storage', () => {
     const renamed = { ...cats[1], names: { de: 'Fix' } };
     const out = restoreDefaultCategories([renamed, mine], defaultCategories());
     expect(out.map(c => c.id)).toEqual([...cats.map(c => c.id), 'pets']);
-    expect(out[1].names.de).toBe('Fixkosten');
+    expect(out[1].names.de).toBe('Wohnen');
   });
 });
 
@@ -323,7 +323,7 @@ describe('CSV export', () => {
     });
     const lines = csv.replace('﻿', '').trim().split('\r\n');
     expect(lines[1]).toBe('2026-11;Einkommen;Einnahme;Gehalt;4164,59;bezahlt;einmalig;;');
-    expect(lines[2]).toBe('2026-11;Fixkosten;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;');
+    expect(lines[2]).toBe('2026-11;Wohnen;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;');
   });
 });
 
@@ -394,14 +394,16 @@ describe('upgrading categories saved before schema 2', () => {
   ];
 
   it('adds the new built-ins, not in new months, and updates what the user left as shipped', () => {
-    const up = upgradeCategories(v1());
+    const up = upgradeData({ categories: v1(), entries: [], months: [] }).categories;
     expect(up.slice(0, 4).map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries']);
     expect(up.find(c => c.id === 'groceries')!.names).toEqual({ de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore', ar: 'البقالة والعناية الشخصية' });
-    expect(up.find(c => c.id === 'fixed')!.names.ar).toBe('التكاليف الثابتة');
-    expect(up.find(c => c.id === 'extra')!.emoji).toBe('🧾');
+    expect(up.find(c => c.id === 'fixed')!.names).toEqual({ de: 'Wohnen', en: 'Home', ar: 'المنزل' });
+    expect(up.find(c => c.id === 'extra')!.names.de).toBe('Sonstiges');
+    expect(up.find(c => c.id === 'extra')!.emoji).toBe('📦');
+    expect(up.find(c => c.id === 'insurance')!.names.en).toBe('Insurance');
     expect(up.map(c => c.id).slice(4)).toEqual([
-      'clothing', 'shopping', 'home', 'telecom', 'mobility', 'travel', 'leisure', 'sport', 'health', 'education',
-      'investment', 'insurance', 'cash', 'taxes', 'other',
+      'clothing', 'shopping', 'telecom', 'mobility', 'travel', 'leisure', 'sport', 'health', 'education',
+      'investment', 'insurance', 'cash', 'taxes',
     ]);
     expect(standardCategoryIds(up)).toEqual(['income', 'fixed', 'extra', 'groceries']);
     expect(up.find(c => c.id === 'investment')!.budget).toBe('save');
@@ -423,11 +425,13 @@ describe('upgrading categories saved before schema 2', () => {
     expect(up.filter(c => c.id === 'other')).toHaveLength(1);
     expect(upgradeCategories(up)).toEqual(up);
     expect(upgradeCategories([])).toEqual([]);
+    // …and schema 4 then folds it into the new "Sonstiges".
+    expect(upgradeData({ categories: [...v1(), fallback], entries: [], months: [] }).categories.some(c => c.id === 'other')).toBe(false);
   });
   it('runs on a backup from version 1, not on a current one', () => {
     const old = { app: 'spartopf', schemaVersion: 1, categories: v1(), entries: [], months: [] };
     const parsed = parseBackup(JSON.stringify(old));
-    expect(parsed.ok && parsed.data.categories.length).toBe(19);
+    expect(parsed.ok && parsed.data.categories.length).toBe(17);
     const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 2 }));
     expect(current.ok && current.data.categories.length).toBe(4);
   });
@@ -436,12 +440,12 @@ describe('upgrading categories saved before schema 2', () => {
 describe('Arabic', () => {
   it('gives built-ins still named as shipped their Arabic names (schema 3), and leaves renamed ones alone', () => {
     const v2: Category[] = defaultCategories().slice(0, 3).map(c => ({ ...c, names: { de: c.names.de, en: c.names.en } }));
-    v2[1] = { ...v2[1], names: { de: 'Wohnen' } };
+    v2[1] = { ...v2[1], names: { de: 'Miete & Nebenkosten' } };
     const up = upgradeCategories(v2, 2);
     expect(up.map(c => c.names.ar)).toEqual(['الدخل', undefined, 'السيارة']);
-    expect(up[1].names).toEqual({ de: 'Wohnen' });
+    expect(up[1].names).toEqual({ de: 'Miete & Nebenkosten' });
     expect(up).toHaveLength(3);
-    expect(upgradeCategories(up, 3)).toBe(up);
+    expect(upgradeCategories(up, 4)).toBe(up);
   });
   it('reads amounts typed on an Arabic keyboard', () => {
     expect(normalizeDigits('١٬٠٥٠٫٥٠')).toBe('1,050.50');
@@ -457,5 +461,42 @@ describe('Arabic', () => {
     expect(s).toMatch(/1,050\.50/);
     expect(s).toContain('−');
     expect(s).not.toMatch(/[٠-٩]/);
+  });
+});
+
+describe('schema 4: Wohnen and Sonstiges', () => {
+  const shipped = new Map(defaultCategories().map(c => [c.id, c]));
+  const cat = (id: string, names: Category['names'], extra: Partial<Category> = {}): Category =>
+    ({ ...(shipped.get(id) ?? shipped.get('clothing')!), id, names, ...extra });
+  const v3 = (): AppData => ({
+    categories: [
+      cat('income', { de: 'Einkommen', en: 'Income', ar: 'الدخل' }),
+      cat('fixed', { de: 'Fixkosten', en: 'Fixed costs', ar: 'التكاليف الثابتة' }),
+      cat('extra', { de: 'Sonderkosten', en: 'Extras', ar: 'مصاريف إضافية' }, { emoji: '🧾' }),
+      cat('home', { de: 'Wohnen und Garten', en: 'Home & garden', ar: 'المنزل والحديقة' }, { emoji: '🏡', standard: false }),
+      cat('insurance', { de: 'Absicherung und Vorsorge', en: 'Insurance & pensions', ar: 'التأمين والتقاعد' }),
+      cat('other', { de: 'Sonstiges', en: 'Other', ar: 'أخرى' }, { standard: false }),
+    ],
+    entries: [
+      e('2026-11', 'home', 'IKEA', 120, true, { order: 0 }),
+      e('2026-11', 'other', 'Post', 5, true),
+      e('2026-11', 'fixed', 'Miete', 1050, false, { order: 0 }),
+    ],
+    months: [{ key: '2026-11', startedAt: 0, categories: ['income', 'fixed', 'home', 'other'] }],
+  });
+
+  it('folds "Wohnen und Garten" into Wohnen and the old "Sonstiges" into Sonstiges, entries and months too', () => {
+    const up = upgradeData(v3(), 3);
+    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'insurance']);
+    expect(up.categories.map(c => c.names.de)).toEqual(['Einkommen', 'Wohnen', 'Sonstiges', 'Versicherungen']);
+    expect(up.categories.find(c => c.id === 'extra')!.emoji).toBe('📦');
+    expect(up.entries.map(x => [x.name, x.categoryId, x.order])).toEqual([['IKEA', 'fixed', undefined], ['Post', 'extra', undefined], ['Miete', 'fixed', 0]]);
+    expect(up.months[0].categories).toEqual(['income', 'fixed', 'extra']);
+    expect(upgradeData(up, 4)).toBe(up);
+  });
+  it('keeps a name the user chose', () => {
+    const d = v3();
+    d.categories[1] = { ...d.categories[1], names: { de: 'Miete & Co' } };
+    expect(upgradeData(d, 3).categories[1].names).toEqual({ de: 'Miete & Co' });
   });
 });
