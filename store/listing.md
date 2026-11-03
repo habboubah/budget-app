@@ -85,6 +85,14 @@ Write 1–3 short lines per release, e.g.
 **DE:** `Neu: Wiederkehrende Posten aus dem Vormonat nachträglich übernehmen.`
 **EN:** `New: bring missing recurring items over from last month.`
 
+### 1.2.0
+
+**DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.
+
+**EN:** A more colourful design: pick the app's colour in Settings – your balance sits on a card in that colour. Every category shows a bar for how much is already paid, and amounts run to their new value as you tick things off.
+
+**AR:** تصميم أكثر حيوية بالألوان: اختر لون التطبيق من الإعدادات – يظهر رصيدك على بطاقة بهذا اللون. تعرض كل فئة شريطًا لما دُفع منها، وتتحرك المبالغ إلى قيمتها الجديدة عند تحديد البنود كمدفوعة.
+
 ### 1.1.0
 
 **DE:** Neues Design im Stil von iOS – mit Wischgesten zum Abhaken und Löschen und einer Monatsauswahl per Tipp auf den Monatsnamen. Neu: Arabisch, ein Datum für jeden Eintrag, ein Filter für offene Posten und schlauere Vorschläge beim Eintragen. Spalten „Bezahlt“ und „Offen“ zeigen, was am Monatsende bleibt.

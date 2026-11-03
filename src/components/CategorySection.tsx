@@ -8,6 +8,7 @@ import { Picture } from '../ui/Picture';
 import { tapLight } from '../ui/haptics';
 import { IconButton } from '../ui/Button';
 import { SwipeRow } from '../ui/SwipeRow';
+import { rise } from '../ui/stagger';
 
 interface Props {
   category: Category;
@@ -118,7 +119,8 @@ export function CategorySection({
   if (showLine && dropIndex! >= others) rows.push(line);
 
   return (
-    <section
+    <motion.section
+      variants={rise}
       data-hue={category.hue}
       data-drop-category={category.id}
       data-collapsed={collapsed ? 'true' : undefined}
@@ -133,13 +135,24 @@ export function CategorySection({
           aria-expanded={!collapsed}
           aria-controls={bodyId}
           title={collapsed ? t.expand : t.collapse}
-          className="flex-1 min-w-0 flex items-center gap-3 ps-4 pe-3 py-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+          className="flex-1 min-w-0 flex items-center gap-2.5 ps-3.5 pe-2 py-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
         >
           <Picture emoji={category.emoji} name={name} size="sm" />
           <span className="min-w-0 flex-1">
             <span className="block text-body font-semibold text-fg wrap-compound">{name}</span>
             {collapsed && all.length > 0 && (
               <span className="block text-caption text-fg-mute tabular-nums">{plural(all.length, t.entriesOne, t.entriesMany)}</span>
+            )}
+            {/* How much of it is paid, in the category's colour. The amounts beside it say it in numbers. */}
+            {total > 0 && (
+              <span aria-hidden="true" className="mt-2 block h-[5px] rounded-full bg-surface-2 overflow-hidden">
+                <motion.span
+                  className="block h-full rounded-full bg-hue-chart"
+                  initial={false}
+                  animate={{ width: `${Math.max(0, Math.min(1, paid / total)) * 100}%` }}
+                  transition={{ type: 'spring', duration: 0.5, bounce: 0 }}
+                />
+              </span>
             )}
           </span>
           {/* What is paid, big; below it, small and yellow, everything including what is still open. */}
@@ -152,7 +165,7 @@ export function CategorySection({
             )}
           </span>
           <ChevronDown
-            className={`w-[18px] h-[18px] shrink-0 text-fg-faint transition-transform duration-200 ${collapsed ? '-rotate-90 rtl:rotate-90' : ''}`}
+            className={`w-4 h-4 shrink-0 text-fg-faint transition-transform duration-200 ${collapsed ? '-rotate-90 rtl:rotate-90' : ''}`}
             strokeWidth={2.4}
             aria-hidden="true"
           />
@@ -164,7 +177,7 @@ export function CategorySection({
             aria-label={`${openOnly ? t.showAllEntries : t.showOpenOnly} — ${name}`}
             title={openOnly ? t.showAllEntries : t.showOpenOnly}
             onClick={() => { tapLight(); onOpenOnly(); }}
-            className={`shrink-0 me-1.5 w-9 h-9 rounded-full inline-flex items-center justify-center transition-colors focus-visible:ring-focus ${
+            className={`shrink-0 me-1 w-9 h-9 rounded-full inline-flex items-center justify-center transition-colors focus-visible:ring-focus ${
               openOnly ? 'bg-warn-dim text-warn' : 'text-fg-faint active:bg-surface-2'}`}
           >
             <ListFilter className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
@@ -210,7 +223,7 @@ export function CategorySection({
           </motion.div>
         )}
       </AnimatePresence>
-    </section>
+    </motion.section>
   );
 }
 
@@ -257,9 +270,13 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
         onClick={onToggle}
         className="w-[52px] shrink-0 flex items-center justify-center active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
-        <span
+        {/* Ticked in the category's colour, with a small pop as it fills. */}
+        <motion.span
           className={`w-[24px] h-[24px] rounded-full inline-flex items-center justify-center transition-colors duration-200 ${
-            e.paid ? 'bg-accent-fill text-accent-fill-ink' : `border-[1.75px] ${overdue ? 'border-neg' : 'border-fg-faint'}`}`}
+            e.paid ? 'bg-hue-chart text-chart-label' : `border-[1.75px] ${overdue ? 'border-neg' : 'border-fg-faint'}`}`}
+          initial={false}
+          animate={{ scale: e.paid ? [1, 1.22, 1] : 1 }}
+          transition={{ duration: 0.38, ease: [0.23, 1, 0.32, 1] }}
           aria-hidden="true"
         >
           <AnimatePresence initial={false}>
@@ -273,7 +290,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
               </motion.span>
             )}
           </AnimatePresence>
-        </span>
+        </motion.span>
       </button>
       <button
         type="button"

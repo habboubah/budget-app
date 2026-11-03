@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Spartopf design tokens — calm, native iOS
+   Spartopf design tokens — native iOS, vivid
    ----------------------------------------------------------------------------
    Built like an iPhone app of today: the grouped grey background with white
    cards (true black with graphite cards at night), Apple's system font — SF
-   Pro, with SF Rounded for the money amounts — one petrol tint taken from the
-   app icon for everything you can tap, and generous radii.
+   Pro, with SF Rounded for the money amounts — and generous radii. Colour
+   comes from two places: the user's accent (petrol, the app icon's, by
+   default; eight to choose from), which also paints the gradient hero — the
+   balance card, the add button, primary buttons — and each category's hue
+   (its tile, its progress bar, its ticks).
 
    Money has exactly three colours and they always mean the same thing:
      pos   — money coming in (income, a positive balance change).
@@ -62,6 +65,17 @@
   /* White ink on a saturated fill (swipe actions, settings icon tiles), in both themes. */
   --color-on-color: #FFFFFF;
 
+  /* Ink on the gradient hero (the balance card, the add button, primary
+     buttons) in both themes: white, softer white for captions (mute on the
+     gradient, soft on its frosted panel), and money colours light enough for
+     the panel. on-hero-pos / -warn / -neg are for the panel only. */
+  --color-on-hero:      #FFFFFF;
+  --color-on-hero-mute: rgb(255 255 255 / 0.85);
+  --color-on-hero-soft: rgb(255 255 255 / 0.75);
+  --color-on-hero-pos:  #B8F5CF;
+  --color-on-hero-warn: #FFD691;
+  --color-on-hero-neg:  #FFC4BD;
+
   /* Swipe actions behind a row: mark paid / open, delete. */
   --color-swipe-paid:   var(--t-swipe-paid);
   --color-swipe-open:   var(--t-swipe-open);
@@ -111,6 +125,60 @@
   --color-hue-chart: var(--hue-chart, var(--t-chart-out));
 }
 
+/* ============ Accent — the user's colour ================================== *
+   data-accent on <html> (Settings → Erscheinungsbild → Farbe, store.ts). Each
+   accent has a text/fill tuning per theme (acc-l by day, acc-d with its dark
+   ink at night) and three gradient stops for the hero. Every value is checked
+   by scripts/contrast-audit.mjs against both themes; run it after a change. */
+:root,
+[data-accent="petrol"] {
+  --acc-l: #0A6D80; --acc-l-rgb: 10 109 128;
+  --acc-d: #5AC8D8; --acc-d-rgb: 90 200 216; --acc-ink-d: #00262D;
+  --hero-1: #064A58; --hero-2: #076070; --hero-3: #0A625D; --hero-glow: 7 96 112;
+}
+[data-accent="ocean"] {
+  --acc-l: #0A62C2; --acc-l-rgb: 10 98 194;
+  --acc-d: #72B1FF; --acc-d-rgb: 114 177 255; --acc-ink-d: #001B3D;
+  --hero-1: #0A3A8A; --hero-2: #0B54B2; --hero-3: #0A599E; --hero-glow: 11 84 178;
+}
+[data-accent="indigo"] {
+  --acc-l: #4F46E5; --acc-l-rgb: 79 70 229;
+  --acc-d: #A4A5FF; --acc-d-rgb: 164 165 255; --acc-ink-d: #14114A;
+  --hero-1: #2C2896; --hero-2: #4038C8; --hero-3: #5236C0; --hero-glow: 64 56 200;
+}
+[data-accent="violet"] {
+  --acc-l: #7838E6; --acc-l-rgb: 120 56 230;
+  --acc-d: #BD9DFF; --acc-d-rgb: 189 157 255; --acc-ink-d: #26104F;
+  --hero-1: #471D98; --hero-2: #6328C8; --hero-3: #7A24B0; --hero-glow: 99 40 200;
+}
+[data-accent="berry"] {
+  --acc-l: #BE1859; --acc-l-rgb: 190 24 89;
+  --acc-d: #FF87B9; --acc-d-rgb: 255 135 185; --acc-ink-d: #45061F;
+  --hero-1: #6F0D3F; --hero-2: #A5134F; --hero-3: #AC1B4E; --hero-glow: 165 19 79;
+}
+[data-accent="coral"] {
+  --acc-l: #B13B28; --acc-l-rgb: 177 59 40;
+  --acc-d: #FF8C73; --acc-d-rgb: 255 140 115; --acc-ink-d: #4A120A;
+  --hero-1: #82261A; --hero-2: #A33023; --hero-3: #9E3614; --hero-glow: 163 48 35;
+}
+[data-accent="emerald"] {
+  --acc-l: #047253; --acc-l-rgb: 4 114 83;
+  --acc-d: #4ADE9B; --acc-d-rgb: 74 222 155; --acc-ink-d: #022C1D;
+  --hero-1: #044A39; --hero-2: #046348; --hero-3: #066542; --hero-glow: 4 99 72;
+}
+[data-accent="graphite"] {
+  --acc-l: #3D4B5F; --acc-l-rgb: 61 75 95;
+  --acc-d: #A3B4CC; --acc-d-rgb: 163 180 204; --acc-ink-d: #111821;
+  --hero-1: #1E2633; --hero-2: #334155; --hero-3: #3B4560; --hero-glow: 51 65 85;
+}
+
+/* How strong the hero's sheen and its frosted panel are — the audit reads
+   these, so change them here only. */
+:root {
+  --hero-sheen: 0.10;
+  --hero-panel: 0.22;
+}
+
 /* ============ Day ========================================================= */
 :root,
 [data-theme="light"] {
@@ -123,13 +191,16 @@
   --t-card-line: rgba(0, 0, 0, 0.04);
 
   --t-fg:        #111114;
-  --t-fg-mute:   #6C6C70;
+  --t-fg-mute:   #626267;
   --t-fg-faint:  #8E8E93;
 
-  --t-accent:          #0A7285;
-  --t-accent-dim:      rgba(10, 114, 133, 0.10);
-  --t-accent-fill:     #0A7285;
+  --t-accent:          var(--acc-l);
+  --t-accent-rgb:      var(--acc-l-rgb);
+  --t-accent-dim:      rgb(var(--acc-l-rgb) / 0.10);
+  --t-accent-fill:     var(--acc-l);
   --t-accent-fill-ink: #FFFFFF;
+  /* The accent light at the top of a page (see accent-wash). */
+  --t-wash: 0.10;
 
   --t-pos:      #1E7F3B;
   --t-pos-dim:  rgba(52, 199, 89, 0.14);
@@ -144,7 +215,7 @@
 
   --t-chart-in:   #22874F;
   --t-chart-out:  #4E66B8;
-  --t-chart-line: #0A7285;
+  --t-chart-line: var(--acc-l);
   --t-chart-want: #AD5C15;
   /* Text inside a filled chart block: white on the darker day fills, near-black on the lighter night fills. */
   --t-chart-label: #FFFFFF;
@@ -199,10 +270,12 @@
   --t-fg-mute:   #AEAEB2;
   --t-fg-faint:  #8E8E93;
 
-  --t-accent:          #5AC8D8;
-  --t-accent-dim:      rgba(90, 200, 216, 0.16);
-  --t-accent-fill:     #5AC8D8;
-  --t-accent-fill-ink: #00262D;
+  --t-accent:          var(--acc-d);
+  --t-accent-rgb:      var(--acc-d-rgb);
+  --t-accent-dim:      rgb(var(--acc-d-rgb) / 0.16);
+  --t-accent-fill:     var(--acc-d);
+  --t-accent-fill-ink: var(--acc-ink-d);
+  --t-wash: 0.18;
 
   --t-pos:      #4CD07D;
   --t-pos-dim:  rgba(48, 209, 88, 0.16);
@@ -217,7 +290,7 @@
 
   --t-chart-in:   #3A9E66;
   --t-chart-out:  #6F7FD0;
-  --t-chart-line: #5AC8D8;
+  --t-chart-line: var(--acc-d);
   --t-chart-want: #D27830;
   --t-chart-label: #000000;
 
@@ -361,6 +434,29 @@
 @utility float-chrome {
   background: var(--t-surface);
   box-shadow: 0 0 0 0.5px var(--t-hairline), 0 6px 24px var(--t-shadow-2);
+}
+
+/* The gradient hero — the balance card, the add button, primary buttons:
+   the accent's three stops at 140° with a soft sheen in the top corner. White
+   ink on it passes 4.5:1 for every accent (scripts/contrast-audit.mjs). */
+@utility hero {
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / var(--hero-sheen)), transparent 60%),
+    linear-gradient(140deg, var(--hero-1), var(--hero-2) 55%, var(--hero-3));
+  color: #FFFFFF;
+}
+/* A glow of the hero's own colour beneath it, instead of a grey shadow. */
+@utility hero-glow {
+  box-shadow: 0 14px 30px -12px rgb(var(--hero-glow) / 0.7);
+}
+/* The frosted panel inside the hero (the paid / open table, the carry-over
+   chip): darker, never blurred. */
+@utility hero-panel {
+  background: rgb(0 0 0 / var(--hero-panel));
+}
+/* The top of a page, lit in the accent and fading out by the first card. */
+@utility accent-wash {
+  background: radial-gradient(460px 340px at 50% 0%, rgb(var(--t-accent-rgb) / var(--t-wash)), transparent);
 }
 
 @utility ring-focus {

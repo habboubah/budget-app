@@ -13,6 +13,7 @@ import { Screen, Empty } from '../ui/Screen';
 import { IconButton } from '../ui/Button';
 import { Segmented } from '../ui/Field';
 import { Picture } from '../ui/Picture';
+import { CountingMoney } from '../ui/CountingMoney';
 import { AverageBars, BalanceChart, BudgetSplitBar, CategoryMonthChart, IncomeExpenseChart, SavedSpark } from './Charts';
 
 interface Props {
@@ -338,21 +339,25 @@ function MonthDetail({ month, balances, data, language, t, onMonth }: Props) {
         <Empty emoji="📊" title={fmt(t.statsEmptyTitle, { month: monthLabel(month, t.locale) })} body={t.statsEmptyBody} />
       ) : (
         <>
-          {/* The month in three numbers; "saved" is the one it leads with. */}
-          <section className="rounded-md bg-surface card-edge p-5">
-            <p className="eyebrow text-fg-mute">{saved >= 0 ? t.saved : t.overspent}</p>
-            <p className={`rounded-num text-[2.5rem] leading-none font-bold mt-2 ${saved < 0 ? 'text-neg' : 'text-fg'}`}>
-              {money(saved < 0 ? -saved : saved)}
-            </p>
-            {rate !== null && saved > 0 && <p className="text-label text-fg-mute mt-1.5">{fmt(t.savingsRate, { p: rate })}</p>}
-            <div className="grid grid-cols-2 gap-3 mt-4 pt-4 hairline-t">
+          {/* The month in three numbers, on the hero like the month page; "saved"
+              (or "overspent" — said in words) is the one it leads with. */}
+          <section className="hero hero-glow rounded-lg overflow-hidden">
+            <div className="px-5 pt-5 pb-4">
+              <p className="eyebrow text-on-hero-mute">{saved >= 0 ? t.saved : t.overspent}</p>
+              <p className="rounded-num text-[2.5rem] leading-none font-bold mt-2 text-on-hero">
+                <span className="sr-only">{money(saved < 0 ? -saved : saved)}</span>
+                <span aria-hidden="true"><CountingMoney cents={saved < 0 ? -saved : saved} money={money} /></span>
+              </p>
+              {rate !== null && saved > 0 && <p className="text-label text-on-hero-mute mt-1.5">{fmt(t.savingsRate, { p: rate })}</p>}
+            </div>
+            <div className="mx-2 mb-2 rounded-md hero-panel px-3.5 py-3 grid grid-cols-2 gap-3">
               <div className="min-w-0">
-                <p className="text-caption text-fg-mute">{t.income}</p>
-                <p className="text-body font-semibold text-pos mt-0.5">{money(income, 'exceptZero')}</p>
+                <p className="text-caption text-on-hero-soft">{t.income}</p>
+                <p className="text-body font-semibold num text-on-hero-pos mt-0.5">{money(income, 'exceptZero')}</p>
               </div>
               <div className="min-w-0">
-                <p className="text-caption text-fg-mute">{t.expenses}</p>
-                <p className="text-body font-semibold text-fg mt-0.5">{money(expenses ? -expenses : 0)}</p>
+                <p className="text-caption text-on-hero-soft">{t.expenses}</p>
+                <p className="text-body font-semibold num text-on-hero mt-0.5">{money(expenses ? -expenses : 0)}</p>
               </div>
             </div>
           </section>

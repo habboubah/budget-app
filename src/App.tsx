@@ -219,7 +219,7 @@ export default function App() {
     ?? categories.find(c => c.kind === 'expense')?.id ?? categories[0]?.id;
 
   return (
-    <div className="font-sans text-fg min-h-screen bg-bg">
+    <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
       {store.storageError && (
         <div role="alert" className="bg-neg-dim text-neg px-4 py-2 safe-top">
           <div className="mx-auto max-w-xl flex items-center gap-2">
@@ -256,6 +256,8 @@ export default function App() {
           <SettingsView
             language={language}
             themeMode={themeMode}
+            accent={store.accent}
+            onAccent={store.setAccent}
             t={t}
             categoryCount={categories.length}
             onLanguage={store.setLanguage}

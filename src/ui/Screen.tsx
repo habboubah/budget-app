@@ -33,16 +33,26 @@ interface Props {
  */
 export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, docked, tabbed, titleSlot, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
+  // At the very top the bar is see-through, so the page's accent light shows
+  // behind it; once anything scrolls under it, it turns solid (as iOS does).
+  const [atTop, setAtTop] = useState(true);
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 44);
+    const on = () => { setScrolled(window.scrollY > 44); setAtTop(window.scrollY < 1); };
     on();
     window.addEventListener('scroll', on, { passive: true });
     return () => window.removeEventListener('scroll', on);
   }, []);
 
   return (
-    <div className={`mx-auto w-full max-w-xl min-h-screen ${tabbed ? 'pb-safe-tabs' : docked ? 'pb-safe-dock' : 'pb-16'}`}>
-      <header className="sticky top-0 z-30 bg-bg safe-top">
+    <div className={`relative isolate mx-auto w-full max-w-xl min-h-screen ${tabbed ? 'pb-safe-tabs' : docked ? 'pb-safe-dock' : 'pb-16'}`}>
+      {/* The accent's light at the top of the page, while the page rests at the
+          top; it fades as the bar turns solid, so the two never meet in a seam.
+          Wider than the column so it never shows an edge (App clips the overflow). */}
+      <div
+        aria-hidden="true"
+        className={`absolute -z-10 top-0 h-[380px] inset-x-[-50vw] accent-wash pointer-events-none transition-opacity duration-200 ${atTop ? 'opacity-100' : 'opacity-0'}`}
+      />
+      <header className={`sticky top-0 z-30 safe-top transition-[background-color] duration-200 ${atTop ? 'bg-transparent' : 'bg-bg'}`}>
         {/* Sides size to their content and the title takes what is left, so a
             wide action can never sit on top of it. */}
         <div className="px-3 min-h-[54px] grid grid-cols-[minmax(44px,auto)_minmax(0,1fr)_minmax(44px,auto)] gap-2 items-center">

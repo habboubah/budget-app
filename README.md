@@ -11,7 +11,10 @@ month, and the two numbers that matter: **what is on the account now** and
 - **Looks and feels like an iPhone app.** Apple's own font (SF Pro, with SF
   Rounded for the money), the grouped grey background with white cards, a
   floating tab bar with the add button beside it, swipe actions, light and
-  dark mode.
+  dark mode. The balance sits on a gradient card in the app's colour — eight
+  to choose from in Settings — and every category brings its own: its tile,
+  a bar for how much of it is paid, its ticks. Amounts run to their new value
+  when something is ticked.
 - **One month per page.** ‹ › switch months, or tap the month's name to pick
   any month (each shown with what it ended on); "Zum aktuellen Monat" jumps
   back.
@@ -102,7 +105,8 @@ npm run dev        # http://localhost:3002 — also reachable from your phone on
 ```
 
 Other commands: `npm run lint` (type-check), `npm test` (unit tests),
-`npm run build:web` (production build to `dist/`), `npm run preview`.
+`npm run audit:contrast` (checks every colour pairing of every accent in both
+themes), `npm run build:web` (production build to `dist/`), `npm run preview`.
 
 ## Put it on your iPhone
 

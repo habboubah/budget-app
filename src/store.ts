@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AppData, Category, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
+import { ACCENTS, Accent, AppData, Category, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
   SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, upgradeData, carryOver, computeBalances, monthKeyOf, moveEntry as move, normalizeState,
@@ -15,6 +15,7 @@ const K = {
   months: 'spartopf-months',
   lang: 'spartopf-lang',
   theme: 'spartopf-theme',
+  accent: 'spartopf-accent',
   intro: 'spartopf-intro-done',
   collapsed: 'spartopf-collapsed',
   meta: 'spartopf-meta',
@@ -75,6 +76,14 @@ export function useAppStore() {
     const saved = readString(K.theme);
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
   });
+  /** The app's colour — a view preference like the theme, so not in a backup. */
+  const [accent, setAccent] = useState<Accent>(() => {
+    const saved = readString(K.accent);
+    const value = ACCENTS.find(a => a === saved) ?? 'petrol';
+    // Set before the first paint, so the app never flashes the default colour.
+    document.documentElement.setAttribute('data-accent', value);
+    return value;
+  });
   /** The "how it works" card on the first month — gone for good once dismissed. */
   const [introDone, setIntroDone] = useState(() => readString(K.intro) === '1');
   /** Categories folded down on the month page — a view preference, not data, so not in a backup. */
@@ -111,6 +120,11 @@ export function useAppStore() {
     document.documentElement.lang = language;
     document.documentElement.dir = translations[language].dir;
   }, [language]);
+
+  useEffect(() => {
+    persist(K.accent, accent);
+    document.documentElement.setAttribute('data-accent', accent);
+  }, [accent]);
 
   useEffect(() => {
     persist(K.theme, themeMode);
@@ -336,7 +350,7 @@ export function useAppStore() {
   };
 
   return {
-    language, setLanguage, themeMode, setThemeMode, storageError: failedKeys.length > 0,
+    language, setLanguage, themeMode, setThemeMode, accent, setAccent, storageError: failedKeys.length > 0,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),

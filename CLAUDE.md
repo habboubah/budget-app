@@ -116,11 +116,12 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
 - Money and dates are formatted with `t.locale` (`de-DE` → `1.050,00 €`).
 - Long German compounds get `wrap-compound`, never `truncate`.
 
-## Styling — calm, native iOS
+## Styling — native iOS, vivid
 - The look is today's iOS: grouped grey background with white cards (black
   with graphite cards at night), large titles, a floating capsule tab bar,
-  round floating nav buttons, swipe actions. Read the `apple-design` skill
-  before changing interaction or motion.
+  round floating nav buttons, swipe actions — with colour from two sources:
+  the user's **accent** and each category's **hue**. Read the `apple-design`
+  skill before changing interaction or motion.
 - Tailwind utilities inline. **All colours come from tokens in
   `src/index.css`** — never a literal hex in a component (`text-on-color` is
   the white ink on saturated fills).
@@ -128,6 +129,23 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   `text-fg-mute` / `text-fg-faint`, action `text-accent` / `bg-accent-fill`
   + `text-accent-fill-ink`. Cards are `rounded-md bg-surface card-edge` — no
   border, no shadow. Floating chrome (tab bar, nav buttons) is `float-chrome`.
+- **Accent** = `data-accent` on `<html>` (store `accent`, key
+  `spartopf-accent`, a view preference — not in backups; picked in Settings →
+  Darstellung → Farbe). Eight in `ACCENTS` (`types.ts`); each `[data-accent]`
+  block in index.css sets `--acc-l` (day) / `--acc-d` + `--acc-ink-d` (night)
+  and three gradient stops `--hero-1..3`. The theme blocks map `--t-accent*`
+  and `--t-chart-line` onto them. After touching any colour, run
+  `npm run audit:contrast` (`scripts/contrast-audit.mjs`): every accent ×
+  theme, the hero and its panel, the paid ticks — it must pass.
+- **The hero** (`hero` + `hero-glow`): the accent's gradient with a sheen and a
+  glow of its own colour. It carries the balance card, the statistics' month
+  summary, the add button and primary `Button`s. Ink on it: `text-on-hero`,
+  `text-on-hero-mute` (captions on the gradient); on its frosted `hero-panel`
+  also `text-on-hero-soft` / `-pos` / `-warn` / `-neg` — those four only on the
+  panel. Never `text-pos` / `text-neg` / `text-fg` on the hero.
+- The page top is lit in the accent (`accent-wash`, in `Screen`) only while the
+  page rests at the top; the bar is see-through there and turns solid as the
+  wash fades — keep the two in step, or a seam shows.
 - Type is Apple's system font: `display` for titles (large title
   `text-title`, sections `text-title2`, card headings `text-heading
   font-semibold`); `rounded-num` (SF Rounded, tabular) for money read at a
@@ -143,8 +161,15 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   a negative balance or overdue, `text-warn` (+ `bg-warn-dim`) *open*. Expenses
   themselves are plain `text-fg` — a bill is not an error.
 - A category's colour: `data-hue={category.hue}` on an element, then paint
-  with `bg-hue-bg` / `text-hue-ink`. Its hue is identity (the emoji tile, the
-  bar in the statistics), cards stay `bg-surface` + `card-edge`.
+  with `bg-hue-bg` / `text-hue-ink`. Its hue is identity — the emoji tile, the
+  paid progress bar under the category's name and the paid ticks
+  (`bg-hue-chart` + `text-chart-label`), the bars in the statistics; cards stay
+  `bg-surface` + `card-edge`.
+- Motion: big money runs to a new value (`useCountUp` / `ui/CountingMoney`,
+  with the final amount in an `sr-only` twin); a month's cards come in with
+  `stagger` / `rise` (`ui/stagger.ts`), keyed by month — the balance card
+  stays outside so its numbers run between months. All of it collapses
+  under reduced motion.
 - Amounts use the `num` utility (tabular, LTR); big amounts the `display` face.
 - Type scale in rem (follows Dynamic Type); touch targets in px
   (`min-h-control`, `h-tap`, `w-tap`).
@@ -196,6 +221,7 @@ print or commit them. Submitting for review is manual. Full checklist:
 1. `npm run lint` and `npm test`.
 2. `npm run dev` and exercise the change at iPhone width (375–430px) and on desktop.
 3. If the data shape changed: old `localStorage` payloads still load.
+4. If a colour changed: `npm run audit:contrast`.
 
 ## Commit style
 Short, imperative, feature-focused summaries, no conventional-commit prefixes

@@ -9,6 +9,7 @@ import { Empty, Screen } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
 import { useEntryDrag } from '../ui/useEntryDrag';
+import { rise, stagger } from '../ui/stagger';
 import { Picture } from '../ui/Picture';
 import { BalanceCard } from './BalanceCard';
 import { CategorySection } from './CategorySection';
@@ -155,6 +156,9 @@ export function MonthView(p: Props) {
     >
       <BalanceCard balance={balance} t={t} onOpening={p.onOpening} />
 
+      {/* Keyed by month: stepping to another one brings its cards in afresh
+          (the balance card above stays, and its numbers run to the new values). */}
+      <motion.div key={month} className="space-y-6" variants={stagger} initial="hidden" animate="show">
       {!balance.started ? (
         <StartMonthCard
           month={month}
@@ -177,6 +181,7 @@ export function MonthView(p: Props) {
           )}
 
           {oldestOpen && (
+            <motion.div variants={rise}>
             <button
               type="button"
               onClick={() => { tapLight(); p.onMonth(oldestOpen.month); }}
@@ -194,6 +199,7 @@ export function MonthView(p: Props) {
               </span>
               <ChevronRight className="w-5 h-5 text-warn shrink-0 mt-0.5 rtl:rotate-180" aria-hidden="true" />
             </button>
+            </motion.div>
           )}
 
           {p.noCategories && (
@@ -230,16 +236,18 @@ export function MonthView(p: Props) {
           ))}
 
           {/* A category taken out of this month (or one that isn't standard) comes back here. */}
-          <button
+          <motion.button
+            variants={rise}
             type="button"
             onClick={() => { tapLight(); p.onAddCategory(); }}
             className="w-full min-h-[52px] rounded-md bg-surface/60 border-[1.5px] border-dashed border-hairline px-4 flex items-center justify-center gap-2 text-body text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus"
           >
             <Plus className="w-5 h-5" aria-hidden="true" />
             {t.addCategoryToMonth}
-          </button>
+          </motion.button>
         </>
       )}
+      </motion.div>
 
       {/* The row under the finger while it is dragged. */}
       {drag.ghost && lifted && createPortal(

@@ -4,6 +4,8 @@ import { MonthBalance } from '../logic';
 import { formatMoney, monthLabel } from '../logic';
 import { Strings, fmt, plural } from '../translations';
 import { tapLight } from '../ui/haptics';
+import { useCountUp } from '../ui/useCountUp';
+import { CountingMoney } from '../ui/CountingMoney';
 
 interface Props {
   balance: MonthBalance;
@@ -13,7 +15,8 @@ interface Props {
 }
 
 /**
- * The card at the top of a month: the two numbers the app is opened for.
+ * The card at the top of a month: the two numbers the app is opened for, on
+ * the accent's gradient (the hero).
  *
  * On top, big, what is on the account now (only what is ticked as paid), with
  * a ring for how many of the month's bills are paid, and small beneath it
@@ -36,36 +39,40 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
       : t.startingBalance;
 
   return (
-    <section className="rounded-lg bg-surface card-edge overflow-hidden" aria-label={`${t.balanceNow}, ${t.balanceEnd}`}>
-      <div className="px-5 pt-5 pb-4 flex items-start gap-4">
-        <div className="min-w-0 flex-1">
-          <p className="eyebrow text-fg-mute">{t.balanceNow}</p>
-          <BigMoney text={money(b.now)} negative={b.now < 0} />
-          {/* Where the month started from — small, in the accent, tap to correct it. */}
-          <button
-            type="button"
-            onClick={() => { tapLight(); onOpening(); }}
-            className="mt-1.5 -mx-1 px-1 rounded-sm inline-flex flex-wrap items-center gap-x-1.5 text-caption text-start active:opacity-60 focus-visible:ring-focus"
-          >
-            <span className="text-accent font-medium">{carryLabel}</span>
-            <span className={`num font-semibold ${b.openingNow < 0 ? 'text-neg' : 'text-accent'}`}>{money(b.openingNow)}</span>
-            {carryOpen !== 0 && <span className="text-warn font-medium tabular-nums">· {fmt(t.inclOpen, { amount: money(carryOpen) })}</span>}
-            <ChevronRight className="w-3.5 h-3.5 text-accent rtl:rotate-180" strokeWidth={2.5} aria-hidden="true" />
-          </button>
+    <section className="hero hero-glow rounded-lg overflow-hidden" aria-label={`${t.balanceNow}, ${t.balanceEnd}`}>
+      <div className="ps-5 pe-4 pt-5 pb-4">
+        <div className="flex items-start gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="eyebrow text-on-hero-mute">{t.balanceNow}</p>
+            <BigMoney cents={b.now} money={money} />
+          </div>
+          {b.expenseCount > 0 && (
+            <PaidRing paid={b.expensePaidCount} total={b.expenseCount} label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })} />
+          )}
         </div>
-        {b.expenseCount > 0 && (
-          <PaidRing paid={b.expensePaidCount} total={b.expenseCount} label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })} />
-        )}
+        {/* Where the month started from — a small frosted chip; tap to correct it. */}
+        <button
+          type="button"
+          onClick={() => { tapLight(); onOpening(); }}
+          className="mt-3 max-w-full hero-panel rounded-[14px] ps-3 pe-2 py-1.5 inline-flex items-center gap-1.5 text-caption text-start active:scale-[0.97] transition-transform duration-150 focus-visible:ring-focus"
+        >
+          <span className="min-w-0 flex flex-wrap items-baseline gap-x-1.5">
+            <span className="text-on-hero-soft font-medium">{carryLabel}</span>
+            <span className={`num font-semibold ${b.openingNow < 0 ? 'text-on-hero-neg' : 'text-on-hero'}`}>{money(b.openingNow)}</span>
+            {carryOpen !== 0 && <span className="text-on-hero-warn font-medium tabular-nums">· {fmt(t.inclOpen, { amount: money(carryOpen) })}</span>}
+          </span>
+          <ChevronRight className="w-3.5 h-3.5 shrink-0 text-on-hero-soft rtl:rotate-180" strokeWidth={2.5} aria-hidden="true" />
+        </button>
       </div>
 
       {/* Income and expenses, paid and still open side by side, down to the
           month end in both columns (with the carry-over above); both together
-          make the month-end balance. */}
-      <div className="mx-5 hairline-t" />
-      <div className="px-5 pt-2.5">
+          make the month-end balance. On a frosted panel, so the money colours
+          read on any accent. */}
+      <div className="mx-2 mb-2 rounded-md hero-panel px-3.5 pt-2.5 pb-3">
         <table className="w-full text-label">
           <thead>
-            <tr className="text-caption text-fg-mute">
+            <tr className="text-caption text-on-hero-soft">
               <td />
               <th scope="col" className="ps-3 pb-1 text-end font-medium">{t.colPaid}</th>
               <th scope="col" className="ps-3 pb-1 text-end font-medium">{t.colOpen}</th>
@@ -73,34 +80,35 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
           </thead>
           <tbody>
             <tr>
-              <th scope="row" className="py-1.5 text-start font-normal text-fg-mute">{t.income}</th>
-              <MoneyCell text={money(b.incomePaid, 'exceptZero')} tone={b.incomePaid ? 'text-pos' : 'text-fg-mute'} />
-              <MoneyCell text={money(b.incomeOpen, 'exceptZero')} tone={b.incomeOpen ? 'text-warn' : 'text-fg-mute'} />
+              <th scope="row" className="py-1.5 text-start font-normal text-on-hero-mute">{t.income}</th>
+              <MoneyCell text={money(b.incomePaid, 'exceptZero')} tone={b.incomePaid ? 'text-on-hero-pos' : 'text-on-hero-soft'} />
+              <MoneyCell text={money(b.incomeOpen, 'exceptZero')} tone={b.incomeOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} />
             </tr>
             <tr>
-              <th scope="row" className="py-1.5 text-start font-normal text-fg-mute">{t.expenses}</th>
-              <MoneyCell text={money(b.expensePaid ? -b.expensePaid : 0)} tone={b.expensePaid ? 'text-fg' : 'text-fg-mute'} />
-              <MoneyCell text={money(b.expenseOpen ? -b.expenseOpen : 0)} tone={b.expenseOpen ? 'text-warn' : 'text-fg-mute'} />
+              <th scope="row" className="py-1.5 text-start font-normal text-on-hero-mute">{t.expenses}</th>
+              <MoneyCell text={money(b.expensePaid ? -b.expensePaid : 0)} tone={b.expensePaid ? 'text-on-hero' : 'text-on-hero-soft'} />
+              <MoneyCell text={money(b.expenseOpen ? -b.expenseOpen : 0)} tone={b.expenseOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} />
             </tr>
           </tbody>
           <tfoot>
-            <tr className="border-t border-hairline">
-              <th scope="row" className="pt-2.5 pb-1.5 text-start font-semibold text-fg">{t.balanceEnd}</th>
-              <MoneyCell text={money(b.now)} tone={b.now < 0 ? 'text-neg' : 'text-fg'} strong />
-              <MoneyCell text={money(endOpen, 'exceptZero')} tone={endOpen ? 'text-warn' : 'text-fg-mute'} strong />
+            <tr className="border-t border-on-hero/15">
+              <th scope="row" className="pt-2.5 pb-1.5 text-start font-semibold text-on-hero">{t.balanceEnd}</th>
+              <MoneyCell text={money(b.now)} tone={b.now < 0 ? 'text-on-hero-neg' : 'text-on-hero'} strong />
+              <MoneyCell text={money(endOpen, 'exceptZero')} tone={endOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} strong />
             </tr>
           </tfoot>
         </table>
-      </div>
 
-      {/* Both columns together: what will be left once everything open is settled. */}
-      <div className="px-5 pt-1 pb-4 flex items-end gap-3">
-        <p className={`min-w-0 flex-1 text-caption wrap-prose ${b.openCount ? 'text-warn' : 'text-fg-mute'}`}>
-          {b.count > 0 ? (b.openCount ? plural(b.openCount, t.afterOpenOne, t.afterOpenMany) : t.allSettled) : null}
-        </p>
-        <p className={`rounded-num text-heading font-bold ${b.end < 0 ? 'text-neg' : 'text-fg'}`} aria-label={`${t.balanceEnd}: ${money(b.end)}`}>
-          <span className="text-fg-faint font-semibold me-1" aria-hidden="true">=</span>{money(b.end)}
-        </p>
+        {/* Both columns together: what will be left once everything open is settled. */}
+        <div className="mt-1.5 pt-2.5 border-t border-on-hero/15 flex items-end gap-3">
+          <p className={`min-w-0 flex-1 text-caption wrap-prose ${b.openCount ? 'text-on-hero-warn' : 'text-on-hero-soft'}`}>
+            {b.count > 0 ? (b.openCount ? plural(b.openCount, t.afterOpenOne, t.afterOpenMany) : t.allSettled) : null}
+          </p>
+          <p className={`rounded-num text-heading font-bold ${b.end < 0 ? 'text-on-hero-neg' : 'text-on-hero'}`}>
+            <span className="sr-only">{`${t.balanceEnd}: ${money(b.end)}`}</span>
+            <span aria-hidden="true"><span className="text-on-hero-soft font-semibold me-1">=</span><CountingMoney cents={b.end} money={money} /></span>
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -115,17 +123,22 @@ function MoneyCell({ text, tone, strong }: { text: string; tone: string; strong?
 
 /**
  * The balance, as large as it fits: the figure in SF Rounded, the currency
- * sign smaller and quieter beside it ("35.773,20 €", "€35,773.20").
+ * sign smaller and quieter beside it ("35.773,20 €", "€35,773.20"). It runs
+ * to a new value rather than jumping; VoiceOver reads only the final one.
  */
-function BigMoney({ text, negative }: { text: string; negative: boolean }) {
+function BigMoney({ cents, money }: { cents: number; money: (c: number) => string }) {
+  const text = money(useCountUp(cents));
   const m = /^([^\d−-]*?)\s*([−-]?[\d.,\u00a0\u202f]*\d)\s*([^\d]*)$/.exec(text);
   const [before, figure, after] = m ? [m[1], m[2], m[3]] : ['', text, ''];
-  const sign = 'text-[0.6em] font-semibold text-fg-mute';
+  const sign = 'text-[0.6em] font-semibold text-on-hero-mute';
   return (
-    <p className={`rounded-num font-bold mt-1 text-[clamp(30px,9.5vw,42px)] leading-[1.1] wrap-prose ${negative ? 'text-neg' : 'text-fg'}`}>
-      {before && <span className={`${sign} me-1`}>{before}</span>}
-      {figure}
-      {after && <span className={`${sign} ms-1`}>{after}</span>}
+    <p className="rounded-num font-bold mt-1 text-[clamp(32px,10vw,44px)] leading-[1.1] wrap-prose text-on-hero">
+      <span className="sr-only">{money(cents)}</span>
+      <span aria-hidden="true">
+        {before && <span className={`${sign} me-1`}>{before}</span>}
+        {figure}
+        {after && <span className={`${sign} ms-1`}>{after}</span>}
+      </span>
     </p>
   );
 }
@@ -141,10 +154,10 @@ function PaidRing({ paid, total, label }: { paid: number; total: number; label: 
       role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={paid} aria-label={label} title={label}
     >
       <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90" aria-hidden="true">
-        <circle cx="30" cy="30" r={r} fill="none" strokeWidth="7" className="stroke-surface-2" />
+        <circle cx="30" cy="30" r={r} fill="none" strokeWidth="7" className="stroke-on-hero/25" />
         <motion.circle
           cx="30" cy="30" r={r} fill="none" strokeWidth="7" strokeLinecap="round"
-          className="stroke-accent-fill"
+          className="stroke-on-hero"
           style={{ opacity: ratio > 0 ? 1 : 0 }}
           strokeDasharray={c}
           initial={false}
@@ -154,7 +167,7 @@ function PaidRing({ paid, total, label }: { paid: number; total: number; label: 
       </svg>
       {/* The count shrinks as it grows, so "25/29" stays inside the ring. */}
       <span
-        className={`absolute inset-0 flex items-center justify-center rounded-num font-bold text-fg ${
+        className={`absolute inset-0 flex items-center justify-center rounded-num font-bold text-on-hero ${
           `${paid}/${total}`.length <= 3 ? 'text-caption' : `${paid}/${total}`.length <= 5 ? 'text-[11px]' : 'text-[9px]'}`}
         aria-hidden="true"
       >

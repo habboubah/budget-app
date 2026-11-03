@@ -21,7 +21,8 @@ const sizes: Record<Size, string> = {
 };
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent-fill text-accent-fill-ink',
+  /** The accent's gradient with its glow — the one thing on a sheet to tap. */
+  primary: 'hero hero-glow text-on-hero',
   /** iOS "gray" button: a quiet fill with the tint as its text. */
   secondary: 'bg-surface-2 text-accent',
   danger: 'bg-neg-dim text-neg',

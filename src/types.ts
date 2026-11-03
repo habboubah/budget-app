@@ -83,6 +83,10 @@ export interface MonthRecord {
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 
+/** The app's own colour, chosen in Settings: index.css `[data-accent]`. Petrol is the icon's. */
+export const ACCENTS = ['petrol', 'ocean', 'indigo', 'violet', 'berry', 'coral', 'emerald', 'graphite'] as const;
+export type Accent = (typeof ACCENTS)[number];
+
 /** Everything that is the user's data — what a backup contains. */
 export interface AppData {
   categories: Category[];

@@ -13,7 +13,8 @@ export interface Tab<T extends string> {
 /**
  * The tab bar as iOS draws it today: a floating capsule above the home
  * indicator — Monat · Statistik · Einstellungen, the current one on a soft
- * pill — and, beside it, the round add button, in thumb reach on every tab.
+ * pill in the accent's tint — and, beside it, the round add button on the
+ * accent's gradient, in thumb reach on every tab.
  * The page fades out behind it rather than being cut off by a bar.
  *
  * Solid, not blurred (backdrop-filter over a scrolling page is too expensive
@@ -55,7 +56,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
                   {on && (
                     <motion.span
                       layoutId="tab-pill"
-                      className="absolute inset-0 rounded-full bg-surface-2"
+                      className="absolute inset-0 rounded-full bg-accent-dim"
                       transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
                     />
                   )}
@@ -78,7 +79,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
                 exit={{ scale: 0.5, opacity: 0 }}
                 whileTap={{ scale: 0.92 }}
                 transition={{ type: 'spring', duration: 0.35, bounce: 0.25 }}
-                className="pointer-events-auto shrink-0 w-[62px] h-[62px] rounded-full bg-accent-fill text-accent-fill-ink shadow-e2 inline-flex items-center justify-center focus-visible:ring-focus"
+                className="pointer-events-auto shrink-0 w-[62px] h-[62px] rounded-full hero hero-glow text-on-hero inline-flex items-center justify-center focus-visible:ring-focus"
               >
                 <Plus className="w-7 h-7" strokeWidth={2.4} />
               </motion.button>
