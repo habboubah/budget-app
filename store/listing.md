@@ -85,6 +85,14 @@ Write 1–3 short lines per release, e.g.
 **DE:** `Neu: Wiederkehrende Posten aus dem Vormonat nachträglich übernehmen.`
 **EN:** `New: bring missing recurring items over from last month.`
 
+### 1.1.0
+
+**DE:** Neues Design im Stil von iOS – mit Wischgesten zum Abhaken und Löschen und einer Monatsauswahl per Tipp auf den Monatsnamen. Neu: Arabisch, ein Datum für jeden Eintrag, ein Filter für offene Posten und schlauere Vorschläge beim Eintragen. Spalten „Bezahlt“ und „Offen“ zeigen, was am Monatsende bleibt.
+
+**EN:** A new iOS-style design – swipe to tick off or delete, and tap the month's name to jump to any month. New: Arabic, a date for every entry, a filter for open items and smarter suggestions while you type. "Paid" and "Open" columns show what is left at the end of the month.
+
+**AR:** تصميم جديد بأسلوب iOS – اسحب لتحديد البند كمدفوع أو لحذفه، واضغط على اسم الشهر للانتقال إلى أي شهر. جديد: اللغة العربية، وتاريخ لكل بند، وفلتر للبنود المعلّقة، واقتراحات أذكى أثناء الكتابة. عمودا «مدفوع» و«معلّق» يُظهران ما سيتبقى في نهاية الشهر.
+
 ## App Review information
 
 - Sign-in required: **No**
