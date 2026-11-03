@@ -1,0 +1,17 @@
+{
+  "locale": "de",
+  "dir": "ltr",
+  "appName": "Fahrtwerk",
+  "featureGraphic": {
+    "headline": "Weißt du, was bleibt",
+    "subline": "Fahrtenbuch, Abrechnung und Statistik für Lieferfahrer"
+  },
+  "slides": {
+    "wallet":  { "headline": "Sieh, was du dabei hast",   "subline": "Bar, Trinkgeld und Kosten, live für die Schicht" },
+    "log":     { "headline": "Fahrt in Sekunden erfasst", "subline": "Bar oder online, Kosten und Trinkgeld, ein Tipp" },
+    "stats":   { "headline": "Sieh, was du wirklich verdienst", "subline": "Lohn, Trinkgeld und Kosten, Woche bis Jahr" },
+    "cashup":  { "headline": "Gib den richtigen Betrag ab", "subline": "Die Abrechnung am Schichtende, die aufgeht" },
+    "fuel":    { "headline": "Tanken und Verbrauch im Blick", "subline": "Jede Tankfüllung am Kilometerstand" },
+    "private": { "headline": "Bleibt auf deinem Handy",    "subline": "Kein Konto, keine Cloud, kein Tracking" }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "locale": "en",
+  "dir": "ltr",
+  "appName": "Fahrtwerk",
+  "featureGraphic": {
+    "headline": "Know what you earn",
+    "subline": "Trip log, cash-up and stats for delivery drivers"
+  },
+  "slides": {
+    "wallet":  { "headline": "Know what's in your pocket", "subline": "Cash, tips and costs, live for the shift" },
+    "log":     { "headline": "Log a delivery in seconds",  "subline": "Cash or online, fee and tip, one tap" },
+    "stats":   { "headline": "See what you actually earn", "subline": "Wage, tips and fees, week to year" },
+    "cashup":  { "headline": "Hand over the right amount", "subline": "An end-of-shift cash-up that adds up" },
+    "fuel":    { "headline": "Track fuel and consumption", "subline": "Every fill-up against your odometer" },
+    "private": { "headline": "Stays on your phone",        "subline": "No account, no cloud, no tracking" }
+  }
+}

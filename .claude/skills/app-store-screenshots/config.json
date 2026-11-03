@@ -1,0 +1,37 @@
+{
+  "outDir": "screenshots/raw",
+  "fixture": "screenshots/fixtures/demo-data.json",
+  "port": 4173,
+
+  "//freezeAt": "Clock the app sees. Its date part must equal the newest workDay in the fixture, or the Today tab stops saying 'Today'. Capture aborts if they drift apart.",
+  "freezeAt": "2026-08-04T21:45:00+02:00",
+  "timezone": "Europe/Berlin",
+
+  "theme": "dark",
+  "accent": "amber",
+
+  "//locales": "One shot per screen. Add \"de\" back to also render the German set.",
+  "locales": ["en"],
+
+  "//devices": "CSS size x scale = the pixel size the store gets. Portrait only. One device = one shot per screen; the other store sizes are listed in SKILL.md, paste one back to add it.",
+  "devices": [
+    { "id": "iphone65", "width": 428, "height": 926, "scale": 3, "note": "6.5in - 1284x2778 - what App Store Connect accepts for this listing" }
+  ],
+
+  "//screens": "Ordered. `steps` are Playwright selectors clicked in order from a fresh load of '/'. Optional `scrollY` scrolls before the shot. There is no router - every screen is reached by clicking.",
+  "screens": [
+    { "name": "today",        "steps": [] },
+    { "name": "trips",        "steps": ["main button >> nth=0"] },
+    { "name": "trip-add",     "steps": ["main button >> nth=0", "button.fixed.rounded-full"] },
+    { "name": "trip-edit",    "steps": ["main button >> nth=0", "main button >> nth=0"] },
+    { "name": "day-actions",  "steps": ["main button >> nth=0", "header button >> nth=-1"] },
+    { "name": "odometer",     "steps": ["main button >> nth=1"] },
+    { "name": "summary",      "steps": ["main button >> nth=2"] },
+    { "name": "history",      "steps": ["nav[aria-label='Primary'] button >> nth=1"] },
+    { "name": "stats",        "steps": ["nav[aria-label='Primary'] button >> nth=2"] },
+    { "name": "more",         "steps": ["nav[aria-label='Primary'] button >> nth=3"] },
+    { "name": "fuel",         "steps": ["nav[aria-label='Primary'] button >> nth=3", "main button >> nth=0"] },
+    { "name": "settings",     "steps": ["nav[aria-label='Primary'] button >> nth=3", "main button >> nth=1"] },
+    { "name": "about",        "steps": ["nav[aria-label='Primary'] button >> nth=3", "main button >> nth=2"] }
+  ]
+}

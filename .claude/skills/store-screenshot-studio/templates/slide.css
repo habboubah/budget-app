@@ -1,0 +1,193 @@
+/* One slide. Every length is in vw/vh so the same layout renders identically at
+   440, 414 and 360 CSS px wide — only the pixel count changes, never the
+   proportions. Logical properties keep RTL working without a mirrored sheet. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  background: var(--bg-to);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- background ---------- */
+
+/* Clipping wrapper. The panorama must not widen the document: a box wider than
+   the viewport moves the RTL scroll origin, which pushed every slide off-screen
+   and rendered a blank page. */
+.bg {
+  position: absolute; inset: 0;
+  overflow: hidden;
+}
+
+/* Panoramic: as wide as the whole set, shifted one slide per index, so swiping
+   the store listing reads as one strip. Shifted with a transform, which paints
+   without contributing any layout overflow. */
+.pano {
+  position: absolute;
+  top: 0; bottom: 0;
+  inset-inline-start: 0;
+  width: calc(var(--pano-count) * 100vw);
+  transform: translateX(calc(var(--pano-sign) * -1 * var(--pano-index) * 100vw));
+  background: linear-gradient(115deg, var(--bg-from) 0%, var(--bg-to) 100%);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(16vw);
+  opacity: 0.42;
+}
+.b1 { width: 64vw; height: 64vw; background: var(--blob-1); top: -16vw; inset-inline-start: 2vw; }
+.b2 { width: 56vw; height: 56vw; background: var(--blob-2); top: 44vh;  inset-inline-end: -18vw; opacity: 0.26; }
+.b3 { width: 48vw; height: 48vw; background: var(--blob-3); top: 76vh;  inset-inline-start: -12vw; opacity: 0.24; }
+
+/* ---------- copy ---------- */
+
+.copy {
+  position: relative;
+  padding: 9vh 7vw 0;
+  text-align: center;
+}
+
+.headline {
+  font-size: 7.4vw;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  text-wrap: balance;
+}
+
+.subline {
+  margin-top: 2.2vh;
+  font-size: 3.5vw;
+  line-height: 1.35;
+  font-weight: 500;
+  color: var(--fg-mute);
+  text-wrap: balance;
+}
+
+/* ---------- device ---------- */
+
+.stage {
+  position: relative;
+  margin-top: 4.5vh;
+  display: flex;
+  justify-content: center;
+  perspective: 160vw;
+}
+
+.device {
+  width: 72vw;
+  padding: 1.1vw;
+  border-radius: 8.4vw;
+  background: var(--bezel-fill);
+  box-shadow:
+    0 1.4vh 4vh rgba(20, 22, 26, 0.26),
+    0 0.3vh 1vh rgba(20, 22, 26, 0.18);
+}
+
+.screen {
+  position: relative;
+  border-radius: 7.3vw;
+  overflow: hidden;
+  background: var(--app-bg);
+}
+
+/* The captures start at the app's own header — there is no status-bar strip in
+   them — so the island gets its own band. Without it the island sits on top of
+   the screen title. */
+.statusbar {
+  position: relative;
+  height: 9vw;
+  background: var(--app-bg);
+}
+
+.shot {
+  /* Locked to the capture's own aspect ratio: a raw file swapped for a
+     differently shaped one gets letter-boxed, never stretched. */
+  aspect-ratio: var(--screen-aspect);
+  overflow: hidden;
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* Dynamic Island / punch-hole. Drawn, not composited — see assets/frames/README.md. */
+.island {
+  position: absolute;
+  top: 1.9vw;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bezel-fill);
+}
+[data-device="iphone"] .island { width: 22vw; height: 5.4vw; border-radius: 5.4vw; }
+[data-device="pixel"]  .island { width: 3.4vw; height: 3.4vw; border-radius: 50%; left: auto; inset-inline-start: 6vw; top: 2.8vw; transform: none; }
+[data-device="pixel"]  .device { border-radius: 5.2vw; }
+[data-device="pixel"]  .screen { border-radius: 4.4vw; }
+
+/* ---------- layouts ---------- */
+
+[data-layout="full-bleed"] .copy    { padding-top: 7vh; }
+[data-layout="full-bleed"] .headline{ font-size: 6.6vw; }
+[data-layout="full-bleed"] .stage   { margin-top: 3.5vh; }
+[data-layout="full-bleed"] .device  { width: 86vw; }
+
+[data-layout="angled"] .device {
+  transform: rotateY(-15deg) rotateZ(-2.5deg) translateX(3vw);
+  transform-origin: center center;
+  box-shadow: 3vw 2vh 5vh rgba(20, 22, 26, 0.3);
+}
+
+/* Zoom: magnify one region of the capture inside an otherwise normal frame, for
+   calling out a single piece of UI. */
+[data-layout="zoom"] .screen img {
+  transform: scale(var(--focus-scale));
+  transform-origin: var(--focus-x) var(--focus-y);
+}
+
+/* ---------- feature graphic (1024x500, landscape) ----------
+   The portrait layout sizes the phone in vw, which on a 1024-wide canvas makes
+   every part of it several times too big. Everything device-related is restated
+   in vh here so the frame is driven by the short side. */
+
+[data-layout="feature"] { display: flex; align-items: center; }
+
+[data-layout="feature"] .copy {
+  flex: 1;
+  padding: 0 3% 0 6%;
+  text-align: start;
+}
+[data-layout="feature"] .headline { font-size: 8.4vh; line-height: 1.05; }
+[data-layout="feature"] .subline  { font-size: 3vh; margin-top: 2.4vh; }
+
+[data-layout="feature"] .stage {
+  margin-top: 0;
+  flex: 0 0 34%;
+  align-items: center;
+  perspective: 90vh;
+}
+[data-layout="feature"] .device {
+  width: 34vh;
+  padding: 0.5vh;
+  border-radius: 4.4vh;
+  transform: rotateY(-18deg) rotateZ(-3deg);
+  box-shadow: 2vh 2vh 5vh rgba(20, 22, 26, 0.28);
+}
+[data-layout="feature"] .screen    { border-radius: 4vh; }
+[data-layout="feature"] .statusbar { height: 4.2vh; }
+[data-layout="feature"] .island    { width: 10vh; height: 2.4vh; border-radius: 2.4vh; top: 0.9vh; }
+
+/* Landscape needs its own blob placement — the portrait ones sit off-canvas. */
+[data-layout="feature"] .blob { filter: blur(11vh); opacity: 0.3; }
+[data-layout="feature"] .b1 { width: 60vh; height: 60vh; top: -22vh; inset-inline-start: 12%; }
+[data-layout="feature"] .b2 { width: 52vh; height: 52vh; top: 34vh;  inset-inline-end: 6%; opacity: 0.2; }
+[data-layout="feature"] .b3 { display: none; }

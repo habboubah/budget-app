@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../assets/fonts/space-grotesk.css">
+<link rel="stylesheet" href="slide.css">
+</head>
+<body>
+  <div class="bg">
+    <div class="pano"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+  </div>
+  <section class="copy">
+    <h1 class="headline"></h1>
+    <p class="subline"></p>
+  </section>
+  <div class="stage">
+    <div class="device">
+      <div class="screen">
+        <div class="statusbar"><span class="island"></span></div>
+        <div class="shot"><img alt=""></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// window.__DATA__ is injected by scripts/render.mjs before this page loads.
+// Everything here is plain assignment — no layout maths in JS, so the CSS stays
+// the single description of a layout.
+(() => {
+  const d = window.__DATA__;
+  const root = document.documentElement;
+  root.dir = d.dir;
+  root.lang = d.locale;
+  document.body.dataset.layout = d.layout;
+  document.body.dataset.device = d.device;
+
+  const c = d.colors;
+  const set = (k, v) => root.style.setProperty(k, v);
+  set('--accent', c.accent);
+  set('--fg', c.fg);
+  set('--fg-mute', c.fgMute);
+  set('--bezel-fill', '#14161A');
+  set('--app-bg', c.bg);
+  set('--bg-from', d.background.from);
+  set('--bg-to', d.background.to);
+  d.background.blobs.forEach((name, i) => set(`--blob-${i + 1}`, c[name]));
+
+  // Panoramic: one gradient the width of the whole set, slid one slide per index.
+  // RTL listings are swiped the other way, so the strip has to run the other way.
+  set('--pano-count', d.panoramaCount);
+  set('--pano-index', d.panoramaIndex);
+  set('--pano-sign', d.dir === 'rtl' ? -1 : 1);
+
+  // The screen box takes the capture's own aspect ratio, so the app pixels are
+  // placed, never stretched and never cropped by a mismatched frame.
+  set('--screen-aspect', d.rawAspect);
+
+  if (d.focus) {
+    set('--focus-x', `${d.focus.x * 100}%`);
+    set('--focus-y', `${d.focus.y * 100}%`);
+    set('--focus-scale', d.focus.scale);
+  }
+
+  document.querySelector('.headline').textContent = d.headline;
+  document.querySelector('.subline').textContent = d.subline || '';
+  const img = document.querySelector('.screen img');
+  img.src = d.rawUrl;
+  img.alt = d.headline;
+})();
+</script>
+</body>
+</html>

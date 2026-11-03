@@ -1,0 +1,40 @@
+{
+  "//": "Colours are lifted from src/index.css so the marketing set cannot drift from the app. --money is the shipped default accent (amber) in its light-theme value.",
+
+  "colors": {
+    "accent": "#A16207",
+    "accentBright": "#FFB020",
+    "bg": "#0B0C0E",
+    "surface": "#FFFFFF",
+    "fg": "#14161A",
+    "fgMute": "#5A616B",
+    "hairline": "#D3D8DE",
+    "blob1": "#B45309",
+    "blob2": "#0369A1",
+    "blob3": "#6D28D9",
+    "blob4": "#047857",
+    "blob5": "#BE123C"
+  },
+
+  "font": {
+    "family": "Space Grotesk",
+    "css": "assets/fonts/space-grotesk.css",
+    "//license": "SIL Open Font License 1.1 — assets/fonts/OFL.txt"
+  },
+
+  "//backgrounds": "Presets referenced by slide.background. `panoramic` stretches one gradient across the whole set and offsets it per slide, so the deck reads as a strip when swiped.",
+  "backgrounds": {
+    "warm": {
+      "from": "#FFF7EA",
+      "to": "#F2E6D2",
+      "blobs": ["blob1", "blob2", "blob3"],
+      "panoramic": true
+    }
+  },
+
+  "//device": "The frame is drawn in CSS, not composited from a PNG. See assets/frames/README.md. bezel/radius are in template px at 1x; the screen box is derived from the raw capture's own aspect ratio so the app pixels are never stretched.",
+  "device": {
+    "iphone": { "bezel": 4, "radius": 13, "island": true },
+    "pixel":  { "bezel": 4, "radius": 8,  "island": false, "punchHole": true }
+  }
+}

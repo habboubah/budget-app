@@ -1,0 +1,143 @@
+{
+  "//": "UI-redesign audit matrix. Same pipeline as config.json, different axes: this one sweeps light+dark, two phone sizes and a 200% text pass, and it captures the states the marketing set has no reason to show (empty screens, a destructive confirmation). Point outDir at before/ or after/ and rerun. The store set is config.json and is not affected.",
+  "outDir": "screenshots/ui-redesign/before",
+  "fixture": "screenshots/fixtures/demo-data.json",
+  "port": 4174,
+  "freezeAt": "2026-08-04T21:45:00+02:00",
+  "timezone": "Europe/Berlin",
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "accent": "amber",
+  "locales": [
+    "en",
+    "de"
+  ],
+  "//fontScales": "Root font-size multiplier. 2 is the 200% the brief requires. Before the elastic type work this pass looks identical to the 1x pass — that identity is the evidence.",
+  "fontScales": [
+    1,
+    2
+  ],
+  "//devices": "Small and large phone. The small one is where large text clips first.",
+  "devices": [
+    {
+      "id": "small",
+      "width": 360,
+      "height": 640,
+      "scale": 2,
+      "note": "small phone"
+    },
+    {
+      "id": "large",
+      "width": 428,
+      "height": 926,
+      "scale": 2,
+      "note": "large phone"
+    }
+  ],
+  "//screens": "`empty: true` re-seeds an empty dataset before the shot, for the first-use states the demo fixture can never show.",
+  "screens": [
+    {
+      "name": "today",
+      "steps": []
+    },
+    {
+      "name": "today-trip",
+      "steps": [
+        "button.fixed.rounded-full"
+      ]
+    },
+    {
+      "name": "today-empty",
+      "steps": [],
+      "empty": true
+    },
+    {
+      "name": "day",
+      "steps": [
+        "main button >> nth=0"
+      ]
+    },
+    {
+      "name": "trip-add",
+      "steps": [
+        "main button >> nth=0",
+        "button.fixed.rounded-full"
+      ]
+    },
+    {
+      "name": "trip-edit",
+      "steps": [
+        "main button >> nth=0",
+        "main button >> nth=0"
+      ]
+    },
+    {
+      "name": "day-actions",
+      "steps": [
+        "main button >> nth=0",
+        "header button >> nth=-1"
+      ]
+    },
+    {
+      "name": "delete-confirm",
+      "steps": [
+        "main button >> nth=0",
+        "header button >> nth=-1",
+        "div[role='dialog'] button >> nth=-1"
+      ]
+    },
+    {
+      "name": "odometer",
+      "steps": [
+        "main button >> nth=1"
+      ]
+    },
+    {
+      "name": "summary",
+      "steps": [
+        "main button >> nth=2"
+      ]
+    },
+    {
+      "name": "history",
+      "steps": [
+        "nav[aria-label='Primary'] button >> nth=1"
+      ]
+    },
+    {
+      "name": "history-empty",
+      "steps": [
+        "nav[aria-label='Primary'] button >> nth=1"
+      ],
+      "empty": true
+    },
+    {
+      "name": "stats",
+      "steps": [
+        "nav[aria-label='Primary'] button >> nth=2"
+      ]
+    },
+    {
+      "name": "more",
+      "steps": [
+        "nav[aria-label='Primary'] button >> nth=3"
+      ]
+    },
+    {
+      "name": "fuel",
+      "steps": [
+        "nav[aria-label='Primary'] button >> nth=3",
+        "main button >> nth=0"
+      ]
+    },
+    {
+      "name": "settings",
+      "steps": [
+        "nav[aria-label='Primary'] button >> nth=3",
+        "main button >> nth=1"
+      ]
+    }
+  ]
+}
