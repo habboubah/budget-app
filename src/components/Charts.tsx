@@ -312,18 +312,24 @@ export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps)
 
 /* ------------------------------------------------------------ balance */
 
-/** The balance at each month's end, as one line. */
+/**
+ * The balance at each month's end, as one line with a light wash beneath it,
+ * like income and expenses over time. Not from zero (a balance chart is about
+ * the change), so the wash runs down to the bottom of the plot — or to the
+ * zero line when the balance dips below it, the part underneath in red.
+ */
 export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
+  const clip = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const values = points.map(p => p.end);
   const lo = Math.min(...values);
   const hi = Math.max(...values);
-  // Not from zero: a balance chart is about the change. Padded so a flat line
-  // still sits mid-plot instead of on an edge.
+  // Padded so a flat line still sits mid-plot instead of on an edge.
   const pad = Math.max((hi - lo) * 0.15, 5000);
   const ticks = niceTicks(lo - pad, hi + pad);
   const yLo = ticks[0];
   const yHi = ticks[ticks.length - 1];
   const y = (v: number) => PAD_T + PLOT_H - ((v - yLo) / (yHi - yLo)) * PLOT_H;
+  const base = Math.min(PAD_T + PLOT_H, Math.max(PAD_T, y(0)));
   const last = points.length - 1;
   const money = (c: number) => formatMoney(c, t.locale);
   return (
@@ -331,24 +337,32 @@ export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
       months={points.map(p => p.key)} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
       zero={yLo < 0 && yHi > 0}
       label={i => `${monthLabel(points[i].key, t.locale)}: ${t.balanceOverTime} ${money(points[i].end)}`}
-      marks={(cx, _slot, active) => (
-        <>
-          <path
-            d={points.map((p, i) => `${i ? 'L' : 'M'}${cx(i).toFixed(1)},${y(p.end).toFixed(1)}`).join('')}
-            fill="none" className="stroke-chart-line" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round"
-          />
-          {[...new Set([last, active ?? last])].map(i => (
-            <circle key={i} cx={cx(i)} cy={y(points[i].end)} r={5} className="fill-chart-line stroke-surface" strokeWidth={2} />
-          ))}
-          {active === null && (
-            // The newest value, labelled directly — the one the reader came for.
-            <text x={cx(last) - 8} y={y(points[last].end) - 12} textAnchor="end" className="fill-fg text-caption font-bold num">
-              {money(points[last].end)}
-            </text>
-          )}
-        </>
-      )}
-      tooltip={i => <TipRow swatch="bg-chart-line" value={money(points[i].end)} label={t.balanceEnd} />}
+      marks={(cx, _slot, active) => {
+        const line = points.map((p, i) => `${i ? 'L' : 'M'}${cx(i).toFixed(1)},${y(p.end).toFixed(1)}`).join('');
+        const area = `${line}L${cx(last).toFixed(1)},${base.toFixed(1)}L${cx(0).toFixed(1)},${base.toFixed(1)}Z`;
+        return (
+          <>
+            <defs>
+              <clipPath id={`${clip}-up`}><rect x={0} y={0} width="100%" height={base} /></clipPath>
+              <clipPath id={`${clip}-down`}><rect x={0} y={base} width="100%" height={H - base} /></clipPath>
+            </defs>
+            <path d={area} className="fill-chart-line" opacity={0.13} clipPath={`url(#${clip}-up)`} />
+            <path d={area} className="fill-neg" opacity={0.14} clipPath={`url(#${clip}-down)`} />
+            <path d={line} fill="none" className="stroke-chart-line" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-up)`} />
+            <path d={line} fill="none" className="stroke-neg" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-down)`} />
+            {[...new Set([last, active ?? last])].map(i => (
+              <circle key={i} cx={cx(i)} cy={y(points[i].end)} r={4.5} className={`${points[i].end < 0 ? 'fill-neg' : 'fill-chart-line'} stroke-surface`} strokeWidth={2} />
+            ))}
+            {active === null && (
+              // The newest value, labelled directly — the one the reader came for.
+              <text x={cx(last) - 8} y={y(points[last].end) - 11} textAnchor="end" className="fill-fg text-caption font-bold num">
+                {money(points[last].end)}
+              </text>
+            )}
+          </>
+        );
+      }}
+      tooltip={i => <TipRow swatch={points[i].end < 0 ? 'bg-neg' : 'bg-chart-line'} value={money(points[i].end)} label={t.balanceEnd} />}
     />
   );
 }
