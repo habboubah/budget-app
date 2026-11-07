@@ -5,7 +5,7 @@ import App from './App.tsx';
 import { applyDynamicType } from './dynamicType.ts';
 import { downloadFile } from './export.ts';
 import { isoDay } from './logic.ts';
-import { KEY_PREFIX } from './store.ts';
+import { KEY_PREFIX, hydrate, installFlushTriggers, rawFiles, setHydrated } from './storage.ts';
 import translations, { isLanguage, DEFAULT_LANGUAGE } from './translations.ts';
 import './index.css';
 
@@ -24,7 +24,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
     return { error };
   }
 
-  rescue = () => {
+  rescue = async () => {
     const dump: Record<string, unknown> = { app: 'spartopf-rescue' };
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -32,6 +32,8 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
       const raw = localStorage.getItem(key);
       try { dump[key] = raw ? JSON.parse(raw) : raw; } catch { dump[key] = raw; }
     }
+    // The app's files as they are — even a broken one may hold most of the book.
+    try { dump.files = await rawFiles(); } catch { /* nothing more to add */ }
     void downloadFile(`spartopf-rescue-${isoDay()}.json`, JSON.stringify(dump, null, 2), 'application/json');
   };
 
@@ -49,7 +51,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
             className="w-full min-h-control bg-accent-fill text-accent-fill-ink rounded-full display font-bold">
             {t.crashReload}
           </button>
-          <button type="button" onClick={this.rescue}
+          <button type="button" onClick={() => void this.rescue()}
             className="w-full min-h-control bg-surface-2 text-fg rounded-full display font-bold">
             {t.crashExport}
           </button>
@@ -59,13 +61,27 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
   }
 }
 
-createRoot(document.getElementById('root')!).render(
+/** The book couldn't be read: the crash screen, with "Daten retten" for what is left. */
+function Unreadable({ error }: { error: unknown }): never {
+  throw error;
+}
+
+const root = createRoot(document.getElementById('root')!);
+const render = (child: ReactNode) => root.render(
   <StrictMode>
     <ErrorBoundary>
       {/* "user" honours prefers-reduced-motion: transforms are dropped, opacity kept. */}
-      <MotionConfig reducedMotion="user">
-        <App />
-      </MotionConfig>
+      <MotionConfig reducedMotion="user">{child}</MotionConfig>
     </ErrorBoundary>
   </StrictMode>,
 );
+
+// The book first (the file in the app, localStorage on the web); until it is
+// read the page shows its plain background, as it always did while loading.
+hydrate()
+  .then(({ data }) => {
+    setHydrated(data);
+    installFlushTriggers();
+    render(<App />);
+  })
+  .catch(error => render(<Unreadable error={error} />));

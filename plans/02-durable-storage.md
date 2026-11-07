@@ -86,3 +86,41 @@ On a device: stop the app from Xcode 20 times in the middle of editing. Nothing 
 ## Not in this plan
 
 Snapshots (03), encryption (04, 06), Android (23, which reuses this).
+
+## Notes (built; device test pending)
+
+- `src/storage.ts` as designed: `hydrate()`, `createSaver()` / `saver`
+  (300 ms debounce, writes serialised, `flush()` on `pagehide`, hidden and app
+  background), the envelope with SHA-256, `FsLike` (Capacitor's in the app,
+  `Directory.Library`, path `spartopf/data.json`).
+- **Rename:** `@capacitor/filesystem` 8.1.2 hands `rename` to the
+  IONFilesystemLib package, whose replace behaviour isn't in this repo to
+  read. So storage never renames onto an existing file: write the temp, delete
+  the old `data.prev.json`, move `data.json` to it, move the temp into place.
+  A crash between the two moves leaves a whole `data.json.tmp`, so `hydrate()`
+  takes the newest of data.json / .tmp / .prev that checks out.
+- Extra beyond the plan: `saver.forget()` for *Alle Daten löschen* (otherwise
+  `data.prev.json` would keep the deleted book until the next save).
+- `loadStored` moved from `store.ts` to `storage.ts` (the mirror and old
+  installs read through it; `compat.test.ts` imports it from there).
+- The store has one save effect; `failedKeys` became `saveFailed` (only the
+  book's writes raise the banner; in the app only the file's, not the mirror's).
+- Crash screen: an unreadable book (files broken, no mirror) renders the
+  existing ErrorBoundary; *Daten retten* now adds the raw files to the dump.
+- Debug tool for step 5: `localStorage['spartopf-debug'] = '1'` →
+  *WebKit-Daten löschen* in *Sichern und übertragen* (clears the data keys
+  and deletes `Library/WebKit`).
+- **Measured:** `hydrate()` on a two-year book (644 entries, a 135 KB file):
+  median 1.8 ms, worst 5.9 ms in Node with an in-memory file system — the
+  Capacitor bridge's read comes on top on the phone; measure there.
+- **Checked:** 14 tests in `storage.test.ts` (round trip, prev kept, broken
+  file → prev, checksum mismatch → mirror, both broken → mirror, nothing to
+  fall back on → error, a cut-short write → the temp or prev, debounce, flush,
+  mirror vs file failures, the web, forget, moving `storage-v1.json` over with
+  its golden balances, a fresh first launch); in the browser: written after
+  the debounce, kept over a reload, the banner on a refused write and gone
+  after the next one, the debug tool.
+- **Mirror removal:** the release after 1.4 (noted in CLAUDE.md).
+- **Not done (needs the iPhone):** the device test — wipe WebKit data with
+  the debug tool, relaunch, everything there; stop the app from Xcode 20 times
+  while editing; the hydrate time on the phone.

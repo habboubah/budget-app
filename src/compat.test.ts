@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { SCHEMA_VERSION, computeBalances, makeBackup, parseBackup } from './logic';
-import { loadStored } from './store';
+import { loadStored } from './storage';
 import { AppData } from './types';
 
 /*

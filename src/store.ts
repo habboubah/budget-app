@@ -2,19 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { ACCENTS, Accent, AppData, Category, Contract, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
-  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, upgradeData, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
+  canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, standardCategoryIds, uid,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { ReminderPrefs, normalizeReminderPrefs } from './reminders';
+import { hydratedData, loadStored, saver } from './storage';
 
-/** Every key this app writes starts with this, so a rescue export can find them. */
-export const KEY_PREFIX = 'spartopf-';
+/** View preferences: localStorage, here. The data itself goes through storage.ts. */
 const K = {
-  categories: 'spartopf-categories',
-  entries: 'spartopf-entries',
-  months: 'spartopf-months',
-  contracts: 'spartopf-contracts',
   lang: 'spartopf-lang',
   theme: 'spartopf-theme',
   accent: 'spartopf-accent',
@@ -23,7 +19,6 @@ const K = {
   reminders: 'spartopf-reminders',
   lock: 'spartopf-lock',
   collapsed: 'spartopf-collapsed',
-  meta: 'spartopf-meta',
 } as const;
 
 function readJson(key: string): unknown {
@@ -47,36 +42,9 @@ function initialLanguage(): Language {
   return isLanguage(device) ? device : DEFAULT_LANGUAGE;
 }
 
-/**
- * Read everything once. The very first launch gets the default categories and
- * the current month already started, so the first screen is a page to write
- * on — not a question.
- */
+/** The book as main.tsx's `hydrate()` found it (the file in the app); localStorage when rendered without it. */
 function loadInitial(): AppData {
-  return loadStored(readJson);
-}
-
-/**
- * The stored data, read through `read` (a key → parsed JSON) — the part of
- * the first load that compat.test.ts runs against payloads that older
- * versions stored (src/fixtures/storage-v*.json).
- */
-export function loadStored(read: (key: string) => unknown): AppData {
-  const meta = read(K.meta) as { seeded?: boolean; schemaVersion?: number } | undefined;
-  const rawCategories = read(K.categories);
-  // Not seeded yet: the defaults go in *before* normalising, or entries from
-  // a half-written first launch would all be filed under "Sonstiges".
-  const missing = !meta?.seeded && (!Array.isArray(rawCategories) || rawCategories.length === 0);
-  const loaded = normalizeState({
-    categories: missing ? defaultCategories() : rawCategories,
-    entries: read(K.entries),
-    months: read(K.months),
-    contracts: read(K.contracts),
-  });
-  // Saved by an older version: new and renamed built-in categories, merges.
-  const data = missing ? loaded : upgradeData(loaded, meta?.schemaVersion ?? 1);
-  if (meta?.seeded || data.months.length) return data;
-  return { ...data, months: [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(data.categories) }] };
+  return hydratedData() ?? loadStored(readJson);
 }
 
 const sortMonths = (ms: MonthRecord[]) => [...ms].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
@@ -117,30 +85,20 @@ export function useAppStore() {
     return Array.isArray(saved) ? saved.filter((x): x is string => typeof x === 'string') : [];
   });
 
-  // Keys whose last write failed (quota, private mode) — the data is at risk
-  // and the UI says so. Tracked per key: one recovering write must not hide
-  // another that is still failing.
-  const [failedKeys, setFailedKeys] = useState<string[]>([]);
+  // The last write of the book failed (disk full; quota or private mode on the
+  // web) — the data is at risk and the banner says so until a write succeeds.
+  const [saveFailed, setSaveFailed] = useState(false);
+  useEffect(() => saver.onStatus(ok => setSaveFailed(!ok)), []);
+  /** A view preference: losing one costs nothing, so a failed write is let go. */
   const persist = (key: string, value: string) => {
-    let ok = true;
-    try { localStorage.setItem(key, value); } catch { ok = false; }
-    setFailedKeys(prev => {
-      const has = prev.includes(key);
-      if (ok) return has ? prev.filter(k => k !== key) : prev;
-      return has ? prev : [...prev, key];
-    });
+    try { localStorage.setItem(key, value); } catch { /* a preference */ }
   };
 
-  useEffect(() => { persist(K.categories, JSON.stringify(categories)); }, [categories]);
-  useEffect(() => { persist(K.entries, JSON.stringify(entries)); }, [entries]);
-  useEffect(() => { persist(K.months, JSON.stringify(months)); }, [months]);
-  useEffect(() => { persist(K.contracts, JSON.stringify(contracts)); }, [contracts]);
   useEffect(() => { persist(K.intro, introDone ? '1' : '0'); }, [introDone]);
   useEffect(() => { persist(K.tips, tipsDone ? '1' : '0'); }, [tipsDone]);
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
   useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
-  useEffect(() => { persist(K.meta, JSON.stringify({ schemaVersion: SCHEMA_VERSION, seeded: true })); }, []);
 
   useEffect(() => {
     persist(K.lang, language);
@@ -175,6 +133,8 @@ export function useAppStore() {
     () => ({ categories, entries, months, ...(Object.keys(contracts).length ? { contracts } : {}) }),
     [categories, entries, months, contracts],
   );
+  // Every change to the book goes to storage (debounced, written atomically; storage.ts).
+  useEffect(() => { saver.save(data); }, [data]);
   // Contracts don't move money: the balances don't follow them.
   const balances = useMemo(() => computeBalances({ categories, entries, months }), [categories, entries, months]);
 
@@ -419,6 +379,8 @@ export function useAppStore() {
   };
 
   const resetAll = () => {
+    // The files and the mirror go first (no copy of the old book stays behind); the fresh book is saved after.
+    void saver.forget();
     const fresh = defaultCategories();
     setCategories(fresh);
     setEntries([]);
@@ -441,7 +403,7 @@ export function useAppStore() {
   };
 
   return {
-    language, setLanguage, themeMode, setThemeMode, accent, setAccent, storageError: failedKeys.length > 0,
+    language, setLanguage, themeMode, setThemeMode, accent, setAccent, storageError: saveFailed,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
     tipsDone, dismissTips: () => setTipsDone(true),
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),

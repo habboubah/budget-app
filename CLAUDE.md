@@ -8,7 +8,8 @@ Spartopf: a client-only React + Capacitor household budget book, modelled on
 Ahmad's monthly Excel sheet. One month per page, entries per category, each
 entry paid or still open, recurring entries carried into the next month, and
 two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
-**No backend, no account — everything is `localStorage`.**
+**No backend, no account — everything stays on the device** (a file in the
+iPhone app, `localStorage` on the web; `src/storage.ts`).
 
 ## Stack
 - React 19 + TypeScript (strict), Vite 6, Tailwind CSS 4, `lucide-react`, `motion`.
@@ -21,8 +22,32 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   screen. The `pushed` array is the nav's single source of truth (back
   gesture, scroll reset) and must match the render ternary.
 - **No global store library.** All state lives in `useAppStore()` in
-  `src/store.ts`, mirrored to `localStorage` (`spartopf-*` keys) via
-  `useEffect`. Immutable updates only.
+  `src/store.ts`. Immutable updates only.
+- **`src/storage.ts` is the only module that reads or writes the user's
+  data** (categories, entries, months, contracts). `main.tsx` awaits
+  `hydrate()` before the first render; the store's one effect hands every
+  change to `saver.save()` (debounced 300 ms, serialised), and `flush()`
+  runs on `pagehide`, hidden and app background.
+  - iPhone app: one file, `Library/spartopf/data.json`
+    (`{ app, schemaVersion, savedAt, sha256, data }`), written atomically:
+    `data.json.tmp`, the old file moved to `data.prev.json`, the temp moved
+    into place — never a rename onto an existing file. On load the newest of
+    the three whose SHA-256 matches wins; else the localStorage mirror; else
+    (files broken, no mirror) the crash screen with *Daten retten*, whose
+    dump includes the raw files.
+  - **The localStorage mirror** (`spartopf-categories` etc.) is written with
+    every save for two releases as the way back: the release after 1.4 removes
+    it (and its read in `hydrate()`); until then it is also how an install from
+    before plan 02 moves over on its first launch.
+  - Web / PWA: localStorage is the store, plus `navigator.storage.persist()`.
+  - *Alle Daten löschen* calls `saver.forget()` first, so `data.prev.json`
+    keeps no copy of the old book.
+  - View preferences (language, theme, accent, folded cards, intro, tips,
+    reminders, lock) stay in localStorage in `store.ts`: losing them costs
+    nothing, and a failed write of one doesn't raise the banner.
+  - Debug: `localStorage['spartopf-debug'] = '1'` (Safari Web Inspector on a
+    device) shows *WebKit-Daten löschen* in *Sichern und übertragen* — what
+    iOS does when it reclaims web storage; after a relaunch the file has it all.
 - **Screens** live in `src/components/XxxView.tsx`; forms shown in a bottom
   sheet are `XxxSheet.tsx`. Named exports, `Props` interface above.
 - **Shared primitives** live in `src/ui/` (`Screen`, `Sheet`, `Button`,

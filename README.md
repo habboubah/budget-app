@@ -170,7 +170,8 @@ TestFlight, the same way Fahrtwerk and Korb ship. The full first-time checklist
 | Path | What |
 |---|---|
 | `src/App.tsx` | Tabs, pushed screens (no router), sheets, toasts |
-| `src/store.ts` | All state, persisted to `localStorage` (`spartopf-*` keys) |
+| `src/store.ts` | All state; view preferences in `localStorage` |
+| `src/storage.ts` | The household book on disk: a checksummed file written atomically in the iPhone app, `localStorage` on the web (tested in `storage.test.ts`) |
 | `src/logic.ts` | Pure logic — money parsing/formatting, months, the two balances, carry-over, statistics, storage validation, CSV (tested in `logic.test.ts`) |
 | `src/insights.ts` | Savings rate, reserve, forecast, 50/30/20 check, commitments, unusual months, hints (tested in `insights.test.ts`) |
 | `src/budgets.ts`, `src/contracts.ts`, `src/due.ts` | Monthly budgets and their pace, subscriptions & contracts with notice deadlines, what is due next (each with its tests) |

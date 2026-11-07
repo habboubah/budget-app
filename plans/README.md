@@ -197,7 +197,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 
 - [x] 00 Finish the redesign — built and checked in the browser; reminders and the lock still to be tried on an iPhone (see the plan's notes)
 - [x] 01 Quality and privacy gates — `npm run check` passes locally; CI not run yet (nothing pushed)
-- [ ] 02 Durable storage
+- [x] 02 Durable storage — built and tested; the iPhone test (wipe WebKit data, relaunch) is still to do
 - [ ] 03 Automatic backups and restore
 - [ ] 04 Encrypted backup files
 - [ ] 05 Security hardening
