@@ -183,6 +183,17 @@ const SCREENS = [
   }, wait: dialog },
   { name: 'stats', run: tab(1), audit: 'page' },
   { name: 'stats-full', run: tab(1), full: true },
+  // "Wofür das Geld geht": the first category opened to its trend, and the payees.
+  { name: 'stats-category', full: true, run: async page => {
+    await tab(1)(page);
+    await page.locator('button[aria-expanded]').first().click();
+    await page.waitForTimeout(250);
+  } },
+  { name: 'stats-payees', full: true, run: async page => {
+    await tab(1)(page);
+    await page.locator('[role="radiogroup"]').last().locator('[role="radio"]').last().click();
+    await page.waitForTimeout(250);
+  } },
   { name: 'insights', run: tab(2), audit: 'page' },
   { name: 'insights-full', run: tab(2), full: true },
   { name: 'settings', run: tab(3), audit: 'page' },

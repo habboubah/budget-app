@@ -1,17 +1,15 @@
 import { CSSProperties, useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { AppData, MonthKey } from '../types';
+import { AppData, Category, MonthKey } from '../types';
 import {
-  MonthBalance, displayName, formatMoney, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding, topNames,
+  MonthBalance, NameTotal, displayName, formatMoney, formatMoneyApprox, formatPercent, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding, topNames,
 } from '../logic';
-import {
-  averageMonths, averageSpans, categoryAverages, categoryMatrix, finishedMonths, monthSeries,
-} from '../insights';
+import { Fraction, MonthPoint, balanceChange, categoryAverages, categoryMatrix, monthSeries, nearFraction, savings } from '../insights';
 import { Strings, fmt } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
 import { Segmented } from '../ui/Field';
-import { Card, CardAction, MenuPicker } from '../ui/Card';
-import { AverageBars, BalanceChart, IncomeExpenseLines, CategoryMonthChart, IncomeExpenseChart, SavedLines } from './Charts';
+import { Card, MenuPicker } from '../ui/Card';
+import { AverageBars, BalanceChart, CategoryTrendChart, IncomeExpenseChart } from './Charts';
 import { tapLight } from '../ui/haptics';
 
 interface Props {
@@ -24,40 +22,52 @@ interface Props {
   onMonth: (m: MonthKey) => void;
 }
 
-type Range = 'last12' | 'all';
+type Range = '6' | '12' | 'all';
+
+const HEADLINE: Record<Fraction, 'headlineHalf' | 'headlineThird' | 'headlineQuarter' | 'headlineFifth' | 'headlineTenth'> = {
+  half: 'headlineHalf', third: 'headlineThird', quarter: 'headlineQuarter', fifth: 'headlineFifth', tenth: 'headlineTenth',
+};
+
+/** The income chart's title says what it shows: the share kept over the finished months in view. */
+function savingsHeadline(done: MonthPoint[], t: Strings): string {
+  const rate = savings(done).rate;
+  if (rate === null) return t.incomeVsExpenses;
+  if (rate < 0) return t.headlineOver;
+  if (rate < 0.01) return t.headlineEven;
+  const fraction = nearFraction(rate);
+  return fraction ? t[HEADLINE[fraction]] : fmt(t.headlinePct, { p: formatPercent(Math.round(rate * 100), t.locale) });
+}
+
+/** The balance chart's title: how much it grew or shrank since the first month in view. */
+function balanceHeadline(points: MonthPoint[], t: Strings): string {
+  const c = balanceChange(points);
+  if (!c) return t.balanceOverTime;
+  if (c.change === 0) return t.balanceSteady;
+  const month = monthLabel(c.from, t.locale, c.from.slice(0, 4) === c.to.slice(0, 4) ? 'name' : 'long');
+  const amount = `${c.change > 0 ? '+' : ''}${formatMoneyApprox(c.change, t.locale)}`;
+  return fmt(c.change > 0 ? t.balanceGrows : t.balanceShrinks, { amount, month });
+}
 
 /**
- * Statistics, the long view (the insights are a tab of their own): income vs
- * expenses (columns), balance at month end, income and expenses as lines,
- * saved and overspent, the average per category over the last few finished
- * months (income first), each category per month (income and expenses
- * together), where the money went by payee over a period, and every number
- * in a table.
+ * Statistics, the long view (planning is a tab of its own). For a period —
+ * 6 or 12 months, or all — three averages from the finished months first,
+ * then one chart of income against expenses with what was left written over
+ * each month, the balance at each month's end, where the money goes (by
+ * category, each with its trend, or by payee), and every number in a table.
+ * The titles say what the charts show.
  */
 export function StatsView({ month, balances, data, language, t, onMonth }: Props) {
-  const { entries, categories } = data;
-  const [range, setRange] = useState<Range>('last12');
-  const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
-  const today = new Date();
+  const [range, setRange] = useState<Range>('6');
+  const money = (c: number) => formatMoney(c, t.locale);
+  const now = monthKeyOf();
 
   const all = useMemo(() => monthSeries(balances), [balances]);
-  const points = useMemo(() => (range === 'all' ? all : all.slice(-12)), [all, range]);
+  const points = useMemo(() => (range === 'all' ? all : all.slice(-Number(range))), [all, range]);
   const keys = useMemo(() => points.map(p => p.key), [points]);
-  // Averages per category over the last few finished months (3 unless picked otherwise).
-  const [avgSpan, setAvgSpan] = useState(3);
-  const spans = averageSpans(finishedMonths(all, today, Infinity).length);
-  const span = spans.includes(avgSpan) ? avgSpan : 0;
-  const avgKeys = useMemo(() => averageMonths(all, span, today), [all, span]);
-  const averages = useMemo(() => categoryAverages(entries, categories, avgKeys), [entries, categories, avgKeys]);
-  // Income and expenses in one chart (the legend chips hide either, the card's button all of them).
-  const matrix = useMemo(() => categoryMatrix(entries, categories, keys), [entries, categories, keys]);
-  const [hiddenCats, setHiddenCats] = useState<string[]>([]);
-
-  // Averages over the finished months in view, as Analyse does: the running
+  // Averages over the finished months in view, as Planen does: the running
   // month is half entered and would pull them down.
-  const done = finishedMonths(points, today, Infinity);
-  const avgIncome = Math.round(done.reduce((s, p) => s + p.income, 0) / Math.max(1, done.length));
-  const avgExpense = Math.round(done.reduce((s, p) => s + p.expense, 0) / Math.max(1, done.length));
+  const done = useMemo(() => points.filter(p => p.key < now), [points, now]);
+  const doneKeys = useMemo(() => done.map(p => p.key), [done]);
 
   if (!all.some(p => p.income || p.expense)) {
     return (
@@ -68,68 +78,29 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
   }
 
   return (
-    <Screen title={t.statsTitle} eyebrow={range === 'all' ? t.allMonths : fmt(t.lastMonths, { n: points.length })} tabbed>
-      {all.length > 12 && (
-        <Segmented<Range> label={t.statsTitle} value={range} onChange={setRange}
-          options={[{ value: 'last12', label: t.rangeLast12 }, { value: 'all', label: t.rangeAll }]} />
-      )}
+    <Screen title={t.statsTitle} eyebrow={monthSpanLabel(keys, t.locale)} tabbed>
+      <Segmented<Range> label={t.wherePeriod} value={range} onChange={setRange} options={[
+        { value: '6', label: fmt(t.averageSpanN, { n: 6 }) },
+        { value: '12', label: fmt(t.averageSpanN, { n: 12 }) },
+        { value: 'all', label: t.rangeAllShort },
+      ]} />
 
-      {/* ---------------------------------------------------- all months */}
-      <Card title={t.incomeVsExpenses} sub={fmt(t.averagesLine, { in: money(avgIncome), out: money(avgExpense) })}>
+      {done.length > 0 && <Averages done={done} running={keys.includes(now) ? now : null} t={t} />}
+
+      <Card title={savingsHeadline(done, t)} sub={t.chartIoSub}>
         <IncomeExpenseChart points={points} selected={month} t={t} onPick={onMonth} />
       </Card>
 
       {points.length > 1 && (
-        <Card title={t.balanceOverTime}>
+        <Card title={balanceHeadline(points, t)} sub={t.balanceOverTime}>
           <BalanceChart points={points} selected={month} t={t} onPick={onMonth} />
         </Card>
       )}
 
-      {points.length > 1 && (
-        <Card title={t.incomeExpensesOverTime}>
-          <IncomeExpenseLines points={points} selected={month} t={t} onPick={onMonth} />
-        </Card>
-      )}
-
-      {points.length > 1 && (
-        <Card title={t.savedOverTime}>
-          <SavedLines points={points} selected={month} t={t} onPick={onMonth} />
-        </Card>
-      )}
-
-      {averages.length > 0 && (
-        <Card
-          title={t.averageByCategory}
-          sub={fmt(t.averageFrom, { span: monthSpanLabel(avgKeys, t.locale) })}
-          action={spans.length > 1 && (
-            <MenuPicker
-              label={t.averageSpanLabel}
-              value={span}
-              onChange={setAvgSpan}
-              options={spans.map(n => ({ value: n, label: n ? fmt(t.averageSpanN, { n }) : t.averageSpanAll }))}
-            />
-          )}
-        >
-          <AverageBars items={averages} language={language} t={t} />
-        </Card>
-      )}
-
-      {matrix.categories.length > 0 && (
-        <Card
-          title={t.categoriesPerMonth}
-          action={matrix.categories.length > 1 && (
-            <CardAction onClick={() => setHiddenCats(hiddenCats.length ? [] : matrix.categories.map(c => c.id))}>
-              {hiddenCats.length ? t.chartShowAll : t.chartHideAll}
-            </CardAction>
-          )}
-        >
-          <CategoryMonthChart matrix={matrix} months={keys} selected={month} language={language} t={t} onPick={onMonth}
-            hidden={hiddenCats} setHidden={setHiddenCats} />
-        </Card>
-      )}
-
-      {/* Payee by payee, over the period picked. */}
-      <PayeesCard data={data} language={language} t={t} />
+      <WhereCard
+        data={data} months={keys} averageOver={doneKeys.length ? doneKeys : keys}
+        selected={month} language={language} t={t} onPick={onMonth}
+      />
 
       {/* Every value of the charts, without hovering. */}
       <details className="rounded-md bg-surface card-edge group">
@@ -162,35 +133,82 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
           </table>
         </div>
       </details>
-
-
     </Screen>
   );
 }
 
 /**
- * Where the money went, payee by payee ("Lidl" 6× · 12 %), over this month or
- * the last 2, 3, 6 or 12 — pending bills included, largest first, the first
- * ten until "All (n)". Each bar is in its category's colour.
+ * Ø income, Ø expenses, Ø saved over the finished months in view — the three
+ * numbers the page opens on — and which months they come from. They wrap
+ * under each other when large text no longer fits three abreast.
  */
-function PayeesCard({ data, language, t }: { data: AppData; language: string; t: Strings }) {
+function Averages({ done, running, t }: { done: MonthPoint[]; running: MonthKey | null; t: Strings }) {
+  const s = savings(done);
+  const span = monthSpanLabel(done.map(p => p.key), t.locale);
+  const approx = (c: number) => formatMoneyApprox(c, t.locale);
+  const items = [
+    { label: t.kpiIncome, value: approx(s.averageIncome), tone: 'text-fg' },
+    { label: t.kpiExpenses, value: approx(s.averageExpense), tone: 'text-fg' },
+    { label: t.kpiSaved, value: `${s.averageSaved > 0 ? '+' : ''}${approx(s.averageSaved)}`, tone: s.averageSaved < 0 ? 'text-neg' : 'text-pos' },
+  ];
+  return (
+    <section>
+      <dl className="flex flex-wrap gap-2">
+        {items.map(i => (
+          // The amounts line up at the bottom even where a label wraps.
+          <div key={i.label} className="flex-1 basis-[6.5rem] min-w-0 flex flex-col justify-between rounded-md bg-surface card-edge px-3 py-2.5">
+            <dt className="text-caption text-fg-mute wrap-compound">{i.label}</dt>
+            <dd className={`mt-0.5 rounded-num text-heading font-semibold ${i.tone}`}>{i.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="text-caption text-fg-mute mt-2 px-1 wrap-prose">
+        {running ? fmt(t.kpiCaptionRunning, { span, month: monthLabel(running, t.locale, 'name') }) : fmt(t.kpiCaption, { span })}
+      </p>
+    </section>
+  );
+}
+
+/**
+ * Where the money goes, two ways in one card: by category — the average
+ * month over the finished months in view, largest first, a tap opening that
+ * category's months as one series in its own colour — or by payee ("Lidl" 6×
+ * · 12 %) over this month or the last 2, 3, 6 or 12.
+ */
+function WhereCard({ data, months, averageOver, selected, language, t, onPick }: {
+  data: AppData;
+  /** The months in view (the trend under a category). */
+  months: MonthKey[];
+  /** The months the averages run over. */
+  averageOver: MonthKey[];
+  selected: MonthKey;
+  language: string;
+  t: Strings;
+  onPick: (key: MonthKey) => void;
+}) {
   const { entries, categories } = data;
+  const [view, setView] = useState<'categories' | 'payees'>('categories');
+  const [open, setOpen] = useState<string | null>(null);
   const [period, setPeriod] = useState(1);
   const [expanded, setExpanded] = useState(false);
-  const months = useMemo(() => monthsEnding(monthKeyOf(), period), [period]);
-  const payees = useMemo(() => topNames(entries, categories, months), [entries, categories, months]);
+  const averages = useMemo(
+    () => categoryAverages(entries, categories, averageOver).filter(a => a.category.kind === 'expense'),
+    [entries, categories, averageOver],
+  );
+  const matrix = useMemo(() => categoryMatrix(entries, categories, months, 'expense'), [entries, categories, months]);
+  const payeeMonths = useMemo(() => monthsEnding(monthKeyOf(), period), [period]);
+  const payees = useMemo(() => topNames(entries, categories, payeeMonths), [entries, categories, payeeMonths]);
   const total = payees.reduce((sum, p) => sum + p.total, 0);
-  const shown = expanded ? payees : payees.slice(0, 10);
-  const max = Math.max(1, ...payees.map(p => p.total));
-  const byId = new Map(categories.map(c => [c.id, c]));
-  const money = (c: number) => formatMoney(c, t.locale);
-  const span = monthSpanLabel(months, t.locale);
+  const payeeSpan = monthSpanLabel(payeeMonths, t.locale);
+  const trend = (c: Category) => new Map(months.map(m => [m, matrix.values.get(m)?.get(c.id) ?? 0]));
 
   return (
     <Card
-      title={t.whereMoneyWent}
-      sub={total ? fmt(t.whereSub, { span, total: money(total) }) : span}
-      action={(
+      title={t.whereMoneyGoes}
+      sub={view === 'categories'
+        ? fmt(t.averageFrom, { span: monthSpanLabel(averageOver, t.locale) })
+        : total ? fmt(t.whereSub, { span: payeeSpan, total: formatMoney(total, t.locale) }) : payeeSpan}
+      action={view === 'payees' && (
         <MenuPicker
           label={t.wherePeriod}
           value={period}
@@ -199,54 +217,81 @@ function PayeesCard({ data, language, t }: { data: AppData; language: string; t:
         />
       )}
     >
-      {payees.length === 0 ? (
-        <p className="text-label text-fg-mute wrap-prose">{t.whereNone}</p>
-      ) : (
-        <>
-          <ol className="-my-1 divide-hairline-inset" style={{ '--sep': '0px' } as CSSProperties}>
-            {shown.map(n => {
-              const c = byId.get(n.categoryId);
-              return (
-                <li key={n.name} data-hue={c?.hue} className="py-2.5">
-                  <div className="flex items-baseline gap-2">
-                    {c && <span className="emoji text-[17px] self-center" title={displayName(c.names, language)} aria-hidden="true">{c.emoji}</span>}
-                    <span className="min-w-0 flex-1 text-body text-fg wrap-compound">
-                      {n.name}
-                      <span className="text-caption text-fg-mute tabular-nums">
-                        {' · '}{n.count > 1 && <>{fmt(t.timesCount, { n: n.count })} · </>}{fmt(t.ofExpenses, { p: Math.round((n.total / Math.max(1, total)) * 100) })}
-                      </span>
-                    </span>
-                    <span className="text-body font-semibold text-fg num">{money(n.total)}</span>
-                  </div>
-                  <SplitBar paid={n.total} open={0} max={max} />
-                </li>
-              );
-            })}
-          </ol>
-          {!expanded && payees.length > shown.length && (
-            <button
-              type="button"
-              onClick={() => { tapLight(); setExpanded(true); }}
-              className="mt-2 -mb-2 h-tap w-full text-label font-semibold text-accent active:opacity-60 focus-visible:ring-focus rounded-sm"
-            >
-              {fmt(t.allPayees, { n: payees.length })}
-            </button>
-          )}
-        </>
-      )}
+      <Segmented<'categories' | 'payees'> label={t.whereMoneyGoes} value={view} onChange={setView} options={[
+        { value: 'categories', label: t.categories },
+        { value: 'payees', label: t.payees },
+      ]} />
+      <div className="mt-4">
+        {view === 'payees' ? (
+          <PayeesList payees={payees} total={total} categories={categories} language={language} t={t}
+            expanded={expanded} onExpand={() => setExpanded(true)} />
+        ) : averages.length === 0 ? (
+          <p className="text-label text-fg-mute wrap-prose">{t.whereNone}</p>
+        ) : (
+          <>
+            <AverageBars
+              items={averages} language={language} t={t}
+              selected={open} onSelect={id => setOpen(o => (o === id ? null : id))}
+              detail={c => (
+                <CategoryTrendChart category={c} values={trend(c)} months={months} selected={selected} language={language} t={t} onPick={onPick} />
+              )}
+            />
+            {!open && <p className="text-caption text-fg-mute mt-3 wrap-prose">{t.whereTapHint}</p>}
+          </>
+        )}
+      </div>
     </Card>
   );
 }
 
-/**
- * A thin bar for one amount against the largest: paid in the category's
- * chart colour, still open in a lighter step of it, a 2px surface gap between.
- */
-function SplitBar({ paid, open, max }: { paid: number; open: number; max: number }) {
+/** Payee by payee, largest first, the first ten until "All (n)"; each bar in its category's colour. */
+function PayeesList({ payees, total, categories, language, t, expanded, onExpand }: {
+  payees: NameTotal[];
+  total: number;
+  categories: Category[];
+  language: string;
+  t: Strings;
+  expanded: boolean;
+  onExpand: () => void;
+}) {
+  if (payees.length === 0) return <p className="text-label text-fg-mute wrap-prose">{t.whereNone}</p>;
+  const shown = expanded ? payees : payees.slice(0, 10);
+  const max = Math.max(1, ...payees.map(p => p.total));
+  const byId = new Map(categories.map(c => [c.id, c]));
+  const money = (c: number) => formatMoney(c, t.locale);
   return (
-    <div className="mt-2 h-2 flex gap-[2px]" aria-hidden="true">
-      {paid > 0 && <span className="h-full rounded-full bg-hue-chart" style={{ width: `${(paid / max) * 100}%` }} />}
-      {open > 0 && <span className="h-full rounded-full bg-hue-chart opacity-35" style={{ width: `${(open / max) * 100}%` }} />}
-    </div>
+    <>
+      <ol className="-my-1 divide-hairline-inset" style={{ '--sep': '0px' } as CSSProperties}>
+        {shown.map(n => {
+          const c = byId.get(n.categoryId);
+          return (
+            <li key={n.name} data-hue={c?.hue} className="py-2.5">
+              <div className="flex items-baseline gap-2">
+                {c && <span className="emoji text-[17px] self-center" title={displayName(c.names, language)} aria-hidden="true">{c.emoji}</span>}
+                <span className="min-w-0 flex-1 text-body text-fg wrap-compound">
+                  {n.name}
+                  <span className="text-caption text-fg-mute tabular-nums">
+                    {' · '}{n.count > 1 && <>{fmt(t.timesCount, { n: n.count })} · </>}{fmt(t.ofExpenses, { p: Math.round((n.total / Math.max(1, total)) * 100) })}
+                  </span>
+                </span>
+                <span className="text-body font-semibold text-fg num">{money(n.total)}</span>
+              </div>
+              <div className="mt-2 h-2 flex" aria-hidden="true">
+                <span className="h-full rounded-full bg-hue-chart" style={{ width: `${(n.total / max) * 100}%` }} />
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      {!expanded && payees.length > shown.length && (
+        <button
+          type="button"
+          onClick={() => { tapLight(); onExpand(); }}
+          className="mt-2 -mb-2 h-tap w-full text-label font-semibold text-accent active:opacity-60 focus-visible:ring-focus rounded-sm"
+        >
+          {fmt(t.allPayees, { n: payees.length })}
+        </button>
+      )}
+    </>
   );
 }

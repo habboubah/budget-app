@@ -223,14 +223,15 @@ export function dayLabel(date: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(y, m - 1, d));
 }
 
-/** "November 2026" / "Nov. 26" in the app language. */
-export function monthLabel(key: MonthKey, locale: string, style: 'long' | 'short' | 'month' = 'long'): string {
+/** "November 2026" / "Nov. 26" / "Nov." / "November" (`name`: the month alone, for a sentence) in the app language. */
+export function monthLabel(key: MonthKey, locale: string, style: 'long' | 'short' | 'month' | 'name' = 'long'): string {
   const { year, month } = parseMonthKey(key);
   const d = new Date(year, month - 1, 1);
   const opts: Intl.DateTimeFormatOptions =
     style === 'long' ? { month: 'long', year: 'numeric' }
       : style === 'short' ? { month: 'short', year: '2-digit' }
-        : { month: 'short' };
+        : style === 'name' ? { month: 'long' }
+          : { month: 'short' };
   return new Intl.DateTimeFormat(locale, opts).format(d);
 }
 

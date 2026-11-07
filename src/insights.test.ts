@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   averageMonths, averageSpans, unusualBasis, bestWorst, budgetRule, budgetSplit, categoryAverages, categoryMatrix, commitments, finishedMonths, forecast, monthSeries,
-  monthsToYearEnd, reserveMonths, savings, unusual, priceChanges, missingRegulars, newNames, categoryTrends, biggestExpenses,
+  monthsToYearEnd, reserveMonths, savings, unusual, priceChanges, missingRegulars, newNames, categoryTrends, biggestExpenses, nearFraction, balanceChange,
 } from './insights';
 import { computeBalances } from './logic';
 import { defaultCategories } from './data/defaults';
@@ -70,6 +70,30 @@ describe('smart numbers', () => {
     expect(averageSpans(3)).toEqual([0]);
     expect(averageSpans(5)).toEqual([3, 0]);
     expect(averageSpans(13)).toEqual([3, 6, 12, 0]);
+  });
+  it('says a share as the fraction it is close to, or not at all', () => {
+    expect(nearFraction(0.33)).toBe('third');
+    expect(nearFraction(0.36)).toBe('third');
+    expect(nearFraction(0.37)).toBeNull();
+    expect(nearFraction(0.5)).toBe('half');
+    expect(nearFraction(0.26)).toBe('quarter');
+    // Between a fifth and a quarter: the nearer one.
+    expect(nearFraction(0.222)).toBe('fifth');
+    expect(nearFraction(0.228)).toBe('quarter');
+    expect(nearFraction(0.09)).toBe('tenth');
+    expect(nearFraction(0.02)).toBeNull();
+    expect(nearFraction(-0.1)).toBeNull();
+  });
+  it('measures the balance change from the first month to the last', () => {
+    expect(balanceChange(points)).toEqual({ from: '2026-08', to: '2026-10', change: points[2].end - points[0].end });
+    expect(balanceChange(points.slice(0, 1))).toBeNull();
+    expect(balanceChange([])).toBeNull();
+  });
+  it('keeps what is still open of each month’s income and expenses', () => {
+    const open = { ...data, entries: [...entries, e('2026-10', 'income', 'Bonus', 500, { paid: false }), e('2026-10', 'car', 'TÜV', 120, { paid: false })] };
+    const last = monthSeries(computeBalances(open)).at(-1)!;
+    expect([last.incomeOpen, last.expenseOpen]).toEqual([50000, 12000]);
+    expect(last.income).toBe(points[2].income + 50000);
   });
   it('works out the savings rate over several months', () => {
     const s = savings(points);

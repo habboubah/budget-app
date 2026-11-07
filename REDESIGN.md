@@ -532,3 +532,26 @@ category for every month (no rollover), reminders without amounts by default.
   the sums; each month has a heading that opens it (and ends the search), then
   the hits in their category cards as before (tick, swipe, edit, marks).
   Checked by script: placeholder, count, order, 50 + Mehr, opening a month.
+- [x] **8 · Statistik** — the period is always a segmented control (6 Monate |
+  12 Monate | Alle, 6 by default; the eyebrow names the months). Three numbers
+  first: Ø Einnahmen, Ø Ausgaben, Ø gespart over the finished months in view
+  ("Durchschnitt Juni – Oktober 2026 · November läuft noch"); they wrap under
+  each other at large text. **One** income/expense chart: the saved column is
+  gone (amber means "open" again); what each month kept is written over its
+  pair ("+1.283", "−320" in red; the running month muted, "≈" where there is
+  room), only where a month's slot is ≥ 40 px — the tooltip and table always
+  have it; the part of a column still open or expected is hatched
+  (`MonthPoint.incomeOpen` / `expenseOpen`), with a one-line key under the
+  chart. Titles say something: "Du sparst im Schnitt rund ein Drittel deines
+  Einkommens" (`nearFraction`: half / third / quarter / fifth / tenth within
+  3 points, else "{p} %", "mehr raus als rein", "so viel raus wie rein"),
+  "Dein Konto wächst: +6.672 € seit Juni" (`balanceChange`); the balance line
+  is dashed into the running month and its point hollow (a projection).
+  `IncomeExpenseLines`, `SavedLines` and `CategoryMonthChart` are gone; **Wofür
+  das Geld geht** is one card with Kategorien | Empfänger: categories as Ø bars
+  (spending only), a tap opens that category's months as one series in its
+  hue (`CategoryTrendChart`); payees as before with their own period menu.
+  The value table stays. New `monthLabel(…, 'name')` (the month alone, for
+  sentences). Tests: `nearFraction`, `balanceChange`, open parts in
+  `monthSeries` (143 pass). `scripts/ui-review.mjs` gained `stats-category`,
+  `stats-payees`. Audit clean on stats (SE, 16 × DE/AR × light/dark).

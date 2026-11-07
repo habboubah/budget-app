@@ -1,7 +1,7 @@
-import { CSSProperties, ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { CSSProperties, ReactNode, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Category, MonthKey } from '../types';
-import { MonthPoint, CategoryMatrix, BudgetSplit, RulePart } from '../insights';
-import { displayName, formatMoney, formatPercent, monthLabel, parseMonthKey } from '../logic';
+import { MonthPoint, BudgetSplit, RulePart } from '../insights';
+import { displayName, formatMoney, formatPercent, monthKeyOf, monthLabel, parseMonthKey } from '../logic';
 import { Strings, fmt } from '../translations';
 import { useWidth } from '../ui/useWidth';
 import { tapLight } from '../ui/haptics';
@@ -251,70 +251,126 @@ interface SeriesProps {
 
 /* ------------------------------------------------- income vs expenses */
 
+/** A plain column segment, square at both ends (the paid part under an open one). */
+function rectPath(x: number, w: number, top: number, base: number): string {
+  return base - top <= 0.5 ? '' : `M${x},${base}V${top}H${x + w}V${base}Z`;
+}
+
+/** What a month kept, in whole units with its sign ("+1.283", "−320"): the label over a month's columns. */
+export function savedLabel(cents: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { maximumFractionDigits: 0, signDisplay: 'exceptZero' })
+    .format(Math.round(cents / 100)).replace('-', '−');
+}
+
 /**
- * Income, expenses and what each month saved, side by side; a month that
- * spent more than came in shows the overspend as a red column below the zero
- * line — above means saved, below means overspent, whatever the colours.
- * Each of the four can be switched off in the legend.
+ * Income and expenses side by side, month by month, and above each pair what
+ * was left — written, not drawn, so amber keeps meaning "open" — or how much
+ * more went out, in red. The part of a column still open or expected is
+ * hatched: the running month's salary before it comes in, a bill not paid
+ * yet; the running month's label is an estimate ("≈"). Either series can be
+ * switched off in the legend.
  */
 export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps) {
   const [hidden, toggle] = useHidden();
+  const hatch = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const on = (k: string) => !hidden.includes(k);
-  const anyOver = points.some(p => p.saved < 0);
-  const savedOn = (p: MonthPoint) => (p.saved >= 0 ? on('save') : on('over'));
-  const lo = Math.min(0, ...points.filter(p => p.saved < 0 && on('over')).map(p => p.saved));
-  const hi = Math.max(1, ...points.flatMap(p => [on('in') ? p.income : 0, on('out') ? p.expense : 0, p.saved > 0 && on('save') ? p.saved : 0]));
-  const ticks = niceTicks(lo, hi);
-  const yLo = ticks[0];
+  const both = on('in') && on('out');
+  const hi = Math.max(1, ...points.flatMap(p => [on('in') ? p.income : 0, on('out') ? p.expense : 0]));
+  const ticks = niceTicks(0, hi);
   const top = ticks[ticks.length - 1];
-  const y = (v: number) => PAD_T + PLOT_H - ((v - yLo) / (top - yLo)) * PLOT_H;
+  // Room above the top grid line for the label over the tallest column.
+  const room = both ? 14 : 0;
+  const y = (v: number) => PAD_T + room + (PLOT_H - room) * (1 - v / top);
   const base = y(0);
   const money = (c: number) => formatMoney(c, t.locale);
-  // The columns still shown, packed together.
-  const kinds = (['in', 'out', 'saved'] as const).filter(k => (k === 'saved' ? on('save') || (anyOver && on('over')) : on(k)));
+  const now = monthKeyOf();
+  const kinds = (['in', 'out'] as const).filter(on);
   const k = Math.max(1, kinds.length);
+  const series = {
+    in: { total: (p: MonthPoint) => p.income, open: (p: MonthPoint) => p.incomeOpen ?? 0, fill: 'fill-chart-in', swatch: 'bg-chart-in', label: t.income },
+    out: { total: (p: MonthPoint) => p.expense, open: (p: MonthPoint) => p.expenseOpen ?? 0, fill: 'fill-chart-out', swatch: 'bg-chart-out', label: t.expenses },
+  } as const;
+  const anyOpen = points.some(p => kinds.some(kind => series[kind].open(p) > 0));
   const parts = (p: MonthPoint) => [
-    on('in') && `${t.income} ${money(p.income)}`,
-    on('out') && `${t.expenses} ${money(p.expense)}`,
-    savedOn(p) && `${p.saved < 0 ? t.overspent : t.saved} ${money(Math.abs(p.saved))}`,
+    ...kinds.map(kind => `${series[kind].label} ${money(series[kind].total(p))}`),
+    both && `${p.saved < 0 ? t.overspent : t.saved} ${money(Math.abs(p.saved))}`,
   ].filter(Boolean).join(', ');
   return (
     <div>
       <LegendToggles label={t.chartShow} hidden={hidden} onToggle={toggle} items={[
         { key: 'in', label: t.chartLegendIncome, className: 'bg-chart-in' },
         { key: 'out', label: t.chartLegendExpenses, className: 'bg-chart-out' },
-        { key: 'save', label: t.saved, className: 'bg-chart-save' },
-        ...(anyOver ? [{ key: 'over', label: t.overspent, className: 'bg-neg' }] : []),
       ]} />
       <ChartFrame
         months={points.map(p => p.key)} minSlot={30} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
-        zero={yLo < 0}
         label={i => `${monthLabel(points[i].key, t.locale)}: ${parts(points[i])}`}
-        marks={(cx, slot, active) => points.map((p, i) => {
-          const w = Math.max(3, Math.min(10, (slot - 12) / 3));
-          const x0 = cx(i) - (k * w + (k - 1) * 2) / 2;
+        marks={(cx, slot, active) => {
+          const w = Math.max(4, Math.min(12, (slot - 12) / 2));
+          // Written over the columns only where a month has room for it; the tooltip and table have them always.
+          const labelled = both && slot >= 40;
           return (
-            <g key={p.key} opacity={active === null || active === i ? 1 : 0.45}>
-              {kinds.map((kind, j) => {
-                const x = x0 + j * (w + 2);
-                if (kind === 'in') return <path key={kind} d={columnPath(x, w, y(p.income), base)} className="fill-chart-in" />;
-                if (kind === 'out') return <path key={kind} d={columnPath(x, w, y(p.expense), base)} className="fill-chart-out" />;
-                if (p.saved >= 0) return on('save') ? <path key={kind} d={columnPath(x, w, y(p.saved), base)} className="fill-chart-save" /> : null;
-                return on('over') ? <path key={kind} d={columnPathDown(x, w, y(p.saved), base)} className="fill-neg" /> : null;
+            <>
+              <defs>
+                {kinds.map(kind => (
+                  <pattern key={kind} id={`${hatch}-${kind}`} width={5} height={5} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                    <rect width={5} height={5} className={series[kind].fill} opacity={0.32} />
+                    <rect width={2.2} height={5} className={series[kind].fill} />
+                  </pattern>
+                ))}
+              </defs>
+              {points.map((p, i) => {
+                const x0 = cx(i) - (k * w + (k - 1) * 2) / 2;
+                const running = p.key === now;
+                return (
+                  <g key={p.key} opacity={active === null || active === i ? 1 : 0.45}>
+                    {kinds.map((kind, j) => {
+                      const s = series[kind];
+                      const total = s.total(p);
+                      const open = Math.min(total, s.open(p));
+                      const paid = total - open;
+                      const x = x0 + j * (w + 2);
+                      return (
+                        <g key={kind}>
+                          {paid > 0 && <path d={open > 0 ? rectPath(x, w, y(paid), base) : columnPath(x, w, y(paid), base)} className={s.fill} />}
+                          {open > 0 && <path d={columnPath(x, w, y(total), y(paid))} fill={`url(#${hatch}-${kind})`} />}
+                        </g>
+                      );
+                    })}
+                    {labelled && (p.income || p.expense) ? (
+                      <text
+                        x={cx(i)} y={y(Math.max(p.income, p.expense)) - 6} textAnchor="middle"
+                        className={`text-micro font-bold num ${running ? 'fill-fg-mute' : p.saved < 0 ? 'fill-neg' : 'fill-fg'}`}
+                      >
+                        {/* The running month is an estimate: muted, and "≈" where there is room for it. */}
+                        {`${running && slot >= 56 ? '≈ ' : ''}${savedLabel(p.saved, t.locale)}`}
+                      </text>
+                    ) : null}
+                  </g>
+                );
               })}
-            </g>
+            </>
           );
-        })}
-        tooltip={i => (
-          <>
-            {on('in') && <TipRow swatch="bg-chart-in" value={money(points[i].income)} label={t.income} />}
-            {on('out') && <TipRow swatch="bg-chart-out" value={money(points[i].expense)} label={t.expenses} />}
-            {savedOn(points[i]) && (points[i].saved < 0
-              ? <TipRow swatch="bg-neg" value={money(-points[i].saved)} label={t.overspent} />
-              : <TipRow swatch="bg-chart-save" value={money(points[i].saved)} label={t.saved} />)}
-          </>
-        )}
+        }}
+        tooltip={i => {
+          const p = points[i];
+          return (
+            <>
+              {kinds.map(kind => {
+                const s = series[kind];
+                const open = s.open(p);
+                return (
+                  <div key={kind}>
+                    <TipRow swatch={s.swatch} value={money(s.total(p))} label={s.label} />
+                    {open > 0 && <p className="ps-5 text-caption text-fg-mute tabular-nums">{fmt(t.inclOpen, { amount: money(open) })}</p>}
+                  </div>
+                );
+              })}
+              {both && <TipRow value={money(Math.abs(p.saved))} label={p.saved < 0 ? t.overspent : t.saved} />}
+            </>
+          );
+        }}
       />
+      {anyOpen && <p className="text-caption text-fg-mute mt-1 wrap-prose">{t.hatchNote}</p>}
     </div>
   );
 }
@@ -341,14 +397,26 @@ export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
   const base = Math.min(PAD_T + PLOT_H, Math.max(PAD_T, y(0)));
   const last = points.length - 1;
   const money = (c: number) => formatMoney(c, t.locale);
+  // The running month's end is a projection (open entries still to come):
+  // its stretch of the line is dashed and its point hollow.
+  const running = points.findIndex(p => p.key === monthKeyOf());
+  const projected = (i: number) => i === running;
   return (
     <ChartFrame
       months={points.map(p => p.key)} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
       zero={yLo < 0 && yHi > 0}
       label={i => `${monthLabel(points[i].key, t.locale)}: ${t.balanceOverTime} ${money(points[i].end)}`}
       marks={(cx, _slot, active) => {
-        const line = points.map((p, i) => `${i ? 'L' : 'M'}${cx(i).toFixed(1)},${y(p.end).toFixed(1)}`).join('');
+        const path = (from: number, to: number) => points.slice(from, to + 1)
+          .map((p, j) => `${j ? 'L' : 'M'}${cx(from + j).toFixed(1)},${y(p.end).toFixed(1)}`).join('');
+        const line = path(0, last);
+        const solid = running > 0 ? path(0, running - 1) : running === 0 ? '' : line;
+        const dashed = running > 0 ? path(running - 1, running) : '';
         const area = `${line}L${cx(last).toFixed(1)},${base.toFixed(1)}L${cx(0).toFixed(1)},${base.toFixed(1)}Z`;
+        const stroke = (d: string, className: string, side: 'up' | 'down', dash?: string) => d && (
+          <path d={d} fill="none" className={className} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round"
+            strokeDasharray={dash} clipPath={`url(#${clip}-${side})`} />
+        );
         return (
           <>
             <defs>
@@ -357,10 +425,17 @@ export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
             </defs>
             <path d={area} className="fill-chart-line" opacity={0.13} clipPath={`url(#${clip}-up)`} />
             <path d={area} className="fill-neg" opacity={0.14} clipPath={`url(#${clip}-down)`} />
-            <path d={line} fill="none" className="stroke-chart-line" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-up)`} />
-            <path d={line} fill="none" className="stroke-neg" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-down)`} />
+            {stroke(solid, 'stroke-chart-line', 'up')}
+            {stroke(solid, 'stroke-neg', 'down')}
+            {stroke(dashed, 'stroke-chart-line', 'up', '4 4')}
+            {stroke(dashed, 'stroke-neg', 'down', '4 4')}
             {[...new Set([last, active ?? last])].map(i => (
-              <circle key={i} cx={cx(i)} cy={y(points[i].end)} r={4.5} className={`${points[i].end < 0 ? 'fill-neg' : 'fill-chart-line'} stroke-surface`} strokeWidth={2} />
+              <circle
+                key={i} cx={cx(i)} cy={y(points[i].end)} r={4.5} strokeWidth={projected(i) ? 2.5 : 2}
+                className={projected(i)
+                  ? `fill-surface ${points[i].end < 0 ? 'stroke-neg' : 'stroke-chart-line'}`
+                  : `${points[i].end < 0 ? 'fill-neg' : 'fill-chart-line'} stroke-surface`}
+              />
             ))}
             {active === null && (
               // The newest value, labelled directly — the one the reader came for.
@@ -376,200 +451,43 @@ export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
   );
 }
 
-/* ----------------------------------------------- income and expenses, lines */
+/* ------------------------------------------------- one category's trend */
 
 /**
- * Income and expenses month by month as two lines, each with a light wash
- * down to zero (as saved and overspent below), read like the balance line:
- * the newest values labelled at the end of each line, every month in the
- * tooltip. Either line can be switched off in the legend.
+ * One category's total per month as columns in its own colour — opened under
+ * its row in "Wofür das Geld geht", one series instead of every category at
+ * once.
  */
-export function IncomeExpenseLines({ points, selected, t, onPick }: SeriesProps) {
-  const [hidden, toggle] = useHidden();
-  const series = [
-    { key: 'income', value: (p: MonthPoint) => p.income, stroke: 'stroke-chart-in', fill: 'fill-chart-in', swatch: 'bg-chart-in', label: t.income },
-    { key: 'expense', value: (p: MonthPoint) => p.expense, stroke: 'stroke-chart-out', fill: 'fill-chart-out', swatch: 'bg-chart-out', label: t.expenses },
-  ];
-  const shown = series.filter(s => !hidden.includes(s.key));
-  const ticks = niceTicks(0, Math.max(1, ...points.flatMap(p => shown.map(s => s.value(p)))));
-  const top = ticks[ticks.length - 1];
-  const y = (v: number) => PAD_T + PLOT_H - (v / top) * PLOT_H;
-  const base = y(0);
-  const last = points.length - 1;
-  const money = (c: number) => formatMoney(c, t.locale);
-  // The higher line's label above its last point, the lower one's below, so they never overlap.
-  const highest = shown.reduce<(typeof series)[number] | undefined>((a, s) => (!a || s.value(points[last]) > a.value(points[last]) ? s : a), undefined);
-  return (
-    <div>
-      <LegendToggles label={t.chartShow} hidden={hidden} onToggle={toggle}
-        items={[{ key: 'income', label: t.chartLegendIncome, className: 'bg-chart-in' }, { key: 'expense', label: t.chartLegendExpenses, className: 'bg-chart-out' }]} />
-      <ChartFrame
-        months={points.map(p => p.key)} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
-        label={i => `${monthLabel(points[i].key, t.locale)}: ${shown.map(s => `${s.label} ${money(s.value(points[i]))}`).join(', ')}`}
-        marks={(cx, _slot, active) => (
-          <>
-            {shown.map(s => {
-              const line = points.map((p, i) => `${i ? 'L' : 'M'}${cx(i).toFixed(1)},${y(s.value(p)).toFixed(1)}`).join('');
-              return (
-                <g key={s.key}>
-                  <path d={`${line}L${cx(last).toFixed(1)},${base.toFixed(1)}L${cx(0).toFixed(1)},${base.toFixed(1)}Z`} className={s.fill} opacity={0.13} />
-                  <path d={line} fill="none" className={s.stroke} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-                </g>
-              );
-            })}
-            {shown.map(s => [...new Set([last, active ?? last])].map(i => (
-              <circle key={`${s.key}-${i}`} cx={cx(i)} cy={y(s.value(points[i]))} r={4.5} className={`${s.fill} stroke-surface`} strokeWidth={2} />
-            )))}
-            {active === null && shown.map(s => {
-              const above = s === highest;
-              return (
-                <text key={s.key} x={cx(last) - 8} y={y(s.value(points[last])) + (above ? -11 : 19)} textAnchor="end" className="fill-fg text-caption font-bold num">
-                  {money(s.value(points[last]))}
-                </text>
-              );
-            })}
-          </>
-        )}
-        tooltip={i => (
-          <>
-            {shown.map(s => <TipRow key={s.key} swatch={s.swatch} value={money(s.value(points[i]))} label={s.label} />)}
-          </>
-        )}
-      />
-    </div>
-  );
-}
-
-/* ------------------------------------------------ saved and overspent */
-
-/**
- * What each month saved, as one line around the zero line: above it saved,
- * below it overspent — the line and a light wash down (or up) to zero take
- * the colour of the side they are on, so a month that crosses turns red right
- * where it does. The newest value is labelled at the end, every month in the
- * tooltip. Either side can be switched off in the legend.
- */
-export function SavedLines({ points, selected, t, onPick }: SeriesProps) {
-  const [hidden, toggle] = useHidden();
-  const clip = useId().replace(/[^a-zA-Z0-9_-]/g, '');
-  const values = points.map(p => p.saved);
-  const anyOver = values.some(v => v < 0);
-  const up = !hidden.includes('save');
-  const down = !hidden.includes('over');
-  const visible = (v: number) => (v < 0 ? down : up);
-  const ticks = niceTicks(down ? Math.min(0, ...values) : 0, up ? Math.max(1, ...values) : 1);
-  const yLo = ticks[0];
-  const yHi = ticks[ticks.length - 1];
-  const y = (v: number) => PAD_T + PLOT_H - ((v - yLo) / (yHi - yLo)) * PLOT_H;
-  const base = y(0);
-  const last = points.length - 1;
-  const money = (c: number) => formatMoney(c, t.locale);
-  const lastValue = values[last];
-  return (
-    <div>
-      <LegendToggles label={t.chartShow} hidden={hidden} onToggle={toggle} items={[
-        { key: 'save', label: t.saved, className: 'bg-chart-save' },
-        ...(anyOver ? [{ key: 'over', label: t.overspent, className: 'bg-neg' }] : []),
-      ]} />
-      <ChartFrame
-        months={points.map(p => p.key)} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
-        zero={yLo < 0}
-        label={i => `${monthLabel(points[i].key, t.locale)}${visible(values[i]) ? `: ${values[i] < 0 ? t.overspent : t.saved} ${money(Math.abs(values[i]))}` : ''}`}
-        marks={(cx, _slot, active) => {
-          const line = points.map((p, i) => `${i ? 'L' : 'M'}${cx(i).toFixed(1)},${y(p.saved).toFixed(1)}`).join('');
-          const area = `${line}L${cx(last).toFixed(1)},${base.toFixed(1)}L${cx(0).toFixed(1)},${base.toFixed(1)}Z`;
-          return (
-            <>
-              <defs>
-                <clipPath id={`${clip}-up`}><rect x={0} y={0} width="100%" height={Math.max(0, base)} /></clipPath>
-                <clipPath id={`${clip}-down`}><rect x={0} y={base} width="100%" height={Math.max(0, H - base)} /></clipPath>
-              </defs>
-              {up && <path d={area} className="fill-chart-save" opacity={0.16} clipPath={`url(#${clip}-up)`} />}
-              {down && <path d={area} className="fill-neg" opacity={0.14} clipPath={`url(#${clip}-down)`} />}
-              {up && <path d={line} fill="none" className="stroke-chart-save" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-up)`} />}
-              {down && <path d={line} fill="none" className="stroke-neg" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-down)`} />}
-              {[...new Set([last, active ?? last])].filter(i => visible(values[i])).map(i => (
-                <circle key={i} cx={cx(i)} cy={y(values[i])} r={4.5} className={`${values[i] < 0 ? 'fill-neg' : 'fill-chart-save'} stroke-surface`} strokeWidth={2} />
-              ))}
-              {active === null && visible(lastValue) && (
-                // The newest value, labelled directly: above the point when saved, below when overspent.
-                <text x={cx(last) - 8} y={y(lastValue) + (lastValue < 0 ? 19 : -11)} textAnchor="end" className="fill-fg text-caption font-bold num">
-                  {formatMoney(lastValue, t.locale, 'exceptZero')}
-                </text>
-              )}
-            </>
-          );
-        }}
-        tooltip={i => (!visible(values[i]) ? null : values[i] < 0
-          ? <TipRow swatch="bg-neg" value={money(-values[i])} label={t.overspent} />
-          : <TipRow swatch="bg-chart-save" value={money(values[i])} label={t.saved} />)}
-      />
-    </div>
-  );
-}
-
-/* -------------------------------------------------- categories × months */
-
-/**
- * Each category's total per month as a group of thin columns — one column
- * per category, in the user's category order and colour. Tapping a legend
- * chip hides or shows that category (the card's "show all / hide all" sets
- * them all at once, so `hidden` lives with the card); the plot scrolls when
- * the groups need the room.
- */
-export function CategoryMonthChart({ matrix, months, selected, language, t, onPick, hidden, setHidden }: {
-  matrix: CategoryMatrix;
+export function CategoryTrendChart({ category, values, months, selected, language, t, onPick }: {
+  category: Category;
+  /** month → total of the category */
+  values: Map<MonthKey, number>;
   months: MonthKey[];
   selected: MonthKey;
   language: string;
   t: Strings;
   onPick: (key: MonthKey) => void;
-  /** Ids of the categories switched off in the legend. */
-  hidden: string[];
-  setHidden: (update: (hidden: string[]) => string[]) => void;
 }) {
-  // A category that disappears from the range (deleted, no money any more) drops out of `hidden` too.
-  useEffect(() => { setHidden(h => h.filter(id => matrix.categories.some(c => c.id === id))); }, [matrix.categories, setHidden]);
-  const shown = matrix.categories.filter(c => !hidden.includes(c.id));
-  const k = Math.max(1, shown.length);
-  const max = Math.max(1, ...months.flatMap(m => shown.map(c => matrix.values.get(m)?.get(c.id) ?? 0)));
-  const ticks = niceTicks(0, max);
+  const value = (m: MonthKey) => values.get(m) ?? 0;
+  const ticks = niceTicks(0, Math.max(1, ...months.map(value)));
   const top = ticks[ticks.length - 1];
   const y = (v: number) => PAD_T + PLOT_H - (v / top) * PLOT_H;
   const base = PAD_T + PLOT_H;
   const money = (c: number) => formatMoney(c, t.locale);
-  const name = (c: Category) => displayName(c.names, language);
-  const value = (m: MonthKey, c: Category) => matrix.values.get(m)?.get(c.id) ?? 0;
-
+  const name = displayName(category.names, language);
   return (
-    <div>
-      <LegendToggles
-        label={t.categories}
-        hidden={hidden}
-        onToggle={id => setHidden(h => (h.includes(id) ? h.filter(x => x !== id) : [...h, id]))}
-        items={matrix.categories.map(c => ({ key: c.id, label: name(c), className: 'bg-hue-chart', hue: c.hue }))}
-      />
+    <div data-hue={category.hue}>
       <ChartFrame
-        months={months} minSlot={k * 9 + 12} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
-        label={i => `${monthLabel(months[i], t.locale)}: ${shown.map(c => `${name(c)} ${money(value(months[i], c))}`).join(', ')}`}
-        marks={(cx, slot, active) => {
-          const w = Math.max(3, Math.min(10, (slot - 10) / k - 2));
-          const groupW = k * w + (k - 1) * 2;
-          return months.map((m, i) => (
-            <g key={m} opacity={active === null || active === i ? 1 : 0.45}>
-              {shown.map((c, j) => (
-                <path key={c.id} data-hue={c.hue} d={columnPath(cx(i) - groupW / 2 + j * (w + 2), w, y(value(m, c)), base)} className="fill-hue-chart" />
-              ))}
-            </g>
-          ));
-        }}
-        tooltip={i => shown
-          .map(c => ({ c, v: value(months[i], c) }))
-          .map(({ c, v }) => (
-            <span key={c.id} data-hue={c.hue} className="block">
-              <TipRow swatch="bg-hue-chart" value={money(v)} label={name(c)} />
-            </span>
-          ))}
+        months={months} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
+        label={i => `${monthLabel(months[i], t.locale)}: ${name} ${money(value(months[i]))}`}
+        marks={(cx, slot, active) => months.map((m, i) => {
+          const w = Math.max(4, Math.min(12, slot * 0.4));
+          return (
+            <path key={m} d={columnPath(cx(i) - w / 2, w, y(value(m)), base)} className="fill-hue-chart"
+              opacity={active === null || active === i ? 1 : 0.45} />
+          );
+        })}
+        tooltip={i => <TipRow swatch="bg-hue-chart" value={money(value(months[i]))} label={name} />}
       />
     </div>
   );
@@ -577,11 +495,18 @@ export function CategoryMonthChart({ matrix, months, selected, language, t, onPi
 
 /* ------------------------------------------------------------- figures */
 
-/** Average per month and category as ranked bars, the value at the tip. */
-export function AverageBars({ items, language, t }: {
+/**
+ * Average per month and category as ranked bars, the value at the tip. With
+ * `onSelect` every row is a button that opens `detail` under it (one at a
+ * time, `selected`).
+ */
+export function AverageBars({ items, language, t, selected, onSelect, detail }: {
   items: { category: Category; average: number }[];
   language: string;
   t: Strings;
+  selected?: string | null;
+  onSelect?: (categoryId: string) => void;
+  detail?: (category: Category) => ReactNode;
 }) {
   const max = Math.max(1, ...items.map(i => i.average));
   return (
@@ -590,14 +515,30 @@ export function AverageBars({ items, language, t }: {
         const name = displayName(c.names, language);
         // Income comes first; a hairline where the expenses begin.
         const firstExpense = c.kind === 'expense' && items[i - 1]?.category.kind === 'income';
-        return (
-          <li key={c.id} data-hue={c.hue} className={firstExpense ? 'pt-3 hairline-t' : ''}>
+        const open = selected === c.id;
+        const row = (
+          <>
             <div className="flex items-baseline gap-2">
               <span className="emoji text-[15px]" aria-hidden="true">{c.emoji}</span>
-              <span className="min-w-0 flex-1 text-label text-fg wrap-compound">{name}</span>
+              <span className="min-w-0 flex-1 text-label text-fg wrap-compound text-start">{name}</span>
               <span className={`text-label font-semibold num ${c.kind === 'income' ? 'text-pos' : 'text-fg'}`}>{formatMoney(average, t.locale)}</span>
             </div>
             <div className="mt-1.5 h-3 rounded-e-[4px] bg-hue-chart" style={{ width: `${Math.max(1, (average / max) * 100)}%` }} aria-hidden="true" />
+          </>
+        );
+        return (
+          <li key={c.id} data-hue={c.hue} className={firstExpense ? 'pt-3 hairline-t' : ''}>
+            {onSelect ? (
+              <button
+                type="button"
+                aria-expanded={open}
+                onClick={() => { tapLight(); onSelect(c.id); }}
+                className="block w-full min-h-control -my-1 py-1 rounded-sm text-start focus-visible:ring-focus active:opacity-70"
+              >
+                {row}
+              </button>
+            ) : row}
+            {open && detail && <div className="mt-3">{detail(c)}</div>}
           </li>
         );
       })}

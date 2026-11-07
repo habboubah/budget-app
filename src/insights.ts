@@ -30,6 +30,10 @@ export interface MonthPoint {
   rate: number | null;
   /** Balance at the month's end. */
   end: number;
+  /** Of `income`, what is still expected (not received yet). */
+  incomeOpen?: number;
+  /** Of `expense`, what is still open (not paid yet). */
+  expenseOpen?: number;
 }
 
 /** Every started month (or the last `limit` of them), oldest first. */
@@ -37,9 +41,41 @@ export function monthSeries(balances: MonthBalance[], limit?: number): MonthPoin
   const pts = balances.filter(b => b.started).map(b => {
     const income = b.incomePaid + b.incomeOpen;
     const expense = b.expensePaid + b.expenseOpen;
-    return { key: b.key, income, expense, saved: income - expense, rate: income > 0 ? (income - expense) / income : null, end: b.end };
+    return {
+      key: b.key, income, expense, saved: income - expense, rate: income > 0 ? (income - expense) / income : null, end: b.end,
+      incomeOpen: b.incomeOpen, expenseOpen: b.expenseOpen,
+    };
   });
   return limit ? pts.slice(-limit) : pts;
+}
+
+/** A share the way people say it. */
+export type Fraction = 'half' | 'third' | 'quarter' | 'fifth' | 'tenth';
+
+/**
+ * The common fraction a share is close to — within 3 points, the nearest
+ * one — so a headline can say "rund ein Drittel" instead of "31 %". Null
+ * when none is that close.
+ */
+export function nearFraction(share: number): Fraction | null {
+  const fractions: [Fraction, number][] = [['half', 1 / 2], ['third', 1 / 3], ['quarter', 1 / 4], ['fifth', 1 / 5], ['tenth', 1 / 10]];
+  let best: { name: Fraction; d: number } | null = null;
+  for (const [name, value] of fractions) {
+    const d = Math.abs(share - value);
+    if (d <= 0.03 && (!best || d < best.d)) best = { name, d };
+  }
+  return best?.name ?? null;
+}
+
+/**
+ * How the balance at the month's end changed over the months given, first to
+ * last — the headline of the balance chart. Null with fewer than two months.
+ */
+export function balanceChange(points: MonthPoint[]): { from: MonthKey; to: MonthKey; change: number } | null {
+  if (points.length < 2) return null;
+  const first = points[0];
+  const last = points[points.length - 1];
+  return { from: first.key, to: last.key, change: last.end - first.end };
 }
 
 export interface CategoryMatrix {
