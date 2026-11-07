@@ -58,6 +58,7 @@ const LANGS = {
   de: {
     locale: 'de-DE',
     categories: 'Kategorien',
+    transfer: 'Sichern und übertragen',
     names: {
       salary: 'Gehalt', child: 'Kindergeld', rent: 'Miete', power: 'Strom', net: 'Internet', phone: 'Handy',
       ins: 'Haftpflicht', gym: 'Fitnessstudio', fuel: 'Tanken', carIns: 'Kfz-Versicherung', carTax: 'Kfz-Steuer',
@@ -67,6 +68,7 @@ const LANGS = {
   ar: {
     locale: 'ar',
     categories: 'الفئات',
+    transfer: 'النسخ الاحتياطي والنقل',
     // Shop names stay Latin, as on a German receipt: mixed direction on purpose.
     names: {
       salary: 'الراتب', child: 'إعانة الأطفال', rent: 'الإيجار', power: 'الكهرباء', net: 'الإنترنت', phone: 'الجوال',
@@ -209,9 +211,21 @@ const SCREENS = [
   }, audit: 'page' },
   { name: 'settings', run: tab(3), audit: 'page' },
   { name: 'settings-full', run: tab(3), full: true },
+  // Optionen → Sichern und übertragen.
+  { name: 'transfer', run: async (page, l) => {
+    await tab(3)(page);
+    await page.locator('main button', { hasText: l.transfer }).first().click();
+    await page.waitForTimeout(500);
+  }, audit: 'page' },
   { name: 'categories', run: openCategories, audit: 'page' },
   { name: 'categories-full', run: openCategories, full: true },
-  { name: 'category-edit', run: async (page, l) => { await openCategories(page, l); await page.locator('main button').nth(1).click(); }, wait: dialog, audit: 'dialog' },
+  // "Bearbeiten" in the bar: grips and delete buttons.
+  { name: 'categories-edit', run: async (page, l) => {
+    await openCategories(page, l);
+    await page.locator('header button').last().click();
+    await page.waitForTimeout(400);
+  }, audit: 'page' },
+  { name: 'category-edit', run: async (page, l) => { await openCategories(page, l); await page.locator('main [data-category-body]').nth(4).click(); }, wait: dialog, audit: 'dialog' },
   { name: 'first-run', fresh: true, audit: 'page' },
   { name: 'first-run-full', fresh: true, full: true },
   { name: 'stats-empty', fresh: true, run: tab(1) },

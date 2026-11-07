@@ -8,9 +8,9 @@ import { Group, Row, IconTile } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
 
 /**
- * Settings → Datensicherung: everything as one JSON file, loaded back the
- * same way. Settings → Excel: the old budget spreadsheet in, and every entry
- * out again as a CSV that opens in Excel.
+ * Sichern und übertragen → Datensicherung: everything as one JSON file,
+ * loaded back the same way. → Excel: the old budget spreadsheet in, and
+ * every entry out again as a CSV that opens in Excel.
  */
 export function BackupGroup({ data, language, t, onImport, onImportExcel, toast }: {
   data: AppData;

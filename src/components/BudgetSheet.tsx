@@ -22,6 +22,26 @@ interface Props {
   onSave: (category: Category, limit: number | undefined) => void;
 }
 
+/** "Vorschlag: 650 € (Ø 3 Monate)" under a budget field — tap to take it. */
+export function BudgetSuggestion({ suggestion, t, onTake }: {
+  suggestion: { amount: number; months: number };
+  t: Strings;
+  onTake: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => { tapLight(); onTake(); }}
+      className="hit-44 mt-2.5 min-h-[36px] max-w-full rounded-full bg-accent-dim ps-3 pe-3.5 py-1.5 inline-flex items-center gap-1.5 text-label font-medium text-accent text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
+    >
+      <Sparkles className="w-4 h-4 shrink-0" strokeWidth={2.2} aria-hidden="true" />
+      <span className="min-w-0 wrap-prose tabular-nums">
+        {fmt(suggestion.months === 1 ? t.budgetSuggestOne : t.budgetSuggestMany, { amount: formatMoneyShort(suggestion.amount, t.locale), n: suggestion.months })}
+      </span>
+    </button>
+  );
+}
+
 /**
  * A spending category's monthly budget: one amount, the same every month.
  * Offers what the category cost on average over the last finished months
@@ -63,18 +83,8 @@ export function BudgetSheet({ category, data, language, t, onClose, onSave }: Pr
             enterKeyHint="done"
             trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
           />
-          {/* Tap to take it. */}
           {suggestion && suggestion.amount !== value && (
-            <button
-              type="button"
-              onClick={() => { tapLight(); setText(amountToInput(suggestion.amount, t.locale)); }}
-              className="hit-44 mt-2.5 min-h-[36px] max-w-full rounded-full bg-accent-dim ps-3 pe-3.5 py-1.5 inline-flex items-center gap-1.5 text-label font-medium text-accent text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
-            >
-              <Sparkles className="w-4 h-4 shrink-0" strokeWidth={2.2} aria-hidden="true" />
-              <span className="min-w-0 wrap-prose tabular-nums">
-                {fmt(suggestion.months === 1 ? t.budgetSuggestOne : t.budgetSuggestMany, { amount: formatMoneyShort(suggestion.amount, t.locale), n: suggestion.months })}
-              </span>
-            </button>
+            <BudgetSuggestion suggestion={suggestion} t={t} onTake={() => setText(amountToInput(suggestion.amount, t.locale))} />
           )}
         </div>
         <div className="grid gap-2">

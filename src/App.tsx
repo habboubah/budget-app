@@ -23,7 +23,7 @@ import { SettingsView } from './components/SettingsView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
-import { BackupGroup } from './components/BackupGroup';
+import { TransferView } from './components/TransferView';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
 import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
@@ -38,10 +38,10 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'dueSoon' | 'contracts';
+type PushedId = 'categories' | 'transfer' | 'dueSoon' | 'contracts';
 type ScreenId = TabId | PushedId;
 /** The tab each pushed screen sits on. */
-const PARENT: Record<PushedId, TabId> = { categories: 'settings', dueSoon: 'month', contracts: 'insights' };
+const PARENT: Record<PushedId, TabId> = { categories: 'settings', transfer: 'settings', dueSoon: 'month', contracts: 'insights' };
 
 export default function App() {
   const store = useAppStore();
@@ -364,7 +364,16 @@ export default function App() {
             onDelete={askDeleteCategory}
             onReorder={store.setCategoryOrder}
             onRestoreDefaults={restoreDefaults}
-            onStandard={(c, on) => store.updateCategory(c.id, { standard: on })}
+          />
+        ) : id === 'transfer' ? (
+          <TransferView
+            data={data}
+            language={language}
+            t={t}
+            onBack={back}
+            onImport={d => { store.importData(d); setMonth(monthKeyOf()); }}
+            onImportExcel={() => excelInput.current?.click()}
+            toast={label => show(label)}
           />
         ) : id === 'settings' ? (
           <SettingsView
@@ -377,18 +386,8 @@ export default function App() {
             onLanguage={store.setLanguage}
             onTheme={store.setThemeMode}
             onCategories={() => push('categories')}
-            onRestoreDefaults={restoreDefaults}
-            onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); show(t.deleteAllDone); }}
-            backup={
-              <BackupGroup
-                data={data}
-                language={language}
-                t={t}
-                onImport={d => { store.importData(d); setMonth(monthKeyOf()); }}
-                onImportExcel={() => excelInput.current?.click()}
-                toast={label => show(label)}
-              />
-            }
+            onTransfer={() => push('transfer')}
+            onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); }}
           />
         ) : id === 'stats' ? (
           <StatsView
@@ -590,6 +589,7 @@ export default function App() {
 
       <CategorySheet
         mode={categorySheet}
+        data={data}
         language={language}
         t={t}
         onClose={() => { setCategorySheet(null); setCreateForMonth(null); }}

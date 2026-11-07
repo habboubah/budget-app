@@ -584,3 +584,36 @@ category for every month (no rollover), reminders without amounts by default.
   152 tests pass; audit clean on insights, contract-sheet, contracts (SE, 16
   × DE/AR × light/dark). **For step 11 (reminders):** the cancel-by day is
   the natural second reminder source after open bills.
+- [x] **10 · Optionen and Kategorien** — the title is the tab label
+  (Optionen / Settings / الإعدادات). Grouped rows, as iOS Settings has them:
+  **Darstellung** — *Sprache* and *Erscheinungsbild* as pop-up rows (new
+  `MenuRow` in `ui/Screen`: label, value, ⌃⌄; a native select lies over the
+  row, so the system picker opens and VoiceOver reads one pop-up button; the
+  value moves under the label when both don't fit), *Farbe* with its name at
+  the end and the swatches under it (one line of eight where each still gets
+  44 px — a container query at 352 px — else two lines of four; 32 px, not
+  scaled with text); **Haushaltsbuch** — *Kategorien und Budgets* (count ›)
+  and *Sichern und übertragen* (new pushed screen `transfer`: backup, Excel,
+  CSV — `TransferView` around `BackupGroup`), "Alles bleibt auf diesem Gerät"
+  under them; then *Alle Daten löschen* and *Über*. *Standard
+  wiederherstellen* lives on the Kategorien screen only. *Sicherheit und
+  Mitteilungen* opens with steps 11 and 12. **Kategorien und Budgets:** a row
+  is picture, name, a subline ("Einnahme · in jedem Monat", "in jedem Monat ·
+  Budget 400 €", "nicht in neuen Monaten") and the entry count at its end; a
+  tap opens the sheet, a swipe toward the start deletes (empty: undo toast;
+  with entries: asks first), as on the month page. *Bearbeiten* in the bar
+  (new `BarButton`, a glass capsule) shows ⊖ and a grip on every row (drag,
+  or ↑ / ↓ on the grip); *Fertig* hides them. The every-month switch is in
+  the category sheet only; the sheet gained *Budget pro Monat* (optional,
+  with the "Vorschlag: 390 € (Ø 3 Monate)" chip — `BudgetSuggestion`, shared
+  with `BudgetSheet`), *Art* moved above it, and an income category drops its
+  budget. The rows draw their focus ring inside (the row clips).
+  `scripts/ui-review.mjs` gained `transfer`, `categories-edit`. Audit clean on
+  settings, transfer, categories, categories-edit, category-edit (SE, 16 ×
+  DE/AR × light/dark). Checked by script: both menus (English and back, dark),
+  a swatch, transfer and back, edit mode on and off, ↓ on a grip, ⊖ on an
+  empty category and undo, ⊖ on one with entries asks, swipe delete and undo,
+  a budget set, shown, removed, suggested, refused when not a number, dropped
+  for income, the every-month switch in the sheet. **For step 14:** at 200 %
+  text, `Row` labels ("Kategorien und Budgets") break into syllables on SE —
+  the rem paddings double; stack the trailing value under the label there.

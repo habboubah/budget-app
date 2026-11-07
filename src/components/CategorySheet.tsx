@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { Budget, Category, CategoryKind, Hue, Repeat } from '../types';
-import { cleanText, displayName, uid } from '../logic';
+import { AppData, Budget, Category, CategoryKind, Hue, Repeat } from '../types';
+import { amountToInput, cleanText, displayName, normalizeDigits, parseAmount, uid } from '../logic';
+import { suggestLimit } from '../budgets';
 import { CATEGORY_EMOJIS, budgetOf } from '../data/defaults';
 import { Strings } from '../translations';
 import { Sheet } from '../ui/Sheet';
@@ -10,12 +11,20 @@ import { Button } from '../ui/Button';
 import { Picture } from '../ui/Picture';
 import { EmojiPicker, HuePicker } from '../ui/PicturePicker';
 import { Switch } from '../ui/Switch';
+import { BudgetSuggestion } from './BudgetSheet';
 
 export type CategorySheetMode = { kind: 'new' } | { kind: 'edit'; category: Category } | null;
 
-/** Create a category, or rename / repaint / retype one. */
-export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, onDelete }: {
+/**
+ * Create a category, or rename / retype / repaint one: its name, whether it
+ * is money in or out, a spending category's monthly budget (with what it cost
+ * on average as a suggestion), whether every new month starts with it, how
+ * it counts for 50/30/20, its picture and colour.
+ */
+export function CategorySheet({ mode, data, language, t, onClose, onCreate, onSave, onDelete }: {
   mode: CategorySheetMode;
+  /** For the budget suggestion: the last finished months' spending. */
+  data: AppData;
   language: string;
   t: Strings;
   onClose: () => void;
@@ -31,34 +40,45 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
   const [repeat, setRepeat] = useState<Repeat>('none');
   const [budget, setBudget] = useState<Budget>('want');
   const [standard, setStandard] = useState(true);
+  /** The monthly budget as typed; empty: none. */
+  const [limit, setLimit] = useState('');
 
   useEffect(() => {
     if (!mode) return;
     if (mode.kind === 'edit') {
       const c = mode.category;
       setName(displayName(c.names, language)); setEmoji(c.emoji); setHue(c.hue); setKind(c.kind); setRepeat(c.repeat); setBudget(budgetOf(c)); setStandard(c.standard !== false);
+      setLimit(c.limit ? amountToInput(c.limit, t.locale) : '');
     } else {
-      setName(''); setEmoji('📦'); setHue('sky'); setKind('expense'); setRepeat('none'); setBudget('want'); setStandard(true);
+      setName(''); setEmoji('📦'); setHue('sky'); setKind('expense'); setRepeat('none'); setBudget('want'); setStandard(true); setLimit('');
     }
   }, [mode]);
 
   const clean = cleanText(name, 40);
+  const limitValue = limit.trim() ? parseAmount(limit, t.locale) : null;
+  const limitInvalid = kind === 'expense' && limit.trim() !== '' && !(limitValue !== null && limitValue > 0);
+  const suggestion = editing && kind === 'expense' ? suggestLimit(data, editing.id) : null;
+  const canSave = !!clean && !limitInvalid;
+
   const save = () => {
-    if (!clean) return;
+    if (!canSave) return;
+    // A budget only for spending; an income category drops one it had.
+    const next = { emoji, hue, kind, repeat, budget, standard, limit: kind === 'expense' && limitValue ? limitValue : undefined };
     if (editing) {
       // Renaming in one language replaces the built-in translations: the
       // user's name is the name now, whatever the app language.
       const names = clean === displayName(editing.names, language) ? editing.names : { [language]: clean };
-      onSave(editing.id, { names, emoji, hue, kind, repeat, budget, standard });
+      onSave(editing.id, { names, ...next });
     } else {
-      onCreate({ id: uid(), names: { [language]: clean }, emoji, hue, kind, repeat, budget, standard });
+      const { limit: l, ...rest } = next;
+      onCreate({ id: uid(), names: { [language]: clean }, ...rest, ...(l ? { limit: l } : {}) });
     }
     onClose();
   };
 
   return (
     <Sheet open={!!mode} title={editing ? t.editCategory : t.newCategory} closeLabel={t.cancel} onClose={onClose}
-      action={{ label: editing ? t.save : t.add, onClick: save, disabled: !clean }}>
+      action={{ label: editing ? t.save : t.add, onClick: save, disabled: !canSave }}>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-6">
         <div className="flex items-end gap-3">
           <Picture emoji={emoji} name={clean || '?'} hue={hue} size="lg" />
@@ -68,13 +88,6 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
           </div>
         </div>
         <div>
-          <div className="flex items-center gap-3 rounded-md bg-surface-2 ps-4 pe-1">
-            <span className="flex-1 min-w-0 text-body text-fg">{t.inNewMonths}</span>
-            <Switch checked={standard} onChange={setStandard} label={t.inNewMonths} />
-          </div>
-          <p className="text-caption text-fg-mute mt-1.5 px-1 wrap-prose">{t.inNewMonthsHint}</p>
-        </div>
-        <div>
           <Label>{t.kind}</Label>
           <Segmented<CategoryKind>
             label={t.kind}
@@ -82,6 +95,30 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
             onChange={setKind}
             options={[{ value: 'expense', label: t.kindExpense }, { value: 'income', label: t.kindIncome }]}
           />
+        </div>
+        {kind === 'expense' && (
+          <div>
+            <Field
+              label={t.budgetField}
+              value={limit}
+              onChange={v => setLimit(normalizeDigits(v))}
+              inputMode="decimal"
+              enterKeyHint="done"
+              aria-invalid={limitInvalid || undefined}
+              trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+            />
+            {suggestion && suggestion.amount !== limitValue && (
+              <BudgetSuggestion suggestion={suggestion} t={t} onTake={() => setLimit(amountToInput(suggestion.amount, t.locale))} />
+            )}
+            <p className="text-caption text-fg-mute mt-1.5 px-1 wrap-prose">{t.budgetFieldHint}</p>
+          </div>
+        )}
+        <div>
+          <div className="flex items-center gap-3 rounded-md bg-surface-2 ps-4 pe-1">
+            <span className="flex-1 min-w-0 text-body text-fg">{t.inNewMonths}</span>
+            <Switch checked={standard} onChange={setStandard} label={t.inNewMonths} />
+          </div>
+          <p className="text-caption text-fg-mute mt-1.5 px-1 wrap-prose">{t.inNewMonthsHint}</p>
         </div>
         {kind === 'expense' && (
           <div>
@@ -104,7 +141,7 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
           <HuePicker value={hue} onChange={setHue} label={t.colour} />
         </div>
         <div className="grid gap-2 pt-1">
-          <Button type="submit" full size="lg" disabled={!clean}>{editing ? t.save : t.add}</Button>
+          <Button type="submit" full size="lg" disabled={!canSave}>{editing ? t.save : t.add}</Button>
           {editing && (
             <Button variant="danger" full icon={Trash2} onClick={() => { onClose(); onDelete(editing); }}>{t.deleteCategory}</Button>
           )}

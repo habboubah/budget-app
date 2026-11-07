@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronsUpDown } from 'lucide-react';
 import { tapLight } from './haptics';
 
 interface Props {
@@ -139,6 +139,58 @@ export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger 
       className={`${shell} transition-colors active:bg-surface-2 focus-visible:ring-focus`}
     >
       {body}
+    </button>
+  );
+}
+
+/**
+ * A row in a Group that picks one of a few values, as iOS Settings' pop-up
+ * rows: the label, then the choice and ⌃⌄ at the end. The system's own
+ * picker opens on a tap anywhere on the row — a native select lies invisibly
+ * over it, so VoiceOver reads one pop-up button with its value.
+ */
+export function MenuRow<V extends string>({ label, leading, value, options, onChange }: {
+  label: string;
+  leading?: React.ReactNode;
+  value: V;
+  options: { value: V; label: string }[];
+  onChange: (value: V) => void;
+}) {
+  const sep = { '--sep': leading ? '58px' : '1rem' } as React.CSSProperties;
+  return (
+    <label className="relative w-full min-h-[52px] px-4 py-2.5 flex items-center gap-3 transition-colors active:bg-surface-2 focus-within:ring-focus" style={sep}>
+      {leading}
+      {/* Side by side while both fit; with large text the choice moves under the label. */}
+      <span className="min-w-0 flex-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+        <span className="min-w-0 max-w-full text-body text-fg wrap-compound">{label}</span>
+        <span className="ms-auto min-w-0 max-w-full inline-flex items-center gap-1 text-body text-fg-mute" aria-hidden="true">
+          <span className="min-w-0 wrap-compound">{options.find(o => o.value === value)?.label}</span>
+          <ChevronsUpDown className="w-4 h-4 shrink-0" strokeWidth={2.4} />
+        </span>
+      </span>
+      {/* 17px: WebKit zooms the page into a focused control under 16px. */}
+      <select
+        aria-label={label}
+        value={value}
+        onChange={e => { tapLight(); onChange(e.target.value as V); }}
+        className="absolute inset-0 w-full h-full opacity-0 appearance-none cursor-pointer text-body"
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </label>
+  );
+}
+
+/** A text button in the bar ("Bearbeiten", "Fertig"): a glass capsule, as iOS 26 draws them. */
+export function BarButton({ children, onClick, strong }: { children: React.ReactNode; onClick: () => void; strong?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={() => { tapLight(); onClick(); }}
+      className={`h-tap px-4 rounded-full glass-chrome text-body text-accent whitespace-nowrap active:scale-[0.96] transition-transform focus-visible:ring-focus ${
+        strong ? 'font-semibold' : 'font-medium'}`}
+    >
+      {children}
     </button>
   );
 }
