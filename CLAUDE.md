@@ -126,6 +126,23 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   card shows only its pending entries and cards without any are hidden.
   Turning one card's filter off while the page filter is on keeps the others
   filtered.
+- **Bank import** (month "⋯" → *Kontoumsätze importieren (CSV)* / *Umsätze aus
+  Foto übernehmen*): `src/statementImport.ts` is pure and tested —
+  `parseBankCsv()` (finds the header row by column titles: Sparkasse
+  CSV-CAMT, ING-style Soll/Haben, English exports; Windows-1252 or UTF-8 via
+  `readTextFile`), `parseStatementText()` (the text of a banking-app
+  screenshot), `cleanPayee()` (payee → name), `planStatement()` (the user's
+  own name and category for a known payee, else the bank's category, income
+  always in an income category; `exists` / `pay` / `new` against what is
+  entered, by `Entry.ref` or same month + amount + name / date ±3 days) and
+  `applyStatement()`. `StatementImportSheet` shows the plan; nothing is
+  written before the user confirms (`store.importEntries`, undoable;
+  months it needs start empty — the bank's list is what happened). Photos are
+  read on the device by tesseract.js (`src/ocr.ts`): worker, SIMD core and
+  the German model are copied into `public/ocr/` by `scripts/copy-ocr.mjs`
+  (a Vite plugin runs it for dev and every build; generated, gitignored, not
+  precached by the PWA). Never commit a real bank export or screenshot.
+  iOS needs `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription`.
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /

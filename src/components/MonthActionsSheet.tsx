@@ -1,12 +1,12 @@
-import { ChevronsDownUp, ChevronsUpDown, Repeat as RepeatIcon, Trash2, Wallet } from 'lucide-react';
+import { Camera, ChevronsDownUp, ChevronsUpDown, FileSpreadsheet, Repeat as RepeatIcon, Trash2, Wallet } from 'lucide-react';
 import { MonthKey } from '../types';
 import { monthLabel } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Group, Row } from '../ui/Screen';
 
-/** The month's "⋯": correct the opening balance, fetch missing recurring entries, fold all categories, delete the month. */
-export function MonthActionsSheet({ open, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onPull, onCollapseAll, onDelete }: {
+/** The month's "⋯": correct the opening balance, fetch missing recurring entries, fold all categories, import bank transactions, delete the month. */
+export function MonthActionsSheet({ open, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onPull, onCollapseAll, onImportCsv, onImportPhoto, onDelete }: {
   open: boolean;
   month: MonthKey;
   started: boolean;
@@ -20,6 +20,9 @@ export function MonthActionsSheet({ open, month, started, prevKey, missing, allC
   onOpening: () => void;
   onPull: () => void;
   onCollapseAll: (collapse: boolean) => void;
+  /** Bank transactions from a CSV export, or from a photo / screenshot. */
+  onImportCsv: () => void;
+  onImportPhoto: () => void;
   onDelete: () => void;
 }) {
   const run = (fn: () => void) => () => { onClose(); fn(); };
@@ -49,6 +52,20 @@ export function MonthActionsSheet({ open, month, started, prevKey, missing, allC
               onClick={run(() => onCollapseAll(!allCollapsed))}
             />
           )}
+        </Group>
+        <Group>
+          <Row
+            label={t.importPhoto}
+            sub={t.importPhotoSub}
+            leading={<Camera className="w-5 h-5 text-accent" aria-hidden="true" />}
+            onClick={run(onImportPhoto)}
+          />
+          <Row
+            label={t.importCsv}
+            sub={t.importCsvSub}
+            leading={<FileSpreadsheet className="w-5 h-5 text-accent" aria-hidden="true" />}
+            onClick={run(onImportCsv)}
+          />
         </Group>
         {started && (
           <Group>

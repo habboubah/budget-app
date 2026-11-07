@@ -18,7 +18,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "audit:contrast": "node scripts/contrast-audit.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "ocr:copy": "node scripts/copy-ocr.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
@@ -28,11 +29,13 @@
     "@capacitor/ios": "^8.6.0",
     "@capacitor/share": "^8.0.1",
     "@capacitor/status-bar": "^8.0.3",
+    "@tesseract.js-data/deu": "^1.0.0",
     "fflate": "^0.8.2",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.1",
-    "react-dom": "^19.0.1"
+    "react-dom": "^19.0.1",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",

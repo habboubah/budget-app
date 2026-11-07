@@ -15,6 +15,11 @@ month, and the two numbers that matter: **what is on the account now** and
   to choose from in Settings — and every category brings its own: its tile,
   a bar for how much of it is paid, its ticks. Amounts run to their new value
   when something is ticked.
+- **Bank transactions in, without typing.** Import the CSV file from your
+  online banking (Sparkasse and others), or take a photo / screenshot of the
+  banking app — the text is read on the phone itself. Every transaction is
+  shown to check first: new ones, ones already entered, and open bills they
+  pay (those get ticked off).
 - **One month per page.** ‹ › switch months, or tap the month's name to pick
   any month (each shown with what it ended on); "Zum aktuellen Monat" jumps
   back.

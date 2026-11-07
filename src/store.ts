@@ -258,6 +258,32 @@ export function useAppStore() {
     }
   };
 
+  /**
+   * A confirmed bank import: the new entries — a month they need is started
+   * empty, the bank's list is what happened there — and the open entries the
+   * transactions paid, ticked. Returns what to undo.
+   */
+  const importEntries = (add: Entry[], pay: string[]): { added: string[]; paid: string[]; createdMonths: MonthKey[] } => {
+    const have = new Set(months.map(m => m.key));
+    const createdMonths = [...new Set(add.map(e => e.month))].filter(k => !have.has(k));
+    if (createdMonths.length) {
+      setMonths(prev => sortMonths([...prev, ...createdMonths.filter(k => !prev.some(m => m.key === k)).map(k => newMonth(k, add.filter(e => e.month === k).map(e => e.categoryId)))]));
+    }
+    const now = Date.now();
+    const paid = pay.filter(id => entries.some(e => e.id === id && !e.paid));
+    setEntries(prev => [...prev.map(e => (paid.includes(e.id) ? { ...e, paid: true, paidAt: now } : e)), ...add]);
+    return { added: add.map(e => e.id), paid, createdMonths };
+  };
+
+  const undoImport = (done: { added: string[]; paid: string[]; createdMonths: MonthKey[] }) => {
+    setEntries(prev => prev.filter(e => !done.added.includes(e.id)).map(e => {
+      if (!done.paid.includes(e.id)) return e;
+      const { paidAt: _drop, ...rest } = e;
+      return { ...rest, paid: false };
+    }));
+    setMonths(prev => prev.filter(m => !done.createdMonths.includes(m.key)));
+  };
+
   const togglePaid = (id: string) => {
     const e = entries.find(x => x.id === id);
     if (e) updateEntry(id, { paid: !e.paid });
@@ -375,7 +401,7 @@ export function useAppStore() {
     setCollapsed,
     data, categories, entries, months, balances,
     startMonth, pullRecurring, setOpening, removeMonth, restoreMonth, hideCategory, showCategory,
-    addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries,
+    addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
     setCategories, importData, resetAll,
     newId: uid,

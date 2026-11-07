@@ -1,14 +1,24 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { execFileSync } from 'node:child_process';
 import path from 'path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
 
+/** The on-device text recognition files into public/ocr/ (scripts/copy-ocr.mjs), for dev and every build. */
+const ocrFiles = {
+  name: 'spartopf-ocr-files',
+  buildStart() {
+    execFileSync(process.execPath, [path.resolve(__dirname, 'scripts/copy-ocr.mjs')], { stdio: 'inherit' });
+  },
+};
+
 export default defineConfig(() => {
   return {
     define: { __APP_VERSION__: JSON.stringify(pkg.version) },
     plugins: [
+      ocrFiles,
       react(),
       tailwindcss(),
       VitePWA({
@@ -19,6 +29,10 @@ export default defineConfig(() => {
         // amount in the fallback stack.
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          // The text recognition (5 MB) is fetched when a photo is first
+          // read and kept from then on, instead of on every install.
+          globIgnores: ['ocr/**'],
+          runtimeCaching: [{ urlPattern: /\/ocr\//, handler: 'CacheFirst', options: { cacheName: 'spartopf-ocr' } }],
         },
         manifest: {
           name: 'Spartopf – Haushaltsbuch',

@@ -21,6 +21,9 @@ import { BackupGroup } from './components/BackupGroup';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
 import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
+import { StatementImportSheet, ImportState } from './components/StatementImportSheet';
+import { PlannedRow, allCategoryNames, applyStatement, parseBankCsv, parseStatementText, planStatement } from './statementImport';
+import { readImageText, readTextFile } from './ocr';
 import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
 import { Confirm } from './ui/Sheet';
@@ -42,6 +45,10 @@ export default function App() {
   /** An Excel file read and planned, waiting for "import". */
   const [excel, setExcel] = useState<{ plan: ImportPlan; fileName: string } | null>(null);
   const excelInput = useRef<HTMLInputElement>(null);
+  // Bank transactions: a CSV export or a photo, read, then checked in a sheet.
+  const statementInput = useRef<HTMLInputElement>(null);
+  const photoInput = useRef<HTMLInputElement>(null);
+  const [statement, setStatement] = useState<ImportState>(null);
   /** A category with entries waiting for "really delete?". */
   const [confirmCategory, setConfirmCategory] = useState<Category | null>(null);
   /** One month for both tabs: statistics open on the month being looked at. */
@@ -173,6 +180,38 @@ export default function App() {
     } catch {
       show(t.excelInvalid);
     }
+  };
+
+  const onStatementFile = async (f: File | undefined, source: 'csv' | 'photo') => {
+    if (statementInput.current) statementInput.current.value = '';
+    if (photoInput.current) photoInput.current.value = '';
+    if (!f) return;
+    setStatement({ phase: 'reading', source, progress: 0 });
+    try {
+      const found = source === 'csv'
+        ? parseBankCsv(await readTextFile(f))
+        : parseStatementText(
+          await readImageText(f, p => setStatement(s => (s?.phase === 'reading' ? { ...s, progress: p } : s))),
+          allCategoryNames(data.categories, language),
+        );
+      if (!found.length) { setStatement(null); show(t.importNothing); return; }
+      setStatement({ phase: 'review', source, rows: planStatement(found, data) });
+    } catch {
+      setStatement(null);
+      show(t.importFailed);
+    }
+  };
+
+  const confirmStatement = (rows: PlannedRow[]) => {
+    const { add, pay } = applyStatement(rows, Date.now());
+    const done = store.importEntries(add, pay);
+    setStatement(null);
+    notifySuccess();
+    // Stay on this month if it got something; else show the newest month that did.
+    const months = add.map(e => e.month);
+    if (months.length && !months.includes(month)) setMonth(months.reduce((a, b) => (a > b ? a : b)));
+    setTab('month');
+    show(fmt(t.statementDone, { added: done.added.length, paid: done.paid.length }), { label: t.undo, run: () => store.undoImport(done) });
   };
 
   const importExcel = () => {
@@ -410,6 +449,8 @@ export default function App() {
         onOpening={() => setOpeningOpen(true)}
         onPull={() => { const n = store.pullRecurring(month); show(fmt(t.pulled, { n })); }}
         onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
+        onImportCsv={() => statementInput.current?.click()}
+        onImportPhoto={() => photoInput.current?.click()}
         onDelete={deleteMonth}
       />
 
@@ -447,6 +488,28 @@ export default function App() {
         accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         className="sr-only" tabIndex={-1} aria-hidden="true"
         onChange={e => void onExcelFile(e.target.files?.[0])}
+      />
+      <input
+        ref={statementInput}
+        type="file"
+        accept=".csv,text/csv,text/comma-separated-values,application/vnd.ms-excel,text/plain"
+        className="sr-only" tabIndex={-1} aria-hidden="true"
+        onChange={e => void onStatementFile(e.target.files?.[0], 'csv')}
+      />
+      <input
+        ref={photoInput}
+        type="file"
+        accept="image/*"
+        className="sr-only" tabIndex={-1} aria-hidden="true"
+        onChange={e => void onStatementFile(e.target.files?.[0], 'photo')}
+      />
+      <StatementImportSheet
+        state={statement}
+        categories={data.categories}
+        language={language}
+        t={t}
+        onClose={() => setStatement(null)}
+        onConfirm={confirmStatement}
       />
       <ExcelImportSheet
         plan={excel?.plan ?? null}
