@@ -1,14 +1,15 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, ChevronUp, Plus, Repeat as RepeatIcon, Trash2 } from 'lucide-react';
 import { Category, Entry, EntryDraft, MonthKey, Repeat } from '../types';
 import {
-  amountToInput, cleanText, daysInMonth, defaultEntryDate, displayName, isIsoDay, monthKeyOf, parseAmount, suggestNames, normalizeDigits,
-  topCategories,
+  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, isIsoDay, isoDay, monthKeyOf, parseAmount, suggestNames,
+  normalizeDigits, topCategories,
 } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
-import { Field, Label, Segmented } from '../ui/Field';
+import { Field } from '../ui/Field';
 import { Button } from '../ui/Button';
+import { Menu } from '../ui/Menu';
 import { tapLight } from '../ui/haptics';
 
 export type EntrySheetMode =
@@ -31,16 +32,24 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
+/** A compact control in the entry sheet's last row (date, status, repeat, note). */
+// A full 44 px tall (not a hit area around it): the date pill's tap has to land on the input itself.
+const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex items-center gap-1 bg-surface-2 text-label font-medium text-fg transition-opacity active:opacity-60';
+
 /**
- * New or edited entry, top to bottom: the date (today), the name — no label,
- * the keyboard goes there first — with three suggestions from the user's own
- * earlier entries (all of them behind a button), the category (three, the
- * rest behind a button), then the amount. A tap on a suggestion ("Miete")
- * takes the entry to that name's category, fills in what it was last time
- * when the amount is still empty, and moves on to the amount. A new entry —
- * income or expense — is paid / received and happens once unless changed
- * (a suggestion doesn't change that), so most entries are name + amount + save. (A due day is no longer asked
- * for; one already on an entry, or on the suggestion's last entry, is kept.)
+ * New or edited entry, top to bottom: the amount — the one thing every entry
+ * needs, so a new one opens on it with the decimal pad up — then the name
+ * with three suggestions from the user's own earlier entries (all of them
+ * behind a button), the category (three, the rest behind a button), and one
+ * row of pills: the date ("Heute", the system's date picker), paid or still
+ * open (a tap switches), how it repeats (a menu) and a note. On an iPhone the
+ * whole sheet fits above the decimal pad.
+ *
+ * A tap on a suggestion ("Miete") takes the entry to that name's category and
+ * fills in what it was last time when it repeats and the amount is still
+ * empty. A new entry — income or expense — is paid / received and happens
+ * once unless changed, so most entries are amount + name + save. (A due day
+ * is no longer asked for; one already on an entry is kept.)
  */
 export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
@@ -54,16 +63,18 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [dueText, setDueText] = useState('');
   const [dateText, setDateText] = useState('');
   const [note, setNote] = useState('');
+  const [noteOpen, setNoteOpen] = useState(false);
   const [allCategories, setAllCategories] = useState(false);
   const [allSuggestions, setAllSuggestions] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [repeatAt, setRepeatAt] = useState<HTMLElement | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+  const noteRef = useRef<HTMLInputElement>(null);
   const amountId = useId();
 
   const category = categories.find(c => c.id === categoryId);
   const income = category?.kind === 'income';
-
 
   const reset = (keepCategory?: string) => {
     const c = categories.find(x => x.id === (keepCategory ?? (mode?.kind === 'new' ? mode.categoryId : ''))) ?? categories[0];
@@ -76,6 +87,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setDueText('');
     setDateText(defaultEntryDate(month));
     setNote('');
+    setNoteOpen(false);
     setShowError(false);
     setAllCategories(false);
     setAllSuggestions(false);
@@ -93,12 +105,14 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setDueText(e.dueDay ? String(e.dueDay) : '');
       setDateText(e.date ?? '');
       setNote(e.note ?? '');
+      setNoteOpen(!!e.note);
       setAllCategories(false);
       setShowError(false);
     } else {
       reset();
-      // Focus after the sheet has mounted; preventScroll keeps the page still.
-      requestAnimationFrame(() => nameRef.current?.focus({ preventScroll: true }));
+      // The amount first, with the decimal pad. After the sheet has mounted;
+      // preventScroll keeps the page still.
+      requestAnimationFrame(() => amountRef.current?.focus({ preventScroll: true }));
     }
   }, [mode]);
 
@@ -158,139 +172,28 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       reset(categoryId);
       setDateText(keepDate); // a stack of receipts is usually from one day
       setPaid(paid);
-      nameRef.current?.focus({ preventScroll: true });
+      amountRef.current?.focus({ preventScroll: true });
     } else onClose();
   };
 
   const title = editing ? t.editEntry : income ? t.newIncome : t.newExpense;
+  const dateLabel = !dateText ? t.dateNone : dateText === isoDay() ? t.dateToday : dayLabel(dateText, t.locale);
+  const statusLabel = paid ? (income ? t.statusReceived : t.statusPaid) : (income ? t.statusExpected : t.statusOpen);
+  const repeats: { value: Repeat; label: string; sub: string }[] = [
+    { value: 'none', label: t.repeatNone, sub: t.repeatHintNone },
+    { value: 'monthly', label: t.repeatMonthly, sub: t.repeatHintMonthly },
+    { value: 'yearly', label: t.repeatYearly, sub: t.repeatHintYearly },
+  ];
 
   return (
     <Sheet open={!!mode} title={title} closeLabel={t.cancel} onClose={onClose}
       action={{ label: t.save, onClick: () => save(), disabled: !valid }}>
-      <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-6">
-        {/* When — today unless changed; always inside the entry's month. */}
-        <div>
-          <Field
-            label={t.date}
-            type="date"
-            value={dateText}
-            onChange={setDateText}
-            min={firstDay}
-            max={lastDay}
-            aria-invalid={!dateValid}
-          />
-          {!dateValid && <p role="alert" className="text-caption text-neg mt-1.5 px-1">{t.dateHint}</p>}
-        </div>
-
-        {/* What for — the placeholder says it; three of the user's own names below. */}
-        <div>
-          <Field
-            inputRef={nameRef}
-            label={income ? t.fromWhom : t.whatFor}
-            hideLabel
-            value={name}
-            onChange={v => { setName(v); setAllSuggestions(false); }}
-            placeholder={income ? t.fromWhomPlaceholder : t.whatForPlaceholder}
-            maxLength={80}
-            enterKeyHint="next"
-            autoComplete="off"
-            autoCapitalize="sentences"
-            onKeyDown={e => {
-              if (e.key !== 'Enter') return;
-              e.preventDefault();
-              amountRef.current?.focus({ preventScroll: true });
-            }}
-          />
-          {suggestions.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t.suggestions}>
-              {shownSuggestions.map(s => (
-                <button
-                  key={s.name}
-                  type="button"
-                  onMouseDown={e => e.preventDefault()}
-                  onClick={() => {
-                    tapLight();
-                    setName(s.name);
-                    setAllSuggestions(false);
-                    // A name that belongs to another category takes the entry there ("Lidl" → Lebensmittel).
-                    const home = s.categoryId !== categoryId ? categories.find(c => c.id === s.categoryId) : undefined;
-                    if (home) pickCategory(home);
-                    let filled = !!amountText.trim();
-                    if (s.last) {
-                      // What it was last time — only where nothing was typed yet.
-                      if (!filled && s.last.repeat !== 'none') { setAmountText(amountToInput(s.last.amount, t.locale)); filled = true; }
-                    }
-                    // On to the amount while it still needs typing; otherwise the keyboard can go.
-                    if (filled) nameRef.current?.blur();
-                    else amountRef.current?.focus({ preventScroll: true });
-                  }}
-                  className="min-h-[36px] max-w-full px-3.5 rounded-full bg-surface-2 text-label font-medium text-fg active:scale-[0.97] transition-transform focus-visible:ring-focus wrap-compound text-start"
-                >
-                  {s.name}
-                </button>
-              ))}
-              {suggestions.length > 3 && (
-                <button
-                  type="button"
-                  aria-expanded={allSuggestions}
-                  onMouseDown={e => e.preventDefault()}
-                  onClick={() => { tapLight(); setAllSuggestions(v => !v); }}
-                  className="min-h-[36px] px-3.5 rounded-full inline-flex items-center gap-1 text-label font-semibold text-accent bg-accent-dim active:opacity-70 focus-visible:ring-focus"
-                >
-                  {allSuggestions ? t.fewerSuggestions : fmt(t.allSuggestions, { n: suggestions.length })}
-                  {allSuggestions
-                    ? <ChevronUp className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
-                    : <ChevronDown className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <Label>{t.category}</Label>
-          {/* All at a glance, wrapping — no sideways sliding. */}
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.category}>
-            {shownCategories.map(c => {
-              const on = c.id === categoryId;
-              const cname = displayName(c.names, language);
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  data-hue={c.hue}
-                  onClick={() => pickCategory(c)}
-                  className={`min-h-[40px] max-w-full ps-1.5 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label border-2 transition-colors focus-visible:ring-focus ${
-                    on ? 'bg-hue-bg text-hue-ink border-current font-semibold' : 'bg-surface-2 text-fg border-transparent font-medium'}`}
-                >
-                  <span className="emoji text-[18px] w-7 text-center" aria-hidden="true">{c.emoji}</span>
-                  <span className="min-w-0 wrap-compound text-start">{cname}</span>
-                </button>
-              );
-            })}
-            {hiddenCount > 0 && (
-              <button
-                type="button"
-                aria-expanded={allCategories}
-                onClick={() => { tapLight(); setAllCategories(v => !v); }}
-                className="min-h-[40px] px-3.5 rounded-full inline-flex items-center gap-1 text-label font-semibold text-accent bg-accent-dim active:opacity-70 focus-visible:ring-focus"
-              >
-                {allCategories ? t.fewerCategories : fmt(t.allCategories, { n: categories.length })}
-                {allCategories
-                  ? <ChevronUp className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
-                  : <ChevronDown className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Amount — the one thing every entry needs. */}
-        <div className="text-center pt-1">
+      <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-4">
+        {/* Amount — the one thing every entry needs, so it comes first. */}
+        <div className="text-center">
           <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
           {/* Written the way amounts are shown everywhere: "−45,12 €", left to right. */}
-          <div dir="ltr" className="mt-1 flex items-baseline justify-center gap-1.5">
+          <div dir="ltr" className="mt-0.5 flex items-baseline justify-center gap-1.5">
             <span className={`rounded-num text-[32px] font-semibold ${income ? 'text-pos' : 'text-fg-mute'}`} aria-hidden="true">
               {income ? '+' : '−'}
             </span>
@@ -303,6 +206,11 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               placeholder="0,00"
               value={amountText}
               onChange={e => { setAmountText(normalizeDigits(e.target.value)); setShowError(false); }}
+              onKeyDown={e => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                nameRef.current?.focus({ preventScroll: true });
+              }}
               aria-invalid={showError && amount === null}
               aria-describedby={showError && amount === null ? `${amountId}-err` : undefined}
               style={{ width: `${Math.max(4, amountText.length || 4) + 0.6}ch` }}
@@ -311,43 +219,192 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">€</span>
           </div>
           {showError && amount === null && (
-            <p id={`${amountId}-err`} role="alert" className="text-caption text-neg mt-2">{t.amountInvalid}</p>
+            <p id={`${amountId}-err`} role="alert" className="text-caption text-neg mt-1">{t.amountInvalid}</p>
           )}
         </div>
 
+        {/* What for — the placeholder says it; three of the user's own names below. */}
         <div>
-          <Label>{t.status}</Label>
-          <Segmented<'paid' | 'open'>
-            label={t.status}
-            value={paid ? 'paid' : 'open'}
-            onChange={v => setPaid(v === 'paid')}
-            options={[
-              { value: 'paid', label: income ? t.statusReceived : t.statusPaid },
-              { value: 'open', label: income ? t.statusExpected : t.statusOpen },
-            ]}
+          <Field
+            inputRef={nameRef}
+            label={income ? t.fromWhom : t.whatFor}
+            hideLabel
+            value={name}
+            onChange={v => { setName(v); setAllSuggestions(false); }}
+            placeholder={income ? t.fromWhomPlaceholder : t.whatForPlaceholder}
+            maxLength={80}
+            enterKeyHint="done"
+            autoComplete="off"
+            autoCapitalize="sentences"
+            onKeyDown={e => {
+              if (e.key !== 'Enter') return;
+              e.preventDefault();
+              // Back to the amount while it is missing; otherwise the keyboard can go.
+              if (amount === null) amountRef.current?.focus({ preventScroll: true });
+              else nameRef.current?.blur();
+            }}
           />
+          {suggestions.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t.suggestions}>
+              {shownSuggestions.map(s => {
+                const on = s.name === name;
+                return (
+                  <button
+                    key={s.name}
+                    type="button"
+                    aria-pressed={on}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => {
+                      tapLight();
+                      setName(s.name);
+                      setAllSuggestions(false);
+                      // A name that belongs to another category takes the entry there ("Lidl" → Lebensmittel).
+                      const home = s.categoryId !== categoryId ? categories.find(c => c.id === s.categoryId) : undefined;
+                      if (home) pickCategory(home);
+                      let filled = !!amountText.trim();
+                      // What it was last time — only where nothing was typed yet.
+                      if (s.last && !filled && s.last.repeat !== 'none') { setAmountText(amountToInput(s.last.amount, t.locale)); filled = true; }
+                      // To the amount while it still needs typing; otherwise the keyboard can go.
+                      if (filled) nameRef.current?.blur();
+                      else amountRef.current?.focus({ preventScroll: true });
+                    }}
+                    className={`hit-44 min-h-[36px] max-w-full px-3.5 rounded-full inline-flex items-center gap-1 text-label font-medium active:scale-[0.97] transition-transform focus-visible:ring-focus wrap-compound text-start ${
+                      on ? 'bg-accent-dim text-accent' : 'bg-surface-2 text-fg'}`}
+                  >
+                    {on && <Check className="w-4 h-4 shrink-0" strokeWidth={2.8} aria-hidden="true" />}
+                    {s.name}
+                  </button>
+                );
+              })}
+              {suggestions.length > 3 && (
+                <button
+                  type="button"
+                  aria-expanded={allSuggestions}
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => { tapLight(); setAllSuggestions(v => !v); }}
+                  className="hit-44 min-h-[36px] px-3.5 rounded-full inline-flex items-center gap-1 text-label font-semibold text-accent bg-accent-dim active:opacity-70 focus-visible:ring-focus"
+                >
+                  {allSuggestions ? t.fewerSuggestions : fmt(t.allSuggestions, { n: suggestions.length })}
+                  {allSuggestions
+                    ? <ChevronUp className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
+                    : <ChevronDown className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
-        <div>
-          <Label>{t.repeat}</Label>
-          <Segmented<Repeat>
-            label={t.repeat}
-            value={repeat}
-            onChange={setRepeat}
-            options={[
-              { value: 'none', label: t.repeatNone },
-              { value: 'monthly', label: t.repeatMonthly },
-              { value: 'yearly', label: t.repeatYearly },
-            ]}
-          />
-          <p className="text-caption text-fg-mute mt-1.5 px-1 wrap-prose">
-            {repeat === 'monthly' ? t.repeatHintMonthly : repeat === 'yearly' ? t.repeatHintYearly : t.repeatHintNone}
-          </p>
+        {/* The category: all at a glance, wrapping — no sideways sliding. */}
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.category}>
+          {shownCategories.map(c => {
+            const on = c.id === categoryId;
+            const cname = displayName(c.names, language);
+            return (
+              <button
+                key={c.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                data-hue={c.hue}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => pickCategory(c)}
+                className={`hit-44 min-h-[40px] max-w-full ps-1.5 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label border-2 transition-colors focus-visible:ring-focus ${
+                  on ? 'bg-hue-bg text-hue-ink border-current font-semibold' : 'bg-surface-2 text-fg border-transparent font-medium'}`}
+              >
+                <span className="emoji text-[18px] w-7 text-center" aria-hidden="true">{c.emoji}</span>
+                <span className="min-w-0 wrap-compound text-start">{cname}</span>
+              </button>
+            );
+          })}
+          {hiddenCount > 0 && (
+            <button
+              type="button"
+              aria-expanded={allCategories}
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => { tapLight(); setAllCategories(v => !v); }}
+              className="hit-44 min-h-[40px] px-3.5 rounded-full inline-flex items-center gap-1 text-label font-semibold text-accent bg-accent-dim active:opacity-70 focus-visible:ring-focus"
+            >
+              {allCategories ? t.fewerCategories : fmt(t.allCategories, { n: categories.length })}
+              {allCategories
+                ? <ChevronUp className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
+                : <ChevronDown className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
+            </button>
+          )}
         </div>
 
-        <Field label={t.note} value={note} onChange={setNote} placeholder={t.notePlaceholder} maxLength={200} />
+        {/* The rest in one row: when, paid or open, how it repeats, a note. */}
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t.entryDetails}>
+          {/* The system's date picker, under a pill: the input lies invisibly over it. */}
+          <label className={`${PILL} focus-within:ring-focus ${dateValid ? '' : 'text-neg'}`}>
+            <CalendarDays className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+            <span aria-hidden="true">{dateLabel}</span>
+            <input
+              type="date"
+              value={dateText}
+              min={firstDay}
+              max={lastDay}
+              onChange={e => setDateText(e.target.value)}
+              onClick={e => { try { e.currentTarget.showPicker?.(); } catch { /* not allowed here: the tap still focuses it */ } }}
+              aria-label={`${t.date}: ${dateLabel}`}
+              aria-invalid={!dateValid}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          </label>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={paid}
+            // The name stays; the switch says whether it is.
+            aria-label={income ? t.statusReceived : t.statusPaid}
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => { tapLight(); setPaid(v => !v); }}
+            className={`${PILL} focus-visible:ring-focus`}
+          >
+            <span
+              className={`w-4 h-4 shrink-0 rounded-full inline-flex items-center justify-center ${paid ? 'bg-swipe-paid text-on-color' : 'border-[1.75px] border-warn'}`}
+              aria-hidden="true"
+            >
+              {paid && <Check className="w-2.5 h-2.5" strokeWidth={3.5} />}
+            </span>
+            <span className={paid ? '' : 'text-warn'} aria-hidden="true">{statusLabel}</span>
+          </button>
+          <button
+            type="button"
+            aria-haspopup="menu"
+            aria-label={`${t.repeat}: ${repeats.find(r => r.value === repeat)!.label}`}
+            onMouseDown={e => e.preventDefault()}
+            onClick={e => { tapLight(); setRepeatAt(e.currentTarget); }}
+            className={`${PILL} focus-visible:ring-focus`}
+          >
+            <RepeatIcon className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+            <span aria-hidden="true">{repeats.find(r => r.value === repeat)!.label}</span>
+          </button>
+          {!noteOpen && (
+            <button
+              type="button"
+              onClick={() => { tapLight(); setNoteOpen(true); requestAnimationFrame(() => noteRef.current?.focus({ preventScroll: true })); }}
+              className={`${PILL} text-fg-mute focus-visible:ring-focus`}
+            >
+              <Plus className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" />
+              {t.note}
+            </button>
+          )}
+        </div>
+        {!dateValid && <p role="alert" className="text-caption text-neg px-1">{t.dateHint}</p>}
+        <Menu
+          anchor={repeatAt}
+          label={t.repeat}
+          groups={[repeats.map(r => ({
+            key: r.value, label: r.label, sub: r.sub, icon: r.value === repeat ? Check : undefined, onSelect: () => setRepeat(r.value),
+          }))]}
+          onClose={() => setRepeatAt(null)}
+        />
 
-        <div className="grid gap-2 pt-1">
+        {noteOpen && (
+          <Field inputRef={noteRef} label={t.note} value={note} onChange={setNote} placeholder={t.notePlaceholder} maxLength={200} enterKeyHint="done" />
+        )}
+
+        <div className="grid gap-2 pt-2">
           <Button type="submit" full size="lg" disabled={!valid}>{t.save}</Button>
           {!editing && (
             <Button variant="secondary" full disabled={!valid} onClick={() => save(true)}>{t.saveAndNext}</Button>

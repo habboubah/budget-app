@@ -19,17 +19,20 @@ export function nextTrapFocus<T>(items: T[], active: T | null, shiftKey: boolean
   return null;
 }
 
+/** The dialogs open right now, oldest first: only the topmost answers Escape and Tab. */
+const openDialogs: symbol[] = [];
+
 /**
- * Shared dialog behaviour for Sheet and ConfirmationModal.
+ * Shared dialog behaviour for Sheet, ConfirmationModal and Menu.
  *
  * Both used to hand-roll the same Escape listener and nothing else, so Tab
  * walked straight out of the open dialog into the screen behind it — which is
  * still scrollable and still clickable — and closing the dialog dropped focus
  * on <body>, losing a keyboard or switch user's place entirely.
  *
- * The trap listens on the dialog element rather than the window, so a
- * validation alert opening on top of a sheet each keeps its own trap and the
- * topmost one naturally wins: focus is inside it, so only its handler fires.
+ * Dialogs stack — a menu over a sheet, an alert over a sheet — and only the
+ * topmost one handles the keys: Escape closes the menu, not the sheet under
+ * it with everything typed into it.
  */
 export function useDialog(open: boolean, ref: RefObject<HTMLElement | null>, onClose: () => void) {
   // Callers pass an inline arrow / a function redeclared each render, so `onClose`
@@ -47,8 +50,11 @@ export function useDialog(open: boolean, ref: RefObject<HTMLElement | null>, onC
     const restoreTo = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const me = Symbol('dialog');
+    openDialogs.push(me);
 
     const onKey = (e: KeyboardEvent) => {
+      if (openDialogs[openDialogs.length - 1] !== me) return;
       if (e.key === 'Escape') { close.current(); return; }
       if (e.key !== 'Tab') return;
       const el = ref.current;
@@ -62,6 +68,7 @@ export function useDialog(open: boolean, ref: RefObject<HTMLElement | null>, onC
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);
+      openDialogs.splice(openDialogs.indexOf(me), 1);
       document.body.style.overflow = prevOverflow;
       // Only take focus back if the dialog still holds it — an action that
       // moves focus somewhere deliberate on close must not be overridden.

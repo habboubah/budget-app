@@ -53,8 +53,11 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
   const matrix = useMemo(() => categoryMatrix(entries, categories, keys), [entries, categories, keys]);
   const [hiddenCats, setHiddenCats] = useState<string[]>([]);
 
-  const avgIncome = Math.round(points.reduce((s, p) => s + p.income, 0) / Math.max(1, points.length));
-  const avgExpense = Math.round(points.reduce((s, p) => s + p.expense, 0) / Math.max(1, points.length));
+  // Averages over the finished months in view, as Analyse does: the running
+  // month is half entered and would pull them down.
+  const done = finishedMonths(points, today, Infinity);
+  const avgIncome = Math.round(done.reduce((s, p) => s + p.income, 0) / Math.max(1, done.length));
+  const avgExpense = Math.round(done.reduce((s, p) => s + p.expense, 0) / Math.max(1, done.length));
 
   if (!all.some(p => p.income || p.expense)) {
     return (

@@ -1,12 +1,15 @@
-import React, { useId } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, ChevronDown, Circle, ListFilter, Plus, Trash2 } from 'lucide-react';
+import { Check, ChevronsDownUp, ChevronsUpDown, Circle, CircleMinus, Gauge, ListFilter, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
-import { dayLabel, displayName, formatMoney, isOverdue } from '../logic';
+import { dayLabel, displayName, formatMoney, formatMoneyShort, isOverdue } from '../logic';
+import { BudgetStatus } from '../budgets';
+import { BudgetBar } from './BudgetBar';
 import { Strings, fmt, plural } from '../translations';
 import { Picture } from '../ui/Picture';
 import { tapLight } from '../ui/haptics';
 import { IconButton } from '../ui/Button';
+import { Menu, MenuItem } from '../ui/Menu';
 import { SwipeRow } from '../ui/SwipeRow';
 import { Highlight } from '../ui/Highlight';
 import { rise } from '../ui/stagger';
@@ -21,14 +24,18 @@ interface Props {
   /** Folded down to its header: name, total, what is still open. */
   collapsed: boolean;
   onCollapse: () => void;
-  /** Take the category out of this month — offered only while it is empty. */
+  /** Take the category out of this month — offered (in its menu) only while it is empty. */
   onRemove?: () => void;
   onAdd: () => void;
   onEdit: (e: Entry) => void;
   onToggle: (e: Entry) => void;
   /** Swipe left: delete (undoable). */
   onDelete: (e: Entry) => void;
-  /** Showing only what is still open (the filter button in the header). */
+  /** The category's budget in this month, if it has one: the bar and the line under it say how it stands. */
+  budget?: BudgetStatus | null;
+  /** Set or change the budget (the card's menu) — spending categories only. */
+  onBudget?: () => void;
+  /** Showing only what is still open (from the card's "⋯" menu, or the page's filter). */
   openOnly: boolean;
   onOpenOnly: () => void;
   /** The entry being dragged right now (from any category), if any. */
@@ -47,11 +54,12 @@ interface Props {
 }
 
 /**
- * One category of a month — one column of the Excel sheet: what of it is paid
- * (and, small and yellow below, the total including what is still open), its
- * entries, and an add row at the bottom. Tapping the
- * header folds the card down to that header and back; the state is kept per
- * category, so a category minimised stays minimised in every month.
+ * One category of a month — one column of the Excel sheet. The header: its
+ * name and what of it is paid, a bar for the paid share, and a line saying
+ * what is still open (and, in yellow, the total including it); a "⋯" menu
+ * beside it adds, filters and folds. Then its entries and an add row.
+ * Tapping the header folds the card down to that header and back; the state
+ * is kept per category, so a category minimised stays minimised in every month.
  *
  * Entries can be dragged (press and hold): within the card to sort them, or
  * onto another card to move them there. While one is dragged over this card,
@@ -59,17 +67,49 @@ interface Props {
  */
 export function CategorySection({
   category, entries: all, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle, onDelete,
-  openOnly, onOpenOnly, dragId, dropIndex, dragProps, onMoveBy, search,
+  budget, onBudget, openOnly, onOpenOnly, dragId, dropIndex, dragProps, onMoveBy, search,
 }: Props) {
   // The filter hides what is paid; totals still count everything.
   const entries = openOnly ? all.filter(e => !e.paid || e.id === dragId) : all;
+  const hidden = all.length - entries.length;
   const bodyId = useId();
+  // The body only fades in when unfolded — not when the card first appears.
+  const first = useRef(true);
+  useEffect(() => { first.current = false; }, []);
+  const [menuAt, setMenuAt] = useState<HTMLElement | null>(null);
   const name = displayName(category.names, language);
   const income = category.kind === 'income';
   const total = all.reduce((s, e) => s + e.amount, 0);
   const open = all.reduce((s, e) => s + (e.paid ? 0 : e.amount), 0);
   const paid = total - open;
+  const openCount = all.filter(e => !e.paid).length;
+  const overdueCount = all.filter(e => isOverdue(e, today)).length;
   const money = (c: number) => formatMoney(c, t.locale);
+  // The line under the bar: what is still to come, in words.
+  const status = openCount
+    ? fmt(income ? t.nExpected : t.nOpen, { n: openCount })
+    : all.length ? (income ? t.allReceived : t.allPaid) : t.sectionEmpty;
+
+  const short = (c: number) => formatMoneyShort(c, t.locale);
+  // With a budget, the line under the bar says how it stands; the status moves to its end.
+  const over = budget && budget.left < 0;
+
+  const menu: MenuItem[][] = [
+    [
+      { key: 'add', label: t.addEntry, icon: Plus, onSelect: onAdd },
+      ...(onBudget ? [{
+        key: 'budget', label: t.budgetMenu, icon: Gauge, onSelect: onBudget,
+        sub: budget ? fmt(t.budgetLine, { amount: short(budget.limit) }) : undefined,
+      }] : []),
+    ],
+    [
+      ...(all.length > 0 && (openCount > 0 || openOnly)
+        ? [{ key: 'open-only', label: openOnly ? t.showAllEntries : t.showOpenOnly, icon: ListFilter, onSelect: onOpenOnly }]
+        : []),
+      { key: 'fold', label: collapsed ? t.expand : t.collapse, icon: collapsed ? ChevronsUpDown : ChevronsDownUp, onSelect: onCollapse },
+    ],
+    onRemove && all.length === 0 ? [{ key: 'remove', label: t.removeFromThisMonth, icon: CircleMinus, onSelect: onRemove }] : [],
+  ];
 
   // Index among the *other* entries, the way the drop target counts.
   const homeIndex = dragId ? entries.findIndex(e => e.id === dragId) : -1;
@@ -127,6 +167,10 @@ export function CategorySection({
   return (
     <motion.section
       variants={rise}
+      // A card folding above moves this one with a transform (FLIP), never
+      // by animating anyone's height — see the body below.
+      layout="position"
+      transition={{ layout: { duration: 0.3, ease: [0.32, 0.72, 0, 1] } }}
       data-hue={category.hue}
       data-drop-category={category.id}
       data-collapsed={collapsed ? 'true' : undefined}
@@ -144,69 +188,92 @@ export function CategorySection({
         >
           <Picture emoji={category.emoji} name={name} size="sm" />
           <span className="min-w-0 flex-1">
-            <span className="block text-body font-semibold text-fg wrap-compound">{name}</span>
-            {collapsed && all.length > 0 && (
-              <span className="block text-caption text-fg-mute tabular-nums">{plural(all.length, t.entriesOne, t.entriesMany)}</span>
-            )}
-            {/* How much of it is paid, in the category's colour. The amounts beside it say it in numbers. */}
-            {total > 0 && !search && (
+            {/* The name and what is paid, then the bar, then what is still to come.
+                (No amount on a search result: the hits are summed above the cards.) */}
+            {/* The amount wraps under the name once the name would get narrower
+                than its basis (in rem: large text stacks them, as iOS lists do). */}
+            <span className="flex flex-wrap items-baseline gap-x-2">
+              <span className="min-w-0 flex-1 basis-[7rem] text-body font-semibold text-fg wrap-compound">{name}</span>
+              {!search && (
+                // The margin on a wrapper: rounded-num turns its own box left to right (Arabic).
+                <span className="ms-auto shrink-0">
+                  <span className={`block rounded-num text-body font-semibold ${income && paid ? 'text-pos' : paid ? 'text-fg' : 'text-fg-mute'}`}>
+                    {money(paid)}
+                  </span>
+                </span>
+              )}
+            </span>
+            {!search && !budget && <>
+              {/* How much of it is paid, in the category's colour. The amounts say it in numbers. */}
               <span aria-hidden="true" className="mt-2 block h-[5px] rounded-full bg-surface-2 overflow-hidden">
                 <motion.span
                   className="block h-full rounded-full bg-hue-chart"
                   initial={false}
-                  animate={{ width: `${Math.max(0, Math.min(1, paid / total)) * 100}%` }}
+                  animate={{ width: `${total > 0 ? Math.max(0, Math.min(1, paid / total)) * 100 : 0}%` }}
                   transition={{ type: 'spring', duration: 0.5, bounce: 0 }}
                 />
               </span>
-            )}
+              <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-caption">
+                <span className="text-fg-mute tabular-nums">
+                  {status}
+                  {overdueCount > 0 && <>{' · '}<span className="font-medium text-neg">{fmt(t.nOverdue, { n: overdueCount })}</span></>}
+                  {collapsed && ` · ${t.foldedNote}`}
+                </span>
+                {/* Everything including what is still open, in the pending colour. */}
+                {open > 0 && (
+                  <span className="ms-auto font-medium text-warn tabular-nums whitespace-nowrap">{fmt(t.sectionInclOpen, { amount: money(total) })}</span>
+                )}
+              </span>
+            </>}
+            {!search && budget && <>
+              <BudgetBar status={budget} className="mt-2" />
+              {/* The budget and what is left of it; at the end, the one thing to know:
+                  over it, paying out ahead of the month's pace, or what is still open. */}
+              <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-caption">
+                <span className="text-fg-mute tabular-nums">
+                  {fmt(t.budgetLine, { amount: short(budget.limit) })}
+                  {!over && ` · ${fmt(t.budgetLeft, { amount: money(budget.left) })}`}
+                  {collapsed && ` · ${t.foldedNote}`}
+                </span>
+                <span className="ms-auto tabular-nums">
+                  {over ? (
+                    <span className="font-semibold text-neg whitespace-nowrap">{fmt(t.budgetOver, { amount: money(-budget.left) })}</span>
+                  ) : budget.ahead ? (
+                    <span className="font-medium text-warn">{t.budgetAhead}</span>
+                  ) : openCount > 0 || overdueCount > 0 ? (
+                    <span className="text-fg-mute">
+                      {openCount > 0 && status}
+                      {overdueCount > 0 && <>{openCount > 0 && ' · '}<span className="font-medium text-neg">{fmt(t.nOverdue, { n: overdueCount })}</span></>}
+                    </span>
+                  ) : null}
+                </span>
+              </span>
+            </>}
           </span>
-          {/* What is paid, big; below it, small and yellow, everything including what is still open.
-              (Not on a search result: the hits are summed above the cards.) */}
-          {!search && <span className="shrink-0 text-end">
-            <span className={`block rounded-num text-body font-semibold ${income && paid ? 'text-pos' : paid ? 'text-fg' : 'text-fg-mute'}`}>
-              {money(paid)}
-            </span>
-            {open > 0 && (
-              <span className="block text-caption font-medium text-warn tabular-nums whitespace-nowrap">{fmt(t.sectionInclOpen, { amount: money(total) })}</span>
-            )}
-          </span>}
-          {!search && (
-            <ChevronDown
-              className={`w-4 h-4 shrink-0 text-fg-faint transition-transform duration-200 ${collapsed ? '-rotate-90 rtl:rotate-90' : ''}`}
-              strokeWidth={2.4}
-              aria-hidden="true"
-            />
-          )}
         </HeaderShell>
-        {!search && !collapsed && all.length > 0 && (open > 0 || openOnly) && (
-          <button
-            type="button"
-            aria-pressed={openOnly}
-            aria-label={`${openOnly ? t.showAllEntries : t.showOpenOnly} — ${name}`}
-            title={openOnly ? t.showAllEntries : t.showOpenOnly}
-            onClick={() => { tapLight(); onOpenOnly(); }}
-            className={`shrink-0 me-1 w-9 h-9 rounded-full inline-flex items-center justify-center transition-colors focus-visible:ring-focus ${
-              openOnly ? 'bg-warn-dim text-warn' : 'text-fg-faint active:bg-surface-2'}`}
-          >
-            <ListFilter className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
-          </button>
-        )}
-        {onRemove && all.length === 0 && (
-          /* Quiet, not red: a new month has several empty categories, and it is undoable. */
-          <IconButton label={fmt(t.removeFromMonth, { name })} icon={Trash2} tone="default" className="me-1" onClick={onRemove} />
+        {!search && (
+          <IconButton
+            label={`${t.more} — ${name}`}
+            icon={MoreHorizontal}
+            aria-haspopup="menu"
+            aria-expanded={menuAt ? true : undefined}
+            className="me-1"
+            onClick={e => setMenuAt(e.currentTarget)}
+          />
         )}
       </h2>
+      {!search && <Menu anchor={menuAt} label={name} groups={menu} onClose={() => setMenuAt(null)} />}
 
-      <AnimatePresence initial={false}>
-        {!collapsed && (
+      {/* Folding is instant for the card itself; the body fades in, and the
+          cards below glide to their new place (their `layout`). Animating
+          height: auto here re-laid-out the whole page on every frame. */}
+      {!collapsed && (
           <motion.div
             key="body"
             id={bodyId}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-            className="overflow-hidden"
+            initial={first.current ? false : { opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
           >
             {openOnly && entries.length === 0 && (
               <p className="hairline-t px-4 py-3 text-label text-fg-mute">{t.nothingOpen}</p>
@@ -215,6 +282,18 @@ export function CategorySection({
               <ul className="hairline-t divide-hairline-inset" style={{ '--sep': '52px' } as React.CSSProperties}>
                 <AnimatePresence initial={false}>{rows}</AnimatePresence>
               </ul>
+            )}
+            {/* The filter says what it hides, and lifts it in one tap (as Reminders does with its completed ones). */}
+            {!search && openOnly && hidden > 0 && (
+              <button
+                type="button"
+                onClick={() => { tapLight(); onOpenOnly(); }}
+                className="w-full min-h-tap hairline-t ps-[52px] pe-4 py-2 flex flex-wrap items-center gap-x-1.5 text-caption text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+              >
+                <span className="text-fg-mute tabular-nums">{plural(hidden, t.hiddenOne, t.hiddenMany)}</span>
+                <span className="text-fg-mute" aria-hidden="true">·</span>
+                <span className="font-semibold text-accent">{t.showAllEntries}</span>
+              </button>
             )}
 
             {!search && <button
@@ -229,8 +308,7 @@ export function CategorySection({
               <span className="text-body">{all.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
             </button>}
           </motion.div>
-        )}
-      </AnimatePresence>
+      )}
     </motion.section>
   );
 }

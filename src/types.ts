@@ -31,6 +31,10 @@ export interface Category {
    *  money put aside (an ETF plan) — the split behind the 50/30/20 check in
    *  the statistics. Unset = want. */
   budget?: Budget;
+  /** For an expense category: what it may cost a month, in cents — the same
+   *  every month, nothing carried over (schema 9). Unset = no budget. Not to
+   *  be confused with `budget`, the need / want / save split. */
+  limit?: number;
   /** Part of every newly started month. Unset = yes. */
   standard?: boolean;
   /** Ships with the app (can be edited, deleted and restored). */

@@ -126,7 +126,7 @@ function CategoryRow({ category: c, count, language, t, onEdit, onDelete, onStan
           if (e.key === 'ArrowUp') { e.preventDefault(); onMove(-1); }
           if (e.key === 'ArrowDown') { e.preventDefault(); onMove(1); }
         }}
-        className="h-tap w-9 shrink-0 inline-flex items-center justify-center text-fg-faint touch-none cursor-grab active:cursor-grabbing rounded-sm focus-visible:ring-focus"
+        className="h-tap w-tap shrink-0 inline-flex items-center justify-center text-fg-faint touch-none cursor-grab active:cursor-grabbing rounded-sm focus-visible:ring-focus"
       >
         <GripVertical className="w-5 h-5" />
       </button>

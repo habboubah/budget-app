@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { motion } from 'motion/react';
+import { motion, useTransform } from 'motion/react';
 import { AlertTriangle, BarChart3, CalendarDays, Lightbulb, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import translations, { fmt } from './translations';
 import { Category, Entry, EntryDraft, MonthKey } from './types';
-import { addMonths, balanceFor, carryCandidates, displayName, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
+import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { MonthView } from './components/MonthView';
+import { BudgetSheet } from './components/BudgetSheet';
+import { DueSoonView } from './components/DueSoonView';
 import { MonthPickerSheet } from './components/MonthPickerSheet';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
-import { MonthActionsSheet } from './components/MonthActionsSheet';
+import { MonthActionsMenu } from './components/MonthActionsMenu';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
 import { SettingsView } from './components/SettingsView';
@@ -29,6 +31,14 @@ import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
 import { Confirm } from './ui/Sheet';
 import { notifySuccess, notifyWarning, tapLight } from './ui/haptics';
+import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
+
+type TabId = 'month' | 'stats' | 'insights' | 'settings';
+/** Screens pushed over a tab's root. */
+type PushedId = 'categories' | 'dueSoon';
+type ScreenId = TabId | PushedId;
+/** The tab each pushed screen sits on. */
+const PARENT: Record<PushedId, TabId> = { categories: 'settings', dueSoon: 'month' };
 
 export default function App() {
   const store = useAppStore();
@@ -36,8 +46,11 @@ export default function App() {
   const t = translations[language];
   const { toast, show, hide } = useToast();
 
-  const [tab, setTab] = useState<'month' | 'stats' | 'insights' | 'settings'>('month');
-  const [showCategories, setShowCategories] = useState(false);
+  const [tab, setTab] = useState<TabId>('month');
+  /** Per tab, the screen pushed over its root — each tab keeps its place, as on iOS. */
+  const [stack, setStack] = useState<Partial<Record<TabId, PushedId>>>({});
+  const push = (to: PushedId) => { setTab(PARENT[to]); setStack(s => ({ ...s, [PARENT[to]]: to })); };
+  const popTo = (onTab: TabId) => setStack(s => ({ ...s, [onTab]: undefined }));
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
   const [categorySheet, setCategorySheet] = useState<CategorySheetMode>(null);
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
@@ -56,7 +69,10 @@ export default function App() {
   const [month, setMonth] = useState<MonthKey>(monthKeyOf);
   const [entrySheet, setEntrySheet] = useState<EntrySheetMode>(null);
   const [openingOpen, setOpeningOpen] = useState(false);
-  const [actionsOpen, setActionsOpen] = useState(false);
+  /** The category whose monthly budget is being set. */
+  const [budgetFor, setBudgetFor] = useState<Category | null>(null);
+  /** The month's "⋯" menu is open from this button. */
+  const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
   /** The category the round add button opens with: the one used last. */
   const [lastCategory, setLastCategory] = useState<string | null>(null);
 
@@ -68,21 +84,28 @@ export default function App() {
   const hiddenCategories = categories.filter(c => !shownCategories.includes(c));
   const openEarlier = useMemo(() => (balance.started ? openBefore(data, month) : []), [data, month, balance.started]);
 
-  // Screens pushed over the tab's root, outermost first. Every pushed screen
-  // must be here: it drives the hardware back, the scroll reset and the slide
-  // direction (the same pattern as shopping-list and pizza-driver-log).
-  const pushed: [string, boolean, () => void][] = [
-    ['categories', tab === 'settings' && showCategories, () => setShowCategories(false)],
-  ];
-  const topIndex = pushed.findIndex(([, isOpen]) => isOpen);
-  const screen = topIndex === -1 ? tab : pushed[topIndex][0];
-  const depth = topIndex === -1 ? 0 : pushed.length - topIndex;
+  // The screen pushed on this tab, if any: the nav's single source of truth —
+  // it drives the hardware back, the edge swipe, the scroll reset and the
+  // slide direction, and must match `screenFor` below.
+  const pushed = stack[tab] ?? null;
+  const screen: ScreenId = pushed ?? tab;
+  const depth = pushed ? 1 : 0;
+  const back = () => popTo(tab);
+  // The iOS back gesture on a pushed screen (touch, from the leading edge).
+  const swipe = useEdgeSwipeBack(back, t.dir === 'rtl');
+  // The parent under it: from 30 % behind to in place, a shade lifting as it comes.
+  const swipeUnder = useTransform(swipe.x, v => (Math.abs(v) / Math.max(1, window.innerWidth) - 1) * 0.3 * window.innerWidth * (t.dir === 'rtl' ? -1 : 1));
+  // (A share of the theme's scrim: 12 % black by day, a little deeper at night.)
+  const swipeShade = useTransform(swipe.x, v => 0.375 * (1 - Math.min(1, Math.abs(v) / Math.max(1, window.innerWidth))));
   // Push slides in from the trailing edge, pop reveals the parent from the
-  // leading edge; switching tabs just cross-fades. Kept in a ref guarded by
-  // `screen` so StrictMode's double render can't recompute the direction.
-  const nav = useRef({ screen, depth, dir: 0 });
+  // leading edge; switching tabs just cross-fades; a swiped-away screen has
+  // already shown its parent, so that pop doesn't animate again. Kept in a
+  // ref guarded by `screen` so StrictMode's double render can't recompute it.
+  const nav = useRef({ screen, depth, dir: 0, still: false });
   if (nav.current.screen !== screen) {
-    nav.current = { screen, depth, dir: depth === nav.current.depth ? 0 : depth > nav.current.depth ? 1 : -1 };
+    const still = swipe.popped.current;
+    swipe.popped.current = false;
+    nav.current = { screen, depth, still, dir: depth === nav.current.depth ? 0 : depth > nav.current.depth ? 1 : -1 };
   }
   const dir = nav.current.dir;
   const rtl = t.dir === 'rtl' ? -1 : 1;
@@ -99,12 +122,12 @@ export default function App() {
 
   useEffect(() => {
     const handle = CapacitorApp.addListener('backButton', () => {
-      if (topIndex !== -1) pushed[topIndex][2]();
+      if (pushed) popTo(tab);
       else if (tab !== 'month') setTab('month');
       else void CapacitorApp.minimizeApp();
     });
     return () => { void handle.then(h => h.remove()); };
-  }, [topIndex, tab]);
+  }, [pushed, tab]);
 
   // Status-bar glyphs must invert with the theme or they vanish into the bar.
   useEffect(() => {
@@ -137,6 +160,14 @@ export default function App() {
   const toggle = (e: Entry) => {
     if (e.paid) tapLight(); else notifySuccess();
     store.togglePaid(e.id);
+  };
+
+  /** Ticked off in "Demnächst fällig": it leaves the list, so the toast can bring it back. */
+  const tickDue = (e: Entry) => {
+    toggle(e);
+    const income = data.categories.find(c => c.id === e.categoryId)?.kind === 'income';
+    // Undo sets the state it had; a toggle here would read this render's (stale) entries.
+    show(fmt(income ? t.dueReceived : t.duePaid, { name: e.name }), { label: t.undo, run: () => store.updateEntry(e.id, { paid: e.paid }) });
   };
 
   const startMonth = (carry: boolean) => {
@@ -224,7 +255,7 @@ export default function App() {
     const n = excel.plan.months.length;
     setMonth(lastMonth(excel.plan) ?? monthKeyOf());
     setTab('month');
-    setShowCategories(false);
+    setStack({});
     setExcel(null);
     notifySuccess();
     show(fmt(t.excelDone, { n }), {
@@ -279,36 +310,37 @@ export default function App() {
     show(t.restoreDefaultsDone, { label: t.undo, run: () => store.setCategories(before) });
   };
 
+  const saveBudget = (c: Category, limit: number | undefined) => {
+    const before = c.limit;
+    store.updateCategory(c.id, { limit });
+    const name = displayName(c.names, language);
+    show(limit === undefined ? fmt(t.budgetRemoved, { name }) : fmt(t.budgetSaved, { name, amount: formatMoneyShort(limit, t.locale) }), {
+      label: t.undo, run: () => store.updateCategory(c.id, { limit: before }),
+    });
+  };
+
   const quickAddCategory = (lastCategory && categories.some(c => c.id === lastCategory) ? lastCategory : null)
     ?? categories.find(c => c.kind === 'expense')?.id ?? categories[0]?.id;
 
-  return (
-    <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
-      {store.storageError && (
-        <div role="alert" className="bg-neg-dim text-neg px-4 py-2 safe-top">
-          <div className="mx-auto max-w-xl flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
-            <span className="text-caption font-bold flex-1">{t.storageError}</span>
-          </div>
-        </div>
-      )}
-
-      <motion.div
-        key={screen}
-        // Enter-only: the old screen leaves on the spot and the new one comes
-        // in over it. Fixed chrome (sheets, toasts, the tab bar) is portalled
-        // to <body>, so this transform can never capture it.
-        initial={dir === 0 ? { opacity: 0 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={dir === 0 ? { duration: 0.18 } : { duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-      >
-        {screen === 'categories' ? (
+  /** Every screen, by name — the tab roots and what can be pushed over them. */
+  const screenFor = (id: ScreenId) => (
+    <>
+        {id === 'dueSoon' ? (
+          <DueSoonView
+            data={data}
+            language={language}
+            t={t}
+            onBack={back}
+            onEdit={entry => setEntrySheet({ kind: 'edit', entry })}
+            onTick={tickDue}
+          />
+        ) : id === 'categories' ? (
           <CategoriesView
             categories={categories}
             entries={entries}
             language={language}
             t={t}
-            onBack={() => setShowCategories(false)}
+            onBack={back}
             onEdit={c => setCategorySheet({ kind: 'edit', category: c })}
             onNew={() => setCategorySheet({ kind: 'new' })}
             onDelete={askDeleteCategory}
@@ -316,7 +348,7 @@ export default function App() {
             onRestoreDefaults={restoreDefaults}
             onStandard={(c, on) => store.updateCategory(c.id, { standard: on })}
           />
-        ) : screen === 'settings' ? (
+        ) : id === 'settings' ? (
           <SettingsView
             language={language}
             themeMode={themeMode}
@@ -326,7 +358,7 @@ export default function App() {
             categoryCount={categories.length}
             onLanguage={store.setLanguage}
             onTheme={store.setThemeMode}
-            onCategories={() => setShowCategories(true)}
+            onCategories={() => push('categories')}
             onRestoreDefaults={restoreDefaults}
             onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); show(t.deleteAllDone); }}
             backup={
@@ -340,7 +372,7 @@ export default function App() {
               />
             }
           />
-        ) : screen === 'stats' ? (
+        ) : id === 'stats' ? (
           <StatsView
             month={month}
             balances={balances}
@@ -349,7 +381,7 @@ export default function App() {
             t={t}
             onMonth={setMonth}
           />
-        ) : screen === 'insights' ? (
+        ) : id === 'insights' ? (
           <InsightsView
             month={month}
             balances={balances}
@@ -357,6 +389,7 @@ export default function App() {
             language={language}
             t={t}
             onMonth={setMonth}
+            onBudget={setBudgetFor}
           />
         ) : (
           <MonthView
@@ -371,7 +404,7 @@ export default function App() {
             t={t}
             onMonth={setMonth}
             onStart={startMonth}
-            onActions={() => setActionsOpen(true)}
+            onActions={setActionsAnchor}
             onAdd={categoryId => setEntrySheet({ kind: 'new', month, categoryId })}
             onEdit={entry => setEntrySheet({ kind: 'edit', entry })}
             onToggle={toggle}
@@ -379,7 +412,7 @@ export default function App() {
             onPickMonth={() => setMonthPickerOpen(true)}
             onOpening={() => setOpeningOpen(true)}
             onDismissIntro={store.dismissIntro}
-            onCategories={() => { setTab('settings'); setShowCategories(true); }}
+            onCategories={() => push('categories')}
             onImportExcel={() => excelInput.current?.click()}
             collapsed={store.collapsed}
             onCollapse={store.toggleCollapsed}
@@ -387,15 +420,68 @@ export default function App() {
             onAddCategory={() => setAddCategoryOpen(true)}
             noCategories={categories.length === 0}
             onMoveEntry={moveEntry}
+            onBudget={setBudgetFor}
+            onTickDue={tickDue}
+            onDueAll={() => push('dueSoon')}
+            allCategories={data.categories}
           />
         )}
+    </>
+  );
+
+  return (
+    <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
+      {store.storageError && (
+        <div role="alert" className="bg-neg-dim text-neg px-4 py-2 safe-top">
+          <div className="mx-auto max-w-xl flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span className="text-caption font-bold flex-1">{t.storageError}</span>
+          </div>
+        </div>
+      )}
+
+      {/* While a pushed screen is swiped away: its parent underneath, sliding
+          in from a little behind and coming out of a light shade. */}
+      {pushed && swipe.swiping && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none" aria-hidden="true" inert>
+          <motion.div style={{ x: swipeUnder }}>{screenFor(PARENT[pushed])}</motion.div>
+          <motion.div className="absolute inset-0 scrim" style={{ opacity: swipeShade }} />
+        </div>
+      )}
+
+      <motion.div
+        key={screen}
+        // Enter-only: the old screen leaves on the spot and the new one comes
+        // in over it. Fixed chrome (sheets, toasts, the tab bar) is portalled
+        // to <body>, so this transform can never capture it.
+        initial={nav.current.still ? false : dir === 0 ? { opacity: 0 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={dir === 0 ? { duration: 0.18 } : { duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+      >
+        <motion.div
+          style={pushed ? { x: swipe.x } : undefined}
+          className={pushed && swipe.swiping ? `relative bg-bg min-h-screen ${rtl === 1 ? 'shadow-[-10px_0_30px_var(--t-shadow-2)]' : 'shadow-[10px_0_30px_var(--t-shadow-2)]'}` : undefined}
+        >
+          {screenFor(screen)}
+        </motion.div>
       </motion.div>
+
+      {/* The leading edge of a pushed screen: where the back swipe starts. Below
+          the bar, so the back button stays whole; touch-action none, so the
+          page doesn't scroll while the finger moves sideways. */}
+      {pushed && (
+        <div
+          aria-hidden="true"
+          className="fixed start-0 bottom-0 w-5 z-40 touch-none top-[calc(env(safe-area-inset-top)+60px)]"
+          {...swipe.edge}
+        />
+      )}
 
       <TabBar
         label={t.appName}
         active={tab}
         // Tapping the active tab again pops back to its root, as on iOS.
-        onChange={id => { if (id === tab) setShowCategories(false); setTab(id); }}
+        onChange={id => { if (id === tab) popTo(id); setTab(id); }}
         tabs={[
           { id: 'month', label: t.tabMonth, icon: CalendarDays },
           { id: 'stats', label: t.tabStats, icon: BarChart3 },
@@ -448,15 +534,24 @@ export default function App() {
         }}
       />
 
-      <MonthActionsSheet
-        open={actionsOpen}
+      <BudgetSheet
+        category={budgetFor}
+        data={data}
+        language={language}
+        t={t}
+        onClose={() => setBudgetFor(null)}
+        onSave={saveBudget}
+      />
+
+      <MonthActionsMenu
+        anchor={actionsAnchor}
         month={month}
         started={balance.started}
         prevKey={balance.prevKey}
         missing={balance.started ? candidates.length : 0}
         allCollapsed={categories.length > 0 && categories.every(c => store.collapsed.includes(c.id))}
         t={t}
-        onClose={() => setActionsOpen(false)}
+        onClose={() => setActionsAnchor(null)}
         onOpening={() => setOpeningOpen(true)}
         onPull={() => { const n = store.pullRecurring(month); show(fmt(t.pulled, { n })); }}
         onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}

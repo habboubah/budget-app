@@ -63,7 +63,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
               <button
                 type="button" onClick={() => { tapLight(); onBack(); }}
                 title={backLabel} aria-label={backLabel}
-                className="h-tap w-tap inline-flex items-center justify-center rounded-full float-chrome text-fg active:scale-[0.92] transition-transform focus-visible:ring-focus"
+                className="h-tap w-tap inline-flex items-center justify-center rounded-full glass-chrome text-fg active:scale-[0.92] transition-transform focus-visible:ring-focus"
               >
                 <ChevronLeft className="w-6 h-6 -ms-0.5 rtl:rotate-180" strokeWidth={2.25} />
               </button>

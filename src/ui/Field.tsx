@@ -47,7 +47,7 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
   onChange: (v: T) => void;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="flex bg-surface-2 rounded-full p-1 gap-1">
+    <div role="radiogroup" aria-label={label} className="flex bg-surface-2 rounded-full p-0.5 gap-0.5">
       {options.map(o => {
         const on = o.value === value;
         return (
@@ -57,7 +57,7 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
             role="radio"
             aria-checked={on}
             onClick={() => { tapLight(); onChange(o.value); }}
-            className={`flex-1 min-h-[38px] px-2 rounded-full text-label transition-colors focus-visible:ring-focus wrap-compound ${
+            className={`hit-44 flex-1 min-h-[40px] px-2 rounded-full text-label transition-colors focus-visible:ring-focus wrap-compound ${
               on ? 'bg-raised text-fg font-semibold shadow-e1' : 'text-fg font-medium active:bg-raised/60'}`}
           >
             {o.label}

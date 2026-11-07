@@ -150,6 +150,36 @@ for (const [name, accent] of accents) {
   });
 }
 
+// Glass (CLAUDE.md: tab bar, bar buttons, sheet buttons, menus) over what
+// can lie under it. The blur only averages that content, so the check takes
+// it as a flat colour: the page, a card, the lit page top — and for menus,
+// which open over the balance card, the hero's darkest and lightest stop.
+for (const [name, accent] of accents) {
+  for (const theme of ['light', 'dark']) {
+    const scope = scopeOf(theme, accent);
+    audit(`${name} · ${theme} glass`, scope, c => {
+      const accentRgb = resolve('var(--t-accent-rgb)', scope).split(/\s+/).map(Number);
+      const wash = over([...accentRgb.map(x => x / 255), parseFloat(resolve('var(--t-wash)', scope))], c('--t-bg'));
+      const chrome = [['page', c('--t-bg')], ['card', c('--t-surface')], ['lit page top', wash]].flatMap(([where, under]) => {
+        const glass = over(c('--t-glass'), under);
+        return [
+          [`tab label on glass over ${where}`, c('--t-fg'), glass, TEXT],
+          [`active tab on glass over ${where}`, c('--t-accent'), over(c('--t-accent-dim'), glass), TEXT],
+        ];
+      });
+      const menus = [['page', c('--t-bg')], ['card', c('--t-surface')], ['hero-1', c('--hero-1')], ['hero-3', c('--hero-3')]].flatMap(([where, under]) => {
+        const menu = over(c('--t-glass-menu'), under);
+        return [
+          [`menu text over ${where}`, c('--t-fg'), menu, TEXT],
+          [`menu caption over ${where}`, c('--t-fg-mute'), menu, TEXT],
+          [`menu delete over ${where}`, c('--t-neg'), menu, TEXT],
+        ];
+      });
+      return [...chrome, ...menus];
+    });
+  }
+}
+
 // Paid ticks: the check (chart-label ink) on the category's chart hue.
 for (const theme of ['light', 'dark']) {
   audit(`ticks · ${theme}`, scopeOf(theme, accents[0][1]), c =>

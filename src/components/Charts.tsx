@@ -37,11 +37,10 @@ export function niceTicks(lo: number, hi: number, count = 3): number[] {
   return out;
 }
 
-/** Euro cents → a short axis label: "0", "800", "2k", "27,5k". */
-function compact(cents: number, locale: string): string {
-  const euros = cents / 100;
-  if (Math.abs(euros) < 1000) return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(euros).replace('-', '−');
-  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(euros / 1000).replace('-', '−')}k`;
+/** Euro cents → a short axis label in the reader's own way of writing it:
+ *  "4.000", "1,5 Mio." in German, "4k" in English, "4 آلاف" in Arabic. */
+export function compact(cents: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(cents / 100).replace('-', '−');
 }
 
 /** A column with a 4px rounded data end and a square foot on the baseline. */
@@ -98,7 +97,17 @@ function ChartFrame({ months, minSlot, ticks, y, selected, t, label, onPick, mar
   const width = useWidth(box);
   const [active, setActive] = useState<number | null>(null);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const visible = Math.max(80, width - AXIS_W);
+  // The axis is as wide as its longest label ("27.500" in German, "20 ألف" in
+  // Arabic, larger with Dynamic Type) — measured, so nothing is cut off.
+  const labels = ticks.map(v => (tickLabel ? tickLabel(v) : compact(v, t.locale)));
+  const axisRef = useRef<SVGSVGElement>(null);
+  const [axisW, setAxisW] = useState(AXIS_W);
+  useLayoutEffect(() => {
+    const texts = axisRef.current ? [...axisRef.current.querySelectorAll('text')] : [];
+    const longest = Math.max(0, ...texts.map(el => el.getComputedTextLength()));
+    if (longest) setAxisW(Math.max(28, Math.ceil(longest) + 10));
+  }, [labels.join('|')]);
+  const visible = Math.max(80, width - axisW);
   const plotW = Math.max(visible, months.length * minSlot);
   const slot = plotW / Math.max(1, months.length);
   const cx = (i: number) => slot * i + slot / 2;
@@ -116,14 +125,14 @@ function ChartFrame({ months, minSlot, ticks, y, selected, t, label, onPick, mar
 
   return (
     <div ref={box} dir="ltr" className="relative flex" onPointerLeave={() => setActive(null)}>
-      <svg width={AXIS_W} height={H} className="shrink-0" aria-hidden="true">
-        {ticks.map(v => (
-          <text key={v} x={AXIS_W - 6} y={y(v)} dy="0.32em" textAnchor="end" className="fill-fg-mute text-micro num">{tickLabel ? tickLabel(v) : compact(v, t.locale)}</text>
+      <svg ref={axisRef} width={axisW} height={H} className="shrink-0" aria-hidden="true">
+        {ticks.map((v, i) => (
+          <text key={v} x={axisW - 6} y={y(v)} dy="0.32em" textAnchor="end" className="fill-fg-mute text-micro num">{labels[i]}</text>
         ))}
       </svg>
       {/* Older months hide to the left: a fade says there is more. */}
       {scrollLeft > 4 && (
-        <div className="pointer-events-none absolute z-[5] top-0 w-8 bg-gradient-to-r from-surface to-transparent" style={{ left: AXIS_W, height: H }} aria-hidden="true" />
+        <div className="pointer-events-none absolute z-[5] top-0 w-8 bg-gradient-to-r from-surface to-transparent" style={{ left: axisW, height: H }} aria-hidden="true" />
       )}
       <div
         ref={scroller}
@@ -211,7 +220,7 @@ export function LegendToggles({ items, hidden, onToggle, label }: {
   label: string;
 }) {
   return (
-    <div className="flex flex-wrap gap-1.5 mb-3" role="group" aria-label={label}>
+    <div className="flex flex-wrap gap-2 mb-3" role="group" aria-label={label}>
       {items.map(i => {
         const on = !hidden.includes(i.key);
         return (
@@ -221,7 +230,7 @@ export function LegendToggles({ items, hidden, onToggle, label }: {
             aria-pressed={on}
             data-hue={i.hue}
             onClick={() => { tapLight(); onToggle(i.key); }}
-            className={`min-h-[36px] ps-2.5 pe-3 rounded-full inline-flex items-center gap-1.5 text-caption font-semibold border transition-colors focus-visible:ring-focus ${
+            className={`hit-44 min-h-[36px] ps-2.5 pe-3 rounded-full inline-flex items-center gap-1.5 text-caption font-semibold border transition-colors focus-visible:ring-focus ${
               on ? 'bg-surface text-fg border-hairline' : 'bg-transparent text-fg-mute border-dashed border-hairline'}`}
           >
             <span className={`w-2.5 h-2.5 rounded-[3px] shrink-0 ${on ? i.className : 'border border-fg-faint'}`} aria-hidden="true" />

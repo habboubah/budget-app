@@ -230,6 +230,14 @@
   --t-shadow-1: rgba(0, 0, 0, 0.04);
   --t-shadow-2: rgba(0, 0, 0, 0.12);
 
+  /* Liquid Glass for the floating chrome (glass-chrome) and menus (glass-menu):
+     a tint over the blurred page, a bright rim on top, a hairline edge. */
+  --t-glass:      rgb(255 255 255 / 0.62);
+  --t-glass-menu: rgb(250 250 252 / 0.92);
+  --t-menu-solid: #FFFFFF;
+  --t-glass-rim:  rgb(255 255 255 / 0.95);
+  --t-glass-edge: rgb(0 0 0 / 0.08);
+
   --t-tomato-bg: #FFE1DA;   --t-tomato-ink: #9E2F1F;
   --t-carrot-bg: #FFE6CC;   --t-carrot-ink: #8F4A0E;
   --t-lemon-bg: #FFF2B8;    --t-lemon-ink: #6B5500;
@@ -305,6 +313,12 @@
   --t-scrim:    rgba(0, 0, 0, 0.6);
   --t-shadow-1: rgba(0, 0, 0, 0.3);
   --t-shadow-2: rgba(0, 0, 0, 0.5);
+
+  --t-glass:      rgb(52 52 56 / 0.58);
+  --t-glass-menu: rgb(40 40 43 / 0.88);
+  --t-menu-solid: #2C2C2E;
+  --t-glass-rim:  rgb(255 255 255 / 0.16);
+  --t-glass-edge: rgb(255 255 255 / 0.08);
 
   --t-tomato-bg: #3B2420;   --t-tomato-ink: #FFB3A6;
   --t-carrot-bg: #3A2A1B;   --t-carrot-ink: #FFC48A;
@@ -436,12 +450,53 @@
   box-shadow: 0 0 0 0.5px var(--t-card-line);
 }
 
-/* Floating chrome (the tab bar, nav buttons, the add button): lifted off the
-   page with a soft shadow. Solid, not blurred — backdrop-filter over a
-   scrolling list is the most expensive thing to ask of a WebView. */
+/* Solid floating surface: what glass falls back to, and the look of floating
+   things that aren't navigation (none today). */
 @utility float-chrome {
   background: var(--t-surface);
   box-shadow: 0 0 0 0.5px var(--t-hairline), 0 6px 24px var(--t-shadow-2);
+}
+
+/* Liquid Glass, iOS 26's navigation layer: the tab bar, the round bar
+   buttons, a sheet's toolbar buttons. Only on those small, fixed pieces —
+   never on cards, lists or anything that scrolls (CLAUDE.md: the one
+   exception to "no backdrop-filter"). The blur is static, never animated.
+   Reduce Transparency, Increase Contrast and a browser without the filter
+   get the solid surface. */
+@utility glass-chrome {
+  background: var(--t-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--t-glass-rim), inset 0 0 0 0.5px var(--t-glass-edge), 0 8px 26px var(--t-shadow-2);
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    background: var(--t-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: 0 0 0 0.5px var(--t-hairline), 0 6px 24px var(--t-shadow-2);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--t-surface);
+  }
+}
+/* The same glass, denser, for menus: they carry a lot of text (HIG: the
+   regular variant behind text-heavy components). */
+@utility glass-menu {
+  background: var(--t-glass-menu);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--t-glass-rim), inset 0 0 0 0.5px var(--t-glass-edge), 0 18px 50px var(--t-shadow-2), 0 2px 8px var(--t-shadow-1);
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    background: var(--t-menu-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--t-menu-solid);
+  }
+}
+/* The confirm button of a sheet: the accent, lifted by a glow of itself. */
+@utility accent-lift {
+  box-shadow: 0 6px 16px rgb(var(--t-accent-rgb) / 0.35);
 }
 
 /* The gradient hero — the balance card, the add button, primary buttons:
@@ -473,6 +528,20 @@ input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-results-button {
   -webkit-appearance: none;
   appearance: none;
+}
+
+/* A small control (a 36px chip) with a 44px hit area, as iOS gives its
+   buttons: an invisible ::before reaches past the edges that are short of
+   44px. Keep 8px between rows of such chips so the areas don't overlap. */
+@utility hit-44 {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    top: min(0px, calc((100% - 44px) / 2));
+    bottom: min(0px, calc((100% - 44px) / 2));
+    inset-inline: min(0px, calc((100% - 44px) / 2));
+  }
 }
 
 @utility ring-focus {
@@ -549,4 +618,7 @@ input[type="search"]::-webkit-search-results-button {
   /* Keep text selection off the tap targets — a long press on a row should
      not start selecting its name. */
   button { -webkit-user-select: none; user-select: none; }
+  /* No double-tap zoom on controls (tapping › twice quickly would zoom the
+     page); pinch-zoom stays. Utilities (touch-none on grips) still win. */
+  button, a, label, input, select, textarea, summary, [role="button"] { touch-action: manipulation; }
 }

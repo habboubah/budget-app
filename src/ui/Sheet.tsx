@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useDragControls } from 'motion/react';
+import { Check, X } from 'lucide-react';
 import { useDialog } from './useDialog';
 
 interface Props {
@@ -69,29 +70,33 @@ export function Sheet({ open, title, closeLabel, onClose, action, children }: Pr
           <div className="flex justify-center pt-2 pb-1 cursor-grab touch-none" onPointerDown={e => dragControls.start(e)}>
             <div className="h-[5px] w-9 rounded-full bg-fg-faint/40" aria-hidden="true" />
           </div>
+          {/* iOS 26's sheet toolbar: close on a round glass button, the
+              confirming action filled in the accent; their words stay for
+              VoiceOver (and as a tooltip). */}
           <div
-            className="px-3 pb-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2 touch-none"
+            className="px-3 pb-2 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2 touch-none"
             onPointerDown={e => { if (e.target === e.currentTarget) dragControls.start(e); }}
           >
             <button
               type="button" onClick={onClose}
               onMouseDown={e => e.preventDefault()}
-              className="justify-self-start min-h-control px-3 rounded-full text-chrome-lg text-accent active:bg-accent-dim transition-colors focus-visible:ring-focus"
+              aria-label={closeLabel} title={closeLabel}
+              className="h-tap w-tap rounded-full glass-chrome text-fg inline-flex items-center justify-center active:scale-[0.92] transition-transform focus-visible:ring-focus"
             >
-              {closeLabel}
+              <X className="w-5 h-5" strokeWidth={2.4} aria-hidden="true" />
             </button>
             <h2 className="min-w-0 display text-chrome-title font-semibold text-fg text-center wrap-compound">{title}</h2>
-            <div className="justify-self-end">
-              {action && (
-                <button
-                  type="button" onClick={action.onClick} disabled={action.disabled}
-                  onMouseDown={e => e.preventDefault()}
-                  className="min-h-control px-3 rounded-full text-chrome-lg font-semibold text-accent disabled:text-fg-faint active:bg-accent-dim transition-colors focus-visible:ring-focus"
-                >
-                  {action.label}
-                </button>
-              )}
-            </div>
+            {action ? (
+              <button
+                type="button" onClick={action.onClick} disabled={action.disabled}
+                onMouseDown={e => e.preventDefault()}
+                aria-label={action.label} title={action.label}
+                className={`h-tap w-tap rounded-full inline-flex items-center justify-center transition-[transform,background-color] active:scale-[0.92] focus-visible:ring-focus ${
+                  action.disabled ? 'bg-surface-2 text-fg-faint' : 'bg-accent-fill text-accent-fill-ink accent-lift'}`}
+              >
+                <Check className="w-5 h-5" strokeWidth={2.8} aria-hidden="true" />
+              </button>
+            ) : <span aria-hidden="true" />}
           </div>
         </div>
         <div className="px-5 pt-2 pb-safe-8">{children}</div>

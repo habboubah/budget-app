@@ -5,6 +5,7 @@ import {
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, monthsEnding, monthSpanLabel, formatPercent, upgradeCategories,
   normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, monthSettled, topCategories, laterCopies,
+  leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -293,6 +294,40 @@ describe('what a month leaves over', () => {
     expect(monthSettled(monthTotals(entries, cats, '2026-11'))).toEqual({ income: 494159, expense: 113300, net: 380859 });
     expect(monthSettled(monthTotals([], cats, '2026-11'))).toEqual({ income: 0, expense: 0, net: 0 });
   });
+
+  it('spreads what is left over the days still to come, today included', () => {
+    // 7 November: 24 of 30 days to go. 1.749,86 € / 24 = 72,91 €.
+    const nov7 = new Date(2026, 10, 7, 15, 30);
+    expect(leftPerDay(174986, '2026-11', nov7)).toBe(7291);
+    // The last day still counts as a whole day; the first counts them all.
+    expect(leftPerDay(5000, '2026-11', new Date(2026, 10, 30, 23, 59))).toBe(5000);
+    expect(leftPerDay(3000, '2026-11', new Date(2026, 10, 1))).toBe(100);
+    expect(leftPerDay(2800, '2027-02', new Date(2027, 1, 1))).toBe(100);
+    // Rounded down: never a cent more than there is.
+    expect(leftPerDay(100, '2026-11', nov7)).toBe(4);
+  });
+
+  it('has no per-day figure when nothing is left, or for another month', () => {
+    const nov7 = new Date(2026, 10, 7);
+    expect(leftPerDay(0, '2026-11', nov7)).toBeNull();
+    expect(leftPerDay(-5000, '2026-11', nov7)).toBeNull();
+    expect(leftPerDay(174986, '2026-10', nov7)).toBeNull();
+    expect(leftPerDay(174986, '2026-12', nov7)).toBeNull();
+  });
+
+  it('rounds averages to whole euros, with a sign when asked', () => {
+    expect(formatMoneyWhole(379849, 'de-DE')).toBe('3.798\u00a0€');
+    expect(formatMoneyWhole(124150, 'de-DE', 'exceptZero')).toBe('+1.242\u00a0€');
+    expect(formatMoneyWhole(-20049, 'de-DE', 'exceptZero')).toBe('−200\u00a0€');
+    expect(formatMoneyWhole(30, 'de-DE', 'exceptZero')).toBe('0\u00a0€');
+  });
+
+  it('rounds "about" amounts down to whole euros from 10 € up', () => {
+    expect(formatMoneyApprox(7291, 'de-DE')).toBe('72\u00a0€');
+    expect(formatMoneyApprox(123499, 'de-DE')).toBe('1.234\u00a0€');
+    expect(formatMoneyApprox(840, 'de-DE')).toBe('8,40\u00a0€');
+    expect(formatMoneyApprox(7291, 'en-GB')).toBe('€72');
+  });
 });
 
 describe('search', () => {
@@ -347,6 +382,23 @@ describe('search', () => {
     // The vowel marks stay with their letters.
     expect(highlightRanges('أَحْمَد راتب', 'احمد')).toEqual([[0, 7]]);
     expect(highlightRanges('Miete', '')).toEqual([]);
+  });
+  it('groups hits from every month: the month on screen first, then newest first', () => {
+    const hits = [
+      e('2026-09', 'groceries', 'Lidl', 100, true), e('2026-11', 'groceries', 'Lidl', 200, true),
+      e('2026-10', 'groceries', 'Lidl', 300, true), e('2026-11', 'groceries', 'Lidl', 400, true), e('2026-12', 'groceries', 'Lidl', 500, false),
+    ];
+    const r = searchByMonth(hits, '2026-10');
+    expect(r.groups.map(g => [g.month, g.entries.map(x => x.amount)])).toEqual([
+      ['2026-10', [300]], ['2026-12', [500]], ['2026-11', [200, 400]], ['2026-09', [100]],
+    ]);
+    expect([r.total, r.shown]).toEqual([5, 5]);
+  });
+  it('stops at the limit, inside a month if need be', () => {
+    const hits = Array.from({ length: 7 }, (_, i) => e(`2026-${String(1 + (i % 3)).padStart(2, '0')}`, 'extra', 'Amazon', 100 + i, true));
+    const r = searchByMonth(hits, '2026-11', 4);
+    expect(r.groups.map(g => [g.month, g.entries.length])).toEqual([['2026-03', 2], ['2026-02', 2]]);
+    expect([r.total, r.shown]).toEqual([7, 4]);
   });
 });
 
@@ -587,7 +639,7 @@ describe('Arabic', () => {
     expect(up.map(c => c.names.ar)).toEqual(['الدخل', undefined, 'السيارة']);
     expect(up[1].names).toEqual({ de: 'Miete & Nebenkosten' });
     expect(up).toHaveLength(3);
-    expect(upgradeCategories(up, 8)).toBe(up);
+    expect(upgradeCategories(up, SCHEMA_VERSION)).toBe(up);
   });
   it('reads amounts typed on an Arabic keyboard', () => {
     expect(normalizeDigits('١٬٠٥٠٫٥٠')).toBe('1,050.50');
@@ -635,7 +687,7 @@ describe('schema 4: Wohnen and Sonstiges', () => {
     expect(up.categories.find(c => c.id === 'extra')!.emoji).toBe('📦');
     expect(up.entries.map(x => [x.name, x.categoryId, x.order])).toEqual([['IKEA', 'fixed', undefined], ['Post', 'extra', undefined], ['Miete', 'fixed', 0]]);
     expect(up.months[0].categories).toEqual(['income', 'fixed', 'extra', 'restaurants', 'children']);
-    expect(upgradeData(up, 8)).toBe(up);
+    expect(upgradeData(up, SCHEMA_VERSION)).toBe(up);
   });
   it('keeps a name the user chose', () => {
     const d = v3();
@@ -673,7 +725,7 @@ describe('schema 5: Restaurants', () => {
     expect(shown('2026-11')).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children']);
     expect(up.months.find(m => m.key === '2026-12')!.categories).toBeUndefined();
     expect(shown('2026-12')).toContain('restaurants');
-    expect(upgradeData(up, 8, today)).toBe(up);
+    expect(upgradeData(up, SCHEMA_VERSION, today)).toBe(up);
   });
   it('leaves it out when the user already has one of their own', () => {
     const d = v4();

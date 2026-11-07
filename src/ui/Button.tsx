@@ -75,7 +75,7 @@ export function IconButton({ label, icon: Icon, tone = 'default', onClick, class
     accent: 'text-accent active:bg-accent-dim',
     danger: 'text-neg active:bg-neg-dim',
     filled: 'bg-surface text-fg card-edge !rounded-sm active:bg-surface-2',
-    glass: 'float-chrome text-fg',
+    glass: 'glass-chrome text-fg',
   };
   return (
     <button

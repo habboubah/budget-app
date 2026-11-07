@@ -14,6 +14,7 @@ import { Picture } from '../ui/Picture';
 import { Card, MenuPicker } from '../ui/Card';
 import { tapLight } from '../ui/haptics';
 import { BUCKET_STYLE, BudgetSplitBar, RuleBar, SavingsRateChart } from './Charts';
+import { BudgetsCard } from './BudgetsCard';
 
 interface Props {
   /** The month the hints at the bottom are about. */
@@ -23,6 +24,8 @@ interface Props {
   language: string;
   t: Strings;
   onMonth: (m: MonthKey) => void;
+  /** Set or change a category's monthly budget. */
+  onBudget: (c: Category) => void;
 }
 
 /** The savings target of the 50/30/20 rule, also the line in the savings-rate chart. */
@@ -36,7 +39,7 @@ const SAVE_TARGET = 20;
  * 20 % target), 50/30/20 (each part against its share, in euros, month by
  * month), reserve and forecast.
  */
-export function InsightsView({ month, balances, data, language, t, onMonth }: Props) {
+export function InsightsView({ month, balances, data, language, t, onMonth, onBudget }: Props) {
   const { entries, categories } = data;
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   const today = new Date();
@@ -55,7 +58,8 @@ export function InsightsView({ month, balances, data, language, t, onMonth }: Pr
   const split = budgetSplit(entries, categories, finishedKeys);
   const latest = [...all].reverse().find(p => p.key <= current)?.key ?? all[all.length - 1]?.key;
   const fixed = latest ? commitments(data, latest) : { items: [], monthly: 0, yearly: 0 };
-  const bw = bestWorst(points);
+  // Only finished months: the running one isn't the best month yet, whatever it promises.
+  const bw = bestWorst(finishedMonths(all, today, 12));
   const trends = categoryTrends(entries, categories, finishedKeys);
   const allKeys = all.map(p => p.key);
 
@@ -88,6 +92,9 @@ export function InsightsView({ month, balances, data, language, t, onMonth }: Pr
 
   return (
     <Screen title={t.insightsTitle} tabbed>
+      {/* Planning first: the running month's budgets. */}
+      <BudgetsCard data={data} month={current} language={language} t={t} onBudget={onBudget} />
+
       {finished.length < 2 && <p className="px-2 text-label text-fg-mute wrap-prose">{t.needMoreMonths}</p>}
 
       <div className="grid gap-5 sm:grid-cols-2">
@@ -334,14 +341,14 @@ export function InsightsView({ month, balances, data, language, t, onMonth }: Pr
                 <p className="text-label text-fg tabular-nums">
                   {fmt(t.splitMonths, { n: rule.months.filter(m => m.met === 3).length, total: rule.months.length })}
                 </p>
-                <ul className="mt-2 flex flex-wrap gap-1.5">
+                <ul className="mt-2 flex flex-wrap gap-2">
                   {rule.months.map(m => (
                     <li key={m.key}>
                       <button
                         type="button"
                         onClick={() => { tapLight(); onMonth(m.key); }}
                         aria-label={fmt(t.splitMonthMet, { month: monthLabel(m.key, t.locale), n: m.met })}
-                        className="h-8 ps-2 pe-2.5 rounded-full bg-surface-2 inline-flex items-center gap-1.5 text-caption font-semibold text-fg tabular-nums active:opacity-60 focus-visible:ring-focus"
+                        className="hit-44 h-9 ps-2.5 pe-3 rounded-full bg-surface-2 inline-flex items-center gap-1.5 text-caption font-semibold text-fg tabular-nums active:opacity-60 focus-visible:ring-focus"
                       >
                         <span className={`w-2 h-2 rounded-full ${m.met === 3 ? 'bg-pos' : m.met === 2 ? 'bg-warn' : 'bg-neg'}`} aria-hidden="true" />
                         {monthLabel(m.key, t.locale, 'month')}

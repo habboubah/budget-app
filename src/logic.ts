@@ -3,8 +3,9 @@ import {
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 
-/** Bump when a stored shape changes, and migrate in `normalizeState`. */
-export const SCHEMA_VERSION = 8;
+/** Bump when a stored shape changes, and migrate in `normalizeState`.
+ *  9: monthly budgets (`Category.limit`) — optional, so nothing to migrate. */
+export const SCHEMA_VERSION = 9;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -365,6 +366,42 @@ export function monthSettled(t: Totals): { income: number; expense: number; net:
   return { income, expense, net: income - expense };
 }
 
+/**
+ * What the month leaves to spend per day until it ends: its settled net (see
+ * monthSettled) over the days left, today included — on the 7th of a 30-day
+ * month, 24. Only for the running month and while something is left; null
+ * otherwise. Rounded down, so it never promises a cent more than there is.
+ */
+export function leftPerDay(net: number, month: MonthKey, today = new Date()): number | null {
+  if (net <= 0 || month !== monthKeyOf(today)) return null;
+  const daysLeft = daysInMonth(month) - today.getDate() + 1;
+  return Math.floor(net / daysLeft);
+}
+
+/** Rounded to whole euros — for averages, where the cents are noise: "3.798 €", "+1.241 €". */
+export function formatMoneyWhole(cents: number, locale: string, sign: 'auto' | 'exceptZero' = 'auto'): string {
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
+    .format(Math.round(cents / 100)).replace('-', '−');
+}
+
+/** An amount without its cents when it has none — "400 €" for a budget, "212,88 €" otherwise. */
+export function formatMoneyShort(cents: number, locale: string): string {
+  if (cents % 100 !== 0) return formatMoney(cents, locale);
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    .format(cents / 100).replace('-', '−');
+}
+
+/**
+ * An amount rounded down for "about" figures ("≈ 72 € pro Tag"): whole euros
+ * from 10 € up, cents below, where the cents still matter.
+ */
+export function formatMoneyApprox(cents: number, locale: string): string {
+  if (Math.abs(cents) < 1000) return formatMoney(cents, locale);
+  const euros = Math.trunc(cents / 100);
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    .format(euros).replace('-', '−');
+}
+
 function kindLookup(categories: Category[]): (id: string) => CategoryKind {
   const m = new Map(categories.map(c => [c.id, c.kind]));
   return id => m.get(id) ?? 'expense';
@@ -663,6 +700,29 @@ export function searchEntries(entries: Entry[], query: string, { categoryName, l
   });
 }
 
+/**
+ * Search hits from every month, a group per month: the month on screen
+ * first, then the others newest first. At most `limit` entries — the group
+ * the limit cuts into keeps what fits; `total` says how many there are.
+ */
+export function searchByMonth(hits: Entry[], first: MonthKey, limit = Infinity): { groups: { month: MonthKey; entries: Entry[] }[]; total: number; shown: number } {
+  const byMonth = new Map<MonthKey, Entry[]>();
+  for (const e of hits) {
+    const list = byMonth.get(e.month);
+    if (list) list.push(e); else byMonth.set(e.month, [e]);
+  }
+  const months = [...byMonth.keys()].sort((a, b) => (a === first ? -1 : b === first ? 1 : a < b ? 1 : a > b ? -1 : 0));
+  const groups: { month: MonthKey; entries: Entry[] }[] = [];
+  let shown = 0;
+  for (const month of months) {
+    if (shown >= limit) break;
+    const entries = byMonth.get(month)!.slice(0, limit - shown);
+    groups.push({ month, entries });
+    shown += entries.length;
+  }
+  return { groups, total: hits.length, shown };
+}
+
 /** Where a search's words appear in a text, as [start, end) ranges to mark, merged and in order. */
 export function highlightRanges(text: string, query: string): [number, number][] {
   const terms = searchTerms(query);
@@ -824,6 +884,9 @@ function normalizeCategory(v: unknown): Category | null {
     kind: v.kind === 'income' ? 'income' : 'expense',
     repeat: isRepeat(v.repeat) ? v.repeat : 'none',
     ...(v.budget === 'need' || v.budget === 'want' || v.budget === 'save' ? { budget: v.budget } : {}),
+    // A budget is whole cents above zero, for spending only.
+    ...(v.kind !== 'income' && typeof v.limit === 'number' && Number.isFinite(v.limit) && v.limit >= 1
+      ? { limit: Math.min(Math.round(v.limit), MAX_CENTS) } : {}),
     ...(v.standard === false ? { standard: false } : {}),
     ...(v.builtin === true ? { builtin: true } : {}),
   };
@@ -1026,11 +1089,13 @@ export function parseBackup(text: string): { ok: true; data: AppData } | { ok: f
 /**
  * "Restore defaults": every built-in category as shipped (renamed ones renamed
  * back, deleted ones returned), followed by the user's own categories
- * untouched. Entries are never touched.
+ * untouched. Entries are never touched, and neither are budgets: they are the
+ * user's plan, not the category's look.
  */
 export function restoreDefaultCategories(current: Category[], defaults: Category[]): Category[] {
   const own = current.filter(c => !c.builtin && !defaults.some(d => d.id === c.id));
-  return [...defaults, ...own];
+  const limits = new Map(current.filter(c => c.limit).map(c => [c.id, c.limit!]));
+  return [...defaults.map(d => (limits.has(d.id) && d.kind === 'expense' ? { ...d, limit: limits.get(d.id) } : d)), ...own];
 }
 
 /* --------------------------------------------------------------------- CSV */

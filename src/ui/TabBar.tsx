@@ -11,15 +11,13 @@ export interface Tab<T extends string> {
 }
 
 /**
- * The tab bar as iOS draws it today: a floating capsule above the home
- * indicator — Monat · Statistik · Analyse · Optionen, the current one on a soft
- * pill in the accent's tint — and, beside it, the round add button on the
- * accent's gradient, in thumb reach on every tab.
- * The page fades out behind it rather than being cut off by a bar.
+ * The tab bar as iOS 26 draws it: a floating Liquid Glass capsule above the
+ * home indicator — Monat · Statistik · Planen · Optionen, the current one on a
+ * soft pill in the accent's tint — and, beside it, the round add button on the
+ * accent's gradient, in thumb reach on every tab. The page shows through the
+ * glass; a short fade keeps the home indicator's strip calm.
  *
- * Solid, not blurred (backdrop-filter over a scrolling page is too expensive
- * in a WebView). Portalled so a screen's slide-in transform can't capture
- * `position: fixed`.
+ * Portalled so a screen's slide-in transform can't capture `position: fixed`.
  */
 export function TabBar<T extends string>({ tabs, active, onChange, label, add }: {
   tabs: Tab<T>[];
@@ -31,7 +29,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
 }) {
   return createPortal(
     <>
-      <div aria-hidden="true" className="fixed inset-x-0 bottom-0 z-20 h-[calc(96px+env(safe-area-inset-bottom))] edge-fade-bottom pointer-events-none" />
+      <div aria-hidden="true" className="fixed inset-x-0 bottom-0 z-20 h-[calc(60px+env(safe-area-inset-bottom))] edge-fade-bottom opacity-80 pointer-events-none" />
       <nav
         aria-label={label}
         className="fixed inset-x-0 z-30 pointer-events-none"
@@ -39,7 +37,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
       >
         <div className="mx-auto max-w-xl px-4 flex items-center gap-3">
           <div
-            className="pointer-events-auto flex-1 min-w-0 h-[62px] p-1 rounded-full float-chrome grid"
+            className="pointer-events-auto flex-1 min-w-0 h-[62px] p-1 rounded-full glass-chrome grid"
             style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
           >
             {tabs.map(({ id, label: name, icon: Icon }) => {

@@ -1,20 +1,23 @@
 import { Hue } from '../types';
 
-type Size = 'sm' | 'md' | 'lg';
+type Size = 'xs' | 'sm' | 'md' | 'lg';
 
 // Box in px (physical, like a touch target), glyph in px so an emoji never
 // outgrows its tile when the user enlarges text.
 const box: Record<Size, string> = {
+  xs: 'w-8 h-8 rounded-full',
   sm: 'w-9 h-9 rounded-[10px]',
   md: 'w-11 h-11 rounded-sm',
   lg: 'w-[60px] h-[60px] rounded-md',
 };
 const glyph: Record<Size, string> = {
+  xs: 'text-[17px]',
   sm: 'text-[20px]',
   md: 'text-[24px]',
   lg: 'text-[34px]',
 };
 const initialSize: Record<Size, string> = {
+  xs: 'text-[13px]',
   sm: 'text-[15px]',
   md: 'text-[18px]',
   lg: 'text-[26px]',
