@@ -314,6 +314,16 @@ export function monthTotals(entries: Entry[], categories: Category[], month: Mon
   return t;
 }
 
+/**
+ * What the month leaves over — income less expenses, the carry-over aside:
+ * so far (what is ticked), still to come (what is pending), and both.
+ */
+export function monthLeft(t: Totals): { paid: number; open: number; total: number } {
+  const paid = t.incomePaid - t.expensePaid;
+  const open = t.incomeOpen - t.expenseOpen;
+  return { paid, open, total: paid + open };
+}
+
 function kindLookup(categories: Category[]): (id: string) => CategoryKind {
   const m = new Map(categories.map(c => [c.id, c.kind]));
   return id => m.get(id) ?? 'expense';

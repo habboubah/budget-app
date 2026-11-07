@@ -1,8 +1,8 @@
 import { motion } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
 import { MonthBalance } from '../logic';
-import { formatMoney, monthLabel } from '../logic';
-import { Strings, fmt } from '../translations';
+import { formatMoney, monthLabel, monthLeft } from '../logic';
+import { Strings, fmt, plural } from '../translations';
 import { tapLight } from '../ui/haptics';
 import { useCountUp } from '../ui/useCountUp';
 import { CountingMoney } from '../ui/CountingMoney';
@@ -28,6 +28,9 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   // Open bills of earlier months still to settle, and everything open in all.
   const carryOpen = b.openingEnd - b.openingNow;
+  // Income less expenses this month: ticked so far, and still pending.
+  const left = monthLeft(b);
+  const endLabel = b.openCount ? plural(b.openCount, t.afterPendingOne, t.afterPendingMany) : t.allSettled;
   const carryLabel = b.overridden
     ? t.carryManual
     : b.prevKey
@@ -64,9 +67,10 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
         </button>
       </div>
 
-      {/* Income and expenses, paid and still pending side by side; under them
-          the balance once everything pending is settled. On a frosted panel, so the money colours
-          read on any accent. */}
+      {/* Income and expenses, paid and still pending side by side, and what the
+          month leaves over (both columns, without the carry-over); under them
+          the balance once everything pending is settled. On a frosted panel,
+          so the money colours read on any accent. */}
       <div className="mx-2 mb-2 rounded-md hero-panel px-3.5 pt-2.5 pb-3">
         <table className="w-full text-label">
           <thead>
@@ -88,15 +92,23 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
               <MoneyCell text={money(b.expenseOpen ? -b.expenseOpen : 0)} tone={b.expenseOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} />
             </tr>
           </tbody>
+          <tfoot>
+            <tr className="border-t border-on-hero/15">
+              <th scope="row" className="pt-2.5 pb-1 text-start font-semibold text-on-hero">{t.leftThisMonth}</th>
+              <MoneyCell strong text={money(left.paid, 'exceptZero')}
+                tone={left.paid > 0 ? 'text-on-hero-pos' : left.paid < 0 ? 'text-on-hero-neg' : 'text-on-hero-soft'} />
+              <MoneyCell strong text={money(left.open, 'exceptZero')} tone={left.open ? 'text-on-hero-warn' : 'text-on-hero-soft'} />
+            </tr>
+          </tfoot>
         </table>
 
         {/* Both columns together: what will be left once everything open is settled. */}
         <div className="mt-1.5 pt-2.5 border-t border-on-hero/15 flex items-end gap-3">
-          <p className="min-w-0 flex-1 text-caption text-on-hero-mute wrap-prose">
-            {b.count > 0 ? (b.openCount ? t.afterPending : t.allSettled) : null}
+          <p className="min-w-0 flex-1 text-caption text-on-hero-mute wrap-prose tabular-nums">
+            {b.count > 0 ? endLabel : null}
           </p>
           <p className={`rounded-num text-heading font-bold ${b.end < 0 ? 'text-on-hero-neg' : 'text-on-hero'}`}>
-            <span className="sr-only">{`${t.afterPending}: ${money(b.end)}`}</span>
+            <span className="sr-only">{`${b.count > 0 ? endLabel : t.afterPending}: ${money(b.end)}`}</span>
             <span aria-hidden="true"><span className="text-on-hero-soft font-semibold me-1">=</span><CountingMoney cents={b.end} money={money} /></span>
           </p>
         </div>
@@ -108,7 +120,7 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
 /** One amount in the paid / open table. */
 function MoneyCell({ text, tone, strong }: { text: string; tone: string; strong?: boolean }) {
   return (
-    <td className={`ps-3 text-end num whitespace-nowrap ${strong ? 'pt-2.5 pb-1.5 font-bold' : 'py-1.5 font-semibold'} ${tone}`}>{text}</td>
+    <td className={`ps-3 text-end num whitespace-nowrap ${strong ? 'pt-2.5 pb-1 font-bold' : 'py-1.5 font-semibold'} ${tone}`}>{text}</td>
   );
 }
 

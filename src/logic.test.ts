@@ -4,7 +4,7 @@ import {
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, upgradeCategories,
-  normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges,
+  normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -243,6 +243,17 @@ describe('suggestions', () => {
     expect(s.map(x => [x.name, x.categoryId])).toEqual([['Libri', 'extra'], ['Lidl', 'groceries'], ['Online-Kurs', 'extra']]);
     expect(s[1].last?.amount).toBe(4000);
     expect(suggestNames({ entries: all, categoryId: 'extra', lang: 'de', limit: 40 }).length).toBeGreaterThan(5);
+  });
+});
+
+describe('what a month leaves over', () => {
+  it('is income less expenses, ticked and pending apart, without the carry-over', () => {
+    const entries = [
+      e('2026-11', 'income', 'Gehalt', 416459, true), e('2026-11', 'income', 'Kindergeld', 77700, false),
+      e('2026-11', 'fixed', 'Miete', 105000, true), e('2026-11', 'fixed', 'Strom', 8300, false),
+    ];
+    expect(monthLeft(monthTotals(entries, cats, '2026-11'))).toEqual({ paid: 311459, open: 69400, total: 380859 });
+    expect(monthLeft(monthTotals([], cats, '2026-11'))).toEqual({ paid: 0, open: 0, total: 0 });
   });
 });
 
