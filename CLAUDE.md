@@ -59,7 +59,9 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   colours are tokens: `chart-in` / `chart-out` / `chart-save` / `chart-line` / `chart-want`
   (saved columns stand above the zero line, an overspend hangs below it in
   `neg`; in the 50/30/20 bars *saved* is `chart-in`, as `chart-save` sits too
-  close to `chart-want`),
+  close to `chart-want`). Every legend with two or more series is
+  `LegendToggles`: aria-pressed chips that hide a series, and the axis
+  rescales to what is left,
   and per category `bg-hue-chart` / `fill-hue-chart` under `data-hue` — one
   OKLCH step per hue and theme (`--t-<hue>-chart`). The default categories'
   colours pass `validate_palette.js`; re-run it when changing them.
