@@ -29,12 +29,12 @@ interface Props {
 const SAVE_TARGET = 20;
 
 /**
- * The insights, a tab of their own: first the long view over finished months
- * — savings rate (month by month against the 20 % target), 50/30/20 (each
- * part against its share, in euros, month by month), reserve, forecast,
- * commitments, trends, best and weakest month — then hints for one month
- * (switchable): unusual, biggest expenses (both over a period), new names,
- * missing regulars, new prices.
+ * The insights, a tab of their own: commitments, trends, best and weakest
+ * month; then hints for one month (switchable): unusual, biggest expenses
+ * (both over a period), new names, missing regulars, new prices; and at the
+ * bottom, over finished months, savings rate (month by month against the
+ * 20 % target), 50/30/20 (each part against its share, in euros, month by
+ * month), reserve and forecast.
  */
 export function InsightsView({ month, balances, data, language, t, onMonth }: Props) {
   const { entries, categories } = data;
@@ -87,137 +87,10 @@ export function InsightsView({ month, balances, data, language, t, onMonth }: Pr
   }
 
   return (
-    <Screen title={t.insightsTitle} eyebrow={finished.length ? fmt(t.averageFrom, { span: monthSpanLabel(finishedKeys, t.locale) }) : undefined} tabbed>
+    <Screen title={t.insightsTitle} tabbed>
       {finished.length < 2 && <p className="px-2 text-label text-fg-mute wrap-prose">{t.needMoreMonths}</p>}
 
       <div className="grid gap-5 sm:grid-cols-2">
-        {/* ------------------------------------------------- savings rate */}
-        {ratePct !== null && (
-          <Card title={t.savingsRateTitle} className="sm:col-span-2">
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <p className={`rounded-num text-[2.25rem] leading-none font-bold ${ratePct < 0 ? 'text-neg' : 'text-fg'}`}>{formatPercent(ratePct, t.locale)}</p>
-              <p className={`text-label font-semibold tabular-nums ${ratePct >= SAVE_TARGET ? 'text-pos' : 'text-warn'}`}>
-                {ratePct >= SAVE_TARGET ? fmt(t.savingsAbove, { p: SAVE_TARGET }) : fmt(t.savingsBelow, { d: SAVE_TARGET - ratePct, p: SAVE_TARGET })}
-              </p>
-            </div>
-            <p className="text-label text-fg-mute mt-2 wrap-prose">
-              {fmt(sv.months === 1 ? t.savingsRateBodyOne : t.savingsRateBody, { amount: money(sv.averageSaved), n: sv.months })}
-            </p>
-            {points.length > 1 && (
-              <div className="mt-4">
-                <SavingsRateChart points={points} selected={month} t={t} onPick={onMonth} target={SAVE_TARGET} />
-              </div>
-            )}
-          </Card>
-        )}
-
-        {/* --------------------------------------------------- 50/30/20 */}
-        {rule.income > 0 && (
-          <Card title={t.splitTitle} sub={fmt(t.averageFrom, { span: monthSpanLabel(finishedKeys, t.locale) })} className="sm:col-span-2">
-            <div className="flex items-center gap-3">
-              <p className="min-w-0 flex-1 display text-heading font-semibold text-fg tabular-nums">{fmt(t.splitMet, { n: rule.met })}</p>
-              <span className="flex gap-1" aria-hidden="true">
-                {rule.parts.map(p => (
-                  <span key={p.bucket} className={`w-2.5 h-2.5 rounded-full ${p.ok ? 'bg-pos' : 'border-[1.75px] border-fg-faint'}`} />
-                ))}
-              </span>
-            </div>
-            <div className="mt-3"><BudgetSplitBar split={split} t={t} /></div>
-
-            <ul className="mt-4 space-y-4">
-              {rule.parts.map(p => {
-                const diff = Math.abs(p.amount - p.budget);
-                const note = p.bucket === 'save'
-                  ? fmt(p.ok ? t.splitAhead : t.splitShort, { amount: money(diff) })
-                  : fmt(p.ok ? t.splitWithin : t.splitOver, { amount: money(diff) });
-                return (
-                  <li key={p.bucket}>
-                    <div className="flex items-baseline gap-2">
-                      <span className={`w-2.5 h-2.5 rounded-[3px] shrink-0 self-center ${BUCKET_STYLE[p.bucket].className}`} aria-hidden="true" />
-                      <span className="min-w-0 flex-1 text-label font-semibold text-fg">{BUCKET_STYLE[p.bucket].label(t)}</span>
-                      <span className={`text-label font-bold num ${p.bucket === 'save' && p.amount < 0 ? 'text-neg' : 'text-fg'}`}>
-                        {p.share === null ? '–' : formatPercent(p.share, t.locale)}
-                      </span>
-                      <span className="text-caption text-fg-mute tabular-nums whitespace-nowrap">{fmt(t.targetPct, { p: p.target })}</span>
-                    </div>
-                    <RuleBar part={p} />
-                    <p className="mt-1.5 text-caption tabular-nums wrap-prose">
-                      <span className="text-fg-mute">{fmt(t.splitPerMonth, { amount: money(p.amount) })} · </span>
-                      <span className={`font-semibold ${p.ok ? 'text-pos' : 'text-warn'}`}>{note}</span>
-                    </p>
-                    {p.top.length > 0 && (
-                      <p className="mt-0.5 text-caption text-fg-mute tabular-nums wrap-prose">
-                        {p.top.map(x => `${x.category.emoji} ${displayName(x.category.names, language)} ${money(x.amount)}`).join(' · ')}
-                      </p>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-
-            {rule.months.length > 1 && (
-              <div className="mt-4 pt-3 hairline-t">
-                <p className="text-label text-fg tabular-nums">
-                  {fmt(t.splitMonths, { n: rule.months.filter(m => m.met === 3).length, total: rule.months.length })}
-                </p>
-                <ul className="mt-2 flex flex-wrap gap-1.5">
-                  {rule.months.map(m => (
-                    <li key={m.key}>
-                      <button
-                        type="button"
-                        onClick={() => { tapLight(); onMonth(m.key); }}
-                        aria-label={fmt(t.splitMonthMet, { month: monthLabel(m.key, t.locale), n: m.met })}
-                        className="h-8 ps-2 pe-2.5 rounded-full bg-surface-2 inline-flex items-center gap-1.5 text-caption font-semibold text-fg tabular-nums active:opacity-60 focus-visible:ring-focus"
-                      >
-                        <span className={`w-2 h-2 rounded-full ${m.met === 3 ? 'bg-pos' : m.met === 2 ? 'bg-warn' : 'bg-neg'}`} aria-hidden="true" />
-                        {monthLabel(m.key, t.locale, 'month')}
-                        <span className="text-fg-mute font-medium">{m.met}/3</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <p className="text-caption text-fg-mute mt-3 wrap-prose">{t.splitBody}</p>
-          </Card>
-        )}
-
-        {reserve !== null && (
-          <Card title={t.reserveTitle}>
-            <p className="rounded-num text-[2.25rem] leading-none font-bold text-fg">
-              {fmt(t.reserveValue, { n: new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1 }).format(reserve) })}
-            </p>
-            <ReserveMeter months={shownReserve} />
-            {/* Judged on the value shown: "6 Monate" must not read as "more than 6". */}
-            <p className={`text-label font-semibold mt-2 ${shownReserve < 3 ? 'text-warn' : 'text-pos'}`}>
-              {shownReserve < 3 ? t.reserveLow : shownReserve <= 6 ? t.reserveOk : t.reserveHigh}
-            </p>
-            <p className="text-caption text-fg-mute mt-1 wrap-prose">
-              {fmt(t.reserveBody, { balance: money(nowBalance.now), expense: money(sv.averageExpense) })}
-            </p>
-          </Card>
-        )}
-
-        {sv.months > 0 && (
-          <Card title={t.forecastTitle}>
-            <dl className="grid grid-cols-2 gap-3">
-              {monthsToYearEnd(current) > 0 && (
-                <div>
-                  <dt className="text-caption text-fg-mute">{fmt(t.forecastYearEnd, { month: monthLabel(`${current.slice(0, 4)}-12`, t.locale) })}</dt>
-                  <dd className="text-heading font-semibold text-fg num mt-0.5">≈ {money(forecast(nowBalance.end, sv.averageSaved, monthsToYearEnd(current)))}</dd>
-                </div>
-              )}
-              <div>
-                <dt className="text-caption text-fg-mute">{t.forecastIn12}</dt>
-                <dd className="text-heading font-semibold text-fg num mt-0.5">≈ {money(forecast(nowBalance.end, sv.averageSaved, 12))}</dd>
-              </div>
-            </dl>
-            <p className="text-caption text-fg-mute mt-2 wrap-prose">
-              {fmt(sv.averageSaved >= 0 ? t.forecastBody : t.forecastBodyNeg, { amount: money(Math.abs(sv.averageSaved)) })}
-            </p>
-          </Card>
-        )}
-
         <Card title={t.commitmentsTitle}>
           {fixed.items.length === 0 ? (
             <p className="text-label text-fg-mute wrap-prose">{t.commitmentsNone}</p>
@@ -383,6 +256,142 @@ export function InsightsView({ month, balances, data, language, t, onMonth }: Pr
             </ul>
           </Card>
         )}
+      </div>
+
+      {/* ------------------------------- saving, 50/30/20, reserve, forecast */}
+      <div className="pt-2 px-1">
+        {finished.length > 0 && <p className="eyebrow text-fg-mute">{fmt(t.averageFrom, { span: monthSpanLabel(finishedKeys, t.locale) })}</p>}
+        <h2 className="display text-title2 font-bold text-fg wrap-compound">{t.savingsSection}</h2>
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        {/* ------------------------------------------------- savings rate */}
+        {ratePct !== null && (
+          <Card title={t.savingsRateTitle} className="sm:col-span-2">
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <p className={`rounded-num text-[2.25rem] leading-none font-bold ${ratePct < 0 ? 'text-neg' : 'text-fg'}`}>{formatPercent(ratePct, t.locale)}</p>
+              <p className={`text-label font-semibold tabular-nums ${ratePct >= SAVE_TARGET ? 'text-pos' : 'text-warn'}`}>
+                {ratePct >= SAVE_TARGET ? fmt(t.savingsAbove, { p: SAVE_TARGET }) : fmt(t.savingsBelow, { d: SAVE_TARGET - ratePct, p: SAVE_TARGET })}
+              </p>
+            </div>
+            <p className="text-label text-fg-mute mt-2 wrap-prose">
+              {fmt(sv.months === 1 ? t.savingsRateBodyOne : t.savingsRateBody, { amount: money(sv.averageSaved), n: sv.months })}
+            </p>
+            {points.length > 1 && (
+              <div className="mt-4">
+                <SavingsRateChart points={points} selected={month} t={t} onPick={onMonth} target={SAVE_TARGET} />
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* --------------------------------------------------- 50/30/20 */}
+        {rule.income > 0 && (
+          <Card title={t.splitTitle} className="sm:col-span-2">
+            <div className="flex items-center gap-3">
+              <p className="min-w-0 flex-1 display text-heading font-semibold text-fg tabular-nums">{fmt(t.splitMet, { n: rule.met })}</p>
+              <span className="flex gap-1" aria-hidden="true">
+                {rule.parts.map(p => (
+                  <span key={p.bucket} className={`w-2.5 h-2.5 rounded-full ${p.ok ? 'bg-pos' : 'border-[1.75px] border-fg-faint'}`} />
+                ))}
+              </span>
+            </div>
+            <div className="mt-3"><BudgetSplitBar split={split} t={t} /></div>
+
+            <ul className="mt-4 space-y-4">
+              {rule.parts.map(p => {
+                const diff = Math.abs(p.amount - p.budget);
+                const note = p.bucket === 'save'
+                  ? fmt(p.ok ? t.splitAhead : t.splitShort, { amount: money(diff) })
+                  : fmt(p.ok ? t.splitWithin : t.splitOver, { amount: money(diff) });
+                return (
+                  <li key={p.bucket}>
+                    <div className="flex items-baseline gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-[3px] shrink-0 self-center ${BUCKET_STYLE[p.bucket].className}`} aria-hidden="true" />
+                      <span className="min-w-0 flex-1 text-label font-semibold text-fg">{BUCKET_STYLE[p.bucket].label(t)}</span>
+                      <span className={`text-label font-bold num ${p.bucket === 'save' && p.amount < 0 ? 'text-neg' : 'text-fg'}`}>
+                        {p.share === null ? '–' : formatPercent(p.share, t.locale)}
+                      </span>
+                      <span className="text-caption text-fg-mute tabular-nums whitespace-nowrap">{fmt(t.targetPct, { p: p.target })}</span>
+                    </div>
+                    <RuleBar part={p} />
+                    <p className="mt-1.5 text-caption tabular-nums wrap-prose">
+                      <span className="text-fg-mute">{fmt(t.splitPerMonth, { amount: money(p.amount) })} · </span>
+                      <span className={`font-semibold ${p.ok ? 'text-pos' : 'text-warn'}`}>{note}</span>
+                    </p>
+                    {p.top.length > 0 && (
+                      <p className="mt-0.5 text-caption text-fg-mute tabular-nums wrap-prose">
+                        {p.top.map(x => `${x.category.emoji} ${displayName(x.category.names, language)} ${money(x.amount)}`).join(' · ')}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            {rule.months.length > 1 && (
+              <div className="mt-4 pt-3 hairline-t">
+                <p className="text-label text-fg tabular-nums">
+                  {fmt(t.splitMonths, { n: rule.months.filter(m => m.met === 3).length, total: rule.months.length })}
+                </p>
+                <ul className="mt-2 flex flex-wrap gap-1.5">
+                  {rule.months.map(m => (
+                    <li key={m.key}>
+                      <button
+                        type="button"
+                        onClick={() => { tapLight(); onMonth(m.key); }}
+                        aria-label={fmt(t.splitMonthMet, { month: monthLabel(m.key, t.locale), n: m.met })}
+                        className="h-8 ps-2 pe-2.5 rounded-full bg-surface-2 inline-flex items-center gap-1.5 text-caption font-semibold text-fg tabular-nums active:opacity-60 focus-visible:ring-focus"
+                      >
+                        <span className={`w-2 h-2 rounded-full ${m.met === 3 ? 'bg-pos' : m.met === 2 ? 'bg-warn' : 'bg-neg'}`} aria-hidden="true" />
+                        {monthLabel(m.key, t.locale, 'month')}
+                        <span className="text-fg-mute font-medium">{m.met}/3</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <p className="text-caption text-fg-mute mt-3 wrap-prose">{t.splitBody}</p>
+          </Card>
+        )}
+
+        {reserve !== null && (
+          <Card title={t.reserveTitle}>
+            <p className="rounded-num text-[2.25rem] leading-none font-bold text-fg">
+              {fmt(t.reserveValue, { n: new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1 }).format(reserve) })}
+            </p>
+            <ReserveMeter months={shownReserve} />
+            {/* Judged on the value shown: "6 Monate" must not read as "more than 6". */}
+            <p className={`text-label font-semibold mt-2 ${shownReserve < 3 ? 'text-warn' : 'text-pos'}`}>
+              {shownReserve < 3 ? t.reserveLow : shownReserve <= 6 ? t.reserveOk : t.reserveHigh}
+            </p>
+            <p className="text-caption text-fg-mute mt-1 wrap-prose">
+              {fmt(t.reserveBody, { balance: money(nowBalance.now), expense: money(sv.averageExpense) })}
+            </p>
+          </Card>
+        )}
+
+        {sv.months > 0 && (
+          <Card title={t.forecastTitle}>
+            <dl className="grid grid-cols-2 gap-3">
+              {monthsToYearEnd(current) > 0 && (
+                <div>
+                  <dt className="text-caption text-fg-mute">{fmt(t.forecastYearEnd, { month: monthLabel(`${current.slice(0, 4)}-12`, t.locale) })}</dt>
+                  <dd className="text-heading font-semibold text-fg num mt-0.5">≈ {money(forecast(nowBalance.end, sv.averageSaved, monthsToYearEnd(current)))}</dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-caption text-fg-mute">{t.forecastIn12}</dt>
+                <dd className="text-heading font-semibold text-fg num mt-0.5">≈ {money(forecast(nowBalance.end, sv.averageSaved, 12))}</dd>
+              </div>
+            </dl>
+            <p className="text-caption text-fg-mute mt-2 wrap-prose">
+              {fmt(sv.averageSaved >= 0 ? t.forecastBody : t.forecastBodyNeg, { amount: money(Math.abs(sv.averageSaved)) })}
+            </p>
+          </Card>
+        )}
+
       </div>
     </Screen>
   );

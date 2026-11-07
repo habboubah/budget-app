@@ -40,13 +40,14 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   (charts, the average per category over the last 3 / 6 / 12 / all finished
   months — `averageMonths` / `averageSpans` —, where the money went by payee
   over this month or the last 2 / 3 / 6 / 12 — `topNames` over `monthsEnding`).
-  `InsightsView` holds the rest: savings rate (per month against the 20 %
-  target), 50/30/20 (`budgetRule`: each part against its share, in euros, its
-  biggest categories, how many of the three are met, month by month),
-  reserve, forecast, commitments, trends, best and weakest month, then hints
-  for one month (‹ › to switch) — *unusual* and *biggest expenses* also over
-  the last 2 / 3 / 6 months (`unusual` / `biggestExpenses` take several
-  months; `unusualBasis` = the up to six before). Cards are `ui/Card`
+  `InsightsView` holds the rest: commitments, trends, best and weakest month,
+  then hints for one month (‹ › to switch) — *unusual* and *biggest
+  expenses* also over the last 2 / 3 / 6 months (`unusual` /
+  `biggestExpenses` take several months; `unusualBasis` = the up to six
+  before) — and at the bottom, under "Sparen und Reserve": savings rate (per
+  month against the 20 % target), 50/30/20 (`budgetRule`: each part against
+  its share, in euros, its biggest categories, how many of the three are met,
+  month by month), reserve, forecast. Cards are `ui/Card`
   (`Card`, `CardAction`, `MenuPicker` — a native select in a capsule).
   All of it beyond sums lives in `src/insights.ts`, pure and tested (also
   `newNames`, `missingRegulars`, `priceChanges`, `categoryTrends`; a hint card
