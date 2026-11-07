@@ -266,6 +266,27 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   refuses to ship without it.
 - Keep `@capacitor/core`, `@capacitor/ios` and `@capacitor/cli` on the same
   version, ≥ 8.5.
+- Native plugins are pinned to an exact version. After adding one, run
+  `npx cap update ios` (it rewrites `ios/App/CapApp-SPM/Package.swift`; works
+  on Windows too) and commit that file.
+  - **Reminders:** `@capacitor/local-notifications` (official, MIT).
+    `src/reminders.ts` plans (pure, tested), `src/notify.ts` swaps what is
+    pending for the plan. Every pending notification is a reminder: syncing
+    cancels them all first. Texts carry no amounts unless the user turns them on.
+  - **Face ID lock:** `@aparajita/capacitor-biometric-auth` (MIT), chosen over
+    `@capgo/capacitor-native-biometric` (MPL-2.0): its iOS side is one small
+    file using only LocalAuthentication (`.deviceOwnerAuthentication` with
+    `allowDeviceCredential`, so the passcode is the fallback), no network, and
+    it checks `NSFaceIDUsageDescription` instead of crashing. The capgo plugin
+    also stores credentials in the Keychain, which the app doesn't need. Its
+    drawbacks: one maintainer, and it lists the Capacitor packages as
+    dependencies, not peers (it pulls in `@capacitor/android`). `src/lock.ts`
+    wraps it; `Info.plist` has `NSFaceIDUsageDescription`.
+  - While locked, `App` renders only `LockScreen` — no amount in the DOM.
+    Away more than a minute locks again; while inactive, a plain cover hides
+    the app from the app-switcher snapshot.
+  - `localStorage['spartopf-dev-native'] = '1'` shows these settings in a dev
+    build on the web (for screenshots); nothing is scheduled or locked there.
 
 ## Accessibility
 - Text 4.5:1, icons 3:1. `text-fg-faint` only for placeholders.

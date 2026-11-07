@@ -1,10 +1,14 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { Check, ChevronRight, Download, Languages, Palette, SunMoon, Tags, Trash2 } from 'lucide-react';
+import { Bell, Check, ChevronRight, Download, Fingerprint, Languages, Lock, Palette, ScanFace, SunMoon, Tags, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import translations, { Language, Strings, fmt, languages } from '../translations';
+import { LockKind } from '../lock';
+import { ReminderPrefs } from '../reminders';
 import { Screen, Group, IconTile, MenuRow, Row } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
+import { Switch } from '../ui/Switch';
 import { tapLight } from '../ui/haptics';
+import { leadLabel, timeLabel } from './RemindersView';
 
 interface Props {
   language: Language;
@@ -19,6 +23,13 @@ interface Props {
   /** Pushes "Sichern und übertragen": backup, Excel, CSV. */
   onTransfer: () => void;
   onDeleteAll: () => void;
+  /** What can lock the app on this device; null: no lock row (the web, no passcode). */
+  lockKind: LockKind | null;
+  lockOn: boolean;
+  onLock: (on: boolean) => void;
+  /** The reminder settings; null where there are no notifications (the web). */
+  reminders: ReminderPrefs | null;
+  onReminders: () => void;
 }
 
 /** A row's end when it pushes a screen: a value (the count), then ›. */
@@ -86,18 +97,43 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
 }
 
 /**
- * Optionen, grouped as iOS Settings is: Darstellung (language, light or dark,
- * the colour), Haushaltsbuch (categories and budgets; backup and transfer on
- * a screen of their own), then deleting everything and what the app is.
- * Later features join their group (REDESIGN.md §4, plans/00): the lock and
- * reminders open a "Sicherheit und Mitteilungen" group above these.
+ * Optionen, grouped as iOS Settings is: Sicherheit und Mitteilungen (the
+ * Face ID lock, reminders — iPhone app only), Darstellung (language, light
+ * or dark, the colour), Haushaltsbuch (categories and budgets; backup and
+ * transfer on a screen of their own), then deleting everything and what the
+ * app is. Later features join their group (REDESIGN.md §4, plans/00).
  */
 export function SettingsView(p: Props) {
   const { t } = p;
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const lockLabel = p.lockKind === 'faceId' ? t.lockFaceId : p.lockKind === 'touchId' ? t.lockTouchId : t.lockCode;
+  const LockIcon = p.lockKind === 'faceId' ? ScanFace : p.lockKind === 'touchId' ? Fingerprint : Lock;
 
   return (
     <Screen title={t.tabSettings} tabbed>
+      {(p.lockKind || p.reminders) && (
+        <Group title={t.securitySection}>
+          {p.lockKind && (
+            <Row
+              label={lockLabel}
+              sub={t.lockSub}
+              leading={<IconTile icon={LockIcon} hue="leaf" />}
+              trailing={<Switch checked={p.lockOn} onChange={p.onLock} label={lockLabel} className="-me-2" />}
+            />
+          )}
+          {p.reminders && (
+            <Row
+              label={t.remindersRow}
+              // The setting as a line under it: long in German, and text in Arabic (no `num`).
+              sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}` : t.remindersOff}
+              leading={<IconTile icon={Bell} hue="tomato" />}
+              trailing={<Next />}
+              onClick={p.onReminders}
+            />
+          )}
+        </Group>
+      )}
+
       <Group title={t.displaySection}>
         <MenuRow<Language>
           label={t.language}

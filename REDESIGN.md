@@ -617,8 +617,55 @@ category for every month (no rollover), reminders without amounts by default.
   for income, the every-month switch in the sheet. **For step 14:** at 200 %
   text, `Row` labels ("Kategorien und Budgets") break into syllables on SE —
   the rem paddings double; stack the trailing value under the label there.
-- [ ] **11 · Bill reminders** and **12 · Face ID lock** — native; next, after
-  step 13 (they need the plugins installed and a device to test on).
+- [x] **11 · Bill reminders (#3)** — written and checked in the browser;
+  **not yet run on an iPhone.** `@capacitor/local-notifications` 8.3.1, exact;
+  `npx cap update ios` added it to `CapApp-SPM/Package.swift`. One scheduler,
+  `reminderPlan(data, prefs, t, now, sources)` in `src/reminders.ts` (15
+  tests): a source says what to remind of, how early, what it says and where a
+  tap goes — open bills (the running month from today, and the next month: its
+  open entries, or the recurring ones starting it will copy in) and the
+  contracts' last days to cancel (a week ahead, opens *Abos & Verträge*);
+  plans 03, 12, 13, 31 add theirs. Items of one kind and day share one
+  notification ("Morgen fällig: Miete, Strom und 1 weitere"), at the chosen
+  time `lead` days ahead — or the next slot still to come, if that has passed
+  and the day hasn't; soonest first, at most 60 (iOS keeps 64). No amounts
+  unless *Beträge zeigen* is on. Ids are a hash of kind and day, so a
+  reschedule replaces. `src/notify.ts`: permission, swapping all pending
+  notifications for the plan (800 ms after a change, and on every return to
+  the app), a tap opens the month or the contracts. Optionen gains
+  **Sicherheit und Mitteilungen** (iPhone app only): *An offene Posten
+  erinnern* with its setting as the subline ("Am Vortag · 09:00" / "Aus")
+  pushes **Erinnerungen** (new pushed screen `reminders`): the switch (asks
+  for permission; a denied one gets a note pointing to the iOS settings),
+  *Uhrzeit*, *Wann* (Am Fälligkeitstag, Am Vortag, 2 / 3 Tage, 1 Woche),
+  *Beträge zeigen* with why it's off, and *Als Nächstes*: the next five as they
+  will go off. Settings of the device, not data: not in backups, kept by
+  *Alle Daten löschen* (whose emptied book then cancels everything pending).
+- [x] **12 · Face ID lock (#4)** — written; **not yet run on an iPhone.**
+  Plugin vetted (code, licence, upkeep; choice and reasons in CLAUDE.md):
+  `@aparajita/capacitor-biometric-auth` 10.0.0 (MIT) — one small Swift file on
+  LocalAuthentication, the passcode as fallback (`allowDeviceCredential`), no
+  network — over `@capgo/capacitor-native-biometric` 8.9.1 (MPL-2.0, Keychain
+  credentials the app doesn't need). `NSFaceIDUsageDescription` in
+  `Info.plist`. `src/lock.ts`: what can lock here (Face ID, Touch ID, or only
+  the passcode — the row's name follows) and `authenticate()`. Switching the
+  lock on asks once. Locked from the first render of a cold start (the flag is
+  read synchronously), and then **only** `LockScreen` renders — no amount in
+  the DOM or under VoiceOver; it asks for Face ID by itself, the button is for
+  a second try. More than a minute away locks again (the Face ID prompt's own
+  inactive moment doesn't count, nor do two prompts overlap). While the app is
+  inactive with the lock on, `PrivacyCover` (the icon on the background)
+  covers it for the app-switcher snapshot. `localStorage['spartopf-dev-native']
+  = '1'` shows both settings in a dev build (captures `settings-native`,
+  `reminders`; audit clean on SE, 16 × DE/AR × light/dark); production drops
+  it. 167 tests pass, the web build works. **On the device (Ahmad):**
+  `npm run build:ios`, then check: the permission prompt; a reminder at the
+  chosen time and its tap (month / contracts); the lock on cold start (no
+  flash of the book), after more than a minute away, not after a short
+  switch; the passcode fallback; the app-switcher snapshot shows the cover —
+  if the snapshot still catches the book, the cover has to move to
+  `SceneDelegate.sceneWillResignActive` (native), since the web view may paint
+  too late.
 - [x] **13 · First run** — the first month opens on a setup card instead of a
   balance card full of zeros and five paragraphs (`SetupCard.tsx`; the old
   `IntroCard` is gone): ① *Wie viel ist gerade auf deinem Konto?* typed into

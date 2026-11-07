@@ -25,6 +25,12 @@ import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
 import { TransferView } from './components/TransferView';
+import { RemindersView } from './components/RemindersView';
+import { LockScreen, PrivacyCover } from './components/LockScreen';
+import { reminderPlan } from './reminders';
+import { onReminderTap, remindersAvailable, syncReminders } from './notify';
+import { LockKind, authenticate, lockKind as findLockKind } from './lock';
+import { isNative } from './platform';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
 import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
@@ -39,10 +45,12 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'dueSoon' | 'contracts';
+type PushedId = 'categories' | 'transfer' | 'reminders' | 'dueSoon' | 'contracts';
 type ScreenId = TabId | PushedId;
 /** The tab each pushed screen sits on. */
-const PARENT: Record<PushedId, TabId> = { categories: 'settings', transfer: 'settings', dueSoon: 'month', contracts: 'insights' };
+const PARENT: Record<PushedId, TabId> = { categories: 'settings', transfer: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
+/** Away longer than this, and the lock asks again. */
+const LOCK_AFTER_MS = 60_000;
 
 export default function App() {
   const store = useAppStore();
@@ -88,6 +96,56 @@ export default function App() {
    * Ends with the setup, a reload, or an opening set by hand.
    */
   const [setupNow, setSetupNow] = useState<{ month: MonthKey; now: number } | null>(null);
+
+  // ---- The lock. Locked from the very first render of a cold start, so not
+  // one frame of the book shows; while locked only the lock screen renders.
+  const native = isNative();
+  const [locked, setLocked] = useState(() => native && store.lockOn);
+  /** The app isn't active (app switcher, Control Center) and the lock is on: a plain cover. */
+  const [covered, setCovered] = useState(false);
+  /** What can unlock it here: Face ID, Touch ID, the passcode — or nothing. */
+  const [lockKind, setLockKind] = useState<LockKind | null>(null);
+  useEffect(() => { void findLockKind().then(setLockKind); }, []);
+  const lockOn = useRef(store.lockOn);
+  lockOn.current = store.lockOn;
+  const authBusy = useRef(false);
+  const unlock = async () => {
+    if (authBusy.current) return;
+    authBusy.current = true;
+    const ok = await authenticate(t.lockReason, t.cancel);
+    authBusy.current = false;
+    if (ok) setLocked(false);
+  };
+  /** Switching the lock on asks once, so nobody locks themselves out of the app. */
+  const setLock = async (on: boolean) => {
+    if (!on) { store.setLockOn(false); return; }
+    if (!lockKind) { show(t.lockUnavailable); return; }
+    if (authBusy.current) return;
+    authBusy.current = true;
+    const ok = await authenticate(t.lockReason, t.cancel);
+    authBusy.current = false;
+    if (ok) store.setLockOn(true);
+  };
+  /** Bumped on every return to the app: the reminders' "now" moves on. */
+  const [resumed, setResumed] = useState(0);
+  const awaySince = useRef<number | null>(null);
+  useEffect(() => {
+    if (!native) return;
+    const handle = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      if (!isActive) {
+        awaySince.current ??= Date.now();
+        if (lockOn.current) setCovered(true);
+        return;
+      }
+      const away = awaySince.current === null ? 0 : Date.now() - awaySince.current;
+      awaySince.current = null;
+      setCovered(false);
+      setResumed(n => n + 1);
+      // The Face ID prompt itself makes the app inactive for a moment; that isn't leaving.
+      if (lockOn.current && away > LOCK_AFTER_MS && !authBusy.current) setLocked(true);
+    });
+    return () => { void handle.then(h => h.remove()); };
+  }, [native]);
 
   const balance = balanceFor(balances, month);
   const prevBalance = balance.prevKey ? balances.find(b => b.key === balance.prevKey) : undefined;
@@ -150,6 +208,21 @@ export default function App() {
     const want = setupNow.now - (b.incomePaid - b.expensePaid);
     if (!b.overridden || b.openingNow !== want) store.setOpening(setupNow.month, want);
   }, [setupNow, balances, store.introDone]);
+
+  // Reminders: after a change settles, and on every return to the app, what is
+  // pending on the device becomes the plan again (iPhone app only).
+  useEffect(() => {
+    if (!native) return;
+    const id = setTimeout(() => { void syncReminders(reminderPlan(data, store.reminders, t)).catch(() => {}); }, 800);
+    return () => clearTimeout(id);
+  }, [data, store.reminders, language, resumed]);
+  // A tap on one opens what it is about: its month, or the contracts.
+  useEffect(() => onReminderTap(({ month: m, screen }) => {
+    if (screen === 'contracts') { push('contracts'); return; }
+    setMonth(m);
+    setTab('month');
+    setStack(s => ({ ...s, month: undefined }));
+  }), []);
 
   // Status-bar glyphs must invert with the theme or they vanish into the bar.
   useEffect(() => {
@@ -409,6 +482,8 @@ export default function App() {
             onReorder={store.setCategoryOrder}
             onRestoreDefaults={restoreDefaults}
           />
+        ) : id === 'reminders' ? (
+          <RemindersView data={data} prefs={store.reminders} t={t} onBack={back} onChange={store.setReminders} />
         ) : id === 'transfer' ? (
           <TransferView
             data={data}
@@ -432,6 +507,11 @@ export default function App() {
             onCategories={() => push('categories')}
             onTransfer={() => push('transfer')}
             onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); }}
+            lockKind={lockKind}
+            lockOn={store.lockOn}
+            onLock={on => void setLock(on)}
+            reminders={remindersAvailable() ? store.reminders : null}
+            onReminders={() => push('reminders')}
           />
         ) : id === 'stats' ? (
           <StatsView
@@ -492,8 +572,12 @@ export default function App() {
     </>
   );
 
+  // Locked: the lock screen instead of the app (after every hook, so their order holds).
+  if (locked) return <LockScreen kind={lockKind} t={t} onUnlock={() => void unlock()} />;
+
   return (
     <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
+      {covered && <PrivacyCover />}
       {store.storageError && (
         <div role="alert" className="bg-neg-dim text-neg px-4 py-2 safe-top">
           <div className="mx-auto max-w-xl flex items-center gap-2">

@@ -6,6 +6,7 @@ import {
   restoreDefaultCategories, standardCategoryIds, uid,
 } from './logic';
 import { defaultCategories } from './data/defaults';
+import { ReminderPrefs, normalizeReminderPrefs } from './reminders';
 
 /** Every key this app writes starts with this, so a rescue export can find them. */
 export const KEY_PREFIX = 'spartopf-';
@@ -19,6 +20,8 @@ const K = {
   accent: 'spartopf-accent',
   intro: 'spartopf-intro-done',
   tips: 'spartopf-tips-done',
+  reminders: 'spartopf-reminders',
+  lock: 'spartopf-lock',
   collapsed: 'spartopf-collapsed',
   meta: 'spartopf-meta',
 } as const;
@@ -96,6 +99,9 @@ export function useAppStore() {
    * dismissed the old intro card has read these already (it carried them).
    */
   const [tipsDone, setTipsDone] = useState(() => (readString(K.tips) ?? readString(K.intro)) === '1');
+  /** Reminders and the lock: settings of this device, not data — not in a backup, kept by "delete all". */
+  const [reminders, setReminders] = useState<ReminderPrefs>(() => normalizeReminderPrefs(readJson(K.reminders)));
+  const [lockOn, setLockOn] = useState(() => readString(K.lock) === '1');
   /** Categories folded down on the month page — a view preference, not data, so not in a backup. */
   const [collapsed, setCollapsed] = useState<string[]>(() => {
     const saved = readJson(K.collapsed);
@@ -122,6 +128,8 @@ export function useAppStore() {
   useEffect(() => { persist(K.contracts, JSON.stringify(contracts)); }, [contracts]);
   useEffect(() => { persist(K.intro, introDone ? '1' : '0'); }, [introDone]);
   useEffect(() => { persist(K.tips, tipsDone ? '1' : '0'); }, [tipsDone]);
+  useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
+  useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.meta, JSON.stringify({ schemaVersion: SCHEMA_VERSION, seeded: true })); }, []);
 
@@ -427,6 +435,8 @@ export function useAppStore() {
     language, setLanguage, themeMode, setThemeMode, accent, setAccent, storageError: failedKeys.length > 0,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
     tipsDone, dismissTips: () => setTipsDone(true),
+    reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),
+    lockOn, setLockOn,
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),
     expand: (id: string) => setCollapsed(prev => prev.filter(x => x !== id)),

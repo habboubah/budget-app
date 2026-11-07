@@ -59,6 +59,7 @@ const LANGS = {
     locale: 'de-DE',
     categories: 'Kategorien',
     transfer: 'Sichern und übertragen',
+    reminders: 'An offene Posten erinnern',
     names: {
       salary: 'Gehalt', child: 'Kindergeld', rent: 'Miete', power: 'Strom', net: 'Internet', phone: 'Handy',
       ins: 'Haftpflicht', gym: 'Fitnessstudio', fuel: 'Tanken', carIns: 'Kfz-Versicherung', carTax: 'Kfz-Steuer',
@@ -69,6 +70,7 @@ const LANGS = {
     locale: 'ar',
     categories: 'الفئات',
     transfer: 'النسخ الاحتياطي والنقل',
+    reminders: 'التذكير بالبنود المعلّقة',
     // Shop names stay Latin, as on a German receipt: mixed direction on purpose.
     names: {
       salary: 'الراتب', child: 'إعانة الأطفال', rent: 'الإيجار', power: 'الكهرباء', net: 'الإنترنت', phone: 'الجوال',
@@ -211,6 +213,14 @@ const SCREENS = [
   }, audit: 'page' },
   { name: 'settings', run: tab(3), audit: 'page' },
   { name: 'settings-full', run: tab(3), full: true },
+  // The iPhone app's Optionen: the lock and reminders (dev flag: shown on the web, nothing scheduled).
+  { name: 'settings-native', storage: { 'spartopf-dev-native': '1' }, run: tab(3), audit: 'page' },
+  // Optionen → An offene Posten erinnern, switched on.
+  { name: 'reminders', storage: { 'spartopf-dev-native': '1', 'spartopf-reminders': JSON.stringify({ on: true, time: '09:00', lead: 1, amounts: false }) }, run: async (page, l) => {
+    await tab(3)(page);
+    await page.locator('main button', { hasText: l.reminders }).first().click();
+    await page.waitForTimeout(500);
+  }, audit: 'page' },
   // Optionen → Sichern und übertragen.
   { name: 'transfer', run: async (page, l) => {
     await tab(3)(page);

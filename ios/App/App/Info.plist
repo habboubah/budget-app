@@ -12,6 +12,8 @@
 	<string>Spartopf reads bank transactions from a photo you take. The photo is read on this iPhone and never leaves it.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Spartopf reads bank transactions from a screenshot you pick. It is read on this iPhone and never leaves it.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Spartopf uses Face ID to unlock your budget book, so only you can open it.</string>
 	<key>CFBundleDisplayName</key>
         <string>Spartopf</string>
 	<key>CFBundleExecutable</key>
