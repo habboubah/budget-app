@@ -37,9 +37,9 @@ interface Props {
  * earlier entries (all of them behind a button), the category (three, the
  * rest behind a button), then the amount. A tap on a suggestion ("Miete")
  * takes the entry to that name's category, fills in what it was last time
- * when the amount is still empty, and moves on to the amount. A new entry is
- * paid and happens once unless changed (or unless the suggestion repeated),
- * so most entries are name + amount + save. (A due day is no longer asked
+ * when the amount is still empty, and moves on to the amount. A new entry —
+ * income or expense — is paid / received and happens once unless changed
+ * (a suggestion doesn't change that), so most entries are name + amount + save. (A due day is no longer asked
  * for; one already on an entry, or on the suggestion's last entry, is kept.)
  */
 export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete }: Props) {
@@ -56,7 +56,6 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [note, setNote] = useState('');
   const [allCategories, setAllCategories] = useState(false);
   const [allSuggestions, setAllSuggestions] = useState(false);
-  const [touched, setTouched] = useState({ paid: false, repeat: false });
   const [showError, setShowError] = useState(false);
   const amountRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -77,7 +76,6 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setDueText('');
     setDateText(defaultEntryDate(month));
     setNote('');
-    setTouched({ paid: false, repeat: false });
     setShowError(false);
     setAllCategories(false);
     setAllSuggestions(false);
@@ -96,7 +94,6 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setDateText(e.date ?? '');
       setNote(e.note ?? '');
       setAllCategories(false);
-      setTouched({ paid: true, repeat: true });
       setShowError(false);
     } else {
       reset();
@@ -161,7 +158,6 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       reset(categoryId);
       setDateText(keepDate); // a stack of receipts is usually from one day
       setPaid(paid);
-      setTouched({ paid: true, repeat: false });
       nameRef.current?.focus({ preventScroll: true });
     } else onClose();
   };
@@ -224,7 +220,6 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
                       // What it was last time — only where nothing was typed yet.
                       if (!filled && s.last.repeat !== 'none') { setAmountText(amountToInput(s.last.amount, t.locale)); filled = true; }
                       if (!dueText.trim() && s.last.dueDay) setDueText(String(s.last.dueDay));
-                      if (!touched.repeat) setRepeat(s.last.repeat);
                     }
                     // On to the amount while it still needs typing; otherwise the keyboard can go.
                     if (filled) nameRef.current?.blur();
@@ -326,7 +321,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           <Segmented<'paid' | 'open'>
             label={t.status}
             value={paid ? 'paid' : 'open'}
-            onChange={v => { setPaid(v === 'paid'); setTouched(x => ({ ...x, paid: true })); }}
+            onChange={v => setPaid(v === 'paid')}
             options={[
               { value: 'paid', label: income ? t.statusReceived : t.statusPaid },
               { value: 'open', label: income ? t.statusExpected : t.statusOpen },
@@ -339,7 +334,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           <Segmented<Repeat>
             label={t.repeat}
             value={repeat}
-            onChange={v => { setRepeat(v); setTouched(x => ({ ...x, repeat: true })); }}
+            onChange={setRepeat}
             options={[
               { value: 'none', label: t.repeatNone },
               { value: 'monthly', label: t.repeatMonthly },

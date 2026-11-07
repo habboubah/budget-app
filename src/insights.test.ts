@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   bestWorst, budgetSplit, categoryAverages, categoryMatrix, commitments, finishedMonths, forecast, monthSeries,
-  monthsToYearEnd, reserveMonths, savings, unusual,
+  monthsToYearEnd, reserveMonths, savings, unusual, priceChanges, missingRegulars, newNames, categoryTrends, biggestExpenses,
 } from './insights';
 import { computeBalances } from './logic';
 import { defaultCategories } from './data/defaults';
@@ -106,5 +106,39 @@ describe('smart numbers', () => {
   it('names the best and the weakest month', () => {
     expect(bestWorst(points)).toMatchObject({ best: { key: '2026-08' }, worst: { key: '2026-10' } });
     expect(bestWorst(points.slice(0, 1))).toBeNull();
+  });
+});
+
+describe('hints', () => {
+  const hist = [
+    e('2026-07', 'fixed', 'Aras Energy', 83, M), e('2026-08', 'fixed', 'Aras Energy', 83, M), e('2026-09', 'fixed', 'Aras Energy', 83, M),
+    e('2026-10', 'fixed', 'Aras Energy', 95, M), e('2026-09', 'fixed', 'Vodafone', 19.99, M), e('2026-10', 'fixed', 'Vodafone', 19.99, M),
+    e('2026-07', 'fixed', 'Vodafone', 19.99, M), e('2026-08', 'fixed', 'Vodafone', 19.99, M),
+    e('2026-09', 'groceries', 'Lidl', 40), e('2026-09', 'groceries', 'LIDL', 30), e('2026-10', 'groceries', 'Lidl', 50),
+    e('2026-10', 'extra', 'C&A', 85.92), e('2026-10', 'extra', 'Apotheke', 12), e('2026-11', 'fixed', 'Aras Energy', 95, M),
+    e('2026-08', 'fixed', 'Netflix', 13.99, M), e('2026-09', 'fixed', 'Netflix', 13.99, M), e('2026-10', 'fixed', 'Netflix', 13.99, M),
+  ];
+  it('finds monthly bills whose price changed', () => {
+    expect(priceChanges(hist, cats, '2026-10').map(c => [c.name, c.before, c.now])).toEqual([['Aras Energy', 8300, 9500]]);
+    expect(priceChanges(hist, cats, '2026-11')).toEqual([]);
+  });
+  it('lists what was there three months running but not this month', () => {
+    expect(missingRegulars(hist, '2026-11').map(m => [m.name, m.usual])).toEqual([['Vodafone', 1999], ['Netflix', 1399]]);
+    expect(missingRegulars(hist, '2026-12')).toEqual([]);
+  });
+  it('shows expenses under a name never booked before', () => {
+    expect(newNames(hist, cats, '2026-10').map(x => x.name)).toEqual(['C&A', 'Apotheke']);
+    expect(newNames(hist, cats, '2026-07')).toEqual([]);
+  });
+  it('spots categories trending over six months', () => {
+    const six = ['2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08'];
+    const g = six.map((m, i) => e(m, 'groceries', 'Lidl', i < 3 ? 300 : 420));
+    const t = categoryTrends(g, cats, six);
+    expect(t.map(x => [x.category.id, x.earlier, x.recent])).toEqual([['groceries', 30000, 42000]]);
+    expect(categoryTrends(g, cats, six.slice(1))).toEqual([]);
+  });
+  it('names the biggest expenses with their share', () => {
+    const b = biggestExpenses(entries, cats, '2026-10', 2);
+    expect(b.map(x => [x.entry.name, Math.round(x.share * 100)])).toEqual([['Miete', 49], ['Lidl', 34]]);
   });
 });

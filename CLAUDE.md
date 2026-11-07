@@ -37,7 +37,10 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   the preview sheet shows and `applyExcelImport` writes. Tests build their own
   .xlsx in memory; never commit a real one (it is someone's finances).
 - **Statistics** beyond sums (savings rate, reserve, forecast, 50/30/20,
-  commitments, unusual months) live in `src/insights.ts`, pure and tested.
+  commitments, unusual months, and the hints beside them — `biggestExpenses`,
+  `newNames`, `missingRegulars`, `priceChanges`, `categoryTrends`; a hint card
+  only shows when it has something to say) live in `src/insights.ts`, pure
+  and tested.
   In the 50/30/20 split a category counts as `need`, `want` or `save`
   (`budgetOf`); `save` expenses stay in *saved*.
   Averages use *finished* months (`finishedMonths`), never the running one.
@@ -90,9 +93,10 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   first), its suggestions — three, the rest behind *Alle (n)* — then the
   category (three from `topCategories()`: same kind, this month's, most used,
   the chosen one always among them; every category behind *Alle (n)*), the
-  amount, status, repeat, note. A new entry starts paid and once; only a
-  picked suggestion brings its last repeat. A category's own `repeat` is no
-  longer offered in the category sheet (the field stays in the data).
+  amount, status, repeat, note. A new entry — income or expense — starts
+  paid / received and once; a picked suggestion doesn't change that. A
+  category's own `repeat` is no longer offered in the category sheet (the
+  field stays in the data).
 - **Name suggestions** (`suggestNames`) come from every entry of every month:
   this category's names, then other categories' names of the same kind (pass
   `categories`), and only then its built-in ideas; each remembers its

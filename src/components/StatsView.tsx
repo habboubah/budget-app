@@ -1,12 +1,12 @@
 import { CSSProperties, ReactNode, useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { AppData, MonthKey } from '../types';
+import { AppData, Category, MonthKey } from '../types';
 import {
   MonthBalance, addMonths, balanceFor, categoryBreakdown, displayName, formatMoney, monthKeyOf, monthLabel, topNames,
 } from '../logic';
 import {
   bestWorst, budgetSplit, categoryAverages, categoryMatrix, commitments, finishedMonths, forecast, monthSeries,
-  monthsToYearEnd, reserveMonths, savings, unusual,
+  monthsToYearEnd, reserveMonths, savings, unusual, priceChanges, missingRegulars, newNames, categoryTrends, biggestExpenses,
 } from '../insights';
 import { Strings, fmt, plural } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
@@ -62,6 +62,14 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
   const fixed = latest ? commitments(data, latest) : { items: [], monthly: 0, yearly: 0 };
   const odd = unusual(entries, categories, month, all.map(p => p.key), today);
   const bw = bestWorst(points);
+  // More hints in the spirit of "unusual": for the month in detail, and the trend over finished months.
+  const biggest = biggestExpenses(entries, categories, month);
+  const fresh = newNames(entries, categories, month);
+  const missing = missingRegulars(entries, month);
+  const changes = priceChanges(entries, categories, month);
+  const trends = categoryTrends(entries, categories, finished.map(p => p.key));
+  const catOf = (id: string) => categories.find(c => c.id === id);
+  const pct = (part: number, whole: number) => Math.round(Math.abs(part) / Math.max(1, whole) * 100);
   const avgIncome = Math.round(points.reduce((s, p) => s + p.income, 0) / Math.max(1, points.length));
   const avgExpense = Math.round(points.reduce((s, p) => s + p.expense, 0) / Math.max(1, points.length));
 
@@ -264,6 +272,65 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
           </Card>
         )}
 
+        {biggest.length > 0 && (
+          <Card title={fmt(t.biggestTitle, { month: monthLabel(month, t.locale) })}>
+            <ul className="space-y-3">
+              {biggest.map(({ entry: x, share }) => (
+                <HintRow key={x.id} category={catOf(x.categoryId)} language={language} name={x.name} value={money(x.amount)}
+                  note={fmt(t.biggestShare, { pct: Math.round(share * 100) })} />
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {fresh.length > 0 && (
+          <Card title={fmt(t.newTitle, { month: monthLabel(month, t.locale) })} sub={t.newSub}>
+            <ul className="space-y-3">
+              {fresh.map(x => (
+                <HintRow key={x.id} category={catOf(x.categoryId)} language={language} name={x.name} value={money(x.amount)}
+                  note={displayName(catOf(x.categoryId)?.names, language)} />
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {missing.length > 0 && (
+          <Card title={fmt(t.missingTitle, { month: monthLabel(month, t.locale) })} sub={t.missingSub}>
+            <ul className="space-y-3">
+              {missing.map(x => (
+                <HintRow key={x.name} category={catOf(x.categoryId)} language={language} name={x.name}
+                  note={fmt(t.missingLine, { amount: money(x.usual) })} tone="text-warn" />
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {changes.length > 0 && (
+          <Card title={fmt(t.priceTitle, { month: monthLabel(month, t.locale) })}>
+            <ul className="space-y-3">
+              {changes.map(x => (
+                <HintRow key={x.name} category={catOf(x.categoryId)} language={language} name={x.name}
+                  value={`${money(x.before)} → ${money(x.now)}`}
+                  note={fmt(t.priceLine, { pct: `${x.diff > 0 ? '+' : '−'}${pct(x.diff, x.before)}`, diff: money(x.diff, 'exceptZero') })}
+                  tone={x.diff > 0 ? 'text-warn' : 'text-pos'} up={x.diff > 0} />
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {trends.length > 0 && (
+          <Card title={t.trendTitle} sub={t.trendSub}>
+            <ul className="space-y-3">
+              {trends.map(x => (
+                <HintRow key={x.category.id} category={x.category} language={language} name={displayName(x.category.names, language)}
+                  value={money(x.recent)}
+                  note={fmt(x.diff > 0 ? t.trendMore : t.trendLess, { pct: pct(x.diff, x.earlier), before: money(x.earlier) })}
+                  tone={x.diff > 0 ? 'text-warn' : 'text-pos'} up={x.diff > 0} />
+              ))}
+            </ul>
+          </Card>
+        )}
+
         {bw && (
           <Card title={t.bestWorstTitle}>
             <dl className="grid grid-cols-2 gap-3">
@@ -280,6 +347,38 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
         )}
       </div>
     </Screen>
+  );
+}
+
+/**
+ * One line of a hint card: the category's picture, a name, an amount, and
+ * a short note — coloured (and with an arrow) when it says up or down.
+ */
+function HintRow({ category, language, name, value, note, tone = 'text-fg-mute', up }: {
+  category?: Category;
+  language: string;
+  name: string;
+  value?: string;
+  note: string;
+  tone?: string;
+  /** An arrow up or down before the note; none when not given. */
+  up?: boolean;
+}) {
+  const Icon = up === undefined ? null : up ? ArrowUpRight : ArrowDownRight;
+  return (
+    <li className="flex items-start gap-3">
+      {category && <Picture emoji={category.emoji} name={displayName(category.names, language)} hue={category.hue} size="sm" />}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="min-w-0 flex-1 text-label text-fg wrap-compound">{name}</span>
+          {value && <span className="text-label font-semibold text-fg num whitespace-nowrap">{value}</span>}
+        </div>
+        <p className={`flex items-center gap-1 text-caption font-semibold tabular-nums ${tone}`}>
+          {Icon && <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
+          <span className="wrap-prose">{note}</span>
+        </p>
+      </div>
+    </li>
   );
 }
 
