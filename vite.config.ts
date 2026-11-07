@@ -6,11 +6,17 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
 
-/** The on-device text recognition files into public/ocr/ (scripts/copy-ocr.mjs), for dev and every build. */
+/**
+ * The on-device text recognition files into public/ocr/ (scripts/copy-ocr.mjs),
+ * for dev and every build. It installs missing packages once; a dev server
+ * starts even if that fails, a build doesn't.
+ */
 const ocrFiles = {
   name: 'spartopf-ocr-files',
-  buildStart() {
-    execFileSync(process.execPath, [path.resolve(__dirname, 'scripts/copy-ocr.mjs')], { stdio: 'inherit' });
+  // `config` runs before the dev server lists public/, so the files are served from the first start.
+  config(_: unknown, env: { command: 'build' | 'serve' }) {
+    const args = [path.resolve(__dirname, 'scripts/copy-ocr.mjs'), ...(env.command === 'build' ? ['--strict'] : [])];
+    execFileSync(process.execPath, args, { stdio: 'inherit' });
   },
 };
 
