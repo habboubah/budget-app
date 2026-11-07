@@ -120,6 +120,11 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   `ui/Highlight` (`bg-mark`, always `text-fg`) — names, notes and amounts. Results reuse
   `CategorySection` with `search` set: no fold, add row, filter, totals or
   drag — the hits are summed above the cards (`monthTotals`).
+- **Pending filter:** each card's own (`openOnly` per category) and, beside
+  the search field, one for the whole page (`allOpen` in MonthView): every
+  card shows only its pending entries and cards without any are hidden.
+  Turning one card's filter off while the page filter is on keeps the others
+  filtered.
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /

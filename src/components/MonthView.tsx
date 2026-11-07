@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ListFilter, MoreHorizontal, Plus } from 'lucide-react';
 import { Category, Entry, MonthKey } from '../types';
 import {
   MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, monthTotals, parseMonthKey, searchEntries, searchTerms,
@@ -68,7 +68,9 @@ interface Props {
  *
  * The search field under the title finds entries of this month as you type:
  * the page then shows only the hits, in their categories, with what they add
- * up to. The search stays while stepping through months.
+ * up to. The search stays while stepping through months. Beside it, a filter
+ * shows only what is still pending — in every category at once; each card
+ * keeps its own filter too.
  */
 export function MonthView(p: Props) {
   const { month, balance, categories, entries, t } = p;
@@ -80,8 +82,14 @@ export function MonthView(p: Props) {
   const monthName = new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(year, mm - 1, 1));
 
   const inCategory = (categoryId: string) => sortEntries(mine.filter(e => e.categoryId === categoryId));
-  // Categories showing only what is still open (kept while switching months).
+  // Categories showing only what is still open (kept while switching months),
+  // or the whole page at once.
   const [openOnly, setOpenOnly] = useState<string[]>([]);
+  const [allOpen, setAllOpen] = useState(false);
+  const filtered = (categoryId: string) => allOpen || openOnly.includes(categoryId);
+  const openCount = mine.filter(e => !e.paid).length;
+  // With the page filtered, only categories with something pending show.
+  const shownCategories = allOpen ? categories.filter(c => mine.some(e => e.categoryId === c.id && !e.paid)) : categories;
 
   const [query, setQuery] = useState('');
   const searching = searchTerms(query).length > 0;
@@ -96,7 +104,7 @@ export function MonthView(p: Props) {
     // With the filter on, the drop spot counts only the open rows shown:
     // land before the same row in the full list.
     let index = to.index;
-    if (openOnly.includes(to.categoryId)) {
+    if (filtered(to.categoryId)) {
       const others = inCategory(to.categoryId).filter(x => x.id !== id);
       const shown = others.filter(x => !x.paid);
       index = index < shown.length ? others.indexOf(shown[index]) : others.length;
@@ -146,13 +154,32 @@ export function MonthView(p: Props) {
         </h1>
       }
       accessory={
-        <SearchField
-          value={query}
-          onChange={setQuery}
-          placeholder={fmt(t.searchMonth, { month: monthName })}
-          clearLabel={t.searchClear}
-          cancelLabel={t.cancel}
-        />
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <SearchField
+              value={query}
+              onChange={setQuery}
+              placeholder={fmt(t.searchMonth, { month: monthName })}
+              clearLabel={t.searchClear}
+              cancelLabel={t.cancel}
+            />
+          </div>
+          {/* Only what is still pending, across the page. */}
+          {!searching && balance.started && (openCount > 0 || allOpen) && (
+            <button
+              type="button"
+              aria-pressed={allOpen}
+              aria-label={allOpen ? t.showAllEntries : t.showPendingEverywhere}
+              title={allOpen ? t.showAllEntries : t.showPendingEverywhere}
+              onClick={() => { tapLight(); setAllOpen(v => !v); }}
+              className={`shrink-0 h-11 ps-3 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label font-semibold tabular-nums transition-colors focus-visible:ring-focus ${
+                allOpen ? 'bg-warn-dim text-warn' : 'bg-surface card-edge text-fg-mute active:bg-surface-2'}`}
+            >
+              <ListFilter className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
+              {openCount}
+            </button>
+          )}
+        </div>
       }
       actions={
         <>
@@ -249,7 +276,13 @@ export function MonthView(p: Props) {
             />
           )}
 
-          {categories.map(c => (
+          {allOpen && shownCategories.length === 0 && (
+            <motion.div variants={rise}>
+              <Empty emoji="✅" title={t.nothingOpen} />
+            </motion.div>
+          )}
+
+          {shownCategories.map(c => (
             <CategorySection
               key={c.id}
               category={c}
@@ -264,8 +297,12 @@ export function MonthView(p: Props) {
               onEdit={p.onEdit}
               onToggle={p.onToggle}
               onDelete={p.onDelete}
-              openOnly={openOnly.includes(c.id)}
-              onOpenOnly={() => setOpenOnly(xs => (xs.includes(c.id) ? xs.filter(x => x !== c.id) : [...xs, c.id]))}
+              openOnly={filtered(c.id)}
+              onOpenOnly={() => {
+                // Turning one card's filter off while the page filter is on: the others stay filtered.
+                if (allOpen) { setAllOpen(false); setOpenOnly(categories.map(x => x.id).filter(id => id !== c.id)); return; }
+                setOpenOnly(xs => (xs.includes(c.id) ? xs.filter(x => x !== c.id) : [...xs, c.id]));
+              }}
               dragId={drag.dragging}
               dropIndex={drag.target?.categoryId === c.id ? drag.target.index : null}
               dragProps={drag.bind}
