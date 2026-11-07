@@ -85,6 +85,14 @@ Write 1–3 short lines per release, e.g.
 **DE:** `Neu: Wiederkehrende Posten aus dem Vormonat nachträglich übernehmen.`
 **EN:** `New: bring missing recurring items over from last month.`
 
+### Next release (after 1.2.0)
+
+**DE:** Neu: Monatsbudgets mit „pro Tag“, „Demnächst fällig“ und eine Suche über alle Monate. Der Tab „Planen“ zeigt deine Abos & Verträge mit Kündigungsfristen. Auf Wunsch erinnert Spartopf an offene Rechnungen und sperrt sich mit Face ID – und deine Daten liegen jetzt in einer eigenen, geprüften Datei auf dem iPhone.
+
+**EN:** New: monthly budgets with a per-day figure, "Due soon" and search across every month. The Plan tab lists your subscriptions & contracts with their notice deadlines. If you like, Spartopf reminds you of open bills and locks with Face ID – and your data now lives in its own checked file on your iPhone.
+
+**AR:** جديد: ميزانيات شهرية مع المبلغ المتاح يوميًا، والبنود المستحقة قريبًا، والبحث في كل الأشهر. يعرض تبويب «التخطيط» اشتراكاتك وعقودك مع مواعيد الإلغاء. وإن شئت، يذكّرك Spartopf بالفواتير المعلّقة ويُقفل بـ Face ID – وبياناتك محفوظة الآن في ملف خاص ومُتحقَّق منه على جهازك.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.
