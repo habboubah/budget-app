@@ -1,10 +1,10 @@
 import {
   AppData, Backup, Category, CategoryKind, Entry, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
 } from './types';
-import { MERGED_V4, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
+import { MERGED_V4, NEW_IN_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 
 /** Bump when a stored shape changes, and migrate in `normalizeState`. */
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -832,9 +832,13 @@ export function upgradeCategories(categories: Category[], from = 1): Category[] 
  * Garten" into "Wohnen" (id `fixed`), the old "Sonstiges" into the new one
  * (id `extra`) — with their entries and month lists moving along (a moved
  * entry loses its place in the old order), and finally the built-ins renamed
- * in schema 4, where the user still has the old name or picture.
+ * in schema 4, where the user still has the old name or picture. Below 5,
+ * the restaurants arrive (`NEW_IN_V5`): after the groceries, and in the
+ * running month and later started ones; earlier months without a list of
+ * their own get the standard ones they showed until now, so they stay as
+ * they were.
  */
-export function upgradeData(data: AppData, from = 1): AppData {
+export function upgradeData(data: AppData, from = 1, today = new Date()): AppData {
   if (from >= SCHEMA_VERSION) return data;
   let categories = upgradeCategories(data.categories, from);
   let { entries, months } = data;
@@ -865,6 +869,28 @@ export function upgradeData(data: AppData, from = 1): AppData {
       if (was.emoji?.includes(c.emoji)) next.emoji = now.emoji;
       return next;
     });
+  }
+  if (from < 5 && categories.length) {
+    const shipped = new Map(defaultCategories().map(c => [c.id, c]));
+    const current = monthKeyOf(today);
+    const after = (ids: string[], id: string, anchor: string) => {
+      const at = ids.indexOf(anchor);
+      return at < 0 ? [...ids, id] : [...ids.slice(0, at + 1), id, ...ids.slice(at + 1)];
+    };
+    for (const [id, aliases] of Object.entries(NEW_IN_V5)) {
+      if (categories.some(c => c.id === id)) continue;
+      // One of the user's own under this name already does the job.
+      const known = new Set(aliases.map(normalizeName));
+      if (categories.some(c => Object.values(c.names).some(n => known.has(normalizeName(n))))) continue;
+      const before = standardCategoryIds(categories);
+      const at = categories.findIndex(c => c.id === 'groceries');
+      const fresh = shipped.get(id)!;
+      categories = at < 0 ? [...categories, fresh] : [...categories.slice(0, at + 1), fresh, ...categories.slice(at + 1)];
+      months = months.map(m => {
+        if (m.key >= current) return m.categories && !m.categories.includes(id) ? { ...m, categories: after(m.categories, id, 'groceries') } : m;
+        return m.categories ? m : { ...m, categories: before };
+      });
+    }
   }
   return { categories, entries, months };
 }

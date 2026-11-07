@@ -3,8 +3,9 @@ import { Category, Names } from '../types';
 /**
  * The categories a first launch starts with, in the order the month page
  * reads: income first, then home (rent and what goes out every month), the
- * car, others, groceries and the family — the columns of My_expense.xlsx.
- * These six are part of every new month.
+ * car, others, groceries and the family — the columns of My_expense.xlsx —
+ * with restaurants (schema 5) beside the groceries. These seven are part of
+ * every new month.
  *
  * Ids are history: `fixed` is "Wohnen / Home" and `extra` is "Sonstiges /
  * Others" (schema 4 merged the former "Wohnen und Garten" and "Sonstiges"
@@ -14,8 +15,9 @@ import { Category, Names } from '../types';
  * Mobilität, Geldanlage …): there to pick when entering something, or to
  * switch on for every month in Settings, but not in a new month by default —
  * a page of fifteen empty cards is not simple. Their colours stay off the
- * six above (two or three share each of the other hues), so a chart never
- * paints one of them like a main category.
+ * main ones above (two or three share each of the other hues; only telecom
+ * shares mint with the restaurants), so a chart rarely paints one of them
+ * like a main category.
  *
  * Everything here can be renamed, recoloured, reordered or deleted in
  * Settings, and brought back with "Standard wiederherstellen".
@@ -26,6 +28,7 @@ const CATEGORIES: Category[] = [
   { id: 'car', names: { de: 'Auto', en: 'Car', ar: 'السيارة' }, emoji: '🚗', hue: 'carrot', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
   { id: 'extra', names: { de: 'Sonstiges', en: 'Others', ar: 'أخرى' }, emoji: '📦', hue: 'lavender', kind: 'expense', repeat: 'none', budget: 'want', builtin: true },
   { id: 'groceries', names: { de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore', ar: 'البقالة والعناية الشخصية' }, emoji: '🛒', hue: 'lime', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
+  { id: 'restaurants', names: { de: 'Restaurants', en: 'Restaurants', ar: 'المطاعم' }, emoji: '🍽️', hue: 'mint', kind: 'expense', repeat: 'none', budget: 'want', builtin: true },
   { id: 'family', names: { de: 'Familie', en: 'Family', ar: 'العائلة' }, emoji: '👨‍👩‍👦', hue: 'berry', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
 
   { id: 'clothing', names: { de: 'Bekleidung', en: 'Clothing', ar: 'الملابس' }, emoji: '👕', hue: 'plum', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
@@ -79,6 +82,16 @@ export const SHIPPED_V3: Record<string, { names: Names; emoji?: string[] }> = {
   insurance: { names: { de: 'Absicherung und Vorsorge', en: 'Insurance & pensions', ar: 'التأمين والتقاعد' } },
 };
 
+/**
+ * Schema 5: "Restaurants" joins the main categories. Data saved before it gets
+ * it after the groceries — unless the user already made one of their own
+ * under one of these names — and so does the running month (and any later
+ * one already started); months before keep the categories they had.
+ */
+export const NEW_IN_V5: Record<string, string[]> = {
+  restaurants: ['restaurant', 'restaurants', 'restaurants und cafes', 'essen gehen', 'gastronomie', 'مطعم', 'مطاعم', 'المطاعم'],
+};
+
 /** Built-in expense categories that are basic needs, for data saved before `budget` existed. */
 const NEED_IDS = ['fixed', 'car', 'groceries', 'family'];
 /** Need, want or saving: the category's own choice, else the built-in default, else want. */
@@ -105,12 +118,17 @@ export const NAME_SUGGESTIONS: Record<string, Names[]> = {
     { de: 'Parken', en: 'Parking', ar: 'موقف سيارات' }, { de: 'Werkstatt', en: 'Garage', ar: 'ورشة' }, { de: 'Waschanlage', en: 'Car wash', ar: 'غسيل السيارة' }, { de: 'TÜV', en: 'MOT', ar: 'الفحص الفني' },
   ],
   extra: [
-    { de: 'Amazon' }, { de: 'Kleidung', en: 'Clothes', ar: 'ملابس' }, { de: 'Apotheke', en: 'Pharmacy', ar: 'صيدلية' }, { de: 'Restaurant', en: 'Restaurant', ar: 'مطعم' },
-    { de: 'Café', en: 'Café', ar: 'مقهى' }, { de: 'Geschenk', en: 'Gift', ar: 'هدية' }, { de: 'Arzt', en: 'Doctor', ar: 'طبيب' }, { de: 'Online-Kurs', en: 'Online course', ar: 'دورة عبر الإنترنت' },
+    { de: 'Amazon' }, { de: 'Kleidung', en: 'Clothes', ar: 'ملابس' }, { de: 'Apotheke', en: 'Pharmacy', ar: 'صيدلية' },
+    { de: 'Geschenk', en: 'Gift', ar: 'هدية' }, { de: 'Arzt', en: 'Doctor', ar: 'طبيب' }, { de: 'Online-Kurs', en: 'Online course', ar: 'دورة عبر الإنترنت' },
   ],
   groceries: [
     { de: 'Lidl' }, { de: 'Aldi' }, { de: 'Rewe' }, { de: 'Edeka' }, { de: 'Kaufland' }, { de: 'Penny' }, { de: 'Netto' },
     { de: 'Rossmann' }, { de: 'dm' }, { de: 'Wochenmarkt', en: 'Market', ar: 'سوق' },
+  ],
+  restaurants: [
+    { de: 'Restaurant', en: 'Restaurant', ar: 'مطعم' }, { de: 'Café', en: 'Café', ar: 'مقهى' }, { de: 'Bäckerei', en: 'Bakery', ar: 'مخبز' },
+    { de: 'Döner', en: 'Kebab', ar: 'دونر' }, { de: 'Pizzeria', en: 'Pizza', ar: 'بيتزا' }, { de: 'Imbiss', en: 'Takeaway', ar: 'وجبات سريعة' },
+    { de: 'Lieferando' }, { de: 'Wolt' }, { de: "McDonald's" }, { de: 'Burger King' }, { de: 'Starbucks' },
   ],
   family: [
     { de: 'Kita', en: 'Daycare', ar: 'روضة' }, { de: 'Kinderkleidung', en: "Kids' clothes", ar: 'ملابس الأطفال' }, { de: 'Spielzeug', en: 'Toys', ar: 'ألعاب' },
@@ -137,8 +155,8 @@ export const NAME_SUGGESTIONS: Record<string, Names[]> = {
     { de: 'Booking.com' }, { de: 'Urlaub', en: 'Holiday', ar: 'عطلة' }, { de: 'Mietwagen', en: 'Rental car', ar: 'سيارة مستأجرة' },
   ],
   leisure: [
-    { de: 'Netflix' }, { de: 'Spotify' }, { de: 'Kino', en: 'Cinema', ar: 'سينما' }, { de: 'Restaurant', en: 'Restaurant', ar: 'مطعم' },
-    { de: 'Café', en: 'Café', ar: 'مقهى' }, { de: 'Konzert', en: 'Concert', ar: 'حفلة' }, { de: 'Freizeitpark', en: 'Theme park', ar: 'مدينة ملاهٍ' },
+    { de: 'Netflix' }, { de: 'Spotify' }, { de: 'Kino', en: 'Cinema', ar: 'سينما' },
+    { de: 'Konzert', en: 'Concert', ar: 'حفلة' }, { de: 'Museum', en: 'Museum', ar: 'متحف' }, { de: 'Freizeitpark', en: 'Theme park', ar: 'مدينة ملاهٍ' },
   ],
   sport: [
     { de: 'Fitnessstudio', en: 'Gym', ar: 'نادٍ رياضي' }, { de: 'Verein', en: 'Club', ar: 'نادٍ' }, { de: 'Schwimmbad', en: 'Swimming pool', ar: 'مسبح' },

@@ -50,15 +50,20 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   shows; `monthCategories()` adds anything with entries, so money never
   vanishes. Unset (months from before, Excel imports) = the standard ones. New
   months take `standardCategoryIds()` (categories with `standard !== false`).
-  Of the 19 built-ins only the first six are standard; the banking-app ones
-  (`clothing` … `taxes`) ship with `standard: false` — keep it that way, or
-  every month fills up with empty cards. Only an empty category can be taken
+  Of the 20 built-ins seven are standard — the six from the Excel sheet plus
+  `restaurants` (after `groceries`); the banking-app ones (`clothing` …
+  `taxes`) ship with `standard: false` — keep it that way, or every month
+  fills up with empty cards. Only an empty category can be taken
   out of a month (`canRemoveFromMonth`).
 - **Schema 2** added those built-ins; **schema 3** gives built-ins still named
   as shipped their Arabic names; **schema 4** (`upgradeData`, `MERGED_V4` /
   `SHIPPED_V3`) folds "Wohnen und Garten" into `fixed` (now *Wohnen*) and the
   old "Sonstiges" into `extra` (now *Sonstiges*), entries and month lists
-  included, and renames *Absicherung und Vorsorge* to *Versicherungen*. Ids
+  included, and renames *Absicherung und Vorsorge* to *Versicherungen*;
+  **schema 5** (`NEW_IN_V5`) adds *Restaurants* after the groceries — skipped
+  if the user already has a category of that name — and into the running and
+  later started months' lists; earlier months without a list get the old
+  standard ones frozen in (`upgradeData(data, from, today)`). Ids
   stay as history: `fixed` = Wohnen, `extra` = Sonstiges (also where orphaned
   entries go). `upgradeCategories()` (run once by
   `loadInitial` for storage below version 2, and by `parseBackup` for older

@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
 import { MonthBalance } from '../logic';
 import { formatMoney, monthLabel } from '../logic';
-import { Strings, fmt, plural } from '../translations';
+import { Strings, fmt } from '../translations';
 import { tapLight } from '../ui/haptics';
 import { useCountUp } from '../ui/useCountUp';
 import { CountingMoney } from '../ui/CountingMoney';
@@ -20,15 +20,14 @@ interface Props {
  *
  * On top, big, what is on the account now (only what is ticked as paid), with
  * a ring for how many of the month's bills are paid, and small beneath it
- * what was carried over. Below, the month in two columns, paid and still open
- * — income, expenses, down to the month end — and the two together: what will
- * be left once everything open is settled.
+ * what was carried over. Below, the month in two columns, paid and still
+ * pending — income and expenses — and beneath them what will
+ * be left once everything pending is settled.
  */
 export function BalanceCard({ balance: b, t, onOpening }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   // Open bills of earlier months still to settle, and everything open in all.
   const carryOpen = b.openingEnd - b.openingNow;
-  const endOpen = b.end - b.now;
   const carryLabel = b.overridden
     ? t.carryManual
     : b.prevKey
@@ -39,7 +38,7 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
       : t.startingBalance;
 
   return (
-    <section className="hero hero-glow rounded-lg overflow-hidden" aria-label={`${t.balanceNow}, ${t.balanceEnd}`}>
+    <section className="hero hero-glow rounded-lg overflow-hidden" aria-label={`${t.balanceNow}, ${t.afterPending}`}>
       <div className="ps-5 pe-4 pt-5 pb-4">
         <div className="flex items-start gap-4">
           <div className="min-w-0 flex-1">
@@ -65,9 +64,8 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
         </button>
       </div>
 
-      {/* Income and expenses, paid and still open side by side, down to the
-          month end in both columns (with the carry-over above); both together
-          make the month-end balance. On a frosted panel, so the money colours
+      {/* Income and expenses, paid and still pending side by side; under them
+          the balance once everything pending is settled. On a frosted panel, so the money colours
           read on any accent. */}
       <div className="mx-2 mb-2 rounded-md hero-panel px-3.5 pt-2.5 pb-3">
         <table className="w-full text-label">
@@ -90,22 +88,15 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
               <MoneyCell text={money(b.expenseOpen ? -b.expenseOpen : 0)} tone={b.expenseOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} />
             </tr>
           </tbody>
-          <tfoot>
-            <tr className="border-t border-on-hero/15">
-              <th scope="row" className="pt-2.5 pb-1.5 text-start font-semibold text-on-hero">{t.balanceEnd}</th>
-              <MoneyCell text={money(b.now)} tone={b.now < 0 ? 'text-on-hero-neg' : 'text-on-hero'} strong />
-              <MoneyCell text={money(endOpen, 'exceptZero')} tone={endOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} strong />
-            </tr>
-          </tfoot>
         </table>
 
         {/* Both columns together: what will be left once everything open is settled. */}
         <div className="mt-1.5 pt-2.5 border-t border-on-hero/15 flex items-end gap-3">
-          <p className={`min-w-0 flex-1 text-caption wrap-prose ${b.openCount ? 'text-on-hero-warn' : 'text-on-hero-soft'}`}>
-            {b.count > 0 ? (b.openCount ? plural(b.openCount, t.afterOpenOne, t.afterOpenMany) : t.allSettled) : null}
+          <p className="min-w-0 flex-1 text-caption text-on-hero-mute wrap-prose">
+            {b.count > 0 ? (b.openCount ? t.afterPending : t.allSettled) : null}
           </p>
           <p className={`rounded-num text-heading font-bold ${b.end < 0 ? 'text-on-hero-neg' : 'text-on-hero'}`}>
-            <span className="sr-only">{`${t.balanceEnd}: ${money(b.end)}`}</span>
+            <span className="sr-only">{`${t.afterPending}: ${money(b.end)}`}</span>
             <span aria-hidden="true"><span className="text-on-hero-soft font-semibold me-1">=</span><CountingMoney cents={b.end} money={money} /></span>
           </p>
         </div>
