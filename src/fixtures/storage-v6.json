@@ -1,0 +1,17 @@
+{
+  "_about": "What version 6 kept in localStorage (synthetic): entries with a due day and no date, before schema 7 dated them; no Kinder yet (schema 8).",
+  "spartopf-meta": { "seeded": true, "schemaVersion": 6 },
+  "spartopf-categories": [
+    { "id": "income", "names": { "de": "Einkommen", "en": "Income", "ar": "الدخل" }, "emoji": "💰", "hue": "leaf", "kind": "income", "repeat": "monthly", "builtin": true },
+    { "id": "fixed", "names": { "de": "Wohnen", "en": "Home", "ar": "المنزل" }, "emoji": "🏠", "hue": "sky", "kind": "expense", "repeat": "monthly", "budget": "need", "builtin": true },
+    { "id": "family", "names": { "de": "Familie", "en": "Family", "ar": "العائلة" }, "emoji": "👨‍👩‍👦", "hue": "berry", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true }
+  ],
+  "spartopf-entries": [
+    { "id": "c1", "month": "2026-05", "categoryId": "income", "name": "Gehalt", "amount": 310000, "paid": false, "repeat": "monthly", "seriesId": "c1", "createdAt": 1777593600000, "dueDay": 28 },
+    { "id": "c2", "month": "2026-05", "categoryId": "fixed", "name": "Strom", "amount": 8000, "paid": true, "repeat": "monthly", "seriesId": "c2", "createdAt": 1777593600001, "dueDay": 3 },
+    { "id": "c3", "month": "2026-05", "categoryId": "family", "name": "Kita", "amount": 15000, "paid": false, "repeat": "monthly", "seriesId": "c3", "createdAt": 1777593600002, "dueDay": 5 }
+  ],
+  "spartopf-months": [
+    { "key": "2026-05", "startedAt": 1777593600000, "opening": 50000, "categories": ["income", "fixed", "family"] }
+  ]
+}

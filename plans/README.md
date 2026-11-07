@@ -40,7 +40,7 @@ There is one plan per feature, built strictly in order. The plans draw on two so
 
 ## Gates (end of every plan)
 
-- **Checks:** `npm run check` (added in plan 01). Until then, `npm run lint` and `npm test`.
+- **Checks:** `npm run check` (since plan 01).
 - **Colours:** `npm run audit:contrast` when a colour changed.
 - **UI review:** `node scripts/ui-review.mjs --only <changed screens>`, before and after.
   - No new small targets, overflow or truncation in DE + AR, light + dark, on SE and Pro Max.
@@ -196,7 +196,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 ## Status
 
 - [x] 00 Finish the redesign — built and checked in the browser; reminders and the lock still to be tried on an iPhone (see the plan's notes)
-- [ ] 01 Quality and privacy gates
+- [x] 01 Quality and privacy gates — `npm run check` passes locally; CI not run yet (nothing pushed)
 - [ ] 02 Durable storage
 - [ ] 03 Automatic backups and restore
 - [ ] 04 Encrypted backup files

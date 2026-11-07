@@ -1,0 +1,22 @@
+{
+  "_about": "What version 3 kept in localStorage (synthetic): before schema 4 folded 'Wohnen und Garten' into Wohnen and the old 'Sonstiges' into Sonstiges.",
+  "spartopf-meta": { "seeded": true, "schemaVersion": 3 },
+  "spartopf-categories": [
+    { "id": "income", "names": { "de": "Einkommen", "en": "Income", "ar": "الدخل" }, "emoji": "💶", "hue": "leaf", "kind": "income", "repeat": "monthly", "builtin": true },
+    { "id": "fixed", "names": { "de": "Fixkosten", "en": "Fixed costs", "ar": "التكاليف الثابتة" }, "emoji": "🏠", "hue": "sky", "kind": "expense", "repeat": "monthly", "budget": "need", "builtin": true },
+    { "id": "extra", "names": { "de": "Sonderkosten", "en": "Extras", "ar": "مصاريف إضافية" }, "emoji": "🧾", "hue": "lavender", "kind": "expense", "repeat": "none", "budget": "want", "builtin": true },
+    { "id": "groceries", "names": { "de": "Lebensmittel und Drogerie", "en": "Groceries & drugstore", "ar": "البقالة والعناية الشخصية" }, "emoji": "🛒", "hue": "lime", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true },
+    { "id": "home", "names": { "de": "Wohnen und Garten", "en": "Home & garden" }, "emoji": "🏡", "hue": "leaf", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true, "standard": false },
+    { "id": "other", "names": { "de": "Sonstiges", "en": "Other" }, "emoji": "📦", "hue": "stone", "kind": "expense", "repeat": "none", "budget": "want", "builtin": true, "standard": false },
+    { "id": "insurance", "names": { "de": "Absicherung und Vorsorge", "en": "Insurance & pensions", "ar": "التأمين والتقاعد" }, "emoji": "🛡️", "hue": "lemon", "kind": "expense", "repeat": "monthly", "budget": "need", "builtin": true, "standard": false }
+  ],
+  "spartopf-entries": [
+    { "id": "b1", "month": "2026-01", "categoryId": "income", "name": "Gehalt", "amount": 300000, "paid": true, "repeat": "monthly", "seriesId": "b1", "createdAt": 1767225600000, "date": "2026-01-28" },
+    { "id": "b2", "month": "2026-01", "categoryId": "fixed", "name": "Miete", "amount": 100000, "paid": true, "repeat": "monthly", "seriesId": "b2", "createdAt": 1767225600001, "date": "2026-01-01" },
+    { "id": "b3", "month": "2026-01", "categoryId": "home", "name": "Baumarkt", "amount": 4500, "paid": true, "repeat": "none", "seriesId": "b3", "createdAt": 1767400000000, "date": "2026-01-03", "order": 0 },
+    { "id": "b4", "month": "2026-01", "categoryId": "other", "name": "Kleinkram", "amount": 1200, "paid": false, "repeat": "none", "seriesId": "b4", "createdAt": 1767500000000, "date": "2026-01-20" }
+  ],
+  "spartopf-months": [
+    { "key": "2026-01", "startedAt": 1767225600000, "opening": 100000, "categories": ["income", "fixed", "extra", "groceries", "home"] }
+  ]
+}

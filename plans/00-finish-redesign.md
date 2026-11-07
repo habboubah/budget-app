@@ -54,7 +54,7 @@ Everything in plans 01–38.
 
 - Steps 8–14 are in REDESIGN.md §10, one commit each (11 and 12 share one).
 - The additions above: the schema-8 and schema-9 fixtures are in
-  `src/fixtures/` with `fixtures.test.ts` (golden balances; `limit` survives a
+  `src/fixtures/` with `compat.test.ts` (golden balances; `limit` survives a
   round trip, also in `budgets.test.ts`); `searchEntries` stays pure; *Planen*
   opens Budgets → Abos & Verträge, room left below for 12, 11, 31;
   `reminderPlan()` takes sources (`ReminderSource`); `@capacitor/local-notifications`

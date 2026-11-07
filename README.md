@@ -175,7 +175,7 @@ TestFlight, the same way Fahrtwerk and Korb ship. The full first-time checklist
 | `src/insights.ts` | Savings rate, reserve, forecast, 50/30/20 check, commitments, unusual months, hints (tested in `insights.test.ts`) |
 | `src/budgets.ts`, `src/contracts.ts`, `src/due.ts` | Monthly budgets and their pace, subscriptions & contracts with notice deadlines, what is due next (each with its tests) |
 | `src/reminders.ts`, `src/notify.ts`, `src/lock.ts` | The reminder plan (pure, tested), scheduling it on the iPhone, the Face ID lock |
-| `src/fixtures/` | Backups as older versions wrote them; `fixtures.test.ts` loads them |
+| `src/fixtures/` | What older versions stored and backed up, and a demo year with its golden values; `compat.test.ts` and `golden.test.ts` load them |
 | `src/xlsx.ts`, `src/excelImport.ts` | Reading an .xlsx on the device, and turning a budget sheet into months (tested in `excelImport.test.ts`) |
 | `src/data/defaults.ts` | Built-in categories, name suggestions, emoji |
 | `src/translations.ts` | All UI text, `de`, `en` and `ar` |

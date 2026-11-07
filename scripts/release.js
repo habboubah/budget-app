@@ -74,9 +74,10 @@ if (!/MARKETING_VERSION = /.test(pbxproj) || !/CURRENT_PROJECT_VERSION = /.test(
 }
 
 // ---- Gate: never bump or ship on red ----
+// lint, tests (money rules, old payloads, the golden year), the privacy check
+// (no request leaves the app), the performance budgets and the contrast audit.
 if (!dryRun) {
-  run('npm run lint');
-  run('npm test');
+  run('npm run check');
 }
 
 // ---- Version: package.json and the Xcode project move together ----

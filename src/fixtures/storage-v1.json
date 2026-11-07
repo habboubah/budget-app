@@ -1,0 +1,23 @@
+{
+  "_about": "What version 1 kept in localStorage (synthetic data). Loaded by compat.test.ts through store.loadStored.",
+  "spartopf-meta": { "seeded": true, "schemaVersion": 1 },
+  "spartopf-categories": [
+    { "id": "income", "names": { "de": "Einkommen", "en": "Income" }, "emoji": "💶", "hue": "leaf", "kind": "income", "repeat": "monthly", "builtin": true },
+    { "id": "fixed", "names": { "de": "Fixkosten", "en": "Fixed costs" }, "emoji": "🏠", "hue": "sky", "kind": "expense", "repeat": "monthly", "budget": "need", "builtin": true },
+    { "id": "extra", "names": { "de": "Sonderkosten", "en": "Extras" }, "emoji": "🛍️", "hue": "lavender", "kind": "expense", "repeat": "none", "budget": "want", "builtin": true },
+    { "id": "groceries", "names": { "de": "Einkaufen", "en": "Groceries" }, "emoji": "🛒", "hue": "lime", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true }
+  ],
+  "spartopf-entries": [
+    { "id": "a1", "month": "2025-09", "categoryId": "income", "name": "Gehalt", "amount": 280000, "paid": true, "repeat": "monthly", "seriesId": "a1", "createdAt": 1756684800000, "dueDay": 28 },
+    { "id": "a2", "month": "2025-09", "categoryId": "fixed", "name": "Miete", "amount": 90000, "paid": true, "repeat": "monthly", "seriesId": "a2", "createdAt": 1756684800001, "dueDay": 1 },
+    { "id": "a3", "month": "2025-09", "categoryId": "groceries", "name": "Lidl", "amount": 6420, "paid": true, "repeat": "none", "seriesId": "a3", "createdAt": 1756900000000 },
+    { "id": "a4", "month": "2025-09", "categoryId": "extra", "name": "Geschenk", "amount": 2500, "paid": false, "repeat": "none", "seriesId": "a4", "createdAt": 1757000000000, "dueDay": 20 },
+    { "id": "a5", "month": "2025-10", "categoryId": "income", "name": "Gehalt", "amount": 280000, "paid": true, "repeat": "monthly", "seriesId": "a1", "createdAt": 1759276800000, "dueDay": 28 },
+    { "id": "a6", "month": "2025-10", "categoryId": "fixed", "name": "Miete", "amount": 90000, "paid": true, "repeat": "monthly", "seriesId": "a2", "createdAt": 1759276800001, "dueDay": 1 },
+    { "id": "a7", "month": "2025-10", "categoryId": "groceries", "name": "Rewe", "amount": 8030, "paid": true, "repeat": "none", "seriesId": "a7", "createdAt": 1759400000000 }
+  ],
+  "spartopf-months": [
+    { "key": "2025-09", "startedAt": 1756684800000, "opening": 150000 },
+    { "key": "2025-10", "startedAt": 1759276800000 }
+  ]
+}

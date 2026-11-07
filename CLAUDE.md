@@ -98,9 +98,10 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   (an imported bank transaction's fingerprint); **schema 9** adds
   `Category.limit` (a spending category's monthly budget, cents) and
   **schema 10** `AppData.contracts` (end, notice, renewal, note per recurring
-  series) — both optional, nothing to migrate, both in backups. Old backups
-  are kept as fixtures in `src/fixtures/` (`fixtures.test.ts`: they load,
-  keep what they held, and come to the same balances). Ids
+  series) — both optional, nothing to migrate, both in backups. What older
+  versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
+  `backup-schema-*.json`; `compat.test.ts`: they load, keep what they held,
+  and come to the same balances). A new schema version adds its fixture. Ids
   stay as history: `fixed` = Wohnen, `extra` = Sonstiges (also where orphaned
   entries go). `upgradeCategories()` (run once by
   `loadInitial` for storage below version 2, and by `parseBackup` for older
@@ -328,6 +329,9 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
 | Dev server | `npm run dev` → http://localhost:3002 |
 | Type-check | `npm run lint` |
 | Unit tests | `npm test` |
+| **All the gates** (before a release, in CI) | `npm run check` |
+| Privacy check / performance budgets alone | `npm run check:privacy` / `npm run check:perf` |
+| Re-record the golden year (a money rule changed on purpose) | `npx vitest run src/golden.test.ts -u` |
 | Web build | `npm run build:web` |
 | Build + open Xcode | `npm run build:ios` |
 | Regenerate icons/splash | `npm run assets:generate` |
@@ -336,7 +340,7 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
 
 ## Releasing (only when explicitly asked)
 Same pipeline as pizza-driver-log and shopping-list: `scripts/release.js`
-gates on lint + tests, bumps `package.json` and the Xcode project's
+gates on `npm run check`, bumps `package.json` and the Xcode project's
 `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` together, builds,
 `cap sync ios`, archives and uploads via `ios/App/ExportOptions.plist`, then
 commits and tags. Credentials live in the gitignored `.env.release` — never
@@ -344,10 +348,25 @@ print or commit them. Submitting for review is manual. Full checklist:
 `APP_STORE_RELEASE.md`; skill: `.claude/skills/app-store-release`.
 
 ## Before calling a change done
-1. `npm run lint` and `npm test`.
+1. `npm run check` — it runs, in order:
+   - `lint` and `test`, which include `compat.test.ts` (what every older
+     version stored or backed up still loads, with the same balances) and
+     `golden.test.ts` (a frozen demo year against `fixtures/golden.json`: the
+     balances, per day, budgets, savings rate, 50/30/20, contracts, reminders);
+   - `vite build`;
+   - `check:privacy` (`scripts/privacy-check.mjs`): drives the built app in
+     Chromium — first run, an entry, every tab, a bank CSV, an OCR read, a
+     backup — and fails on any request to another origin; every URL in
+     `dist/` must be on its allowlist, with the reason it is harmless;
+   - `check:perf` (`scripts/perf-check.mjs`): no long task while typing an
+     amount, a month switch painted within 150 ms, the main bundle at most
+     10 % over its recorded gzip size (raise the baseline only with a note in
+     the plan that grew it);
+   - `audit:contrast`.
+   A money rule changed on purpose: re-record the golden year and say why in
+   the commit. A new schema version: add its `storage-v*.json` fixture.
 2. `npm run dev` and exercise the change at iPhone width (375–430px) and on desktop.
-3. If the data shape changed: old `localStorage` payloads still load.
-4. If a colour changed: `npm run audit:contrast`.
+3. If a screen changed: `node scripts/ui-review.mjs` before and after.
 
 ## Commit style
 Short, imperative, feature-focused summaries, no conventional-commit prefixes

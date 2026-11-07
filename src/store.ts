@@ -53,16 +53,25 @@ function initialLanguage(): Language {
  * on — not a question.
  */
 function loadInitial(): AppData {
-  const meta = readJson(K.meta) as { seeded?: boolean; schemaVersion?: number } | undefined;
-  const rawCategories = readJson(K.categories);
+  return loadStored(readJson);
+}
+
+/**
+ * The stored data, read through `read` (a key → parsed JSON) — the part of
+ * the first load that compat.test.ts runs against payloads that older
+ * versions stored (src/fixtures/storage-v*.json).
+ */
+export function loadStored(read: (key: string) => unknown): AppData {
+  const meta = read(K.meta) as { seeded?: boolean; schemaVersion?: number } | undefined;
+  const rawCategories = read(K.categories);
   // Not seeded yet: the defaults go in *before* normalising, or entries from
   // a half-written first launch would all be filed under "Sonstiges".
   const missing = !meta?.seeded && (!Array.isArray(rawCategories) || rawCategories.length === 0);
   const loaded = normalizeState({
     categories: missing ? defaultCategories() : rawCategories,
-    entries: readJson(K.entries),
-    months: readJson(K.months),
-    contracts: readJson(K.contracts),
+    entries: read(K.entries),
+    months: read(K.months),
+    contracts: read(K.contracts),
   });
   // Saved by an older version: new and renamed built-in categories, merges.
   const data = missing ? loaded : upgradeData(loaded, meta?.schemaVersion ?? 1);

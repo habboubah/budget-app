@@ -1,0 +1,205 @@
+{
+ "perMonth": [
+  {
+   "month": "2025-12",
+   "now": 895769,
+   "end": 895769,
+   "net": 255769,
+   "perDayOn15th": 15045,
+   "rate": 51.5
+  },
+  {
+   "month": "2026-01",
+   "now": 1028077,
+   "end": 1028077,
+   "net": 132308,
+   "perDayOn15th": 7782,
+   "rate": 34.76
+  },
+  {
+   "month": "2026-02",
+   "now": 1141366,
+   "end": 1141366,
+   "net": 113289,
+   "perDayOn15th": 8092,
+   "rate": 30.06
+  },
+  {
+   "month": "2026-03",
+   "now": 1228130,
+   "end": 1228130,
+   "net": 86764,
+   "perDayOn15th": 5103,
+   "rate": 23.09
+  },
+  {
+   "month": "2026-04",
+   "now": 1352639,
+   "end": 1352639,
+   "net": 124509,
+   "perDayOn15th": 7781,
+   "rate": 33.55
+  },
+  {
+   "month": "2026-05",
+   "now": 1486302,
+   "end": 1486302,
+   "net": 133663,
+   "perDayOn15th": 7862,
+   "rate": 35.61
+  },
+  {
+   "month": "2026-06",
+   "now": 1618121,
+   "end": 1618121,
+   "net": 131819,
+   "perDayOn15th": 8238,
+   "rate": 34.42
+  },
+  {
+   "month": "2026-07",
+   "now": 1752323,
+   "end": 1752323,
+   "net": 134202,
+   "perDayOn15th": 7894,
+   "rate": 35.22
+  },
+  {
+   "month": "2026-08",
+   "now": 1891994,
+   "end": 1891994,
+   "net": 139671,
+   "perDayOn15th": 8215,
+   "rate": 36.59
+  },
+  {
+   "month": "2026-09",
+   "now": 2033316,
+   "end": 2024816,
+   "net": 132822,
+   "perDayOn15th": 8301,
+   "rate": 35.23
+  },
+  {
+   "month": "2026-10",
+   "now": 2146403,
+   "end": 2137903,
+   "net": 113087,
+   "perDayOn15th": 6652,
+   "rate": 30.71
+  },
+  {
+   "month": "2026-11",
+   "now": 1939399,
+   "end": 2303601,
+   "net": 165698,
+   "perDayOn15th": 10356,
+   "rate": 43.75
+  }
+ ],
+ "budgets": [
+  {
+   "category": "extra",
+   "limit": 15000,
+   "paid": 10629,
+   "open": 0,
+   "spent": 10629,
+   "left": 4371,
+   "elapsed": 0.5,
+   "perDay": 273,
+   "ahead": true
+  },
+  {
+   "category": "groceries",
+   "limit": 45000,
+   "paid": 22604,
+   "open": 0,
+   "spent": 22604,
+   "left": 22396,
+   "elapsed": 0.5,
+   "perDay": 1399,
+   "ahead": false
+  },
+  {
+   "category": "restaurants",
+   "limit": 12000,
+   "paid": 2906,
+   "open": 0,
+   "spent": 2906,
+   "left": 9094,
+   "elapsed": 0.5,
+   "perDay": 568,
+   "ahead": false
+  }
+ ],
+ "rule": {
+  "income": 387927,
+  "met": 2,
+  "parts": [
+   {
+    "bucket": "need",
+    "amount": 217998,
+    "budget": 193964,
+    "ok": false
+   },
+   {
+    "bucket": "want",
+    "amount": 13756,
+    "budget": 116378,
+    "ok": true
+   },
+   {
+    "bucket": "save",
+    "amount": 156173,
+    "budget": 77585,
+    "ok": true
+   }
+  ]
+ },
+ "savings": {
+  "rate": 0.3510271372328459,
+  "averageSaved": 136173,
+  "averageIncome": 387927,
+  "averageExpense": 251754,
+  "months": 11
+ },
+ "contracts": {
+  "monthly": 165141,
+  "yearly": 1981688,
+  "deadlines": [
+   [
+    "Handy",
+    {
+     "endsOn": "2027-01-31",
+     "cancelBy": "2026-12-31"
+    }
+   ]
+  ]
+ },
+ "reminders": [
+  [
+   "2026-11-17T09:00",
+   "Morgen fällig: Internet"
+  ],
+  [
+   "2026-11-21T09:00",
+   "Morgen fällig: Handy"
+  ],
+  [
+   "2026-11-30T09:00",
+   "Morgen fällig: Miete, Haftpflicht"
+  ],
+  [
+   "2026-12-01T09:00",
+   "Morgen fällig: ETF-Sparplan"
+  ],
+  [
+   "2026-12-02T09:00",
+   "Morgen fällig: Strom"
+  ],
+  [
+   "2026-12-04T09:00",
+   "Morgen fällig: Kita"
+  ]
+ ]
+}

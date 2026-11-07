@@ -60,3 +60,31 @@ Nothing visible: updates that don't break things.
 ## Not in this plan
 
 Performance tests on real devices (plan 37).
+
+## Notes (done)
+
+- `npm run check` = lint, test, `vite build`, `check:privacy`, `check:perf`,
+  `audit:contrast`. `scripts/release.js` gates on it; CI installs Chromium and
+  runs it (the old CDN grep is gone — it would have failed on tesseract's
+  default paths, which the allowlist now names with their reason).
+- **Fixtures** (synthetic): `storage-v1`, `-v3`, `-v6`, `-v9` (what
+  `localStorage` held — loaded through the newly exported `store.loadStored`)
+  and `backup-schema-8`, `-9`. Between them every migration runs: v2's new
+  built-ins, v3's Arabic names, v4's merges, v5's Restaurants, v6's emoji,
+  v7's dates, v8's Kinder, v9's budgets. Versions without their own file are
+  passed through by the older ones; add a file per new version from here on.
+  `compat.test.ts` checks entries kept, sums, migrations and golden balances.
+- **Golden year:** `demo-year.json` (Dec 2025 – Nov 2026, a bill left open in
+  September so the carry-over's two openings differ) and `golden.json`
+  (`toMatchFileSnapshot`; update on purpose with `-u`): balances, per day,
+  savings rate, budgets, 50/30/20, contracts, the first reminders.
+- **Privacy check** steps: first run, an entry added and ticked off, every
+  tab, a bank CSV, an OCR read of a drawn screenshot, a backup export. The
+  service worker is blocked during the run; its file is in the bundle scan.
+- **Perf baselines** recorded: main chunk 221.0 kB gzip (level 9), month
+  switch 23–33 ms, no long task while typing.
+- **Proved to fail:** a `fetch('https://example.com/ping')` in `main.tsx`
+  (both the bundle scan and the request check), `openingNow` taken from the
+  previous month's end (compat and golden), an entry in `storage-v1.json`
+  made unreadable (compat). All reverted.
+- **Not verified:** the CI run itself (nothing is pushed).

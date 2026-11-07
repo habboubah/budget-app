@@ -1,0 +1,21 @@
+{
+  "_about": "What version 9 kept in localStorage (synthetic): monthly budgets on categories, no contracts key yet (schema 10).",
+  "spartopf-meta": { "seeded": true, "schemaVersion": 9 },
+  "spartopf-categories": [
+    { "id": "income", "names": { "de": "Einkommen", "en": "Income", "ar": "الدخل" }, "emoji": "💰", "hue": "leaf", "kind": "income", "repeat": "monthly", "builtin": true },
+    { "id": "fixed", "names": { "de": "Wohnen", "en": "Home", "ar": "المنزل" }, "emoji": "🏠", "hue": "sky", "kind": "expense", "repeat": "monthly", "budget": "need", "builtin": true },
+    { "id": "groceries", "names": { "de": "Lebensmittel und Drogerie", "en": "Groceries & drugstore", "ar": "البقالة والعناية الشخصية" }, "emoji": "🛒", "hue": "lime", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true, "limit": 50000 },
+    { "id": "restaurants", "names": { "de": "Restaurants", "en": "Restaurants", "ar": "المطاعم" }, "emoji": "🍽️", "hue": "mint", "kind": "expense", "repeat": "none", "budget": "want", "builtin": true, "limit": 10000 },
+    { "id": "family", "names": { "de": "Familie", "en": "Family", "ar": "العائلة" }, "emoji": "👨‍👩‍👦", "hue": "berry", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true },
+    { "id": "children", "names": { "de": "Kinder", "en": "Children", "ar": "الأطفال" }, "emoji": "🧸", "hue": "lemon", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true }
+  ],
+  "spartopf-entries": [
+    { "id": "d1", "month": "2026-10", "categoryId": "income", "name": "Gehalt", "amount": 320000, "paid": true, "repeat": "monthly", "seriesId": "d1", "createdAt": 1790812800000, "paidAt": 1793145600000, "date": "2026-10-28" },
+    { "id": "d2", "month": "2026-10", "categoryId": "fixed", "name": "Miete", "amount": 105000, "paid": true, "repeat": "monthly", "seriesId": "d2", "createdAt": 1790812800001, "paidAt": 1790812800001, "date": "2026-10-01" },
+    { "id": "d3", "month": "2026-10", "categoryId": "groceries", "name": "Edeka", "amount": 41250, "paid": true, "repeat": "none", "seriesId": "d3", "createdAt": 1791000000000, "paidAt": 1791000000000, "date": "2026-10-10" },
+    { "id": "d4", "month": "2026-10", "categoryId": "restaurants", "name": "Pizzeria", "amount": 3890, "paid": true, "repeat": "none", "seriesId": "d4", "createdAt": 1791100000000, "paidAt": 1791100000000, "date": "2026-10-11", "ref": "2026-10-11|-38.90|pizzeria" }
+  ],
+  "spartopf-months": [
+    { "key": "2026-10", "startedAt": 1790812800000, "opening": 120000, "categories": ["income", "fixed", "groceries", "restaurants", "family", "children"] }
+  ]
+}
