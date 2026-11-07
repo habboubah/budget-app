@@ -626,6 +626,35 @@ export function highlightRanges(text: string, query: string): [number, number][]
   return merged;
 }
 
+/**
+ * The few categories the entry sheet shows before "All": of the chosen
+ * category's kind, this month's first, then the most used (entries of every
+ * month), then the user's order — always with the chosen one among them, and
+ * shown in the user's order so picking one never shuffles the row.
+ */
+export function topCategories({ categories, entries, selectedId, featured = [], limit = 3 }: {
+  categories: Category[];
+  entries: Entry[];
+  selectedId: string;
+  /** This month's categories. */
+  featured?: string[];
+  limit?: number;
+}): Category[] {
+  const kind = categories.find(c => c.id === selectedId)?.kind ?? 'expense';
+  const used = new Map<string, number>();
+  for (const e of entries) used.set(e.categoryId, (used.get(e.categoryId) ?? 0) + 1);
+  const order = new Map(categories.map((c, i) => [c.id, i]));
+  const ranked = [...categories].sort((a, b) =>
+    Number(b.kind === kind) - Number(a.kind === kind)
+    || Number(featured.includes(b.id)) - Number(featured.includes(a.id))
+    || (used.get(b.id) ?? 0) - (used.get(a.id) ?? 0)
+    || order.get(a.id)! - order.get(b.id)!);
+  let top = ranked.slice(0, limit);
+  const chosen = categories.find(c => c.id === selectedId);
+  if (chosen && !top.includes(chosen)) top = [...top.slice(0, Math.max(0, limit - 1)), chosen];
+  return top.sort((a, b) => order.get(a.id)! - order.get(b.id)!);
+}
+
 /* -------------------------------------------------------------- statistics */
 
 export interface CategorySlice {

@@ -85,7 +85,11 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   picked suggestion had last time.
 - **Entry sheet order:** date, then the name field (label hidden, focused
   first), its suggestions — three, the rest behind *Alle (n)* — then the
-  amount, category, status, repeat, note.
+  category (three from `topCategories()`: same kind, this month's, most used,
+  the chosen one always among them; every category behind *Alle (n)*), the
+  amount, status, repeat, note. A new entry starts paid and once; only a
+  picked suggestion brings its last repeat. A category's own `repeat` is no
+  longer offered in the category sheet (the field stays in the data).
 - **Name suggestions** (`suggestNames`) come from every entry of every month:
   this category's names, then other categories' names of the same kind (pass
   `categories`), and only then its built-in ideas; each remembers its

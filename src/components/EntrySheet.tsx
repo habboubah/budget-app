@@ -1,7 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { Category, Entry, EntryDraft, MonthKey, Repeat } from '../types';
-import { amountToInput, cleanText, daysInMonth, defaultEntryDate, displayName, isIsoDay, monthKeyOf, parseAmount, suggestNames, normalizeDigits } from '../logic';
+import {
+  amountToInput, cleanText, daysInMonth, defaultEntryDate, displayName, isIsoDay, monthKeyOf, parseAmount, suggestNames, normalizeDigits,
+  topCategories,
+} from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field, Label, Segmented } from '../ui/Field';
@@ -31,12 +34,13 @@ interface Props {
 /**
  * New or edited entry, top to bottom: the date (today), the name — no label,
  * the keyboard goes there first — with three suggestions from the user's own
- * earlier entries (all of them behind a button), then the amount. A tap on a
- * suggestion ("Miete") takes the entry to that name's category, fills in what
- * it was last time when the amount is still empty, and moves on to the
- * amount. Paid / pending and repeat default from the category, so most
- * entries are name + amount + save. (A due day is no longer asked for; one
- * already on an entry, or on the suggestion's last entry, is kept.)
+ * earlier entries (all of them behind a button), the category (three, the
+ * rest behind a button), then the amount. A tap on a suggestion ("Miete")
+ * takes the entry to that name's category, fills in what it was last time
+ * when the amount is still empty, and moves on to the amount. A new entry is
+ * paid and happens once unless changed (or unless the suggestion repeated),
+ * so most entries are name + amount + save. (A due day is no longer asked
+ * for; one already on an entry, or on the suggestion's last entry, is kept.)
  */
 export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
@@ -61,16 +65,15 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const category = categories.find(c => c.id === categoryId);
   const income = category?.kind === 'income';
 
-  /** Fresh entries: open when they repeat (rent is planned at the start of the month) or lie ahead. */
-  const defaultPaid = (c: Category | undefined) => c?.repeat === 'none' && month <= monthKeyOf();
 
   const reset = (keepCategory?: string) => {
     const c = categories.find(x => x.id === (keepCategory ?? (mode?.kind === 'new' ? mode.categoryId : ''))) ?? categories[0];
     setCategoryId(c?.id ?? '');
     setAmountText('');
     setName('');
-    setPaid(defaultPaid(c));
-    setRepeat(c?.repeat ?? 'none');
+    // A new entry: paid, once — the way most receipts are.
+    setPaid(true);
+    setRepeat('none');
     setDueText('');
     setDateText(defaultEntryDate(month));
     setNote('');
@@ -118,17 +121,18 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   );
   // Three at a glance; the rest behind "All".
   const shownSuggestions = allSuggestions ? suggestions : suggestions.slice(0, 3);
-  // This month's categories at once, the rest behind "More" — and the chosen
-  // one always in view.
-  const inView = categories.filter(c => featured.includes(c.id) || c.id === categoryId);
+  // Three at a glance (this month's and the most used, the chosen one always
+  // among them), every category behind "All".
+  const inView = useMemo(
+    () => topCategories({ categories, entries, selectedId: categoryId, featured }),
+    [categories, entries, categoryId, featured],
+  );
   const shownCategories = allCategories ? categories : inView;
   const hiddenCount = categories.length - inView.length;
 
   const pickCategory = (c: Category) => {
     tapLight();
     setCategoryId(c.id);
-    if (!touched.repeat) setRepeat(c.repeat);
-    if (!touched.paid) setPaid(defaultPaid(c));
   };
 
   const draft = (): EntryDraft | null => {
@@ -249,35 +253,6 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           )}
         </div>
 
-        {/* Amount — the one thing every entry needs. */}
-        <div className="text-center pt-1">
-          <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
-          {/* Written the way amounts are shown everywhere: "−45,12 €", left to right. */}
-          <div dir="ltr" className="mt-1 flex items-baseline justify-center gap-1.5">
-            <span className={`rounded-num text-[32px] font-semibold ${income ? 'text-pos' : 'text-fg-mute'}`} aria-hidden="true">
-              {income ? '+' : '−'}
-            </span>
-            <input
-              ref={amountRef}
-              id={amountId}
-              inputMode="decimal"
-              autoComplete="off"
-              enterKeyHint="next"
-              placeholder="0,00"
-              value={amountText}
-              onChange={e => { setAmountText(normalizeDigits(e.target.value)); setShowError(false); }}
-              aria-invalid={showError && amount === null}
-              aria-describedby={showError && amount === null ? `${amountId}-err` : undefined}
-              style={{ width: `${Math.max(4, amountText.length || 4) + 0.6}ch` }}
-              className="min-w-0 max-w-full bg-transparent rounded-num text-[clamp(40px,13vw,52px)] leading-[1.15] font-bold text-center text-fg placeholder:text-fg-faint/60 caret-accent outline-none"
-            />
-            <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">€</span>
-          </div>
-          {showError && amount === null && (
-            <p id={`${amountId}-err`} role="alert" className="text-caption text-neg mt-2">{t.amountInvalid}</p>
-          )}
-        </div>
-
         <div>
           <Label>{t.category}</Label>
           {/* All at a glance, wrapping — no sideways sliding. */}
@@ -308,13 +283,42 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
                 onClick={() => { tapLight(); setAllCategories(v => !v); }}
                 className="min-h-[40px] px-3.5 rounded-full inline-flex items-center gap-1 text-label font-semibold text-accent bg-accent-dim active:opacity-70 focus-visible:ring-focus"
               >
-                {allCategories ? t.fewerCategories : fmt(t.moreCategories, { n: hiddenCount })}
+                {allCategories ? t.fewerCategories : fmt(t.allCategories, { n: categories.length })}
                 {allCategories
                   ? <ChevronUp className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
                   : <ChevronDown className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
               </button>
             )}
           </div>
+        </div>
+
+        {/* Amount — the one thing every entry needs. */}
+        <div className="text-center pt-1">
+          <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
+          {/* Written the way amounts are shown everywhere: "−45,12 €", left to right. */}
+          <div dir="ltr" className="mt-1 flex items-baseline justify-center gap-1.5">
+            <span className={`rounded-num text-[32px] font-semibold ${income ? 'text-pos' : 'text-fg-mute'}`} aria-hidden="true">
+              {income ? '+' : '−'}
+            </span>
+            <input
+              ref={amountRef}
+              id={amountId}
+              inputMode="decimal"
+              autoComplete="off"
+              enterKeyHint="next"
+              placeholder="0,00"
+              value={amountText}
+              onChange={e => { setAmountText(normalizeDigits(e.target.value)); setShowError(false); }}
+              aria-invalid={showError && amount === null}
+              aria-describedby={showError && amount === null ? `${amountId}-err` : undefined}
+              style={{ width: `${Math.max(4, amountText.length || 4) + 0.6}ch` }}
+              className="min-w-0 max-w-full bg-transparent rounded-num text-[clamp(40px,13vw,52px)] leading-[1.15] font-bold text-center text-fg placeholder:text-fg-faint/60 caret-accent outline-none"
+            />
+            <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">€</span>
+          </div>
+          {showError && amount === null && (
+            <p id={`${amountId}-err`} role="alert" className="text-caption text-neg mt-2">{t.amountInvalid}</p>
+          )}
         </div>
 
         <div>

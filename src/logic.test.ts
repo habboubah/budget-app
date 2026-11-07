@@ -4,7 +4,7 @@ import {
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, upgradeCategories,
-  normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft,
+  normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, topCategories,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -243,6 +243,24 @@ describe('suggestions', () => {
     expect(s.map(x => [x.name, x.categoryId])).toEqual([['Libri', 'extra'], ['Lidl', 'groceries'], ['Online-Kurs', 'extra']]);
     expect(s[1].last?.amount).toBe(4000);
     expect(suggestNames({ entries: all, categoryId: 'extra', lang: 'de', limit: 40 }).length).toBeGreaterThan(5);
+  });
+});
+
+describe('the entry sheet’s three categories', () => {
+  const used = [
+    e('2026-10', 'groceries', 'Lidl', 100, true), e('2026-10', 'groceries', 'Rewe', 100, true), e('2026-11', 'groceries', 'Aldi', 100, true),
+    e('2026-10', 'car', 'Tanken', 100, true), e('2026-11', 'car', 'Tanken', 100, true), e('2026-11', 'income', 'Gehalt', 100, true),
+    e('2026-11', 'income', 'Kindergeld', 100, true), e('2026-11', 'income', 'Elterngeld', 100, true), e('2026-11', 'cash', 'Automat', 100, true),
+  ];
+  const ids = (selectedId: string, featured?: string[]) => topCategories({ categories: cats, entries: used, selectedId, featured }).map(c => c.id);
+  it('picks the most used of the same kind, in the user’s order', () => {
+    expect(ids('groceries')).toEqual(['car', 'groceries', 'cash']);
+    // Income first for an income; the rest still by use.
+    expect(ids('income')).toEqual(['income', 'car', 'groceries']);
+  });
+  it('puts this month’s categories first, and always shows the chosen one', () => {
+    expect(ids('groceries', ['fixed', 'groceries', 'family'])).toEqual(['fixed', 'groceries', 'family']);
+    expect(ids('taxes', ['fixed', 'groceries', 'family'])).toEqual(['fixed', 'groceries', 'taxes']);
   });
 });
 

@@ -96,19 +96,6 @@ export function CategorySheet({ mode, language, t, onClose, onCreate, onSave, on
           </div>
         )}
         <div>
-          <Label>{t.defaultRepeat}</Label>
-          <Segmented<Repeat>
-            label={t.defaultRepeat}
-            value={repeat}
-            onChange={setRepeat}
-            options={[
-              { value: 'none', label: t.repeatNone },
-              { value: 'monthly', label: t.repeatMonthly },
-              { value: 'yearly', label: t.repeatYearly },
-            ]}
-          />
-        </div>
-        <div>
           <Label>{t.picture}</Label>
           <EmojiPicker value={emoji} emojis={CATEGORY_EMOJIS} onChange={setEmoji} label={t.picture} />
         </div>
