@@ -459,17 +459,20 @@ export interface NameSuggestion {
 
 /**
  * Names for the entry sheet's chips, from every entry of every month: first
- * what was entered in this category before, then the built-in ideas for a
- * built-in category, then names from the other categories (each most often
- * first, then most recent). While typing, names that start with the
- * letters so far come first, then names that contain them.
+ * what was entered in this category before, then names from the other
+ * categories of the same kind (expenses for an expense, each most often
+ * first, then most recent) — the user's own history — and only after it the
+ * built-in ideas for a built-in category. While typing, names that start with
+ * the letters so far come first, then names that contain them.
  */
-export function suggestNames({ entries, categoryId, query = '', lang, limit = 12 }: {
+export function suggestNames({ entries, categoryId, query = '', lang, limit = 12, categories }: {
   entries: Entry[];
   categoryId: string;
   query?: string;
   lang: string;
   limit?: number;
+  /** To keep income names out of an expense's suggestions and back. */
+  categories?: Category[];
 }): NameSuggestion[] {
   const q = normalizeName(query);
   const newer = (a: Entry, b: Entry) => a.month > b.month || (a.month === b.month && a.createdAt > b.createdAt);
@@ -501,9 +504,10 @@ export function suggestNames({ entries, categoryId, query = '', lang, limit = 12
     .map(names => displayName(names, lang))
     .map(name => ({ k: normalizeName(name), s: { name, count: 0, categoryId } as NameSuggestion }))
     .filter(x => !groups.has(x.k));
+  const kind = categories ? kindLookup(categories) : undefined;
   const here = history.filter(x => x.s.categoryId === categoryId && groups.get(x.k)!.here > 0);
-  const elsewhere = history.filter(x => groups.get(x.k)!.here === 0);
-  const all = [...here, ...builtin, ...elsewhere];
+  const elsewhere = history.filter(x => groups.get(x.k)!.here === 0 && (!kind || kind(x.s.categoryId) === kind(categoryId)));
+  const all = [...here, ...elsewhere, ...builtin];
   if (!q) return all.slice(0, limit).map(x => x.s);
   const starts = all.filter(x => x.k.startsWith(q) && x.k !== q);
   const contains = all.filter(x => !x.k.startsWith(q) && x.k.includes(q));

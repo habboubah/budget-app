@@ -8,13 +8,16 @@ interface FieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
   /** Hide the visible label (it still names the input for VoiceOver). */
   hideLabel?: boolean;
   trailing?: React.ReactNode;
+  /** The input itself, for focusing it from outside. */
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 /** A labelled text input. Focus on mount uses preventScroll — the DOM
  *  `autofocus` attribute inside a sheet scrolls the page behind it. */
-export function Field({ label, value, onChange, hideLabel, trailing, autoFocus, ...rest }: FieldProps) {
+export function Field({ label, value, onChange, hideLabel, trailing, autoFocus, inputRef, ...rest }: FieldProps) {
   const id = useId();
-  const ref = useRef<HTMLInputElement>(null);
+  const own = useRef<HTMLInputElement>(null);
+  const ref = inputRef ?? own;
   useEffect(() => {
     if (autoFocus) ref.current?.focus({ preventScroll: true });
   }, [autoFocus]);

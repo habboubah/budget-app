@@ -29,10 +29,14 @@ interface Props {
 }
 
 /**
- * New or edited entry. The amount comes first and gets the keyboard straight
- * away; a tap on a suggested name ("Miete") fills in what it was last time
- * when the amount is still empty. Paid / open, repeat and the due day default
- * from the category, so most entries are amount + name + save.
+ * New or edited entry, top to bottom: the date (today), the name — no label,
+ * the keyboard goes there first — with three suggestions from the user's own
+ * earlier entries (all of them behind a button), then the amount. A tap on a
+ * suggestion ("Miete") takes the entry to that name's category, fills in what
+ * it was last time when the amount is still empty, and moves on to the
+ * amount. Paid / pending and repeat default from the category, so most
+ * entries are name + amount + save. (A due day is no longer asked for; one
+ * already on an entry, or on the suggestion's last entry, is kept.)
  */
 export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
@@ -47,9 +51,11 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [dateText, setDateText] = useState('');
   const [note, setNote] = useState('');
   const [allCategories, setAllCategories] = useState(false);
+  const [allSuggestions, setAllSuggestions] = useState(false);
   const [touched, setTouched] = useState({ paid: false, repeat: false });
   const [showError, setShowError] = useState(false);
   const amountRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
   const amountId = useId();
 
   const category = categories.find(c => c.id === categoryId);
@@ -71,6 +77,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setTouched({ paid: false, repeat: false });
     setShowError(false);
     setAllCategories(false);
+    setAllSuggestions(false);
   };
 
   useEffect(() => {
@@ -91,7 +98,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     } else {
       reset();
       // Focus after the sheet has mounted; preventScroll keeps the page still.
-      requestAnimationFrame(() => amountRef.current?.focus({ preventScroll: true }));
+      requestAnimationFrame(() => nameRef.current?.focus({ preventScroll: true }));
     }
   }, [mode]);
 
@@ -106,9 +113,11 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
   const suggestions = useMemo(
     // From every month and category, narrowed with each letter typed.
-    () => (editing || !categoryId ? [] : suggestNames({ entries, categoryId, query: name, lang: language, limit: name.trim() ? 16 : 12 })),
-    [editing, entries, categoryId, name, language],
+    () => (editing || !categoryId ? [] : suggestNames({ entries, categoryId, categories, query: name, lang: language, limit: 60 })),
+    [editing, entries, categoryId, categories, name, language],
   );
+  // Three at a glance; the rest behind "All".
+  const shownSuggestions = allSuggestions ? suggestions : suggestions.slice(0, 3);
   // This month's categories at once, the rest behind "More" — and the chosen
   // one always in view.
   const inView = categories.filter(c => featured.includes(c.id) || c.id === categoryId);
@@ -149,7 +158,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setDateText(keepDate); // a stack of receipts is usually from one day
       setPaid(paid);
       setTouched({ paid: true, repeat: false });
-      amountRef.current?.focus({ preventScroll: true });
+      nameRef.current?.focus({ preventScroll: true });
     } else onClose();
   };
 
@@ -159,6 +168,87 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     <Sheet open={!!mode} title={title} closeLabel={t.cancel} onClose={onClose}
       action={{ label: t.save, onClick: () => save(), disabled: !valid }}>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-6">
+        {/* When — today unless changed; always inside the entry's month. */}
+        <div>
+          <Field
+            label={t.date}
+            type="date"
+            value={dateText}
+            onChange={setDateText}
+            min={firstDay}
+            max={lastDay}
+            aria-invalid={!dateValid}
+          />
+          {!dateValid && <p role="alert" className="text-caption text-neg mt-1.5 px-1">{t.dateHint}</p>}
+        </div>
+
+        {/* What for — the placeholder says it; three of the user's own names below. */}
+        <div>
+          <Field
+            inputRef={nameRef}
+            label={income ? t.fromWhom : t.whatFor}
+            hideLabel
+            value={name}
+            onChange={v => { setName(v); setAllSuggestions(false); }}
+            placeholder={income ? t.fromWhomPlaceholder : t.whatForPlaceholder}
+            maxLength={80}
+            enterKeyHint="next"
+            autoComplete="off"
+            autoCapitalize="sentences"
+            onKeyDown={e => {
+              if (e.key !== 'Enter') return;
+              e.preventDefault();
+              amountRef.current?.focus({ preventScroll: true });
+            }}
+          />
+          {suggestions.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t.suggestions}>
+              {shownSuggestions.map(s => (
+                <button
+                  key={s.name}
+                  type="button"
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => {
+                    tapLight();
+                    setName(s.name);
+                    setAllSuggestions(false);
+                    // A name that belongs to another category takes the entry there ("Lidl" → Lebensmittel).
+                    const home = s.categoryId !== categoryId ? categories.find(c => c.id === s.categoryId) : undefined;
+                    if (home) pickCategory(home);
+                    let filled = !!amountText.trim();
+                    if (s.last) {
+                      // What it was last time — only where nothing was typed yet.
+                      if (!filled && s.last.repeat !== 'none') { setAmountText(amountToInput(s.last.amount, t.locale)); filled = true; }
+                      if (!dueText.trim() && s.last.dueDay) setDueText(String(s.last.dueDay));
+                      if (!touched.repeat) setRepeat(s.last.repeat);
+                    }
+                    // On to the amount while it still needs typing; otherwise the keyboard can go.
+                    if (filled) nameRef.current?.blur();
+                    else amountRef.current?.focus({ preventScroll: true });
+                  }}
+                  className="min-h-[36px] max-w-full px-3.5 rounded-full bg-surface-2 text-label font-medium text-fg active:scale-[0.97] transition-transform focus-visible:ring-focus wrap-compound text-start"
+                >
+                  {s.name}
+                </button>
+              ))}
+              {suggestions.length > 3 && (
+                <button
+                  type="button"
+                  aria-expanded={allSuggestions}
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => { tapLight(); setAllSuggestions(v => !v); }}
+                  className="min-h-[36px] px-3.5 rounded-full inline-flex items-center gap-1 text-label font-semibold text-accent bg-accent-dim active:opacity-70 focus-visible:ring-focus"
+                >
+                  {allSuggestions ? t.fewerSuggestions : fmt(t.allSuggestions, { n: suggestions.length })}
+                  {allSuggestions
+                    ? <ChevronUp className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
+                    : <ChevronDown className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Amount — the one thing every entry needs. */}
         <div className="text-center pt-1">
           <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
@@ -185,46 +275,6 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           </div>
           {showError && amount === null && (
             <p id={`${amountId}-err`} role="alert" className="text-caption text-neg mt-2">{t.amountInvalid}</p>
-          )}
-        </div>
-
-        <div>
-          <Field
-            label={income ? t.fromWhom : t.whatFor}
-            value={name}
-            onChange={setName}
-            placeholder={income ? t.fromWhomPlaceholder : t.whatForPlaceholder}
-            maxLength={80}
-            enterKeyHint="done"
-            autoComplete="off"
-            autoCapitalize="sentences"
-          />
-          {suggestions.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t.suggestions}>
-              {suggestions.map(s => (
-                <button
-                  key={s.name}
-                  type="button"
-                  onMouseDown={e => e.preventDefault()}
-                  onClick={() => {
-                    tapLight();
-                    setName(s.name);
-                    // A name that belongs to another category takes the entry there ("Lidl" → Lebensmittel).
-                    const home = s.categoryId !== categoryId ? categories.find(c => c.id === s.categoryId) : undefined;
-                    if (home) pickCategory(home);
-                    if (s.last) {
-                      // What it was last time — only where nothing was typed yet.
-                      if (!amountText.trim() && s.last.repeat !== 'none') setAmountText(amountToInput(s.last.amount, t.locale));
-                      if (!dueText.trim() && s.last.dueDay) setDueText(String(s.last.dueDay));
-                      if (!touched.repeat) setRepeat(s.last.repeat);
-                    }
-                  }}
-                  className="min-h-[36px] max-w-full px-3.5 rounded-full bg-surface-2 text-label font-medium text-fg active:scale-[0.97] transition-transform focus-visible:ring-focus wrap-compound text-start"
-                >
-                  {s.name}
-                </button>
-              ))}
-            </div>
           )}
         </div>
 
@@ -297,30 +347,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           </p>
         </div>
 
-        <div className="grid grid-cols-[minmax(0,1fr)_7.5rem] gap-3">
-          <Field
-            label={t.date}
-            type="date"
-            value={dateText}
-            onChange={setDateText}
-            min={firstDay}
-            max={lastDay}
-            aria-invalid={!dateValid}
-          />
-          <Field
-            label={t.dueDay}
-            value={dueText}
-            onChange={v => setDueText(normalizeDigits(v).replace(/\D/g, '').slice(0, 2))}
-            placeholder={t.dueDayPlaceholder}
-            inputMode="numeric"
-            maxLength={2}
-            aria-invalid={!dueValid}
-            title={t.dueDayHint}
-          />
-        </div>
-        {!dateValid && <p role="alert" className="text-caption text-neg -mt-4 px-1">{t.dateHint}</p>}
         <Field label={t.note} value={note} onChange={setNote} placeholder={t.notePlaceholder} maxLength={200} />
-        {!dueValid && <p role="alert" className="text-caption text-neg -mt-4 px-1">{t.dueDayHint}</p>}
 
         <div className="grid gap-2 pt-1">
           <Button type="submit" full size="lg" disabled={!valid}>{t.save}</Button>

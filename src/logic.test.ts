@@ -227,7 +227,14 @@ describe('suggestions', () => {
     const s = suggestNames({ entries, categoryId: 'groceries', query: 'ro', lang: 'de' });
     expect(s.map(x => x.name)).toEqual(['Rossmann']);
     expect(suggestNames({ entries, categoryId: 'fixed', query: 'strom', lang: 'de' })).toHaveLength(0);
-    expect(suggestNames({ entries, categoryId: 'income', lang: 'en' })[0].name).toBe('Salary');
+    // Income never gets expense names (and back), so a fresh income starts with the ideas.
+    expect(suggestNames({ entries, categoryId: 'income', lang: 'en', categories: cats })[0].name).toBe('Salary');
+  });
+  it('offers the user’s own names from every month before the built-in ideas', () => {
+    const s = suggestNames({ entries, categoryId: 'restaurants', lang: 'de', categories: cats }).map(x => x.name);
+    // No restaurant history yet: the other expenses come first, the ideas after.
+    expect(s.slice(0, 3)).toEqual(['Lidl', 'Miete', 'Hira']);
+    expect(s.indexOf('Restaurant')).toBeGreaterThan(s.indexOf('Hira'));
   });
   it('suggests names from every category, this one first, and remembers where a name belongs', () => {
     const all = [e('2026-09', 'groceries', 'Lidl', 3000, true), e('2026-10', 'groceries', 'Lidl', 4000, true), e('2026-10', 'extra', 'Libri', 1500, true)];

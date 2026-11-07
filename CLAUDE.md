@@ -80,11 +80,16 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
 - **Entry date:** `Entry.date` (YYYY-MM-DD, always inside `month`) defaults to
   today (`defaultEntryDate`), carries over to the same day of the next month,
   and goes out as the last CSV column. Older entries have none. `dueDay` stays
-  separate (when a bill is due; shown on the row only while open).
+  separate (when a bill is due; shown on the row only while open). The entry
+  sheet no longer asks for it: it keeps an entry's own and takes the one a
+  picked suggestion had last time.
+- **Entry sheet order:** date, then the name field (label hidden, focused
+  first), its suggestions — three, the rest behind *Alle (n)* — then the
+  amount, category, status, repeat, note.
 - **Name suggestions** (`suggestNames`) come from every entry of every month:
-  this category's names, then its built-in ideas, then other categories'
-  names; each remembers its category, and picking one from elsewhere moves the
-  entry there.
+  this category's names, then other categories' names of the same kind (pass
+  `categories`), and only then its built-in ideas; each remembers its
+  category, and picking one from elsewhere moves the entry there.
 - **Search** (month page): `SearchField` sits in `Screen`'s `accessory` slot
   under the title. `searchEntries()` (logic.ts) keeps this month's entries
   whose name, note or category name contains every word, or whose amount
