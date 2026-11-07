@@ -12,7 +12,7 @@ month, and the two numbers that matter: **what is on the account now** and
   Rounded for the money), the grouped grey background with white cards, a
   floating tab bar with the add button beside it, swipe actions, light and
   dark mode. The balance sits on a gradient card in the app's colour — eight
-  to choose from in Settings — and every category brings its own: its tile,
+  to choose from in Optionen — and every category brings its own: its tile,
   a bar for how much of it is paid, its ticks. Amounts run to their new value
   when something is ticked.
 - **Bank transactions in, without typing.** Import the CSV file from your
@@ -28,7 +28,7 @@ month, and the two numbers that matter: **what is on the account now** and
   **Restaurants**, **Familie**, **Kinder** — each a card with what is paid so far and, small and yellow
   below it, the total including what is still open. Each month
   has its own set of categories: a new month gets the ones switched on under
-  *Einstellungen → Kategorien → In jedem neuen Monat*; an empty category can
+  *Optionen → Kategorien und Budgets → (a category) → In jedem neuen Monat*; an empty category can
   be removed from a month (undoable), and *Kategorie hinzufügen* brings any
   category in — as does picking it when entering something. A category with
   entries always stays. Tap a card's header to fold it
@@ -65,14 +65,26 @@ month, and the two numbers that matter: **what is on the account now** and
   balance is carried over automatically — set it by hand for the first month or
   when the real account has drifted ("⋯" → Kontostand am Monatsanfang). Open
   entries left in earlier months are flagged with a link to them.
-- **Statistics.** The long view (last 12 months, or all): income vs.
-  expenses, the balance at each month's end, income and expenses as lines,
-  saved and overspent, the average per category over the last 3 / 6 / 12 / all
-  finished months, every category per month as grouped columns (tap the
-  legend to hide one, or show / hide all), and where the money went by payee
-  over this month or the last 2, 3, 6 or 12 ("Lidl · 6× · 12 %") — hover / tap
-  for values, or open the table.
-- **Insights** (Analyse), a tab of their own: the savings rate month by month
+- **Budgets.** Give a spending category a monthly budget (with a suggestion
+  from what it cost on average): its card shows paid and open against it, a
+  tick for today, "noch 212,88 €" or "50,04 € drüber". *Diesen Monat übrig*
+  says what is left per day.
+- **Demnächst fällig** on the running month: what is due next, overdue first,
+  ticked off right there; *Alle* lists it day by day, with what next month
+  brings along.
+- **Search every month** from the month page, grouped by month.
+- **Reminders and a lock** (iPhone app): a notification before an open bill is
+  due and a week before a contract's last day to cancel — without amounts
+  unless you want them; Face ID (or the passcode) when opening Spartopf.
+- **Statistics.** How it went, over 6 or 12 months or all: the average income,
+  spending and savings of the finished months, one chart of income and
+  expenses with what each month kept (still open or expected is hatched), the
+  balance at each month's end, where the money goes by category (tap one for
+  its months) or by payee over this month or the last 2, 3, 6 or 12 ("Lidl ·
+  6× · 12 %") — tap for values, or open the table.
+- **Planen**, a tab of its own: the month's budgets, then **Abos & Verträge** —
+  every recurring cost with its next payment and price changes; add when a
+  contract ends and its notice period, and it says by when to cancel. Then the savings rate month by month
   against the 20 % target, the 50/30/20 rule (needs / wants / saved — each
   against its share, in euros, with its biggest categories, how many of the
   three targets are met and in which months; set per category whether it
@@ -82,7 +94,7 @@ month, and the two numbers that matter: **what is on the account now** and
   trends, the best and weakest month — and hints for one month: what was
   unusual and the biggest expenses (also over the last 2, 3 or 6 months), new
   names, missing regulars, new prices.
-- **Settings.** Categories — besides the six above, the usual categories of a
+- **Optionen.** Categories and budgets — besides the eight above, the usual categories of a
   German banking app are built in, switched off for new months until you want
   them: *Bekleidung, Einkäufe, Telekommunikation, Mobilität, Reisen, Freizeit
   und Unterhaltung, Sport und Hobby, Gesundheit und Wellness, Bildung und
@@ -93,8 +105,8 @@ month, and the two numbers that matter: **what is on the account now** and
   wiederherstellen*. Deutsch / English / العربية (right to left, with Arabic
   category names; amounts typed with Arabic digits are understood), light /
   dark / automatic.
-- **Import from Excel.** *Einstellungen → Excel → Aus Excel importieren* (or the
-  button on the first month) reads a budget sheet laid out like
+- **Import from Excel.** *Optionen → Sichern und übertragen → Aus Excel
+  importieren* (or the link in the first month's setup card) reads a budget sheet laid out like
   `My_expense.xlsx`: one tab per month ("11.2026"), the categories in row 1,
   each with name · paid · open columns. A preview shows every month, how the
   columns map onto categories and what gets replaced before anything is written.
@@ -144,7 +156,7 @@ iPhone → Share → **Add to Home Screen**. It then opens full-screen and works
 offline.
 
 Home-screen web apps and the Xcode app keep separate data. Use
-**Einstellungen → Datensicherung** to move months between them.
+**Optionen → Sichern und übertragen** to move months between them.
 
 ## Publish on the App Store
 
@@ -161,9 +173,12 @@ TestFlight, the same way Fahrtwerk and Korb ship. The full first-time checklist
 | `src/store.ts` | All state, persisted to `localStorage` (`spartopf-*` keys) |
 | `src/logic.ts` | Pure logic — money parsing/formatting, months, the two balances, carry-over, statistics, storage validation, CSV (tested in `logic.test.ts`) |
 | `src/insights.ts` | Savings rate, reserve, forecast, 50/30/20 check, commitments, unusual months, hints (tested in `insights.test.ts`) |
+| `src/budgets.ts`, `src/contracts.ts`, `src/due.ts` | Monthly budgets and their pace, subscriptions & contracts with notice deadlines, what is due next (each with its tests) |
+| `src/reminders.ts`, `src/notify.ts`, `src/lock.ts` | The reminder plan (pure, tested), scheduling it on the iPhone, the Face ID lock |
+| `src/fixtures/` | Backups as older versions wrote them; `fixtures.test.ts` loads them |
 | `src/xlsx.ts`, `src/excelImport.ts` | Reading an .xlsx on the device, and turning a budget sheet into months (tested in `excelImport.test.ts`) |
 | `src/data/defaults.ts` | Built-in categories, name suggestions, emoji |
-| `src/translations.ts` | All UI text, `de` and `en` |
+| `src/translations.ts` | All UI text, `de`, `en` and `ar` |
 | `src/components/` | Screens (`*View`) and sheets (`*Sheet`), the charts |
 | `src/ui/` | Shared primitives from shopping-list: Screen, Sheet, Button, Field, Toast, TabBar … |
 | `ios/` | Capacitor iOS project (Swift Package Manager, UIScene lifecycle) |

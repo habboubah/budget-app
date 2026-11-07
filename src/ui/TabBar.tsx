@@ -35,9 +35,10 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
         className="fixed inset-x-0 z-30 pointer-events-none"
         style={{ bottom: 'max(calc(env(safe-area-inset-bottom) - 6px), 14px)' }}
       >
-        <div className="mx-auto max-w-xl px-4 flex items-center gap-3">
+        {/* Physical spacing: the bar is chrome, its size doesn't follow the text (iOS doesn't either). */}
+        <div className="mx-auto max-w-xl px-[16px] flex items-center gap-[12px]">
           <div
-            className="pointer-events-auto flex-1 min-w-0 h-[62px] p-1 rounded-full glass-chrome grid"
+            className="pointer-events-auto flex-1 min-w-0 h-[62px] p-[4px] rounded-full glass-chrome grid"
             style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
           >
             {tabs.map(({ id, label: name, icon: Icon }) => {
@@ -59,7 +60,8 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
                     />
                   )}
                   <Icon className="relative w-[22px] h-[22px]" strokeWidth={on ? 2.3 : 1.9} />
-                  <span className={`relative text-chrome truncate max-w-full px-1 ${on ? 'font-semibold' : 'font-medium'}`}>{name}</span>
+                  {/* Barely grows with large text, as iOS tab labels don't: four labels have ~65 px each. */}
+                  <span className={`relative text-[clamp(11px,0.6875rem,12px)] leading-tight truncate max-w-full px-[4px] ${on ? 'font-semibold' : 'font-medium'}`}>{name}</span>
                 </button>
               );
             })}

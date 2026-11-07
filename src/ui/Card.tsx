@@ -15,7 +15,7 @@ export function Card({ title, sub, action, className = '', children }: {
   children: ReactNode;
 }) {
   return (
-    <section className={`rounded-md bg-surface card-edge p-4 ${className}`}>
+    <section className={`rounded-md bg-surface card-edge p-[16px] ${className}`}>
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="text-label font-semibold text-fg wrap-compound">{title}</h3>

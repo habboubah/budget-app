@@ -1,0 +1,20 @@
+{
+  "app": "spartopf",
+  "schemaVersion": 9,
+  "exportedAt": "2026-11-02T07:45:00.000Z",
+  "categories": [
+    { "id": "income", "names": { "de": "Einkommen", "en": "Income", "ar": "الدخل" }, "emoji": "💰", "hue": "leaf", "kind": "income", "repeat": "monthly", "builtin": true, "limit": 30000 },
+    { "id": "fixed", "names": { "de": "Wohnen", "en": "Home", "ar": "المنزل" }, "emoji": "🏠", "hue": "sky", "kind": "expense", "repeat": "monthly", "budget": "need", "builtin": true },
+    { "id": "groceries", "names": { "de": "Lebensmittel und Drogerie", "en": "Groceries & drugstore", "ar": "البقالة والعناية الشخصية" }, "emoji": "🛒", "hue": "lime", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true, "limit": 40000 },
+    { "id": "restaurants", "names": { "de": "Restaurants", "en": "Restaurants", "ar": "المطاعم" }, "emoji": "🍽️", "hue": "mint", "kind": "expense", "repeat": "none", "budget": "want", "builtin": true, "limit": 12050.5 },
+    { "id": "children", "names": { "de": "Kinder", "en": "Children", "ar": "الأطفال" }, "emoji": "🧸", "hue": "lemon", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true, "limit": 15000 }
+  ],
+  "entries": [
+    { "id": "n1", "month": "2026-11", "categoryId": "income", "name": "Gehalt", "amount": 320000, "paid": false, "repeat": "monthly", "seriesId": "e1", "createdAt": 1761955200000, "date": "2026-11-28" },
+    { "id": "n2", "month": "2026-11", "categoryId": "fixed", "name": "Miete", "amount": 105000, "paid": true, "repeat": "monthly", "seriesId": "e2", "createdAt": 1761955200001, "paidAt": 1761955200001, "date": "2026-11-01" },
+    { "id": "n3", "month": "2026-11", "categoryId": "groceries", "name": "Aldi", "amount": 6420, "paid": true, "repeat": "none", "seriesId": "n3", "createdAt": 1762000000000, "paidAt": 1762000000000, "date": "2026-11-02" }
+  ],
+  "months": [
+    { "key": "2026-11", "startedAt": 1761955200000, "opening": 585450, "categories": ["income", "fixed", "groceries", "restaurants", "children"] }
+  ]
+}

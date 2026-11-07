@@ -57,7 +57,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
       <header className={`sticky top-0 z-30 safe-top transition-[background-color] duration-200 ${atTop ? 'bg-transparent' : 'bg-bg'}`}>
         {/* Sides size to their content and the title takes what is left, so a
             wide action can never sit on top of it. */}
-        <div className="px-3 min-h-[54px] grid grid-cols-[minmax(44px,auto)_minmax(0,1fr)_minmax(44px,auto)] gap-2 items-center">
+        <div className="px-[12px] min-h-[54px] grid grid-cols-[minmax(44px,auto)_minmax(0,1fr)_minmax(44px,auto)] gap-2 items-center">
           <div className="justify-self-start">
             {onBack && (
               <button
@@ -84,7 +84,8 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
         />
       </header>
 
-      <div className={`px-5 pt-0.5 ${accessory ? 'pb-3' : 'pb-4'} flex items-center gap-4`}>
+      {/* Margins in px, as iOS keeps its layout margins when text grows (1rem = 16px at the default size). */}
+      <div className={`px-[20px] pt-0.5 ${accessory ? 'pb-3' : 'pb-4'} flex items-center gap-4`}>
         {leading}
         <div className="min-w-0 flex-1">
           {eyebrow && <p className="eyebrow text-fg-mute mb-0.5">{eyebrow}</p>}
@@ -92,9 +93,9 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
           {subtitle && <div className="text-label text-fg-mute mt-1 wrap-prose">{subtitle}</div>}
         </div>
       </div>
-      {accessory && <div className="px-4 pb-5">{accessory}</div>}
+      {accessory && <div className="px-[16px] pb-5">{accessory}</div>}
 
-      <main className="px-4 space-y-6">{children}</main>
+      <main className="px-[16px] space-y-6">{children}</main>
     </div>
   );
 }
@@ -103,9 +104,9 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
 export function Group({ title, footer, children }: { title?: string; footer?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section>
-      {title && <h2 className="px-4 pb-1.5 eyebrow text-fg-mute wrap-compound">{title}</h2>}
+      {title && <h2 className="px-[16px] pb-1.5 eyebrow text-fg-mute wrap-compound">{title}</h2>}
       <div className="rounded-md bg-surface card-edge overflow-hidden divide-hairline-inset">{children}</div>
-      {footer && <p className="px-4 pt-2 text-caption text-fg-mute wrap-prose">{footer}</p>}
+      {footer && <p className="px-[16px] pt-2 text-caption text-fg-mute wrap-prose">{footer}</p>}
     </section>
   );
 }
@@ -131,7 +132,7 @@ export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger 
       {trailing}
     </>
   );
-  const shell = 'relative w-full min-h-[52px] px-4 py-2.5 flex items-center gap-3';
+  const shell = 'relative w-full min-h-[52px] px-[16px] py-2.5 flex items-center gap-[12px]';
   if (!onClick) return <div className={shell} style={sep}>{body}</div>;
   return (
     <button
@@ -158,7 +159,7 @@ export function MenuRow<V extends string>({ label, leading, value, options, onCh
 }) {
   const sep = { '--sep': leading ? '58px' : '1rem' } as React.CSSProperties;
   return (
-    <label className="relative w-full min-h-[52px] px-4 py-2.5 flex items-center gap-3 transition-colors active:bg-surface-2 focus-within:ring-focus" style={sep}>
+    <label className="relative w-full min-h-[52px] px-[16px] py-2.5 flex items-center gap-[12px] transition-colors active:bg-surface-2 focus-within:ring-focus" style={sep}>
       {leading}
       {/* Side by side while both fit; with large text the choice moves under the label. */}
       <span className="min-w-0 flex-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -237,7 +238,7 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions }: 
     <div className="relative w-full min-h-[52px] flex items-center pe-1" style={sep}>
       <button
         type="button" onClick={() => { tapLight(); onClick(); }} aria-label={ariaLabel}
-        className="flex-1 min-w-0 self-stretch px-4 py-2.5 flex items-center gap-3 text-start transition-colors active:bg-surface-2 focus-visible:ring-focus"
+        className="flex-1 min-w-0 self-stretch px-[16px] py-2.5 flex items-center gap-[12px] text-start transition-colors active:bg-surface-2 focus-visible:ring-focus"
       >
         {leading}
         <span className="min-w-0 flex-1">

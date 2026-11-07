@@ -1,0 +1,30 @@
+{
+  "app": "spartopf",
+  "schemaVersion": 8,
+  "exportedAt": "2026-10-20T18:04:11.000Z",
+  "categories": [
+    { "id": "income", "names": { "de": "Einkommen", "en": "Income", "ar": "الدخل" }, "emoji": "💰", "hue": "leaf", "kind": "income", "repeat": "monthly", "builtin": true },
+    { "id": "fixed", "names": { "de": "Wohnen", "en": "Home", "ar": "المنزل" }, "emoji": "🏠", "hue": "sky", "kind": "expense", "repeat": "monthly", "budget": "need", "builtin": true },
+    { "id": "car", "names": { "de": "Auto", "en": "Car", "ar": "السيارة" }, "emoji": "🚗", "hue": "carrot", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true },
+    { "id": "extra", "names": { "de": "Sonstiges", "en": "Others", "ar": "أخرى" }, "emoji": "📦", "hue": "lavender", "kind": "expense", "repeat": "none", "budget": "want", "builtin": true },
+    { "id": "groceries", "names": { "de": "Lebensmittel und Drogerie", "en": "Groceries & drugstore", "ar": "البقالة والعناية الشخصية" }, "emoji": "🛒", "hue": "lime", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true },
+    { "id": "restaurants", "names": { "de": "Restaurants", "en": "Restaurants", "ar": "المطاعم" }, "emoji": "🍽️", "hue": "mint", "kind": "expense", "repeat": "none", "budget": "want", "builtin": true },
+    { "id": "family", "names": { "de": "Familie", "en": "Family", "ar": "العائلة" }, "emoji": "👨‍👩‍👦", "hue": "berry", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true },
+    { "id": "children", "names": { "de": "Kinder", "en": "Children", "ar": "الأطفال" }, "emoji": "🧸", "hue": "lemon", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true },
+    { "id": "u-pets", "names": { "de": "Hund" }, "emoji": "🐕", "hue": "sand", "kind": "expense", "repeat": "none", "budget": "want", "standard": false }
+  ],
+  "entries": [
+    { "id": "e1", "month": "2026-09", "categoryId": "income", "name": "Gehalt", "amount": 320000, "paid": true, "repeat": "monthly", "seriesId": "e1", "createdAt": 1756684800000, "paidAt": 1759017600000, "date": "2026-09-28" },
+    { "id": "e2", "month": "2026-09", "categoryId": "fixed", "name": "Miete", "amount": 105000, "paid": true, "repeat": "monthly", "seriesId": "e2", "createdAt": 1756684800001, "paidAt": 1756684800001, "date": "2026-09-01" },
+    { "id": "e3", "month": "2026-09", "categoryId": "groceries", "name": "Lidl", "amount": 8540, "paid": true, "repeat": "none", "seriesId": "e3", "createdAt": 1757000000000, "paidAt": 1757000000000, "date": "2026-09-04" },
+    { "id": "e4", "month": "2026-09", "categoryId": "car", "name": "Tanken", "amount": 6000, "paid": false, "repeat": "none", "seriesId": "e4", "createdAt": 1757100000000, "date": "2026-09-30", "note": "Tankstelle an der A3" },
+    { "id": "e5", "month": "2026-10", "categoryId": "income", "name": "Gehalt", "amount": 320000, "paid": true, "repeat": "monthly", "seriesId": "e1", "createdAt": 1759276800000, "paidAt": 1761609600000, "date": "2026-10-28" },
+    { "id": "e6", "month": "2026-10", "categoryId": "fixed", "name": "Miete", "amount": 105000, "paid": true, "repeat": "monthly", "seriesId": "e2", "createdAt": 1759276800001, "paidAt": 1759276800001, "date": "2026-10-01" },
+    { "id": "e7", "month": "2026-10", "categoryId": "groceries", "name": "Rewe", "amount": 12010, "paid": true, "repeat": "none", "seriesId": "e7", "createdAt": 1759500000000, "paidAt": 1759500000000, "date": "2026-10-03" },
+    { "id": "e8", "month": "2026-10", "categoryId": "children", "name": "Kita", "amount": 18000, "paid": false, "repeat": "monthly", "seriesId": "e8", "createdAt": 1759600000000, "dueDay": 5, "date": "2026-10-05" }
+  ],
+  "months": [
+    { "key": "2026-09", "startedAt": 1756684800000, "opening": 200000, "categories": ["income", "fixed", "car", "extra", "groceries", "restaurants", "family", "children"] },
+    { "key": "2026-10", "startedAt": 1759276800000, "categories": ["income", "fixed", "car", "extra", "groceries", "restaurants", "family", "children"] }
+  ]
+}

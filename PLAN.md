@@ -56,12 +56,19 @@ One bank account only, on purpose.
    start it and carry over the recurring entries.
 2. **Entry sheet** – amount first (big, decimal keypad), name with suggestions
    from earlier months, category, paid / open, repeat, due day, note.
-3. **Statistik** – the month: income, expenses, saved, savings rate; where the
-   money went (by category and by shop/name); the last 12 months: income vs
-   expenses, the balance at each month's end, average per category.
-4. **Einstellungen** – categories (add, edit, reorder, delete with undo,
-   restore defaults), language (DE/EN), theme, backup export / import, CSV
-   export for Excel, delete all data, about.
+3. **Statistik** – how it went: 6 / 12 months or all, three averages over the
+   finished months, income vs expenses with what each month kept, the balance
+   at each month's end, where the money goes (categories, payees), the table.
+4. **Planen** – how it is going: the month's budgets, subscriptions and
+   contracts with their notice deadlines, then trends, best / weakest month,
+   hints, savings rate, 50/30/20, reserve, forecast.
+5. **Optionen** – the Face ID lock and reminders (iPhone app), language,
+   appearance, colour; categories and budgets (add, edit, reorder, delete with
+   undo, restore defaults); backup, Excel and CSV on their own screen; delete
+   all data, about.
+
+The redesign that led here (REDESIGN.md) also added *Demnächst fällig*,
+search over every month, the first-run setup card and the per-day figure.
 
 ## Steps (one commit each)
 

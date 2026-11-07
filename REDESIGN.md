@@ -666,6 +666,48 @@ category for every month (no rollover), reminders without amounts by default.
   if the snapshot still catches the book, the cover has to move to
   `SceneDelegate.sceneWillResignActive` (native), since the web view may paint
   too late.
+- [x] **14 · Final pass** — full matrix in `screenshots/ui-redesign/after/`
+  (4 sizes × DE/AR × light/dark, 40 screens, contact sheets): the audit is
+  clean on all 23 audited screens. **200 % text:** layout margins are physical
+  now (`Screen`, `Row`, `MenuRow`, `ActionRow`, `Group`, `Card`, the tab bar —
+  iOS keeps its margins when text grows; identical at the default size), so
+  rows wrap by word instead of by syllable; tab labels stay ≤ 12 px (as iOS's
+  do) and no longer truncate. Left at 200 % on SE: the Statistik chart's
+  month columns are 40–42 px wide (six in a row; above WCAG 2.5.8's 24 px,
+  the table has the same values), and the bar's small title truncates as iOS
+  does. `npm run audit:contrast`: 658 pass. Schema-8 and schema-9 backups are
+  fixtures with golden balances (`src/fixtures/`, 8 tests; 175 in all).
+  CLAUDE.md (two tabs Statistik / Planen, entry and category sheets, schema
+  9 and 10, glass on floating chrome, physical margins, chart review, native
+  plugins), PLAN.md and README updated.
+  **VoiceOver checklist for the iPhone (Ahmad):**
+  1. Month: the balance card reads *Kontostand jetzt* with its amount, then
+     *Am Monatsende* and *Diesen Monat übrig*; the details row says it opens.
+  2. A card header reads name, paid amount, budget left / over; "⋯" is named
+     after the category; rows read name, amount, *offen / erwartet /
+     überfällig*; the circle is a checkbox ("bezahlt").
+  3. Swipe actions are also in the row's editor (delete) and the circle
+     (paid) — nothing needs a swipe.
+  4. Entry sheet: focus lands on the amount; the pills read *Datum*, the
+     status switch, *Wiederholung* (pop-up), *Notiz*; ✕ / ✓ read *Abbrechen*
+     / *Sichern*.
+  5. Menus ("⋯"): focus moves into the menu, the items are menu items; check
+     whether the two-finger scrub closes it (in a web view it may not — then
+     an item or a tap outside is the way out, and that should be noted).
+  6. Pushed screens: *Zurück* is the first thing reached; nothing needs the
+     edge swipe.
+  7. Statistik: the period is a radio group; chart columns read month and
+     values; *Tabelle* reads row by row.
+  8. Optionen: *Sprache* and *Erscheinungsbild* are pop-up buttons with their
+     value; the swatches are a radio group with colour names; the lock is a
+     switch with its name.
+  9. Kategorien: *Bearbeiten* → each row has *„Name“ löschen* and
+     *„Name“ verschieben* (swipe up / down on it to move).
+  10. First run: the setup steps read as a list, done ones say *erledigt*.
+  11. The lock screen reads *Spartopf ist gesperrt* and the unlock button;
+      nothing of the book is reachable behind it.
+  12. Dynamic Type at the largest accessibility size: nothing cut off on SE
+      apart from the bar's small title.
 - [x] **13 · First run** — the first month opens on a setup card instead of a
   balance card full of zeros and five paragraphs (`SetupCard.tsx`; the old
   `IntroCard` is gone): ① *Wie viel ist gerade auf deinem Konto?* typed into

@@ -49,3 +49,27 @@ The *Optionen* groups for step 10:
 ## Not in this plan
 
 Everything in plans 01–38.
+
+## Notes (done)
+
+- Steps 8–14 are in REDESIGN.md §10, one commit each (11 and 12 share one).
+- The additions above: the schema-8 and schema-9 fixtures are in
+  `src/fixtures/` with `fixtures.test.ts` (golden balances; `limit` survives a
+  round trip, also in `budgets.test.ts`); `searchEntries` stays pure; *Planen*
+  opens Budgets → Abos & Verträge, room left below for 12, 11, 31;
+  `reminderPlan()` takes sources (`ReminderSource`); `@capacitor/local-notifications`
+  is pinned to 8.3.1; no amounts in notifications by default; the Optionen
+  groups are as listed (Sicherheit und Mitteilungen shows in the iPhone app).
+- The lock: covered from the first render (the flag is read synchronously and
+  only `LockScreen` renders while locked), passcode fallback, one minute in
+  the background. The app-switcher snapshot is covered from JavaScript; if a
+  device shows the book in the switcher, move the cover into
+  `SceneDelegate.sceneWillResignActive`.
+- **Dependencies and the ground rule on native code:** the lock plugin
+  (`@aparajita/capacitor-biometric-auth`, vetted, choice in CLAUDE.md) only
+  asks iOS to authenticate — no secret and no financial data pass through it.
+  Notification texts (bill names, amounts only if switched on) go through the
+  official Capacitor plugin. Plan 14 can replace either with our own plugin.
+- **Not run on a device yet:** reminders (permission, delivery, tap), the lock
+  (cold start, return after a minute, passcode, app switcher). The checklist
+  is in REDESIGN.md §10, step 14.

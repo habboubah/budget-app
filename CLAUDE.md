@@ -36,11 +36,16 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   `src/excelImport.ts` plans the import as pure data (`planExcelImport`) that
   the preview sheet shows and `applyExcelImport` writes. Tests build their own
   .xlsx in memory; never commit a real one (it is someone's finances).
-- **Statistics and Insights are two tabs.** `StatsView` is the long view
-  (charts, the average per category over the last 3 / 6 / 12 / all finished
-  months — `averageMonths` / `averageSpans` —, where the money went by payee
-  over this month or the last 2 / 3 / 6 / 12 — `topNames` over `monthsEnding`).
-  `InsightsView` holds the rest: commitments, trends, best and weakest month,
+- **Statistik and Planen are two tabs.** `StatsView` answers *how did it go*:
+  6 Monate | 12 Monate | Alle (a segmented control, 6 by default), the three
+  averages over the finished months in view, one income / expense chart (what
+  each month kept written over it, open parts hatched), the balance line,
+  *Wofür das Geld geht* (categories as Ø bars → a category's months;
+  payees with their own period — `topNames` over `monthsEnding`), the table.
+  `InsightsView` is the **Planen** tab (id still `insights`): first the
+  month's **Budgets** (`src/budgets.ts`), then **Abos & Verträge**
+  (`src/contracts.ts`, details per series in `AppData.contracts`), then the
+  rest: trends, best and weakest month,
   then hints for one month (‹ › to switch) — *unusual* and *biggest
   expenses* also over the last 2 / 3 / 6 months (`unusual` /
   `biggestExpenses` take several months; `unusualBasis` = the up to six
@@ -64,8 +69,11 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   `LegendToggles`: aria-pressed chips that hide a series, and the axis
   rescales to what is left,
   and per category `bg-hue-chart` / `fill-hue-chart` under `data-hue` — one
-  OKLCH step per hue and theme (`--t-<hue>-chart`). The default categories'
-  colours pass `validate_palette.js`; re-run it when changing them.
+  OKLCH step per hue and theme (`--t-<hue>-chart`). Amber (`chart-save` /
+  `warn`) means "open" everywhere; what a month kept is a label, not a column.
+  Review a chart change with the `roast-my-chart` skill and run
+  `npm run audit:contrast` (the `validate_palette.js` once cited here isn't in
+  the repo).
 - **Categories per month:** `MonthRecord.categories` lists what a month
   shows; `monthCategories()` adds anything with entries, so money never
   vanishes. Unset (months from before, Excel imports) = the standard ones. New
@@ -87,7 +95,12 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   standard ones frozen in (`upgradeData(data, from, today)`); **schema 6**
   (`SHIPPED_V5`) gives *Einkommen* 💰 instead of 💶 where unchanged; **schema 7**
   dates entries that only had a due day, and adds the optional `Entry.ref`
-  (an imported bank transaction's fingerprint). Ids
+  (an imported bank transaction's fingerprint); **schema 9** adds
+  `Category.limit` (a spending category's monthly budget, cents) and
+  **schema 10** `AppData.contracts` (end, notice, renewal, note per recurring
+  series) — both optional, nothing to migrate, both in backups. Old backups
+  are kept as fixtures in `src/fixtures/` (`fixtures.test.ts`: they load,
+  keep what they held, and come to the same balances). Ids
   stay as history: `fixed` = Wohnen, `extra` = Sonstiges (also where orphaned
   entries go). `upgradeCategories()` (run once by
   `loadInitial` for storage below version 2, and by `parseBackup` for older
@@ -115,14 +128,20 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   `dueDay` is legacy — no longer shown or asked for; **schema 7** turned it
   into the date of entries that had none (only entries without a date still
   fall back to it).
-- **Entry sheet order:** date, then the name field (label hidden, focused
-  first), its suggestions — three, the rest behind *Alle (n)* — then the
-  category (three from `topCategories()`: same kind, this month's, most used,
-  the chosen one always among them; every category behind *Alle (n)*), the
-  amount, status, repeat, note. A new entry — income or expense — starts
-  paid / received and once; a picked suggestion doesn't change that. A
-  category's own `repeat` is no longer offered in the category sheet (the
-  field stays in the data).
+- **Entry sheet order:** the amount first (focused for a new entry, decimal
+  pad), then the name with its suggestions — three, the rest behind *Alle
+  (n)* — then the category (three from `topCategories()`: same kind, this
+  month's, most used, the chosen one always among them; every category behind
+  *Alle (n)*), then one row of pills: date, paid ↔ open, repeat (a menu),
+  note. A new entry — income or expense — starts paid / received and once; a
+  picked suggestion doesn't change that (the first run's steps preset a name
+  and "monthly" through `EntrySheetMode.preset`). A category's own `repeat` is
+  no longer offered in the category sheet (the field stays in the data).
+- **Category sheet:** name, kind, *Budget pro Monat* (spending only, with the
+  suggestion from `suggestLimit`), *In jedem neuen Monat* (the switch lives
+  here only), *Zählt als*, picture, colour. The Kategorien screen lists them
+  with a subline and the entry count; *Bearbeiten* shows grips and ⊖, a swipe
+  deletes (undoable).
 - **Name suggestions** (`suggestNames`) come from every entry of every month:
   this category's names, then other categories' names of the same kind (pass
   `categories`), and only then its built-in ideas; each remembers its
@@ -208,7 +227,7 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   + `text-accent-fill-ink`. Cards are `rounded-md bg-surface card-edge` — no
   border, no shadow. Floating chrome (tab bar, nav buttons) is `float-chrome`.
 - **Accent** = `data-accent` on `<html>` (store `accent`, key
-  `spartopf-accent`, a view preference — not in backups; picked in Settings →
+  `spartopf-accent`, a view preference — not in backups; picked in Optionen →
   Darstellung → Farbe). Eight in `ACCENTS` (`types.ts`); each `[data-accent]`
   block in index.css sets `--acc-l` (day) / `--acc-d` + `--acc-ink-d` (night)
   and three gradient stops `--hero-1..3`. The theme blocks map `--t-accent*`
@@ -240,7 +259,8 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   themselves are plain `text-fg` — a bill is not an error.
 - A category's colour: `data-hue={category.hue}` on an element, then paint
   with `bg-hue-bg` / `text-hue-ink`. Its hue is identity — the emoji tile, the
-  paid progress bar under the category's name and the paid ticks
+  bar under the category's name (paid so far; with a budget, paid + open
+  against the budget, red when over, a tick for today — `BudgetBar`) and the paid ticks
   (`bg-hue-chart` + `text-chart-label`), the bars in the statistics; cards stay
   `bg-surface` + `card-edge`.
 - Motion: big money runs to a new value (`useCountUp` / `ui/CountingMoney`,
@@ -252,9 +272,16 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
 - Type scale in rem (follows Dynamic Type); touch targets in px
   (`min-h-control`, `h-tap`, `w-tap`).
 - Emoji always through the `emoji` utility (or `ui/Picture`).
-- No `hover:` styles (sticky on touch), no `backdrop-filter` (a gradient
-  fade — `edge-fade-top` / `edge-fade-bottom` — stands in for iOS's blurred
-  scroll edges), no `filter: blur` on scrolling content.
+- No `hover:` styles (sticky on touch). `backdrop-filter` only on floating
+  chrome — the tab bar, round bar buttons, sheet toolbar buttons, menus —
+  through `glass-chrome` / `glass-menu` (a static blur with solid fallbacks
+  for Reduce Transparency, Increase Contrast and no support); never on
+  scrolling content, cards or sheet bodies, never animated. A gradient fade
+  (`edge-fade-top` / `edge-fade-bottom`) stands in for iOS's blurred scroll
+  edges; no `filter: blur` on scrolling content.
+- Layout margins are physical (`px-[16px]`, `gap-[12px]` in `Screen`, `Row`,
+  `Card`, the tab bar): iOS keeps its margins when text grows, so at 200 %
+  the words get the room. Type and vertical padding stay in rem.
 - Anything fixed to the bottom pads with `safe-bottom`; the tab bar is fixed,
   so tab screens use `<Screen tabbed>`.
 
