@@ -4,8 +4,9 @@ import { Category, Names } from '../types';
  * The categories a first launch starts with, in the order the month page
  * reads: income first, then home (rent and what goes out every month), the
  * car, others, groceries and the family — the columns of My_expense.xlsx —
- * with restaurants (schema 5) beside the groceries. These seven are part of
- * every new month.
+ * with restaurants (schema 5) beside the groceries and the children's
+ * expenses (schema 8) beside the family. These eight are part of every new
+ * month.
  *
  * Ids are history: `fixed` is "Wohnen / Home" and `extra` is "Sonstiges /
  * Others" (schema 4 merged the former "Wohnen und Garten" and "Sonstiges"
@@ -30,6 +31,7 @@ const CATEGORIES: Category[] = [
   { id: 'groceries', names: { de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore', ar: 'البقالة والعناية الشخصية' }, emoji: '🛒', hue: 'lime', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
   { id: 'restaurants', names: { de: 'Restaurants', en: 'Restaurants', ar: 'المطاعم' }, emoji: '🍽️', hue: 'mint', kind: 'expense', repeat: 'none', budget: 'want', builtin: true },
   { id: 'family', names: { de: 'Familie', en: 'Family', ar: 'العائلة' }, emoji: '👨‍👩‍👦', hue: 'berry', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
+  { id: 'children', names: { de: 'Kinder', en: 'Children', ar: 'الأطفال' }, emoji: '🧸', hue: 'lemon', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
 
   { id: 'clothing', names: { de: 'Bekleidung', en: 'Clothing', ar: 'الملابس' }, emoji: '👕', hue: 'plum', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
   { id: 'shopping', names: { de: 'Einkäufe', en: 'Shopping', ar: 'المشتريات' }, emoji: '🛍️', hue: 'stone', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
@@ -83,14 +85,16 @@ export const SHIPPED_V3: Record<string, { names: Names; emoji?: string[] }> = {
 };
 
 /**
- * Schema 5: "Restaurants" joins the main categories. Data saved before it gets
- * it after the groceries — unless the user already made one of their own
- * under one of these names — and so does the running month (and any later
- * one already started); months before keep the categories they had.
+ * Main categories added after the first release — "Restaurants" (schema 5),
+ * "Kinder" (schema 8). Data saved before gets each one after its neighbour —
+ * unless the user already made one of their own under one of these names —
+ * and so do the running month and any later one already started; months
+ * before keep the categories they had.
  */
-export const NEW_IN_V5: Record<string, string[]> = {
-  restaurants: ['restaurant', 'restaurants', 'restaurants und cafes', 'essen gehen', 'gastronomie', 'مطعم', 'مطاعم', 'المطاعم'],
-};
+export const NEW_MAIN: { id: string; since: number; after: string; aliases: string[] }[] = [
+  { id: 'restaurants', since: 5, after: 'groceries', aliases: ['restaurant', 'restaurants', 'restaurants und cafes', 'essen gehen', 'gastronomie', 'مطعم', 'مطاعم', 'المطاعم'] },
+  { id: 'children', since: 8, after: 'family', aliases: ['kinder', 'kind', 'kids', 'children', 'child', 'kinderausgaben', 'baby', 'babys', 'طفل', 'أطفال', 'الأطفال'] },
+];
 
 /**
  * Schema 6: Einkommen gets a money bag (💰) instead of the banknote, which
@@ -139,8 +143,13 @@ export const NAME_SUGGESTIONS: Record<string, Names[]> = {
     { de: 'Lieferando' }, { de: 'Wolt' }, { de: "McDonald's" }, { de: 'Burger King' }, { de: 'Starbucks' },
   ],
   family: [
-    { de: 'Kita', en: 'Daycare', ar: 'روضة' }, { de: 'Kinderkleidung', en: "Kids' clothes", ar: 'ملابس الأطفال' }, { de: 'Spielzeug', en: 'Toys', ar: 'ألعاب' },
-    { de: 'Windeln', en: 'Nappies', ar: 'حفاضات' }, { de: 'Taschengeld', en: 'Pocket money', ar: 'مصروف الجيب' }, { de: 'Ausflug', en: 'Day out', ar: 'نزهة' },
+    { de: 'Ausflug', en: 'Day out', ar: 'نزهة' }, { de: 'Geschenk', en: 'Gift', ar: 'هدية' }, { de: 'Familienfeier', en: 'Family celebration', ar: 'حفلة عائلية' },
+    { de: 'Besuch', en: 'Visit', ar: 'زيارة' }, { de: 'Haushaltshilfe', en: 'Home help', ar: 'مساعدة منزلية' },
+  ],
+  children: [
+    { de: 'Windeln', en: 'Nappies', ar: 'حفاضات' }, { de: 'Babynahrung', en: 'Baby food', ar: 'طعام الأطفال' }, { de: 'Kinderkleidung', en: "Kids' clothes", ar: 'ملابس الأطفال' },
+    { de: 'Spielzeug', en: 'Toys', ar: 'ألعاب' }, { de: 'Kita', en: 'Daycare', ar: 'روضة' }, { de: 'Schulsachen', en: 'School supplies', ar: 'أدوات مدرسية' },
+    { de: 'Taschengeld', en: 'Pocket money', ar: 'مصروف الجيب' }, { de: 'Babysitter', en: 'Babysitter', ar: 'جليسة أطفال' }, { de: 'Kinderwagen', en: 'Pram', ar: 'عربة أطفال' },
   ],
   clothing: [
     { de: 'C&A' }, { de: 'H&M' }, { de: 'Zalando' }, { de: 'Primark' }, { de: 'Deichmann' },

@@ -450,7 +450,7 @@ describe('categories per month', () => {
 
   it('shows the standard categories (and any with entries) in a month without its own list', () => {
     const ids = monthCategories(base([{ key: '2026-11', startedAt: 0 }]), '2026-11').map(c => c.id);
-    expect(ids).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family']);
+    expect(ids).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children']);
     const withCash = { ...base([{ key: '2026-11', startedAt: 0 }]), entries: [extra, e('2026-11', 'cash', 'Geldautomat', 5000, true)] };
     expect(monthCategories(withCash, '2026-11').map(c => c.id)).toEqual([...ids, 'cash']);
   });
@@ -520,9 +520,9 @@ describe('upgrading categories saved before schema 2', () => {
     expect(up.find(c => c.id === 'insurance')!.names.en).toBe('Insurance');
     expect(up.map(c => c.id).slice(4)).toEqual([
       'restaurants', 'clothing', 'shopping', 'telecom', 'mobility', 'travel', 'leisure', 'sport', 'health', 'education',
-      'investment', 'insurance', 'cash', 'taxes',
+      'investment', 'insurance', 'cash', 'taxes', 'children',
     ]);
-    expect(standardCategoryIds(up)).toEqual(['income', 'fixed', 'extra', 'groceries', 'restaurants']);
+    expect(standardCategoryIds(up)).toEqual(['income', 'fixed', 'extra', 'groceries', 'restaurants', 'children']);
     expect(up.find(c => c.id === 'investment')!.budget).toBe('save');
   });
   it('keeps what the user renamed or repainted, and the user’s own categories', () => {
@@ -548,11 +548,11 @@ describe('upgrading categories saved before schema 2', () => {
   it('runs on a backup from version 1, not on a current one', () => {
     const old = { app: 'spartopf', schemaVersion: 1, categories: v1(), entries: [], months: [] };
     const parsed = parseBackup(JSON.stringify(old));
-    expect(parsed.ok && parsed.data.categories.length).toBe(18);
-    // From version 2 on, only the restaurants (schema 5) are still to come.
+    expect(parsed.ok && parsed.data.categories.length).toBe(19);
+    // From version 2 on, only the restaurants (schema 5) and the children (schema 8) are still to come.
     const v2 = parseBackup(JSON.stringify({ ...old, schemaVersion: 2 }));
-    expect(v2.ok && v2.data.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries', 'restaurants']);
-    const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 7 }));
+    expect(v2.ok && v2.data.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries', 'restaurants', 'children']);
+    const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 8 }));
     expect(current.ok && current.data.categories.length).toBe(4);
   });
 });
@@ -565,7 +565,7 @@ describe('Arabic', () => {
     expect(up.map(c => c.names.ar)).toEqual(['الدخل', undefined, 'السيارة']);
     expect(up[1].names).toEqual({ de: 'Miete & Nebenkosten' });
     expect(up).toHaveLength(3);
-    expect(upgradeCategories(up, 7)).toBe(up);
+    expect(upgradeCategories(up, 8)).toBe(up);
   });
   it('reads amounts typed on an Arabic keyboard', () => {
     expect(normalizeDigits('١٬٠٥٠٫٥٠')).toBe('1,050.50');
@@ -607,13 +607,13 @@ describe('schema 4: Wohnen and Sonstiges', () => {
 
   it('folds "Wohnen und Garten" into Wohnen and the old "Sonstiges" into Sonstiges, entries and months too', () => {
     const up = upgradeData(v3(), 3, new Date(2026, 10, 7));
-    // (Schema 5 then adds the restaurants: no groceries here, so at the end.)
-    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'insurance', 'restaurants']);
-    expect(up.categories.map(c => c.names.de)).toEqual(['Einkommen', 'Wohnen', 'Sonstiges', 'Versicherungen', 'Restaurants']);
+    // (Schemas 5 and 8 then add the restaurants and the children: no neighbours here, so at the end.)
+    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'insurance', 'restaurants', 'children']);
+    expect(up.categories.map(c => c.names.de)).toEqual(['Einkommen', 'Wohnen', 'Sonstiges', 'Versicherungen', 'Restaurants', 'Kinder']);
     expect(up.categories.find(c => c.id === 'extra')!.emoji).toBe('📦');
     expect(up.entries.map(x => [x.name, x.categoryId, x.order])).toEqual([['IKEA', 'fixed', undefined], ['Post', 'extra', undefined], ['Miete', 'fixed', 0]]);
-    expect(up.months[0].categories).toEqual(['income', 'fixed', 'extra', 'restaurants']);
-    expect(upgradeData(up, 7)).toBe(up);
+    expect(up.months[0].categories).toEqual(['income', 'fixed', 'extra', 'restaurants', 'children']);
+    expect(upgradeData(up, 8)).toBe(up);
   });
   it('keeps a name the user chose', () => {
     const d = v3();
@@ -639,19 +639,19 @@ describe('schema 5: Restaurants', () => {
   it('is a main category of a fresh start, beside the groceries', () => {
     const ids = defaultCategories().map(c => c.id);
     expect(ids.indexOf('restaurants')).toBe(ids.indexOf('groceries') + 1);
-    expect(standardCategoryIds(defaultCategories())).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family']);
+    expect(standardCategoryIds(defaultCategories())).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children']);
     expect(suggestNames({ entries: [], categoryId: 'restaurants', lang: 'de' }).map(s => s.name)).toContain('Lieferando');
   });
   it('arrives after the groceries, in the running month and later ones; earlier months stay as they were', () => {
     const up = upgradeData(v4(), 4, today);
-    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'cash']);
+    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children', 'cash']);
     const shown = (key: string) => monthCategories(up, key).map(c => c.id);
     expect(shown('2026-09')).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'family']);
     expect(shown('2026-10')).toEqual(['income', 'fixed', 'groceries']);
-    expect(shown('2026-11')).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family']);
+    expect(shown('2026-11')).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children']);
     expect(up.months.find(m => m.key === '2026-12')!.categories).toBeUndefined();
     expect(shown('2026-12')).toContain('restaurants');
-    expect(upgradeData(up, 7, today)).toBe(up);
+    expect(upgradeData(up, 8, today)).toBe(up);
   });
   it('leaves it out when the user already has one of their own', () => {
     const d = v4();
@@ -668,7 +668,7 @@ describe('schema 6: the income picture', () => {
     const d = (emoji: string): AppData => ({ categories: [{ ...shipped, emoji }], entries: [], months: [] });
     expect(upgradeData(d('💶'), 5).categories[0].emoji).toBe('💰');
     expect(upgradeData(d('🏦'), 5).categories[0].emoji).toBe('🏦');
-    expect(upgradeData(d('💶'), 7).categories[0].emoji).toBe('💶');
+    expect(upgradeData(d('💶'), 8).categories[0].emoji).toBe('💶');
   });
 });
 
@@ -692,5 +692,20 @@ describe('schema 7: the date says when it is due', () => {
   it('keeps an imported entry’s fingerprint through storage', () => {
     const s = normalizeState({ entries: [{ ...e('2026-11', 'fixed', 'Lidl', 100, true), ref: '2026-11-03|-100|lidl|' }] });
     expect(s.entries[0].ref).toBe('2026-11-03|-100|lidl|');
+  });
+});
+
+describe('schema 8: Kinder', () => {
+  it('arrives after the family, unless the user has one of their own', () => {
+    const shipped = new Map(defaultCategories().map(c => [c.id, c]));
+    const v7: AppData = {
+      categories: ['income', 'fixed', 'groceries', 'restaurants', 'family', 'cash'].map(id => ({ ...shipped.get(id)! })),
+      entries: [], months: [{ key: '2026-11', startedAt: 0, categories: ['income', 'family'] }],
+    };
+    const up = upgradeData(v7, 7, new Date(2026, 10, 7));
+    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'groceries', 'restaurants', 'family', 'children', 'cash']);
+    expect(up.months[0].categories).toEqual(['income', 'family', 'children']);
+    const own = { ...v7, categories: [...v7.categories, { id: 'k1', names: { de: 'Kinder' }, emoji: '👶', hue: 'sand' as const, kind: 'expense' as const, repeat: 'none' as const }] };
+    expect(upgradeData(own, 7, new Date(2026, 10, 7)).categories.some(c => c.id === 'children')).toBe(false);
   });
 });

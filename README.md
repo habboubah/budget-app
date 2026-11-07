@@ -20,7 +20,7 @@ month, and the two numbers that matter: **what is on the account now** and
   back.
   The month reads in the order money moves: **Einkommen** first, then
   **Wohnen** (rent, utilities, phone …), **Auto**, **Sonstiges**, **Lebensmittel und Drogerie**,
-  **Restaurants**, **Familie** — each a card with what is paid so far and, small and yellow
+  **Restaurants**, **Familie**, **Kinder** — each a card with what is paid so far and, small and yellow
   below it, the total including what is still open. Each month
   has its own set of categories: a new month gets the ones switched on under
   *Einstellungen → Kategorien → In jedem neuen Monat*; an empty category can

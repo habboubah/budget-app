@@ -55,8 +55,8 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   shows; `monthCategories()` adds anything with entries, so money never
   vanishes. Unset (months from before, Excel imports) = the standard ones. New
   months take `standardCategoryIds()` (categories with `standard !== false`).
-  Of the 20 built-ins seven are standard — the six from the Excel sheet plus
-  `restaurants` (after `groceries`); the banking-app ones (`clothing` …
+  Of the 21 built-ins eight are standard — the six from the Excel sheet plus
+  `restaurants` (after `groceries`) and `children` (after `family`); the banking-app ones (`clothing` …
   `taxes`) ship with `standard: false` — keep it that way, or every month
   fills up with empty cards. Only an empty category can be taken
   out of a month (`canRemoveFromMonth`).
@@ -65,9 +65,10 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   `SHIPPED_V3`) folds "Wohnen und Garten" into `fixed` (now *Wohnen*) and the
   old "Sonstiges" into `extra` (now *Sonstiges*), entries and month lists
   included, and renames *Absicherung und Vorsorge* to *Versicherungen*;
-  **schema 5** (`NEW_IN_V5`) adds *Restaurants* after the groceries — skipped
-  if the user already has a category of that name — and into the running and
-  later started months' lists; earlier months without a list get the old
+  **schema 5** and **schema 8** (`NEW_MAIN`) add *Restaurants* after the
+  groceries and *Kinder* after the family — skipped if the user already has a
+  category of that name — and into the running and later started months'
+  lists; earlier months without a list get the old
   standard ones frozen in (`upgradeData(data, from, today)`); **schema 6**
   (`SHIPPED_V5`) gives *Einkommen* 💰 instead of 💶 where unchanged; **schema 7**
   dates entries that only had a due day, and adds the optional `Entry.ref`
