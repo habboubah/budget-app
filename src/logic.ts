@@ -510,6 +510,108 @@ export function suggestNames({ entries, categoryId, query = '', lang, limit = 12
   return [...starts, ...contains].slice(0, limit).map(x => x.s);
 }
 
+/* ------------------------------------------------------------------ search */
+
+/**
+ * One character the way search compares it: lower case, accents and Arabic
+ * vowel marks dropped, ß as ss, ة as ه and ى as ي, Arabic-Indic digits as 0–9
+ * — so "strasse" finds "Straße", "gebuhr" "Gebühr", "احمد" "أحمد".
+ */
+function foldChar(ch: string): string {
+  return normalizeDigits(ch)
+    .toLocaleLowerCase('de')
+    .replace(/ß/g, 'ss')
+    .normalize('NFKD')
+    .replace(/[̀-ͯؐ-ًؚ-ٰٟۖ-ۭـ]/g, '')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي');
+}
+
+/**
+ * A text folded for search, with where each folded character came from — so
+ * a hit in the folded text can be marked in the original. A mark that folds
+ * away (an Arabic vowel sign) stays with the letter before it.
+ */
+function foldMapped(text: string): { folded: string; from: number[]; to: number[] } {
+  let folded = '';
+  const from: number[] = [];
+  const to: number[] = [];
+  let i = 0;
+  for (const ch of text) {
+    const f = foldChar(ch);
+    if (!f && to.length) to[to.length - 1] = i + ch.length;
+    for (let k = 0; k < f.length; k++) { from.push(i); to.push(i + ch.length); }
+    folded += f;
+    i += ch.length;
+  }
+  return { folded, from, to };
+}
+
+export function foldForSearch(text: string): string {
+  return foldMapped(text).folded;
+}
+
+/** The words of a search, folded; a lone currency sign is not a word. */
+export function searchTerms(query: string): string[] {
+  return foldForSearch(query).split(/\s+/).filter(w => w && !/^[€$£]+$/.test(w));
+}
+
+/**
+ * Does a typed number start an amount? "39" and "39,8" find 39,80 €; "1050",
+ * "1.050" and "1050,00" find 1.050,00 € — from the start of the amount only,
+ * so "39" does not find 1.390,55 €. A minus or € typed along is ignored.
+ */
+function amountMatches(cents: number, term: string, locale: string): boolean {
+  const typed = term.replace(/^[−-]/, '').replace(/[€$£]/g, '');
+  if (!/^\d[\d.,]*$/.test(typed)) return false;
+  const value = Math.abs(cents) / 100;
+  const plain = value.toFixed(2);
+  const grouped = normalizeDigits(new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value));
+  return [plain, plain.replace('.', ','), grouped].some(x => x.startsWith(typed));
+}
+
+/**
+ * The entries a search finds, in their order. Every word has to appear in the
+ * entry's name, its note or its category's name, or start its amount; case,
+ * accents and Arabic letter forms don't matter. No words: everything.
+ */
+export function searchEntries(entries: Entry[], query: string, { categoryName, locale }: {
+  /** The category's name as shown (in the current language). */
+  categoryName: (categoryId: string) => string;
+  locale: string;
+}): Entry[] {
+  const terms = searchTerms(query);
+  if (!terms.length) return entries;
+  const names = new Map<string, string>();
+  return entries.filter(e => {
+    let category = names.get(e.categoryId);
+    if (category === undefined) names.set(e.categoryId, category = foldForSearch(categoryName(e.categoryId)));
+    const text = `${foldForSearch(e.name)}\n${foldForSearch(e.note ?? '')}\n${category}`;
+    return terms.every(t => text.includes(t) || amountMatches(e.amount, t, locale));
+  });
+}
+
+/** Where a search's words appear in a text, as [start, end) ranges to mark, merged and in order. */
+export function highlightRanges(text: string, query: string): [number, number][] {
+  const terms = searchTerms(query);
+  if (!terms.length || !text) return [];
+  const { folded, from, to } = foldMapped(text);
+  const hits: [number, number][] = [];
+  for (const term of terms) {
+    for (let at = folded.indexOf(term); at !== -1; at = folded.indexOf(term, at + term.length)) {
+      hits.push([from[at], to[at + term.length - 1]]);
+    }
+  }
+  hits.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const merged: [number, number][] = [];
+  for (const [start, end] of hits) {
+    const last = merged[merged.length - 1];
+    if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+    else merged.push([start, end]);
+  }
+  return merged;
+}
+
 /* -------------------------------------------------------------- statistics */
 
 export interface CategorySlice {

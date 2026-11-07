@@ -8,6 +8,7 @@ import { Picture } from '../ui/Picture';
 import { tapLight } from '../ui/haptics';
 import { IconButton } from '../ui/Button';
 import { SwipeRow } from '../ui/SwipeRow';
+import { Highlight } from '../ui/Highlight';
 import { rise } from '../ui/stagger';
 
 interface Props {
@@ -38,6 +39,11 @@ interface Props {
   dragProps: (id: string) => React.HTMLAttributes<HTMLElement>;
   /** Alt + ↑ / ↓: move an entry one place up or down within the category. */
   onMoveBy: (e: Entry, delta: -1 | 1) => void;
+  /**
+   * A search result: `entries` are the hits, their words marked. The card
+   * stays open and has no add row, filter or fold — it only shows what was found.
+   */
+  search?: string;
 }
 
 /**
@@ -53,7 +59,7 @@ interface Props {
  */
 export function CategorySection({
   category, entries: all, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle, onDelete,
-  openOnly, onOpenOnly, dragId, dropIndex, dragProps, onMoveBy,
+  openOnly, onOpenOnly, dragId, dropIndex, dragProps, onMoveBy, search,
 }: Props) {
   // The filter hides what is paid; totals still count everything.
   const entries = openOnly ? all.filter(e => !e.paid || e.id === dragId) : all;
@@ -103,7 +109,7 @@ export function CategorySection({
           }}
           trailing={{ label: t.delete, icon: Trash2, className: 'bg-swipe-delete', run: () => onDelete(e) }}
         >
-          <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)} lifted={e.id === dragId}
+          <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)} lifted={e.id === dragId} search={search}
             dragProps={dragProps(e.id)}
             onEdit={() => onEdit(e)} onToggle={() => onToggle(e)}
             onMoveBy={delta => {
@@ -129,13 +135,12 @@ export function CategorySection({
       aria-label={name}
     >
       <h2 className="flex items-center">
-        <button
-          type="button"
+        <HeaderShell
+          search={!!search}
           onClick={() => { tapLight(); onCollapse(); }}
           aria-expanded={!collapsed}
           aria-controls={bodyId}
           title={collapsed ? t.expand : t.collapse}
-          className="flex-1 min-w-0 flex items-center gap-2.5 ps-3.5 pe-2 py-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
         >
           <Picture emoji={category.emoji} name={name} size="sm" />
           <span className="min-w-0 flex-1">
@@ -144,7 +149,7 @@ export function CategorySection({
               <span className="block text-caption text-fg-mute tabular-nums">{plural(all.length, t.entriesOne, t.entriesMany)}</span>
             )}
             {/* How much of it is paid, in the category's colour. The amounts beside it say it in numbers. */}
-            {total > 0 && (
+            {total > 0 && !search && (
               <span aria-hidden="true" className="mt-2 block h-[5px] rounded-full bg-surface-2 overflow-hidden">
                 <motion.span
                   className="block h-full rounded-full bg-hue-chart"
@@ -155,22 +160,25 @@ export function CategorySection({
               </span>
             )}
           </span>
-          {/* What is paid, big; below it, small and yellow, everything including what is still open. */}
-          <span className="shrink-0 text-end">
+          {/* What is paid, big; below it, small and yellow, everything including what is still open.
+              (Not on a search result: the hits are summed above the cards.) */}
+          {!search && <span className="shrink-0 text-end">
             <span className={`block rounded-num text-body font-semibold ${income && paid ? 'text-pos' : paid ? 'text-fg' : 'text-fg-mute'}`}>
               {money(paid)}
             </span>
             {open > 0 && (
               <span className="block text-caption font-medium text-warn tabular-nums whitespace-nowrap">{fmt(t.sectionInclOpen, { amount: money(total) })}</span>
             )}
-          </span>
-          <ChevronDown
-            className={`w-4 h-4 shrink-0 text-fg-faint transition-transform duration-200 ${collapsed ? '-rotate-90 rtl:rotate-90' : ''}`}
-            strokeWidth={2.4}
-            aria-hidden="true"
-          />
-        </button>
-        {!collapsed && all.length > 0 && (open > 0 || openOnly) && (
+          </span>}
+          {!search && (
+            <ChevronDown
+              className={`w-4 h-4 shrink-0 text-fg-faint transition-transform duration-200 ${collapsed ? '-rotate-90 rtl:rotate-90' : ''}`}
+              strokeWidth={2.4}
+              aria-hidden="true"
+            />
+          )}
+        </HeaderShell>
+        {!search && !collapsed && all.length > 0 && (open > 0 || openOnly) && (
           <button
             type="button"
             aria-pressed={openOnly}
@@ -209,7 +217,7 @@ export function CategorySection({
               </ul>
             )}
 
-            <button
+            {!search && <button
               type="button"
               onClick={() => { tapLight(); onAdd(); }}
               aria-label={fmt(t.addTo, { name })}
@@ -219,7 +227,7 @@ export function CategorySection({
                 <Plus className="w-4 h-4" strokeWidth={3} />
               </span>
               <span className="text-body">{all.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
-            </button>
+            </button>}
           </motion.div>
         )}
       </AnimatePresence>
@@ -228,11 +236,27 @@ export function CategorySection({
 }
 
 /**
+ * The header's body: the fold button, or — on a search result, which does not
+ * fold — the same layout, not interactive.
+ */
+function HeaderShell({ search, children, ...button }: { search: boolean; children: React.ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const layout = 'flex-1 min-w-0 flex items-center gap-2.5 ps-3.5 pe-2 py-3 text-start';
+  if (search) return <div className={layout}>{children}</div>;
+  return (
+    <button type="button" {...button} className={`${layout} active:bg-surface-2 transition-colors focus-visible:ring-focus`}>
+      {children}
+    </button>
+  );
+}
+
+/**
  * A row: the paid ring (its own button, a checkbox for VoiceOver) beside the
  * row body that opens the editor. Siblings, never nested.
  */
-function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onToggle, onMoveBy }: {
+function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onEdit, onToggle, onMoveBy }: {
   entry: Entry;
+  /** The search this row was found by: its words are marked. */
+  search?: string;
   income: boolean;
   t: Strings;
   overdue: boolean;
@@ -256,7 +280,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
     );
     if (e.dueDay) meta.push(<span key="due">{fmt(t.dueOn, { day: e.dueDay })}</span>);
   }
-  if (e.note) meta.push(<span key="note" className="wrap-compound">{e.note}</span>);
+  if (e.note) meta.push(<span key="note" className="wrap-compound"><Highlight text={e.note} query={search} /></span>);
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;
 
   return (
@@ -308,7 +332,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, dragProps, onEdit, onT
         className="flex-1 min-w-0 py-2.5 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         <span className="min-w-0 flex-1">
-          <span className="block text-body text-fg wrap-compound">{e.name}</span>
+          <span className="block text-body text-fg wrap-compound"><Highlight text={e.name} query={search} /></span>
           {meta.length > 0 && (
             <span className="flex flex-wrap items-center gap-x-1.5 text-caption text-fg-mute mt-0.5">
               {meta.map((m, i) => (

@@ -80,6 +80,14 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   this category's names, then its built-in ideas, then other categories'
   names; each remembers its category, and picking one from elsewhere moves the
   entry there.
+- **Search** (month page): `SearchField` sits in `Screen`'s `accessory` slot
+  under the title. `searchEntries()` (logic.ts) keeps this month's entries
+  whose name, note or category name contains every word, or whose amount
+  starts with a typed number; `foldForSearch()` makes it case-, accent- and
+  Arabic-letter-form-blind, `highlightRanges()` maps hits back for
+  `ui/Highlight` (`bg-mark`, always `text-fg`). Results reuse
+  `CategorySection` with `search` set: no fold, add row, filter, totals or
+  drag — the hits are summed above the cards (`monthTotals`).
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /

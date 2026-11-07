@@ -4,7 +4,7 @@ import {
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, upgradeCategories,
-  normalizeDigits, upgradeData,
+  normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -236,6 +236,56 @@ describe('suggestions', () => {
     expect(s.map(x => [x.name, x.categoryId])).toEqual([['Libri', 'extra'], ['Lidl', 'groceries'], ['Online-Kurs', 'extra']]);
     expect(s[1].last?.amount).toBe(4000);
     expect(suggestNames({ entries: all, categoryId: 'extra', lang: 'de', limit: 40 }).length).toBeGreaterThan(5);
+  });
+});
+
+describe('search', () => {
+  const nameOf = (id: string) => cats.find(c => c.id === id)!.names.de;
+  const month = [
+    e('2026-11', 'fixed', 'Miete', 105000, true),
+    e('2026-11', 'fixed', 'DFV Zahnversicherung', 3980, false, { note: 'Familie' }),
+    e('2026-11', 'fixed', 'Straßenreinigung', 1225, false),
+    e('2026-11', 'car', 'Kfz-Steuer', 13900, false),
+    e('2026-11', 'groceries', 'Rewe', 4512, true),
+    e('2026-11', 'groceries', 'Gebühr Rückgabe', 250, true),
+    e('2026-11', 'income', 'أحمد راتب', 416459, true),
+  ];
+  const find = (q: string, locale = 'de-DE') => searchEntries(month, q, { categoryName: nameOf, locale }).map(x => x.name);
+
+  it('finds by name, note and category, ignoring case and accents', () => {
+    expect(find('miete')).toEqual(['Miete']);
+    expect(find('familie')).toEqual(['DFV Zahnversicherung']);
+    expect(find('auto')).toEqual(['Kfz-Steuer']);
+    expect(find('strasse')).toEqual(['Straßenreinigung']);
+    expect(find('GEBUHR')).toEqual(['Gebühr Rückgabe']);
+    expect(find('')).toHaveLength(month.length);
+  });
+  it('needs every word, in any field', () => {
+    expect(find('wohnen versicherung')).toEqual(['DFV Zahnversicherung']);
+    expect(find('wohnen rewe')).toEqual([]);
+  });
+  it('finds amounts from their start, however they are written', () => {
+    expect(find('39,8')).toEqual(['DFV Zahnversicherung']);
+    expect(find('39.80')).toEqual(['DFV Zahnversicherung']);
+    expect(find('1.050')).toEqual(['Miete']);
+    expect(find('1050,00 €')).toEqual(['Miete']);
+    expect(find('-45,12')).toEqual(['Rewe']);
+    expect(find('139')).toEqual(['Kfz-Steuer']);
+    expect(find('4,164.59', 'en-GB')).toEqual(['أحمد راتب']);
+  });
+  it('reads Arabic letter forms and digits the same', () => {
+    expect(foldForSearch('أَحْمَد')).toBe('احمد');
+    expect(find('احمد')).toEqual(['أحمد راتب']);
+    expect(find('٤١٦٤')).toEqual(['أحمد راتب']);
+  });
+  it('marks where the words are, in the original text', () => {
+    expect(highlightRanges('Aras Energy', 'en')).toEqual([[5, 7]]);
+    expect(highlightRanges('Straßenreinigung', 'strasse')).toEqual([[0, 6]]);
+    expect(highlightRanges('Rewe Rewe', 'rewe')).toEqual([[0, 4], [5, 9]]);
+    expect(highlightRanges('Zahnversicherung', 'zahn versich')).toEqual([[0, 11]]);
+    // The vowel marks stay with their letters.
+    expect(highlightRanges('أَحْمَد راتب', 'احمد')).toEqual([[0, 7]]);
+    expect(highlightRanges('Miete', '')).toEqual([]);
   });
 });
 

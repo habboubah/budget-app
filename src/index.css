@@ -54,6 +54,8 @@
   --color-accent-dim:      var(--t-accent-dim);
   --color-accent-fill:     var(--t-accent-fill);
   --color-accent-fill-ink: var(--t-accent-fill-ink);
+  /* Behind the words a search found (ui/Highlight). */
+  --color-mark: var(--t-mark);
 
   --color-pos:      var(--t-pos);
   --color-pos-dim:  var(--t-pos-dim);
@@ -201,6 +203,7 @@
   --t-accent-fill-ink: #FFFFFF;
   /* The accent light at the top of a page (see accent-wash). */
   --t-wash: 0.10;
+  --t-mark: rgb(var(--acc-l-rgb) / 0.22);
 
   --t-pos:      #1E7F3B;
   --t-pos-dim:  rgba(52, 199, 89, 0.14);
@@ -276,6 +279,7 @@
   --t-accent-fill:     var(--acc-d);
   --t-accent-fill-ink: var(--acc-ink-d);
   --t-wash: 0.18;
+  --t-mark: rgb(var(--acc-d-rgb) / 0.30);
 
   --t-pos:      #4CD07D;
   --t-pos-dim:  rgba(48, 209, 88, 0.16);
@@ -457,6 +461,14 @@
 /* The top of a page, lit in the accent and fading out by the first card. */
 @utility accent-wash {
   background: radial-gradient(460px 340px at 50% 0%, rgb(var(--t-accent-rgb) / var(--t-wash)), transparent);
+}
+
+/* Search fields draw their own magnifier and clear button (ui/SearchField). */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 @utility ring-focus {

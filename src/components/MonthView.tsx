@@ -3,14 +3,18 @@ import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react';
 import { Category, Entry, MonthKey } from '../types';
-import { MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, parseMonthKey, sortEntries } from '../logic';
-import { Strings, fmt } from '../translations';
+import {
+  MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, monthTotals, parseMonthKey, searchEntries, searchTerms,
+  sortEntries,
+} from '../logic';
+import { Strings, fmt, plural } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
 import { useEntryDrag } from '../ui/useEntryDrag';
 import { rise, stagger } from '../ui/stagger';
 import { Picture } from '../ui/Picture';
+import { SearchField } from '../ui/SearchField';
 import { BalanceCard } from './BalanceCard';
 import { CategorySection } from './CategorySection';
 import { StartMonthCard } from './StartMonthCard';
@@ -61,6 +65,10 @@ interface Props {
  * stay in the bar while scrolling). The balance card, then — for a started
  * month — every category in the user's order: income first, then fixed costs,
  * car, extras…; for a month not started yet, what starting it brings along.
+ *
+ * The search field under the title finds entries of this month as you type:
+ * the page then shows only the hits, in their categories, with what they add
+ * up to. The search stays while stepping through months.
  */
 export function MonthView(p: Props) {
   const { month, balance, categories, entries, t } = p;
@@ -74,6 +82,12 @@ export function MonthView(p: Props) {
   const inCategory = (categoryId: string) => sortEntries(mine.filter(e => e.categoryId === categoryId));
   // Categories showing only what is still open (kept while switching months).
   const [openOnly, setOpenOnly] = useState<string[]>([]);
+
+  const [query, setQuery] = useState('');
+  const searching = searchTerms(query).length > 0;
+  const found = searching
+    ? searchEntries(mine, query, { categoryName: id => displayName(categories.find(c => c.id === id)?.names, p.language), locale: t.locale })
+    : [];
 
   // Dropping an entry where it already is changes nothing — not even its order.
   const drag = useEntryDrag((id, to) => {
@@ -131,6 +145,15 @@ export function MonthView(p: Props) {
           </button>
         </h1>
       }
+      accessory={
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          placeholder={fmt(t.searchMonth, { month: monthName })}
+          clearLabel={t.searchClear}
+          cancelLabel={t.cancel}
+        />
+      }
       actions={
         <>
           {/* ‹ › as one floating capsule, the way iOS groups related bar buttons. */}
@@ -154,6 +177,21 @@ export function MonthView(p: Props) {
         </>
       }
     >
+      {searching ? (
+        <SearchResults
+          key={`search-${month}`}
+          found={found}
+          query={query}
+          categories={categories}
+          month={month}
+          language={p.language}
+          t={t}
+          today={today}
+          onEdit={p.onEdit}
+          onToggle={p.onToggle}
+          onDelete={p.onDelete}
+        />
+      ) : (<>
       <BalanceCard balance={balance} t={t} onOpening={p.onOpening} />
 
       {/* Keyed by month: stepping to another one brings its cards in afresh
@@ -248,6 +286,7 @@ export function MonthView(p: Props) {
         </>
       )}
       </motion.div>
+      </>)}
 
       {/* The row under the finger while it is dragged. */}
       {drag.ghost && lifted && createPortal(
@@ -274,3 +313,78 @@ export function MonthView(p: Props) {
   );
 }
 
+
+/**
+ * What a search found: how many, what they add up to (expenses and income
+ * apart; with what of it is open when they are all one kind), then the hits
+ * in their category cards — tick, swipe and edit work as usual; sorting
+ * waits until the search is done.
+ */
+function SearchResults({ found, query, categories, month, language, t, today, onEdit, onToggle, onDelete }: {
+  found: Entry[];
+  query: string;
+  categories: Category[];
+  month: MonthKey;
+  language: string;
+  t: Strings;
+  today: Date;
+  onEdit: (e: Entry) => void;
+  onToggle: (e: Entry) => void;
+  onDelete: (e: Entry) => void;
+}) {
+  const sum = monthTotals(found, categories, month);
+  const income = sum.incomePaid + sum.incomeOpen;
+  const expenses = sum.expensePaid + sum.expenseOpen;
+  const open = income && expenses ? 0 : income ? sum.incomeOpen : sum.expenseOpen;
+  const money = (c: number, sign?: 'always') => formatMoney(c, t.locale, sign);
+  const hit = new Set(found.map(e => e.categoryId));
+
+  return (
+    <motion.div className="space-y-6" variants={stagger} initial="hidden" animate="show">
+      {found.length === 0 ? (
+        <motion.div variants={rise}>
+          <Empty emoji="🔍" title={fmt(t.searchNone, { q: query.trim() })} body={t.searchNoneBody} />
+        </motion.div>
+      ) : (
+        <>
+          <motion.div variants={rise} className="px-1 mb-4 flex items-start gap-3">
+            <p role="status" className="min-w-0 flex-1 text-label font-semibold text-fg-mute tabular-nums">
+              {plural(found.length, t.resultsOne, t.resultsMany)}
+            </p>
+            <div className="shrink-0 text-end">
+              {expenses > 0 && <p className="text-label font-semibold num text-fg">{money(-expenses)}</p>}
+              {income > 0 && <p className="text-label font-semibold num text-pos">{money(income, 'always')}</p>}
+              {open > 0 && <p className="text-caption font-medium text-warn tabular-nums">{fmt(t.inclOpen, { amount: money(open) })}</p>}
+            </div>
+          </motion.div>
+          {categories.filter(c => hit.has(c.id)).map(c => (
+            <CategorySection
+              key={c.id}
+              category={c}
+              entries={sortEntries(found.filter(e => e.categoryId === c.id))}
+              search={query}
+              language={language}
+              t={t}
+              today={today}
+              collapsed={false}
+              onCollapse={noop}
+              onAdd={noop}
+              onEdit={onEdit}
+              onToggle={onToggle}
+              onDelete={onDelete}
+              openOnly={false}
+              onOpenOnly={noop}
+              dragId={null}
+              dropIndex={null}
+              dragProps={noDrag}
+              onMoveBy={noop}
+            />
+          ))}
+        </>
+      )}
+    </motion.div>
+  );
+}
+
+const noop = () => {};
+const noDrag = () => ({});

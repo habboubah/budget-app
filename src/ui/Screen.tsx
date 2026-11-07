@@ -20,6 +20,8 @@ interface Props {
   tabbed?: boolean;
   /** Replaces the plain large title (the month switcher). */
   titleSlot?: React.ReactNode;
+  /** Under the large title, scrolling with it — the search field, as on iOS. */
+  accessory?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -31,7 +33,7 @@ interface Props {
  * (a gradient, never a blur — backdrop-filter over a scrolling list is too
  * expensive in a WebView).
  */
-export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, docked, tabbed, titleSlot, children }: Props) {
+export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, docked, tabbed, titleSlot, accessory, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
   // At the very top the bar is see-through, so the page's accent light shows
   // behind it; once anything scrolls under it, it turns solid (as iOS does).
@@ -82,7 +84,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
         />
       </header>
 
-      <div className="px-5 pt-0.5 pb-4 flex items-center gap-4">
+      <div className={`px-5 pt-0.5 ${accessory ? 'pb-3' : 'pb-4'} flex items-center gap-4`}>
         {leading}
         <div className="min-w-0 flex-1">
           {eyebrow && <p className="eyebrow text-fg-mute mb-0.5">{eyebrow}</p>}
@@ -90,6 +92,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
           {subtitle && <div className="text-label text-fg-mute mt-1 wrap-prose">{subtitle}</div>}
         </div>
       </div>
+      {accessory && <div className="px-4 pb-5">{accessory}</div>}
 
       <main className="px-4 space-y-6">{children}</main>
     </div>

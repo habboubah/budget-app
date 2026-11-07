@@ -6,7 +6,8 @@
  * the gradient hero meet text: the accent as text on the page, on cards, on
  * its own tint and on the accent-lit page top; the ink on accent fills; white
  * and the softer whites on the hero gradient (with its sheen) and on its
- * frosted panel, together with the panel's money colours. It also checks the
+ * frosted panel, together with the panel's money colours; the words a search
+ * marks. It also checks the
  * paid ticks (chart-label ink on each category's chart hue).
  *
  * Text needs 4.5:1, icons and chart marks 3:1 (WCAG 2.2 AA). Values are read
@@ -123,6 +124,7 @@ for (const [name, accent] of accents) {
         ['mute text on lit page top', c('--t-fg-mute'), wash, TEXT],
         ['accent text on lit page top', c('--t-accent'), wash, TEXT],
         ['balance line on card', c('--t-chart-line'), surface, ICON],
+        ['marked word (always fg ink)', c('--t-fg'), over(c('--t-mark'), surface), TEXT],
       ];
     });
   }
