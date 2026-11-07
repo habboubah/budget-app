@@ -2,9 +2,10 @@
 
 These plans take today's app to the best household budget book on the App Store and Google Play. The app stays private, secure, free and simple.
 
-There is one plan per feature, built strictly in order. The plans draw on two sources:
+There is one plan per feature, built strictly in order. The plans draw on three sources:
 - [COMPETITOR_ANALYSIS.md](../COMPETITOR_ANALYSIS.md): the gaps, user requests and complaints.
-- [REDESIGN.md](../REDESIGN.md): the redesign being built right now.
+- [REDESIGN.md](../REDESIGN.md): the redesign, built in plan 00.
+- [STATISTICS_AND_INSIGHTS.md](../STATISTICS_AND_INSIGHTS.md): what Statistik and Planen show, and how (plans 06a and 13).
 
 ## Ground rules (every plan)
 
@@ -48,7 +49,7 @@ There is one plan per feature, built strictly in order. The plans draw on two so
 - **Old data:** `localStorage` data and backups from earlier versions still load (plan 01's fixtures).
 - **Native plans:** tested on a real iPhone, and on Android devices from plan 23 on.
 - **User-visible changes:** update README.md (features), CLAUDE.md (rules) and the What's New text in `store/listing.md`.
-- **Simplicity:** run plan 37's checklist after plans 13, 21 and 32 as well.
+- **Simplicity:** run plan 37's checklist after plans 06a, 13, 21 and 32 as well.
 
 ## Decisions already taken
 
@@ -62,8 +63,12 @@ Change them here if you disagree, before the plan that depends on them starts.
 | Cash and savings accounts get built, but stay invisible until a second account exists. | Users ask to track cash. PLAN.md's "one account" stays the default view. | 30 |
 | A month that starts on payday is optional and off by default. | Requested, but it touches every date rule. | 32 |
 | No paid tier. | Free for all users. | all |
-| Notifications, widgets and the lock screen show no amounts by default. | People can read them over your shoulder. | 00, 14, 17 |
+| Notifications, widgets, the lock screen and a shared year review show no amounts by default. | People can read them over your shoulder. | 00, 13, 14, 17 |
 | Exports are encrypted by default. Plain export is one switch away. | Financial data in a mail attachment or a shared folder. | 04 |
+| In every statistic, money put into a savings category counts as saved, not spent. The month page keeps the account view. | Sparquote and 50/30/20 must agree (STATISTICS_AND_INSIGHTS.md D1). | 06a, 13 |
+| Statistik looks back, Planen looks ahead. At most three hints per screen, ranked, each with a next step. | One time scope per section, and hints that lead somewhere (D2). | 06a, 13 |
+| No financial health score: *Finanz-Check* shows the indicators themselves. | A single score is opaque and judgmental (D4). | 06a, 11, 12 |
+| Forecasts are ranges, rounded, and name their basis; *Ausblick* replaces *Prognose*. | A forecast with cents reads as a promise (D6). | 06a, 11 |
 
 ## Order
 
@@ -85,13 +90,14 @@ Change them here if you disagree, before the plan that depends on them starts.
 ### Phase 2 — everyday wins
 | # | Plan | Covers | Depends on | Size | Native |
 |---|---|---|---|---|---|
+| 06a | [Statistics and insights](06a-statistics-and-insights.md) | U4; STATISTICS_AND_INSIGHTS.md phases 0–3 | 00, 01 | L | — |
 | 07 | [Currency](07-currency.md) | F26 | 00 | S–M | — |
 | 08 | [Calculator in the amount field](08-amount-calculator.md) | F4 | 00 | S | — |
 | 09 | [Favourites](09-favourites.md) | U5 | 00 | S–M | — |
 | 10 | [Match the bank balance](10-match-bank-balance.md) | U6 | 00 | S | — |
-| 11 | [Reserve for yearly bills](11-yearly-reserve.md) | F3 | 00 | S | — |
+| 11 | [Reserve for yearly bills](11-yearly-reserve.md) | F3 | 06a | S | — |
 | 12 | [Savings goals (Spartöpfe)](12-savings-goals.md) | F2 | 11 | M | — |
-| 13 | [Month review](13-month-review.md) | U2 | 12 | S–M | — |
+| 13 | [Month report and year review](13-month-review.md) | U2; STATISTICS_AND_INSIGHTS.md phase 4 | 06a, 12 | M | — |
 
 ### Phase 3 — native foundation and store presence
 | # | Plan | Covers | Depends on | Size | Native |
@@ -122,8 +128,8 @@ Change them here if you disagree, before the plan that depends on them starts.
 |---|---|---|---|---|---|
 | 26 | [Tags](26-tags.md) | F14 | 00 | M | — |
 | 27 | [Receipts and documents](27-receipts.md) | F10 | 02, 04, 06 | M–L | — |
-| 28 | [PDF report](28-pdf-report.md) | F15 | 14 | S–M | iOS/Android |
-| 29 | [Periods and year comparison](29-periods.md) | U7 | 00 | M | — |
+| 28 | [PDF report](28-pdf-report.md) | F15 | 13, 14 | S–M | iOS/Android |
+| 29 | [Periods and year comparison](29-periods.md) | U7 | 06a, 13 | M | — |
 | 30 | [Cash and savings accounts](30-accounts.md) | F5 | 20, 21 | L | — |
 | 31 | [Debts and loans](31-debts.md) | F7 | 30 | M | — |
 | 32 | [Month from payday](32-payday-month.md) | F6 | 30 | L–XL | — |
@@ -167,12 +173,13 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 | Item-level tracking | 21 |
 | Budgeting as a couple | 34 |
 | Bank sync (and complaints that it keeps breaking) | 36, with CSV/screenshot/Apple Pay as fallbacks |
-| Wrong totals | 01 (golden data), 30 (transfers) |
+| Wrong totals | 01 (golden data), 06a (one meaning of *gespart*), 30 (transfers) |
+| Looking ahead: a warning before a yearly bill, what's left until the month ends | 06a (*Ausblick*, *November bis heute*), 11 |
 | Updates that make the app slower or cluttered | 01 (performance budgets), 37 |
 | More languages | 25 |
 | iPad, Android, Watch | 22, 23, 35 |
 | Savings goals, yearly bills, debts, receipts, tags, PDF, payday month | 12, 11, 31, 27, 26, 28, 32 |
-| Spending by shop | already there (payee card) |
+| Spending by shop | already there (payee card); a payee sheet in 06a |
 | Subscriptions and lost purchases | not applicable: free, nothing to buy |
 
 ## Known issues → plan
@@ -192,6 +199,11 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 | Arabic € placement inconsistent (REDESIGN.md §9) | translations | 16 |
 | iPhone only | `TARGETED_DEVICE_FAMILY = 1` | 22 |
 | No Android app | — | 23 |
+| Sparquote and 50/30/20 disagree once a savings category is used | `monthSeries` / `budgetSplit` in `src/insights.ts` | 06a |
+| *Notgroschen* divides today's balance by all spending | `InsightsView.tsx` | 06a |
+| "Usual" is a plain mean, yearly bills look unusual, the forecast shows cents | `unusual()`, `forecast()` in `src/insights.ts` | 06a |
+| Statistik can show a started future month as if it were real | `StatsView.tsx` | 06a |
+| German chart axes mix "4000" and "20.000" | `compact()` in `Charts.tsx` | 06a |
 
 ## Status
 
@@ -202,13 +214,14 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 04 Encrypted backup files
 - [ ] 05 Security hardening
 - [ ] 06 Data protection at rest
+- [ ] 06a Statistics and insights
 - [ ] 07 Currency
 - [ ] 08 Calculator in the amount field
 - [ ] 09 Favourites
 - [ ] 10 Match the bank balance
 - [ ] 11 Reserve for yearly bills
 - [ ] 12 Savings goals
-- [ ] 13 Month review
+- [ ] 13 Month report and year review
 - [ ] 14 Native bridge
 - [ ] 15 Ratings and feedback
 - [ ] 16 Store listing, accessibility labels, permission texts

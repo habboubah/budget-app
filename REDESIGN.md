@@ -239,6 +239,9 @@ both sides: `screenshots/ui-redesign/compare/*.png`.
   switch. It merges three cards: Ø per category, categories per month, and
   where the money went.
 - The value table stays.
+- **Next:** [STATISTICS_AND_INSIGHTS.md](STATISTICS_AND_INSIGHTS.md) (plan
+  06a) puts *Das fällt auf* above a *Verlauf* section and adds the category
+  screen and the payee sheet.
 
 ### Analyse → Planen — `compare/planen.png`
 - The tab becomes **Planen** (piggy-bank icon). It opens on:
@@ -248,6 +251,11 @@ both sides: `screenshots/ui-redesign/compare/*.png`.
     next date, notice period, switch deadline ("Kfz-Versicherung wechselbar
     bis 30. Nov.") and price changes. *Alle 9* pushes a full screen.
 - Then the existing hints and *Sparen und Reserve*, unchanged.
+  - *Superseded after step 9 by
+    [STATISTICS_AND_INSIGHTS.md](STATISTICS_AND_INSIGHTS.md) (decisions D2,
+    D4, D6; plan 06a):* *November bis heute* goes on top; the hints move to
+    *Statistik › Das fällt auf* and *Abos & Verträge*; *Sparen und Reserve*
+    becomes *Finanz-Check*; *Prognose* becomes *Ausblick*.
 - **Fix:** best/weakest month only from finished months.
 - Rule change in §6.3. **Alternative:** keep "Analyse" and just add the two
   cards at the top.
@@ -392,6 +400,10 @@ that old `localStorage` loads.
     - Contrast audit.
     - A VoiceOver checklist for you to run on the iPhone.
     - Update CLAUDE.md, PLAN.md and README.
+
+**After step 14:** Statistik and Planen continue in
+[STATISTICS_AND_INSIGHTS.md](STATISTICS_AND_INSIGHTS.md): its phases 0–3
+are plan 06a, phase 4 is plan 13.
 
 Nothing gets committed without asking.
 

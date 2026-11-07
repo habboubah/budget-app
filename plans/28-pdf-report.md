@@ -1,14 +1,14 @@
 # 28 · PDF report
 
 - **Covers:** F15. MoneyControl sells it as a paid add-on; Outbank and Bluecoins include it.
-- **Depends on:** 14
+- **Depends on:** 13, 14
 - **Size:** S–M
 - **Native:** iOS (`WKWebView.createPDF` in the bridge) and Android (print to PDF)
 - **Schema:** no change
 
 ## What the user gets
 
-*Statistik › ⋯ › Bericht teilen* creates a PDF of a month or a year, to share or print. It contains:
+*Bericht teilen*, in plan 13's *Monatsbericht* and *Jahresrückblick*, creates a PDF of that month or year, to share or print. It contains:
 - totals
 - categories with their budgets
 - open items
@@ -20,7 +20,7 @@ The report is one menu item. It has a single choice, month or year, and a switch
 
 ## Design
 
-- **The report** is a screen built from the app's own components, with a print stylesheet (`@media print` in `src/index.css`): white background, no chrome, page breaks between sections.
+- **The report** is plan 13's report screen (`monthReview` / `yearReview`), with a print stylesheet (`@media print` in `src/index.css`): white background, no chrome, page breaks between sections.
 - **iOS:** the bridge renders the report in an off-screen web view, returns a PDF (`createPDF`) and opens the share sheet.
 - **Web:** `window.print()`.
 - **Android:** `PrintManager`.

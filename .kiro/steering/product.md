@@ -42,4 +42,4 @@ German first (default `de`), plus English and Arabic (right to left). Code, UI a
 | Rückgängig | undo |
 
 ## Roadmap
-Planned work is one file per feature in `plans/` (00–38), built strictly in order; ground rules, decisions and status are in `plans/README.md`. Research and design background: `COMPETITOR_ANALYSIS.md`, `STATISTICS_AND_INSIGHTS.md`, `REDESIGN.md`.
+Planned work is one file per feature in `plans/` (00–38, plus 06a), built strictly in order; ground rules, decisions and status are in `plans/README.md`. Research and design background: `COMPETITOR_ANALYSIS.md`, `STATISTICS_AND_INSIGHTS.md`, `REDESIGN.md`.

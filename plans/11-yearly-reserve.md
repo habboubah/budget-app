@@ -1,7 +1,7 @@
 # 11 · Reserve for yearly bills
 
 - **Covers:** F3, like YNAB's "Cost to Be Me". Finanzguru reviewers praise being warned early about the yearly Kfz-Steuer.
-- **Depends on:** 00 (*Planen*)
+- **Depends on:** 06a (*Planen*'s order and `outlook()`)
 - **Size:** S
 - **Native:** none
 - **Schema:** no change
@@ -18,6 +18,7 @@ A card on *Planen*, **Rücklage für jährliche Kosten**, shown only when the bo
 - The next three yearly bills, e.g. "Kfz-Steuer · März · 304 €".
 - Whether the coming months' *Am Monatsende* covers them, or e.g. "im März fehlen 120 €".
 - Once plan 12 is done, **Als Spartopf anlegen** turns the reserve into a savings goal.
+- *Finanz-Check › Vorausgeplant* (plan 06a) links to this card.
 
 ## Keep it simple
 
@@ -28,7 +29,7 @@ There's no setting. Like the existing hints, the card appears by itself when it 
 - `yearlyReserve(data, month, today)` in `src/insights.ts`.
   - It builds on `commitments()`, which already returns `yearly`.
   - It returns `{ monthly, upcoming: { name, month, amount }[], shortfall?: { month, amount } }`.
-- The shortfall uses the same average-saved logic as `forecast()`.
+- The shortfall comes from `outlook()` (plan 06a), so this card and *Ausblick* never disagree.
 
 ## Tests and checks
 

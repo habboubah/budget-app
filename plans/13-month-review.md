@@ -1,47 +1,65 @@
-# 13 · Month review
+# 13 · Month report and year review
 
-- **Covers:** U2 (similar to Spendee's tips and Copilot's alerts); a reason to open the app every month
-- **Depends on:** 00; 12 (for the optional line about goals)
-- **Size:** S–M
-- **Native:** none (the optional nudge uses plan 00's reminders)
+- **Covers:**
+  - U2 (like Monarch's monthly review, Monzo's year in review and Spendee's tips)
+  - [STATISTICS_AND_INSIGHTS.md](../STATISTICS_AND_INSIGHTS.md) phase 4
+  - a reason to open the app every month
+- **Depends on:** 06a; 12 (for the optional line about goals)
+- **Size:** M
+- **Native:** none. The optional nudge uses plan 00's reminders; the share image uses `@capacitor/share`, already a dependency.
 - **Schema:** no change
 
 ## Why
 
-People open a budget app when something is due. The start of a month has a story worth telling: what was saved, what changed, what's still open. The app already computes all of it.
+People open a budget app when something is due. The start of a month has a story worth telling: what was saved, what changed, what's still open. The turn of the year is when households plan the next one. Plan 06a computes all of it.
 
 ## What the user gets
 
-On the first visit to a new month, one card above the categories:
+- **The month-review card.** On the first visit to a new month, one card above the categories:
 
-"Oktober im Rückblick · 412 € gespart (80 € mehr als üblich) · Restaurants +60 % · 2 Budgets eingehalten · 1 Posten noch offen"
+  "Oktober im Rückblick · 1.140 € gespart (160 € weniger als üblich) · Restaurants +60 % · 2 Budgets eingehalten · 1 Posten noch offen"
 
-- Tapping it opens *Planen* on October.
-- ✕ dismisses it.
+  - Tapping it opens the *Monatsbericht*.
+  - ✕ dismisses it.
+- **The Monatsbericht**, for any month (STATISTICS_AND_INSIGHTS.md §9.7):
+  - the result against a usual month;
+  - Einnahmen, Ausgaben, Gespart, Sparquote;
+  - budgets kept;
+  - what changed;
+  - where the money went;
+  - what's still open;
+  - a look at the next month.
+
+  It also opens from the month's "⋯", from *Planen › November bis heute* and from Statistik's table.
+- **The Jahresrückblick**, from 15 December to 31 January, as a card on Statistik:
+  - the year in three numbers, its months, the top categories against last year, top payees, the biggest expense and the best month;
+  - *Für 2027*: fixed costs per month, yearly bills as a monthly reserve, and suggested budgets with **Als Budgets übernehmen** (one undoable action);
+  - shared as an image only on tap, with amounts hidden unless switched on.
 
 ## Keep it simple
 
-- Shown only from the second finished month, once per month, as a single dismissible card.
-- Not shown when there's nothing to say.
-- The optional reminder ("Dein Oktober im Rückblick") is off by default and sits with the other reminders.
+- The month card shows from the second finished month on, once per month, as one dismissible card. It doesn't show when there's nothing to say.
+- The year card is seasonal and dismissible.
+- The optional reminder ("Dein Oktober im Rückblick") is off by default, sits with the other reminders and shows no amounts.
 
 ## Design
 
-- `monthReview(data, month, today)` in `src/insights.ts`, built from existing pieces:
-  - `savings()`, `unusual()` and `biggestExpenses()`
-  - `monthBudgets()` from `src/budgets.ts`
-  - open items carried over
-  - goal progress (12)
-- Months already seen: a view preference (`spartopf-reviews-seen`), not in backups.
-- The card uses `ui/Card` and the month's category hues for the changes. Amounts follow *Beträge verbergen* (06).
+- `monthReview(book, month, today)` and `yearReview(book, year, today)` in `src/insights/review.ts`, built on plan 06a's book and highlights. The goal line uses plan 12's `goalProgress`.
+- Months and years already seen: a view preference (`spartopf-reviews-seen`), not in backups.
+- `MonthReportView` and `YearReviewView` are pushed on the tab they're opened from (plan 06a's navigation).
+- Plan 28 renders the same report model as a PDF. Plan 29 shares the year logic.
 
 ## Tests and checks
 
 - First month → no card.
 - An empty month → no card.
-- A normal month → the right figures.
-- Dismissing it is remembered.
+- A normal month → the right figures, equal to Statistik's for that month.
+- Dismissing is remembered; the year card only shows in season.
+- *Als Budgets übernehmen* sets the suggested budgets, and undo restores the old ones.
+- The share image shows no amounts unless switched on.
 
 ## Done when
 
-- [ ] The card appears once per new month with correct figures, and never in the first month or an empty one.
+- [ ] The month card appears once per new month with correct figures, never in the first month or for an empty one, and opens the report.
+- [ ] The report's figures equal Statistik's for the same month.
+- [ ] The year review shows in season, and its image never shows amounts unless switched on.

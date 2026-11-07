@@ -73,3 +73,6 @@ Everything in plans 01–38.
 - **Not run on a device yet:** reminders (permission, delivery, tap), the lock
   (cold start, return after a minute, passcode, app switcher). The checklist
   is in REDESIGN.md §10, step 14.
+- *Planen*'s card order and its hints change with plan 06a
+  ([STATISTICS_AND_INSIGHTS.md](../STATISTICS_AND_INSIGHTS.md) §7). The step-9
+  row above records what step 9 built.

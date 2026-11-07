@@ -1,7 +1,7 @@
 # 12 · Savings goals ("Spartöpfe")
 
 - **Covers:** F2 (YNAB, Copilot, Outbank, MoneyControl and Monefy all have goals), and the app's own name
-- **Depends on:** 00 (*Planen*), 11
+- **Depends on:** 06a (*Planen*), 11
 - **Size:** M
 - **Native:** none
 - **Schema:** bump (`AppData.goals?`, `Entry.goalId?`)
@@ -21,7 +21,7 @@ The app is called "savings pot" and has no pots. Goals are what bring people bac
 ## Keep it simple
 
 - No goal exists until the user makes one.
-- *Planen* shows one quiet row under *Sparen und Reserve*: "Für etwas sparen?". It's not a big empty card.
+- *Planen* shows one quiet row under *Finanz-Check* (plan 06a): "Für etwas sparen?". It's not a big empty card.
 - The goal pill only appears for *Sparen* categories.
 
 ## Design

@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 Steering file for AI assistants working in this repository. See `PLAN.md` for
-the product concept and the money rules, `README.md` for running and installing.
+the product concept and the money rules, `README.md` for running and installing,
+`STATISTICS_AND_INSIGHTS.md` for where Statistik and Planen go next.
 
 ## What this app is
 Spartopf: a client-only React + Capacitor household budget book, modelled on
@@ -86,6 +87,12 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (`budgetOf`); `save` expenses stay in *saved*.
   Averages use *finished* months (`finishedMonths`), never the running one.
   Percentages go through `formatPercent()` (an Arabic "%" stays on its side).
+  **Next:** `STATISTICS_AND_INSIGHTS.md` (plans 06a and 13). Its definitions
+  (§6) and decisions (§14) apply to every new figure. Until its phase 0
+  lands, `monthSeries` counts a `save` category as spent while `budgetSplit`
+  counts it as saved (decision D1 makes both count it as saved), and
+  `unusual`, `reserveMonths` and `forecast` keep the rules its §4 lists as
+  issues.
 - **Charts** (`components/Charts.tsx`) follow the dataviz skill. Series
   colours are tokens: `chart-in` / `chart-out` / `chart-save` / `chart-line` / `chart-want`
   (saved columns stand above the zero line, an overspend hangs below it in
@@ -98,7 +105,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `warn`) means "open" everywhere; what a month kept is a label, not a column.
   Review a chart change with the `roast-my-chart` skill and run
   `npm run audit:contrast` (the `validate_palette.js` once cited here isn't in
-  the repo).
+  the repo). No pies, donuts or Sankeys on the phone. A projection is a dashed
+  line with a hollow end point and "≈"; a baseline ("üblich") is a thin
+  `fg-mute` line (`STATISTICS_AND_INSIGHTS.md` §9.9).
 - **Categories per month:** `MonthRecord.categories` lists what a month
   shows; `monthCategories()` adds anything with entries, so money never
   vanishes. Unset (months from before, Excel imports) = the standard ones. New
