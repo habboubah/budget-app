@@ -432,6 +432,22 @@ export function carryCandidates(data: AppData, key: MonthKey): Entry[] {
   return sortEntries(out);
 }
 
+/**
+ * A recurring entry added (or made recurring) in a month that already has
+ * started months after it: copies for those months, so a new monthly bill
+ * shows up in the next month too, not only in months started later. Monthly
+ * goes into every later started month, yearly into the same month a year on;
+ * a month that already has the series is left alone.
+ */
+export function laterCopies(data: AppData, entry: Entry, now: number, newId: () => string = uid): Entry[] {
+  if (entry.repeat === 'none') return [];
+  const targets = data.months
+    .map(m => m.key)
+    .filter(k => (entry.repeat === 'monthly' ? k > entry.month : k === addMonths(entry.month, 12)))
+    .filter(k => !data.entries.some(e => e.month === k && e.seriesId === entry.seriesId));
+  return targets.flatMap((k, i) => carryOver([entry], k, now + i, newId));
+}
+
 /** Copies of `sources` for month `key`: open, same amount, same due day, same series. */
 export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: () => string = uid): Entry[] {
   return sources.map((e, i) => {

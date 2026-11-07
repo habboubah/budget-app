@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ACCENTS, Accent, AppData, Category, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
-  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, upgradeData, carryOver, computeBalances, monthKeyOf, moveEntry as move, normalizeState,
+  SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, upgradeData, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, standardCategoryIds, uid,
 } from './logic';
 import { defaultCategories } from './data/defaults';
@@ -151,8 +151,6 @@ export function useAppStore() {
   const newMonth = (key: MonthKey, extra: string[] = []): MonthRecord =>
     ({ key, startedAt: Date.now(), categories: [...new Set([...standardCategoryIds(categories), ...extra])] });
 
-  const ensureMonth = (key: MonthKey) =>
-    setMonths(prev => (prev.some(m => m.key === key) ? prev : sortMonths([...prev, newMonth(key)])));
 
   /**
    * Start a month with the standard categories. With `carry`, the recurring
@@ -165,6 +163,14 @@ export function useAppStore() {
     setMonths(prev => (prev.some(m => m.key === key) ? prev : sortMonths([...prev, record])));
     if (copies.length) setEntries(prev => [...prev, ...copies]);
     return copies.length;
+  };
+
+  /**
+   * Make sure a month exists before something goes into it — started the
+   * usual way, with last month's recurring entries, never empty by accident.
+   */
+  const ensureMonth = (key: MonthKey) => {
+    if (!months.some(m => m.key === key)) startMonth(key, true);
   };
 
   /** Patch one month's category list; a month from before lists starts as "all of them". */
@@ -190,7 +196,8 @@ export function useAppStore() {
   };
 
   /** Set (or with `undefined`, clear) a month's manual opening balance. */
-  const setOpening = (key: MonthKey, opening: number | undefined) =>
+  const setOpening = (key: MonthKey, opening: number | undefined) => {
+    ensureMonth(key);
     setMonths(prev => {
       const has = prev.some(m => m.key === key);
       const next = has ? prev : [...prev, newMonth(key)];
@@ -200,6 +207,7 @@ export function useAppStore() {
         return opening === undefined ? rest : { ...rest, opening };
       }));
     });
+  };
 
   /** Remove a month and its entries; returns them for undo. */
   const removeMonth = (key: MonthKey): { month: MonthRecord; entries: Entry[] } | null => {
@@ -221,12 +229,15 @@ export function useAppStore() {
 
   /* --------------------------------------------------------------- entries */
 
+  /** A new entry; a recurring one also goes into the months already started after it. */
   const addEntry = (entry: Entry) => {
     ensureMonth(entry.month);
-    setEntries(prev => [...prev, entry]);
+    const later = laterCopies(data, entry, Date.now());
+    setEntries(prev => [...prev, entry, ...later]);
   };
 
-  const updateEntry = (id: string, patch: Partial<Omit<Entry, 'id'>>) =>
+  const updateEntry = (id: string, patch: Partial<Omit<Entry, 'id'>>) => {
+    const before = entries.find(e => e.id === id);
     setEntries(prev => prev.map(e => {
       if (e.id !== id) return e;
       const next = { ...e, ...patch };
@@ -240,6 +251,12 @@ export function useAppStore() {
       if (!next.paid) delete next.paidAt;
       return next;
     }));
+    // Made recurring in the editor: it goes into the months already started after it, too.
+    if (before && before.repeat === 'none' && patch.repeat && patch.repeat !== 'none') {
+      const later = laterCopies(data, { ...before, ...patch }, Date.now());
+      if (later.length) setEntries(prev => [...prev, ...later]);
+    }
+  };
 
   const togglePaid = (id: string) => {
     const e = entries.find(x => x.id === id);

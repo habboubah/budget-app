@@ -76,6 +76,13 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   backups) appends the missing ones and applies renamed names / emoji
   (`SHIPPED_V1` in `defaults.ts`) only where the user kept what v1 shipped.
   Future changes to built-ins follow the same pattern with a new version.
+- **New months carry the recurring entries:** the running month and the
+  next one start by themselves (App's auto-start effect) as soon as the month
+  before is started, with `carryCandidates()` copied in open; further ahead
+  the start card stays. A month created implicitly (an entry or an opening
+  balance put into it — `ensureMonth`) carries them too. A recurring entry
+  added to, or made recurring in, an earlier month is copied into the months
+  already started after it (`laterCopies`).
 - **Entry order:** `Entry.order` is set once the user drags entries in a
   category (`moveEntry()` renumbers the source and target category of that
   month); `sortEntries()` puts ordered entries first, the rest by due day, then

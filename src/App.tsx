@@ -6,7 +6,7 @@ import { AlertTriangle, BarChart3, CalendarDays, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import translations, { fmt } from './translations';
 import { Category, Entry, EntryDraft, MonthKey } from './types';
-import { balanceFor, carryCandidates, displayName, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
+import { addMonths, balanceFor, carryCandidates, displayName, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { MonthView } from './components/MonthView';
 import { MonthPickerSheet } from './components/MonthPickerSheet';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
@@ -137,6 +137,22 @@ export default function App() {
     const name = monthLabel(month, t.locale);
     show(n ? fmt(t.monthStartedCarried, { month: name, n }) : fmt(t.monthStarted, { month: name }));
   };
+
+  // The new month starts by itself, with last month's recurring entries: the
+  // running month, or the next one, once the month before it is started.
+  // Further ahead the start card stays (browsing a year forward shouldn't
+  // create a year of months), and a month started here once isn't started
+  // again in this session if it is deleted.
+  const autoStarted = useRef(new Set<MonthKey>());
+  useEffect(() => {
+    if (balance.started || autoStarted.current.has(month)) return;
+    const last = data.months[data.months.length - 1]?.key;
+    if (!last || month <= last || month > addMonths(monthKeyOf(), 1)) return;
+    if (month !== monthKeyOf() && month !== addMonths(last, 1)) return;
+    autoStarted.current.add(month);
+    const n = store.startMonth(month, true);
+    if (n) show(fmt(t.monthStartedCarried, { month: monthLabel(month, t.locale), n }));
+  }, [month, balance.started]);
 
   const deleteMonth = () => {
     const removed = store.removeMonth(month);

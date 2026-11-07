@@ -4,7 +4,7 @@ import {
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, upgradeCategories,
-  normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, topCategories,
+  normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, topCategories, laterCopies,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -243,6 +243,24 @@ describe('suggestions', () => {
     expect(s.map(x => [x.name, x.categoryId])).toEqual([['Libri', 'extra'], ['Lidl', 'groceries'], ['Online-Kurs', 'extra']]);
     expect(s[1].last?.amount).toBe(4000);
     expect(suggestNames({ entries: all, categoryId: 'extra', lang: 'de', limit: 40 }).length).toBeGreaterThan(5);
+  });
+});
+
+describe('a recurring entry added to an earlier month', () => {
+  const months = ['2026-10', '2026-11', '2026-12'].map(key => ({ key, startedAt: 0 }));
+  it('goes into every later started month (monthly) or a year on (yearly), open', () => {
+    const rent = e('2026-10', 'fixed', 'Strom', 8300, true, { repeat: 'monthly' });
+    let k = 0;
+    const copies = laterCopies(data([rent], months), rent, 1000, () => `c${++k}`);
+    expect(copies.map(c => [c.month, c.paid, c.seriesId, c.amount])).toEqual([['2026-11', false, rent.seriesId, 8300], ['2026-12', false, rent.seriesId, 8300]]);
+    const yearly = e('2025-12', 'car', 'Kfz-Steuer', 30400, true, { repeat: 'yearly' });
+    expect(laterCopies(data([yearly], months), yearly, 1000).map(c => c.month)).toEqual(['2026-12']);
+  });
+  it('leaves months that already have it, and once-only entries, alone', () => {
+    const rent = e('2026-10', 'fixed', 'Strom', 8300, true, { repeat: 'monthly' });
+    const there = { ...rent, id: 'x', month: '2026-11' };
+    expect(laterCopies(data([rent, there], months), rent, 1000).map(c => c.month)).toEqual(['2026-12']);
+    expect(laterCopies(data([], months), e('2026-10', 'extra', 'Amazon', 100, true), 1000)).toEqual([]);
   });
 });
 
