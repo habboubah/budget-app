@@ -552,7 +552,7 @@ describe('upgrading categories saved before schema 2', () => {
     // From version 2 on, only the restaurants (schema 5) are still to come.
     const v2 = parseBackup(JSON.stringify({ ...old, schemaVersion: 2 }));
     expect(v2.ok && v2.data.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries', 'restaurants']);
-    const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 6 }));
+    const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 7 }));
     expect(current.ok && current.data.categories.length).toBe(4);
   });
 });
@@ -565,7 +565,7 @@ describe('Arabic', () => {
     expect(up.map(c => c.names.ar)).toEqual(['الدخل', undefined, 'السيارة']);
     expect(up[1].names).toEqual({ de: 'Miete & Nebenkosten' });
     expect(up).toHaveLength(3);
-    expect(upgradeCategories(up, 6)).toBe(up);
+    expect(upgradeCategories(up, 7)).toBe(up);
   });
   it('reads amounts typed on an Arabic keyboard', () => {
     expect(normalizeDigits('١٬٠٥٠٫٥٠')).toBe('1,050.50');
@@ -613,7 +613,7 @@ describe('schema 4: Wohnen and Sonstiges', () => {
     expect(up.categories.find(c => c.id === 'extra')!.emoji).toBe('📦');
     expect(up.entries.map(x => [x.name, x.categoryId, x.order])).toEqual([['IKEA', 'fixed', undefined], ['Post', 'extra', undefined], ['Miete', 'fixed', 0]]);
     expect(up.months[0].categories).toEqual(['income', 'fixed', 'extra', 'restaurants']);
-    expect(upgradeData(up, 6)).toBe(up);
+    expect(upgradeData(up, 7)).toBe(up);
   });
   it('keeps a name the user chose', () => {
     const d = v3();
@@ -651,7 +651,7 @@ describe('schema 5: Restaurants', () => {
     expect(shown('2026-11')).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family']);
     expect(up.months.find(m => m.key === '2026-12')!.categories).toBeUndefined();
     expect(shown('2026-12')).toContain('restaurants');
-    expect(upgradeData(up, 6, today)).toBe(up);
+    expect(upgradeData(up, 7, today)).toBe(up);
   });
   it('leaves it out when the user already has one of their own', () => {
     const d = v4();
@@ -668,6 +668,29 @@ describe('schema 6: the income picture', () => {
     const d = (emoji: string): AppData => ({ categories: [{ ...shipped, emoji }], entries: [], months: [] });
     expect(upgradeData(d('💶'), 5).categories[0].emoji).toBe('💰');
     expect(upgradeData(d('🏦'), 5).categories[0].emoji).toBe('🏦');
-    expect(upgradeData(d('💶'), 6).categories[0].emoji).toBe('💶');
+    expect(upgradeData(d('💶'), 7).categories[0].emoji).toBe('💶');
+  });
+});
+
+describe('schema 7: the date says when it is due', () => {
+  it('gives entries that only had a due day that day as their date', () => {
+    const d: AppData = { categories: cats, months: [{ key: '2026-11', startedAt: 0 }], entries: [
+      e('2026-11', 'car', 'DEVK', 5426, false, { dueDay: 14 }), e('2026-11', 'fixed', 'Miete', 105000, false, { dueDay: 31, date: '2026-11-01' }),
+      e('2026-02', 'fixed', 'Handy', 1999, false, { dueDay: 30 }),
+    ] };
+    expect(upgradeData(d, 6).entries.map(x => x.date)).toEqual(['2026-11-14', '2026-11-01', '2026-02-28']);
+  });
+  it('is overdue once the date has passed, and sorts by it', () => {
+    const today = new Date(2026, 10, 7);
+    expect(isOverdue(e('2026-11', 'car', 'DEVK', 1, false, { date: '2026-11-14', dueDay: 1 }), today)).toBe(false);
+    expect(isOverdue(e('2026-11', 'car', 'Strom', 1, false, { date: '2026-11-03' }), today)).toBe(true);
+    expect(isOverdue(e('2026-11', 'car', 'Heute', 1, false, { date: '2026-11-07' }), today)).toBe(false);
+    const a = e('2026-11', 'fixed', 'Spät', 1, false, { date: '2026-11-20' });
+    const b = e('2026-11', 'fixed', 'Früh', 1, false, { date: '2026-11-02' });
+    expect(sortEntries([a, b]).map(x => x.name)).toEqual(['Früh', 'Spät']);
+  });
+  it('keeps an imported entry’s fingerprint through storage', () => {
+    const s = normalizeState({ entries: [{ ...e('2026-11', 'fixed', 'Lidl', 100, true), ref: '2026-11-03|-100|lidl|' }] });
+    expect(s.entries[0].ref).toBe('2026-11-03|-100|lidl|');
   });
 });

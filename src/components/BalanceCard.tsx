@@ -74,10 +74,11 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
       <div className="mx-2 mb-2 rounded-md hero-panel px-3.5 pt-2.5 pb-3">
         <table className="w-full text-label">
           <thead>
-            <tr className="text-caption text-on-hero-soft">
+            {/* The columns speak for themselves (pending in its own colour); VoiceOver still hears their names. */}
+            <tr className="sr-only">
               <td />
-              <th scope="col" className="ps-3 pb-1 text-end font-medium">{t.colPaid}</th>
-              <th scope="col" className="ps-3 pb-1 text-end font-medium">{t.colOpen}</th>
+              <th scope="col">{t.colPaid}</th>
+              <th scope="col">{t.colOpen}</th>
             </tr>
           </thead>
           <tbody>

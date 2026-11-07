@@ -69,7 +69,9 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   if the user already has a category of that name — and into the running and
   later started months' lists; earlier months without a list get the old
   standard ones frozen in (`upgradeData(data, from, today)`); **schema 6**
-  (`SHIPPED_V5`) gives *Einkommen* 💰 instead of 💶 where unchanged. Ids
+  (`SHIPPED_V5`) gives *Einkommen* 💰 instead of 💶 where unchanged; **schema 7**
+  dates entries that only had a due day, and adds the optional `Entry.ref`
+  (an imported bank transaction's fingerprint). Ids
   stay as history: `fixed` = Wohnen, `extra` = Sonstiges (also where orphaned
   entries go). `upgradeCategories()` (run once by
   `loadInitial` for storage below version 2, and by `parseBackup` for older
@@ -92,10 +94,11 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   `data-drop-category` / `data-entry-row`, so keep those on the cards and rows.
 - **Entry date:** `Entry.date` (YYYY-MM-DD, always inside `month`) defaults to
   today (`defaultEntryDate`), carries over to the same day of the next month,
-  and goes out as the last CSV column. Older entries have none. `dueDay` stays
-  separate (when a bill is due; shown on the row only while open). The entry
-  sheet no longer asks for it: it keeps an entry's own and takes the one a
-  picked suggestion had last time.
+  and goes out as the last CSV column. It is also when an open entry is due:
+  `isOverdue()` compares it with today and `sortEntries()` sorts by its day.
+  `dueDay` is legacy — no longer shown or asked for; **schema 7** turned it
+  into the date of entries that had none (only entries without a date still
+  fall back to it).
 - **Entry sheet order:** date, then the name field (label hidden, focused
   first), its suggestions — three, the rest behind *Alle (n)* — then the
   category (three from `topCategories()`: same kind, this month's, most used,

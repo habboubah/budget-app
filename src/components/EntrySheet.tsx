@@ -219,7 +219,6 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
                     if (s.last) {
                       // What it was last time — only where nothing was typed yet.
                       if (!filled && s.last.repeat !== 'none') { setAmountText(amountToInput(s.last.amount, t.locale)); filled = true; }
-                      if (!dueText.trim() && s.last.dueDay) setDueText(String(s.last.dueDay));
                     }
                     // On to the amount while it still needs typing; otherwise the keyboard can go.
                     if (filled) nameRef.current?.blur();

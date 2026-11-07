@@ -268,9 +268,9 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   onMoveBy: (delta: -1 | 1) => void;
 }) {
   const meta: React.ReactNode[] = [];
-  // The date first; then, while open, the status in words, coloured — never
-  // colour or shape alone — and when it is due. How often it repeats is for
-  // the editor, not the list.
+  // The date first — it is also when an open entry is due; then, while open,
+  // the status in words, coloured — never colour or shape alone. How often it
+  // repeats is for the editor, not the list.
   if (e.date) meta.push(<span key="date" className="whitespace-nowrap">{dayLabel(e.date, t.locale)}</span>);
   if (!e.paid) {
     meta.push(
@@ -278,7 +278,6 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
         {overdue ? t.overdue : income ? t.expected : t.open}
       </span>,
     );
-    if (e.dueDay) meta.push(<span key="due">{fmt(t.dueOn, { day: e.dueDay })}</span>);
   }
   if (e.note) meta.push(<span key="note" className="wrap-compound"><Highlight text={e.note} query={search} /></span>);
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;

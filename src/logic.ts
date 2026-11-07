@@ -4,7 +4,7 @@ import {
 import { MERGED_V4, NEW_IN_V5, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 
 /** Bump when a stored shape changes, and migrate in `normalizeState`. */
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -241,14 +241,19 @@ export function canRemoveFromMonth(data: AppData, key: MonthKey, categoryId: str
  * on the 1st above the phone bill on the 18th); then everything else in the
  * order it was entered — the way the Excel column grows.
  */
+/** The day of the month an entry happens: its date, or for older entries without one, the due day. */
+const dayOf = (e: Entry): number | undefined => (e.date ? Number(e.date.slice(8, 10)) : e.dueDay);
+
 export function sortEntries(entries: Entry[]): Entry[] {
   return [...entries].sort((a, b) => {
     if (a.order !== undefined && b.order !== undefined && a.order !== b.order) return a.order - b.order;
     if (a.order !== undefined && b.order === undefined) return -1;
     if (a.order === undefined && b.order !== undefined) return 1;
-    if (a.dueDay !== undefined && b.dueDay !== undefined && a.dueDay !== b.dueDay) return a.dueDay - b.dueDay;
-    if (a.dueDay !== undefined && b.dueDay === undefined) return -1;
-    if (a.dueDay === undefined && b.dueDay !== undefined) return 1;
+    const da = dayOf(a);
+    const db = dayOf(b);
+    if (da !== undefined && db !== undefined && da !== db) return da - db;
+    if (da !== undefined && db === undefined) return -1;
+    if (da === undefined && db !== undefined) return 1;
     return a.createdAt - b.createdAt;
   });
 }
@@ -276,6 +281,8 @@ export function moveEntry(entries: Entry[], id: string, toCategoryId: string, to
  */
 export function isOverdue(e: Entry, today = new Date()): boolean {
   if (e.paid) return false;
+  // The date says when it happens: past it and still open is overdue.
+  if (e.date) return e.date < isoDay(today);
   const now = monthKeyOf(today);
   if (e.month < now) return true;
   if (e.month > now || e.dueDay === undefined) return false;
@@ -808,6 +815,8 @@ function normalizeEntry(v: unknown): Entry | null {
   if (note) e.note = note;
   if (typeof v.paidAt === 'number' && Number.isFinite(v.paidAt)) e.paidAt = v.paidAt;
   if (typeof v.order === 'number' && Number.isFinite(v.order)) e.order = v.order;
+  const ref = str(v.ref);
+  if (ref) e.ref = ref.slice(0, 200);
   return e;
 }
 
@@ -952,6 +961,10 @@ export function upgradeData(data: AppData, from = 1, today = new Date()): AppDat
         return m.categories ? m : { ...m, categories: before };
       });
     }
+  }
+  if (from < 7) {
+    // The date now says when something is due: entries that only had a due day get it as their date.
+    entries = entries.map(e => (e.date || e.dueDay === undefined ? e : { ...e, date: dayInMonth(e.month, e.dueDay) }));
   }
   if (from < 6 && categories.length) {
     const shipped = new Map(defaultCategories().map(c => [c.id, c]));

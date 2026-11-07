@@ -66,6 +66,8 @@ export interface Entry {
   /** Position inside its category, once the user has dragged entries there.
    *  Entries without one follow, by due day and then as entered. */
   order?: number;
+  /** A bank transaction's fingerprint, for entries imported from a statement — the same one isn't imported twice. */
+  ref?: string;
 }
 
 /** A month the user has started. Entries only live in started months. */
