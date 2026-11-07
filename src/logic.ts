@@ -571,22 +571,23 @@ export function searchTerms(query: string): string[] {
 }
 
 /**
- * Does a typed number start an amount? "39" and "39,8" find 39,80 €; "1050",
- * "1.050" and "1050,00" find 1.050,00 € — from the start of the amount only,
- * so "39" does not find 1.390,55 €. A minus or € typed along is ignored.
+ * Is a typed number part of an amount, however it is written? "39", "39,8",
+ * "80" and "3980" all find 39,80 €; "1050", "1.050" and "1050,00" find
+ * 1.050,00 €. A minus or € typed along is ignored.
  */
 function amountMatches(cents: number, term: string, locale: string): boolean {
   const typed = term.replace(/^[−-]/, '').replace(/[€$£]/g, '');
-  if (!/^\d[\d.,]*$/.test(typed)) return false;
+  if (!/^[\d.,]*\d[\d.,]*$/.test(typed)) return false;
   const value = Math.abs(cents) / 100;
   const plain = value.toFixed(2);
   const grouped = normalizeDigits(new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value));
-  return [plain, plain.replace('.', ','), grouped].some(x => x.startsWith(typed));
+  // Typed without a separator ("3980"): from the start only, so "99" doesn't find 59,98 €.
+  return [plain, plain.replace('.', ','), grouped].some(x => x.includes(typed)) || String(Math.abs(cents)).startsWith(typed);
 }
 
 /**
  * The entries a search finds, in their order. Every word has to appear in the
- * entry's name, its note or its category's name, or start its amount; case,
+ * entry's name, its note or its category's name, or in its amount; case,
  * accents and Arabic letter forms don't matter. No words: everything.
  */
 export function searchEntries(entries: Entry[], query: string, { categoryName, locale }: {

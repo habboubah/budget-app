@@ -300,7 +300,12 @@ describe('search', () => {
     expect(find('wohnen versicherung')).toEqual(['DFV Zahnversicherung']);
     expect(find('wohnen rewe')).toEqual([]);
   });
-  it('finds amounts from their start, however they are written', () => {
+  it('finds amounts, however they are written', () => {
+    expect(find('80')).toEqual(['DFV Zahnversicherung']);
+    expect(find('3980')).toEqual(['DFV Zahnversicherung']);
+    expect(find('12')).toEqual(['Straßenreinigung', 'Rewe']);
+    expect(find(',50')).toEqual(['Gebühr Rückgabe']);
+    expect(searchEntries([e('2026-11', 'fixed', 'O2', 5998, true)], '99', { categoryName: nameOf, locale: 'de-DE' })).toEqual([]);
     expect(find('39,8')).toEqual(['DFV Zahnversicherung']);
     expect(find('39.80')).toEqual(['DFV Zahnversicherung']);
     expect(find('1.050')).toEqual(['Miete']);

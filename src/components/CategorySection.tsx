@@ -343,7 +343,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
         </span>
         {/* Open money is grey, like a pending card payment; it turns solid once paid. */}
         <span className={`shrink-0 text-body font-medium num ${e.paid ? (income ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
-          {formatMoney(e.amount, t.locale)}
+          <Highlight text={formatMoney(e.amount, t.locale)} query={search} />
         </span>
       </button>
     </div>

@@ -97,9 +97,10 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
 - **Search** (month page): `SearchField` sits in `Screen`'s `accessory` slot
   under the title. `searchEntries()` (logic.ts) keeps this month's entries
   whose name, note or category name contains every word, or whose amount
-  starts with a typed number; `foldForSearch()` makes it case-, accent- and
+  contains a typed number ("80" finds 39,80 €; digits typed without a
+  separator only from the start); `foldForSearch()` makes it case-, accent- and
   Arabic-letter-form-blind, `highlightRanges()` maps hits back for
-  `ui/Highlight` (`bg-mark`, always `text-fg`). Results reuse
+  `ui/Highlight` (`bg-mark`, always `text-fg`) — names, notes and amounts. Results reuse
   `CategorySection` with `search` set: no fold, add row, filter, totals or
   drag — the hits are summed above the cards (`monthTotals`).
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
