@@ -8,6 +8,7 @@ import translations, { fmt } from './translations';
 import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { MonthView } from './components/MonthView';
+import { SetupCard, TipsCard } from './components/SetupCard';
 import { BudgetSheet } from './components/BudgetSheet';
 import { DueSoonView } from './components/DueSoonView';
 import { ContractsView } from './components/ContractsView';
@@ -80,6 +81,13 @@ export default function App() {
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
   /** The category the round add button opens with: the one used last. */
   const [lastCategory, setLastCategory] = useState<string | null>(null);
+  /**
+   * The first run's "how much is on your account right now", while the setup
+   * runs: what is entered in it as already paid happened before that look at
+   * the bank, so it moves the month's opening instead of the balance now.
+   * Ends with the setup, a reload, or an opening set by hand.
+   */
+  const [setupNow, setSetupNow] = useState<{ month: MonthKey; now: number } | null>(null);
 
   const balance = balanceFor(balances, month);
   const prevBalance = balance.prevKey ? balances.find(b => b.key === balance.prevKey) : undefined;
@@ -133,6 +141,15 @@ export default function App() {
     });
     return () => { void handle.then(h => h.remove()); };
   }, [pushed, tab]);
+
+  // While the setup runs: opening = the balance given − what the month has settled since.
+  useEffect(() => {
+    if (!setupNow || store.introDone) return;
+    const b = balances.find(x => x.key === setupNow.month);
+    if (!b || b.prevKey) return;
+    const want = setupNow.now - (b.incomePaid - b.expensePaid);
+    if (!b.overridden || b.openingNow !== want) store.setOpening(setupNow.month, want);
+  }, [setupNow, balances, store.introDone]);
 
   // Status-bar glyphs must invert with the theme or they vanish into the bar.
   useEffect(() => {
@@ -338,6 +355,33 @@ export default function App() {
   const quickAddCategory = (lastCategory && categories.some(c => c.id === lastCategory) ? lastCategory : null)
     ?? categories.find(c => c.kind === 'expense')?.id ?? categories[0]?.id;
 
+  // ---- First run: the setup card on the first month, then the tips.
+  const showSetup = !store.introDone && balance.started && !balance.prevKey;
+  const kindOf = new Map(categories.map(c => [c.id, c.kind]));
+  const monthEntries = entries.filter(e => e.month === month);
+  const salaryCategory = categories.find(c => c.id === 'income' && c.kind === 'income') ?? categories.find(c => c.kind === 'income');
+  const fixedCategory = categories.find(c => c.id === 'fixed' && c.kind === 'expense')
+    ?? categories.find(c => c.kind === 'expense' && c.repeat === 'monthly') ?? categories.find(c => c.kind === 'expense');
+  const finishSetup = () => { store.dismissIntro(); setSetupNow(null); };
+  const setup = showSetup ? (
+    <SetupCard
+      t={t}
+      balance={balance.overridden ? balance.now : undefined}
+      salaryDone={monthEntries.some(e => kindOf.get(e.categoryId) === 'income')}
+      fixedCount={monthEntries.filter(e => kindOf.get(e.categoryId) === 'expense' && e.repeat === 'monthly').length}
+      canSalary={!!salaryCategory}
+      canFixed={!!fixedCategory}
+      // At once, in the same render as the anchor (the effect above keeps it so).
+      onBalance={now => { store.setOpening(month, now - (balance.incomePaid - balance.expensePaid)); setSetupNow({ month, now }); }}
+      onSalary={() => salaryCategory && setEntrySheet({ kind: 'new', month, categoryId: salaryCategory.id, preset: { name: t.setupSalaryName, repeat: 'monthly' } })}
+      onFixed={() => fixedCategory && setEntrySheet({ kind: 'new', month, categoryId: fixedCategory.id, preset: { repeat: 'monthly' } })}
+      onImportExcel={() => excelInput.current?.click()}
+      onFinish={finishSetup}
+    />
+  ) : store.introDone && !store.tipsDone && balance.started && monthEntries.length > 0 && month === monthKeyOf() ? (
+    <TipsCard t={t} onDismiss={store.dismissTips} />
+  ) : null;
+
   /** Every screen, by name — the tab roots and what can be pushed over them. */
   const screenFor = (id: ScreenId) => (
     <>
@@ -418,7 +462,9 @@ export default function App() {
             entries={entries}
             candidates={candidates}
             openEarlier={openEarlier}
-            showIntro={!store.introDone && !balance.prevKey}
+            setup={setup}
+            // Nothing to show yet: the setup asks for the balance first.
+            hideBalance={showSetup && !balance.overridden && monthEntries.length === 0}
             language={language}
             t={t}
             onMonth={setMonth}
@@ -430,9 +476,7 @@ export default function App() {
             onDelete={e => deleteEntry(e.id)}
             onPickMonth={() => setMonthPickerOpen(true)}
             onOpening={() => setOpeningOpen(true)}
-            onDismissIntro={store.dismissIntro}
             onCategories={() => push('categories')}
-            onImportExcel={() => excelInput.current?.click()}
             collapsed={store.collapsed}
             onCollapse={store.toggleCollapsed}
             onRemoveCategory={removeFromMonth}
@@ -546,6 +590,8 @@ export default function App() {
         t={t}
         onClose={() => setOpeningOpen(false)}
         onSave={v => {
+          // Set by hand: the setup's balance doesn't steer the opening any more.
+          setSetupNow(null);
           store.setOpening(month, v);
           show(v === undefined && balance.prevKey
             ? fmt(t.openingReset, { month: monthLabel(balance.prevKey, t.locale) })

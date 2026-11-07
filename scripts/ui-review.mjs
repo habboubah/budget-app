@@ -228,6 +228,15 @@ const SCREENS = [
   { name: 'category-edit', run: async (page, l) => { await openCategories(page, l); await page.locator('main [data-category-body]').nth(4).click(); }, wait: dialog, audit: 'dialog' },
   { name: 'first-run', fresh: true, audit: 'page' },
   { name: 'first-run-full', fresh: true, full: true },
+  // The setup's first step answered: the balance card appears above it.
+  { name: 'setup-balance', fresh: true, run: async page => {
+    await page.locator('main section input[inputmode="decimal"]').first().fill('1234,56');
+    await page.locator('main section form button[type="submit"]').first().click();
+    await page.waitForTimeout(400);
+    await page.evaluate(() => document.querySelector('main section[aria-labelledby]')?.scrollIntoView({ block: 'center' }));
+  }, audit: 'page' },
+  // After the setup: the gestures card on the running month.
+  { name: 'tips', storage: { 'spartopf-tips-done': '0' }, run: page => page.evaluate(() => window.scrollTo(0, 560)), audit: 'page' },
   { name: 'stats-empty', fresh: true, run: tab(1) },
 ];
 // Snapshotted as static HTML with --dom (mockups start from these).
@@ -324,7 +333,7 @@ async function runContext(browser, c, report, safeAreaMode) {
     await ctx.clearCookies();
     const page = await ctx.newPage();
     page.on('pageerror', e => console.error(`  [${c.id}/${s.name}] page error: ${e.message}`));
-    await page.addInitScript(([seed, lang, fresh, scale]) => {
+    await page.addInitScript(([seed, lang, fresh, scale, extra]) => {
       // What dynamicType.ts does on iOS for a larger text size setting. Init
       // scripts run before <html> is parsed, so wait for it.
       if (scale !== 1) {
@@ -341,7 +350,8 @@ async function runContext(browser, c, report, safeAreaMode) {
         localStorage.setItem('spartopf-categories', JSON.stringify(seed.categories));
         localStorage.setItem('spartopf-meta', JSON.stringify({ schemaVersion: seed.schema, seeded: true }));
       }
-    }, [data, c.lang, !!s.fresh, TEXT_SCALE]);
+      for (const [k, v] of Object.entries(extra)) localStorage.setItem(k, v);
+    }, [data, c.lang, !!s.fresh, TEXT_SCALE, s.storage ?? {}]);
     const mode = await applySafeArea(page, d);
     safeAreaMode.add(mode);
     await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' });

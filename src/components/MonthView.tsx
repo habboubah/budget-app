@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ListFilter, MoreHorizontal, Plus } from 'lucide-react';
@@ -18,7 +18,6 @@ import { SearchField } from '../ui/SearchField';
 import { BalanceCard } from './BalanceCard';
 import { CategorySection } from './CategorySection';
 import { StartMonthCard } from './StartMonthCard';
-import { IntroCard } from './IntroCard';
 import { EmptyCategories } from './EmptyCategories';
 import { budgetStatus } from '../budgets';
 import { dueSoon } from '../due';
@@ -33,7 +32,10 @@ interface Props {
   candidates: Entry[];
   /** Open entries left in earlier months. */
   openEarlier: Entry[];
-  showIntro: boolean;
+  /** The first run's setup card (App builds it), or the tips card after it. */
+  setup?: React.ReactNode;
+  /** No balance card yet: the setup asks for the balance first, instead of a card full of zeros. */
+  hideBalance?: boolean;
   language: string;
   t: Strings;
   onMonth: (m: MonthKey) => void;
@@ -48,10 +50,8 @@ interface Props {
   /** Tap the month's name: the month picker. */
   onPickMonth: () => void;
   onOpening: () => void;
-  onDismissIntro: () => void;
   /** Opens Settings → Kategorien (when there are none left). */
   onCategories: () => void;
-  onImportExcel: () => void;
   /** Ids of the categories folded down to their header. */
   collapsed: string[];
   onCollapse: (categoryId: string) => void;
@@ -250,7 +250,7 @@ export function MonthView(p: Props) {
           onOpenMonth={m => { setQuery(''); p.onMonth(m); }}
         />
       ) : (<>
-      <BalanceCard balance={balance} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} />
+      {!p.hideBalance && <BalanceCard balance={balance} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} />}
 
       {/* Keyed by month: stepping to another one brings its cards in afresh
           (the balance card above stays, and its numbers run to the new values). */}
@@ -271,15 +271,7 @@ export function MonthView(p: Props) {
               onEdit={p.onEdit} onTick={p.onTickDue} onAll={p.onDueAll} />
           )}
 
-          {p.showIntro && (
-            <IntroCard
-              t={t}
-              needsStart={!balance.prevKey && !balance.overridden}
-              onStartingBalance={p.onOpening}
-              onImportExcel={p.onImportExcel}
-              onDismiss={p.onDismissIntro}
-            />
-          )}
+          {p.setup}
 
           {oldestOpen && (
             <motion.div variants={rise}>

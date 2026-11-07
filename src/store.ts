@@ -18,6 +18,7 @@ const K = {
   theme: 'spartopf-theme',
   accent: 'spartopf-accent',
   intro: 'spartopf-intro-done',
+  tips: 'spartopf-tips-done',
   collapsed: 'spartopf-collapsed',
   meta: 'spartopf-meta',
 } as const;
@@ -88,8 +89,13 @@ export function useAppStore() {
     document.documentElement.setAttribute('data-accent', value);
     return value;
   });
-  /** The "how it works" card on the first month — gone for good once dismissed. */
+  /** The setup card on the first month — gone for good once finished or put off. */
   const [introDone, setIntroDone] = useState(() => readString(K.intro) === '1');
+  /**
+   * The gestures card shown after the setup — gone once dismissed. Whoever
+   * dismissed the old intro card has read these already (it carried them).
+   */
+  const [tipsDone, setTipsDone] = useState(() => (readString(K.tips) ?? readString(K.intro)) === '1');
   /** Categories folded down on the month page — a view preference, not data, so not in a backup. */
   const [collapsed, setCollapsed] = useState<string[]>(() => {
     const saved = readJson(K.collapsed);
@@ -115,6 +121,7 @@ export function useAppStore() {
   useEffect(() => { persist(K.months, JSON.stringify(months)); }, [months]);
   useEffect(() => { persist(K.contracts, JSON.stringify(contracts)); }, [contracts]);
   useEffect(() => { persist(K.intro, introDone ? '1' : '0'); }, [introDone]);
+  useEffect(() => { persist(K.tips, tipsDone ? '1' : '0'); }, [tipsDone]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.meta, JSON.stringify({ schemaVersion: SCHEMA_VERSION, seeded: true })); }, []);
 
@@ -401,6 +408,7 @@ export function useAppStore() {
     setMonths([{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fresh) }]);
     setContracts({});
     setIntroDone(false);
+    setTipsDone(false);
   };
 
   /* ------------------------------------------------------------- contracts */
@@ -418,6 +426,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode, accent, setAccent, storageError: failedKeys.length > 0,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
+    tipsDone, dismissTips: () => setTipsDone(true),
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),
     expand: (id: string) => setCollapsed(prev => prev.filter(x => x !== id)),

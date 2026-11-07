@@ -13,7 +13,8 @@ import { Menu } from '../ui/Menu';
 import { tapLight } from '../ui/haptics';
 
 export type EntrySheetMode =
-  | { kind: 'new'; month: MonthKey; categoryId: string }
+  /** `preset`: what the first run's steps fill in ("Gehalt", monthly); the repeat stays for "save & next". */
+  | { kind: 'new'; month: MonthKey; categoryId: string; preset?: { name?: string; repeat?: Repeat } }
   | { kind: 'edit'; entry: Entry }
   | null;
 
@@ -83,7 +84,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setName('');
     // A new entry: paid, once — the way most receipts are.
     setPaid(true);
-    setRepeat('none');
+    setRepeat(mode?.kind === 'new' ? mode.preset?.repeat ?? 'none' : 'none');
     setDueText('');
     setDateText(defaultEntryDate(month));
     setNote('');
@@ -110,6 +111,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setShowError(false);
     } else {
       reset();
+      if (mode.preset?.name) setName(mode.preset.name);
       // The amount first, with the decimal pad. After the sheet has mounted;
       // preventScroll keeps the page still.
       requestAnimationFrame(() => amountRef.current?.focus({ preventScroll: true }));

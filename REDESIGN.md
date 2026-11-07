@@ -617,3 +617,34 @@ category for every month (no rollover), reminders without amounts by default.
   for income, the every-month switch in the sheet. **For step 14:** at 200 %
   text, `Row` labels ("Kategorien und Budgets") break into syllables on SE —
   the rem paddings double; stack the trailing value under the label there.
+- [ ] **11 · Bill reminders** and **12 · Face ID lock** — native; next, after
+  step 13 (they need the plugins installed and a device to test on).
+- [x] **13 · First run** — the first month opens on a setup card instead of a
+  balance card full of zeros and five paragraphs (`SetupCard.tsx`; the old
+  `IntroCard` is gone): ① *Wie viel ist gerade auf deinem Konto?* typed into
+  the card (an overdrawn account takes a minus), ② *Gehalt eintragen* (the
+  entry sheet on the income category, named "Gehalt", monthly — a new
+  `preset` on the sheet's new mode; the repeat stays for *Sichern & nächster*),
+  ③ *Feste Kosten eintragen* (Wohnen, monthly). Each step ticks itself off
+  (an income entry; a monthly spending entry, "2 eingetragen – tippe für
+  weitere"). *Aus Excel importieren* is the secondary way in; *Später* puts
+  the setup off, and once the balance is in it reads *Fertig* (filled when all
+  three are done). The balance card appears as soon as there is a balance or
+  an entry. **The balance asked is "now", the model's opening is the start of
+  the month:** while the setup runs, what is entered as already paid happened
+  before that look at the bank, so it moves the month's opening, not
+  *Kontostand jetzt* (App keeps opening = balance given − the month's settled
+  part; it stops with *Fertig* / *Später*, a reload, or an opening set by
+  hand). Rent paid on the 1st, entered during the setup, leaves the balance at
+  what the bank says and makes the month start 1.050 € higher. After the setup
+  — once the month has entries — one dismissible **Gut zu wissen** card with
+  the three gestures (circle, swipe right / left — mirrored in Arabic — and
+  hold to drag; `TipsCard`, its own `spartopf-tips-done`, which starts as done
+  for whoever had dismissed the old intro). No currency step (plan 07).
+  `scripts/ui-review.mjs`: screens can seed extra storage (`storage`), new
+  `setup-balance`, `tips`. Audit clean on first-run, setup-balance, tips, month
+  (SE, 16 × DE/AR × light/dark). Checked by script: no hero at first, the
+  inline balance, salary and fixed-cost sheets preset, the balance kept while
+  paid rent is entered and the opening derived (2.284,56 €), *Fertig* → tips,
+  ticking afterwards moves the balance, tips gone for good, *Später*,
+  *Ändern* and a negative balance, an upgrade from the old intro shows no tips.
