@@ -1,7 +1,7 @@
-import { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { CSSProperties, ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Category, MonthKey } from '../types';
-import { MonthPoint, CategoryMatrix, BudgetSplit } from '../insights';
-import { displayName, formatMoney, monthLabel, parseMonthKey } from '../logic';
+import { MonthPoint, CategoryMatrix, BudgetSplit, RulePart } from '../insights';
+import { displayName, formatMoney, formatPercent, monthLabel, parseMonthKey } from '../logic';
 import { Strings, fmt } from '../translations';
 import { useWidth } from '../ui/useWidth';
 import { tapLight } from '../ui/haptics';
@@ -83,6 +83,8 @@ interface FrameProps {
   tooltip: (i: number) => ReactNode;
   /** A zero line inside the plot (a balance below zero). */
   zero?: boolean;
+  /** The y-axis labels; money in short form unless given ("20 %"). */
+  tickLabel?: (v: number) => string;
 }
 
 /**
@@ -90,7 +92,7 @@ interface FrameProps {
  * the months don't fit, every month's whole slot is the hit target, and the
  * tooltip stays inside the visible part.
  */
-function ChartFrame({ months, minSlot, ticks, y, selected, t, label, onPick, marks, tooltip, zero }: FrameProps) {
+function ChartFrame({ months, minSlot, ticks, y, selected, t, label, onPick, marks, tooltip, zero, tickLabel }: FrameProps) {
   const box = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const width = useWidth(box);
@@ -116,7 +118,7 @@ function ChartFrame({ months, minSlot, ticks, y, selected, t, label, onPick, mar
     <div ref={box} dir="ltr" className="relative flex" onPointerLeave={() => setActive(null)}>
       <svg width={AXIS_W} height={H} className="shrink-0" aria-hidden="true">
         {ticks.map(v => (
-          <text key={v} x={AXIS_W - 6} y={y(v)} dy="0.32em" textAnchor="end" className="fill-fg-mute text-micro num">{compact(v, t.locale)}</text>
+          <text key={v} x={AXIS_W - 6} y={y(v)} dy="0.32em" textAnchor="end" className="fill-fg-mute text-micro num">{tickLabel ? tickLabel(v) : compact(v, t.locale)}</text>
         ))}
       </svg>
       {/* Older months hide to the left: a fade says there is more. */}
@@ -368,25 +370,89 @@ export function IncomeExpenseLines({ points, selected, t, onPick }: SeriesProps)
   );
 }
 
+/* ------------------------------------------------ saved and overspent */
+
+/**
+ * What each month saved, as one line around the zero line: above it saved,
+ * below it overspent — the line and a light wash down (or up) to zero take
+ * the colour of the side they are on, so a month that crosses turns red right
+ * where it does. The newest value is labelled at the end, every month in the
+ * tooltip.
+ */
+export function SavedLines({ points, selected, t, onPick }: SeriesProps) {
+  const clip = useId().replace(/[^a-zA-Z0-9_-]/g, '');
+  const values = points.map(p => p.saved);
+  const ticks = niceTicks(Math.min(0, ...values), Math.max(1, ...values));
+  const yLo = ticks[0];
+  const yHi = ticks[ticks.length - 1];
+  const y = (v: number) => PAD_T + PLOT_H - ((v - yLo) / (yHi - yLo)) * PLOT_H;
+  const base = y(0);
+  const last = points.length - 1;
+  const money = (c: number) => formatMoney(c, t.locale);
+  const anyOver = values.some(v => v < 0);
+  const lastValue = values[last];
+  return (
+    <div>
+      <Legend items={[{ label: t.saved, className: 'bg-chart-save' }, ...(anyOver ? [{ label: t.overspent, className: 'bg-neg' }] : [])]} />
+      <ChartFrame
+        months={points.map(p => p.key)} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
+        zero={yLo < 0}
+        label={i => `${monthLabel(points[i].key, t.locale)}: ${values[i] < 0 ? t.overspent : t.saved} ${money(Math.abs(values[i]))}`}
+        marks={(cx, _slot, active) => {
+          const line = points.map((p, i) => `${i ? 'L' : 'M'}${cx(i).toFixed(1)},${y(p.saved).toFixed(1)}`).join('');
+          const area = `${line}L${cx(last).toFixed(1)},${base.toFixed(1)}L${cx(0).toFixed(1)},${base.toFixed(1)}Z`;
+          return (
+            <>
+              <defs>
+                <clipPath id={`${clip}-up`}><rect x={0} y={0} width="100%" height={base} /></clipPath>
+                <clipPath id={`${clip}-down`}><rect x={0} y={base} width="100%" height={H - base} /></clipPath>
+              </defs>
+              <path d={area} className="fill-chart-save" opacity={0.16} clipPath={`url(#${clip}-up)`} />
+              <path d={area} className="fill-neg" opacity={0.14} clipPath={`url(#${clip}-down)`} />
+              <path d={line} fill="none" className="stroke-chart-save" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-up)`} />
+              <path d={line} fill="none" className="stroke-neg" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-down)`} />
+              {[...new Set([last, active ?? last])].map(i => (
+                <circle key={i} cx={cx(i)} cy={y(values[i])} r={4.5} className={`${values[i] < 0 ? 'fill-neg' : 'fill-chart-save'} stroke-surface`} strokeWidth={2} />
+              ))}
+              {active === null && (
+                // The newest value, labelled directly: above the point when saved, below when overspent.
+                <text x={cx(last) - 8} y={y(lastValue) + (lastValue < 0 ? 19 : -11)} textAnchor="end" className="fill-fg text-caption font-bold num">
+                  {formatMoney(lastValue, t.locale, 'exceptZero')}
+                </text>
+              )}
+            </>
+          );
+        }}
+        tooltip={i => (values[i] < 0
+          ? <TipRow swatch="bg-neg" value={money(-values[i])} label={t.overspent} />
+          : <TipRow swatch="bg-chart-save" value={money(values[i])} label={t.saved} />)}
+      />
+    </div>
+  );
+}
+
 /* -------------------------------------------------- categories × months */
 
 /**
  * Each category's total per month as a group of thin columns — one column
  * per category, in the user's category order and colour. Tapping a legend
- * chip hides or shows that category; the plot scrolls when the groups need
- * the room.
+ * chip hides or shows that category (the card's "show all / hide all" sets
+ * them all at once, so `hidden` lives with the card); the plot scrolls when
+ * the groups need the room.
  */
-export function CategoryMonthChart({ matrix, months, selected, language, t, onPick }: {
+export function CategoryMonthChart({ matrix, months, selected, language, t, onPick, hidden, setHidden }: {
   matrix: CategoryMatrix;
   months: MonthKey[];
   selected: MonthKey;
   language: string;
   t: Strings;
   onPick: (key: MonthKey) => void;
+  /** Ids of the categories switched off in the legend. */
+  hidden: string[];
+  setHidden: (update: (hidden: string[]) => string[]) => void;
 }) {
-  const [hidden, setHidden] = useState<string[]>([]);
-  // A category that disappears from the range (another kind, deleted) drops out of `hidden` too.
-  useEffect(() => { setHidden(h => h.filter(id => matrix.categories.some(c => c.id === id))); }, [matrix.categories]);
+  // A category that disappears from the range (deleted, no money any more) drops out of `hidden` too.
+  useEffect(() => { setHidden(h => h.filter(id => matrix.categories.some(c => c.id === id))); }, [matrix.categories, setHidden]);
   const shown = matrix.categories.filter(c => !hidden.includes(c.id));
   const k = Math.max(1, shown.length);
   const max = Math.max(1, ...months.flatMap(m => shown.map(c => matrix.values.get(m)?.get(c.id) ?? 0)));
@@ -480,61 +546,113 @@ export function AverageBars({ items, language, t }: {
  * The 50/30/20 check as one tall segmented bar — needs, wants, saved, as a
  * share of income — each block labelled with its share, plus the targets.
  */
+/** The three parts of 50/30/20: their order, colours and names. */
+export const BUCKET_STYLE = {
+  need: { className: 'bg-chart-out', label: (t: Strings) => t.budgetNeed },
+  want: { className: 'bg-chart-want', label: (t: Strings) => t.budgetWant },
+  // Green, as in this card before: amber (chart-save) sits too close to the wants' rust.
+  save: { className: 'bg-chart-in', label: (t: Strings) => t.saved },
+} as const;
+
+/**
+ * Where the average month's income went, as one bar: needs, wants and what
+ * was left (saved), each as wide as its share. When more went out than came
+ * in, the bar is measured on what went out.
+ */
 export function BudgetSplitBar({ split, t }: { split: BudgetSplit; t: Strings }) {
   const parts = [
-    { key: 'needs', label: t.budgetNeed, value: split.needs, target: 50, className: 'bg-chart-out' },
-    { key: 'wants', label: t.budgetWant, value: split.wants, target: 30, className: 'bg-chart-want' },
-    { key: 'saved', label: t.saved, value: Math.max(0, split.saved), target: 20, className: 'bg-chart-in' },
-  ];
+    { key: 'need', value: split.needs },
+    { key: 'want', value: split.wants },
+    { key: 'save', value: Math.max(0, split.saved) },
+  ] as const;
   const total = Math.max(1, split.income, split.needs + split.wants);
   const pct = (v: number) => (split.income > 0 ? Math.round((v / split.income) * 100) : 0);
   return (
-    <div>
-      <div
-        className="flex gap-[2px] h-7 rounded-[4px] overflow-hidden" role="img"
-        aria-label={parts.map(p => `${p.label} ${pct(p.value)} % (${fmt(t.targetPct, { p: p.target })})`).join(', ')}
-      >
-        {parts.filter(p => p.value > 0).map(p => {
-          const w = (p.value / total) * 100;
-          return (
-            <div key={p.key} className={`${p.className} h-full flex items-center rounded-[4px] ps-2`} style={{ width: `${w}%` }}>
-              {w >= 12 && <span className="text-caption font-bold text-chart-label num">{pct(p.value)} %</span>}
-            </div>
-          );
-        })}
-      </div>
-      <ul className="mt-3 grid grid-cols-3 gap-2">
-        {parts.map(p => (
-          <li key={p.key} className="min-w-0">
-            <span className="flex items-center gap-1.5 text-caption text-fg-mute">
-              <span className={`w-2.5 h-2.5 rounded-[3px] shrink-0 ${p.className}`} aria-hidden="true" />
-              <span className="truncate">{p.label}</span>
-            </span>
-            <span className="block text-label font-bold text-fg num mt-0.5">{split.income > 0 ? `${pct(p.key === 'saved' ? split.saved : p.value)} %` : '–'}</span>
-            <span className="block text-caption text-fg-mute tabular-nums">{fmt(t.targetPct, { p: p.target })}</span>
-          </li>
-        ))}
-      </ul>
+    <div
+      className="flex gap-[2px] h-3 rounded-full overflow-hidden" role="img"
+      aria-label={parts.map(p => `${BUCKET_STYLE[p.key].label(t)} ${pct(p.value)} %`).join(', ')}
+    >
+      {parts.filter(p => p.value > 0).map(p => (
+        <div key={p.key} className={`${BUCKET_STYLE[p.key].className} h-full rounded-full`} style={{ width: `${(p.value / total) * 100}%` }} />
+      ))}
     </div>
   );
 }
 
-/** Saved per month as tiny columns around a zero line — the trend in the savings tile. */
-export function SavedSpark({ points }: { points: MonthPoint[] }) {
-  const max = Math.max(1, ...points.map(p => Math.abs(p.saved)));
-  const h = 36;
-  const mid = points.some(p => p.saved < 0) ? h / 2 : h;
-  const scale = points.some(p => p.saved < 0) ? h / 2 : h;
-  const w = 100 / Math.max(1, points.length);
+/**
+ * One part of 50/30/20 against its target: its share of income as a bar on
+ * a 0–100 % track with the target marked, so over (needs, wants) or short
+ * (saving) shows at a glance.
+ */
+export function RuleBar({ part }: { part: RulePart }) {
+  const share = Math.max(0, Math.min(100, part.share ?? 0));
   return (
-    <svg viewBox={`0 0 100 ${h}`} preserveAspectRatio="none" className="w-full h-9" aria-hidden="true">
-      {points.map((p, i) => {
-        const v = (Math.abs(p.saved) / max) * scale;
-        return (
-          <rect key={p.key} x={i * w + w * 0.18} width={w * 0.64} y={p.saved >= 0 ? mid - v : mid} height={Math.max(0.5, v)}
-            className={p.saved >= 0 ? 'fill-chart-in' : 'fill-neg'} rx={1} />
-        );
-      })}
-    </svg>
+    <div className="relative mt-2 h-2 rounded-full bg-surface-2" aria-hidden="true">
+      <div className={`absolute inset-y-0 start-0 rounded-full ${BUCKET_STYLE[part.bucket].className}`} style={{ width: `${share}%` }} />
+      <div className="absolute -top-1 -bottom-1 w-[2px] rounded-full bg-fg" style={{ insetInlineStart: `calc(${part.target}% - 1px)` }} />
+    </div>
+  );
+}
+
+/* --------------------------------------------------------- savings rate */
+
+/**
+ * The share of income each month kept, as columns — above zero saved, below
+ * overspent (red) — against the 20 % of the 50/30/20 rule as a dashed line.
+ * Months without income have no rate and no column.
+ */
+export function SavingsRateChart({ points, selected, t, onPick, target = 20 }: SeriesProps & { target?: number }) {
+  // Clamped: a month with little income can reach −300 %, which would flatten the rest.
+  const rates = points.map(p => (p.rate === null ? null : Math.max(-100, Math.min(100, p.rate * 100))));
+  const known = rates.filter((r): r is number => r !== null);
+  const ticks = niceTicks(Math.min(0, ...known), Math.max(target + 5, ...known));
+  const yLo = ticks[0];
+  const yHi = ticks[ticks.length - 1];
+  const y = (v: number) => PAD_T + PLOT_H - ((v - yLo) / (yHi - yLo)) * PLOT_H;
+  const base = y(0);
+  const money = (c: number) => formatMoney(c, t.locale);
+  const percent = (v: number) => formatPercent(v, t.locale);
+  return (
+    <div>
+      <Legend items={[
+        { label: t.savingsRateTitle, className: 'bg-chart-save' },
+        ...(known.some(r => r < 0) ? [{ label: t.overspent, className: 'bg-neg' }] : []),
+        { label: fmt(t.targetPct, { p: target }), className: '!h-0 !rounded-none border-t-2 border-dashed border-fg-mute' },
+      ]} />
+      <ChartFrame
+        months={points.map(p => p.key)} minSlot={26} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
+        zero={yLo < 0}
+        // Tight on the narrow axis: "−100%" without the space.
+        tickLabel={v => percent(v).replace(/\s/g, '')}
+        label={i => `${monthLabel(points[i].key, t.locale)}: ${rates[i] === null ? '–' : percent(rates[i]!)}, ${
+          points[i].saved < 0 ? t.overspent : t.saved} ${money(Math.abs(points[i].saved))}`}
+        marks={(cx, slot, active) => {
+          const w = Math.max(4, Math.min(12, slot * 0.4));
+          const end = cx(points.length - 1) + slot / 2;
+          return (
+            <>
+              {points.map((p, i) => {
+                const r = rates[i];
+                if (r === null) return null;
+                return (
+                  <g key={p.key} opacity={active === null || active === i ? 1 : 0.45}>
+                    {r >= 0
+                      ? <path d={columnPath(cx(i) - w / 2, w, y(r), base)} className="fill-chart-save" />
+                      : <path d={columnPathDown(cx(i) - w / 2, w, y(r), base)} className="fill-neg" />}
+                  </g>
+                );
+              })}
+              <line x1={0} x2={end} y1={y(target)} y2={y(target)} className="stroke-fg-mute" strokeWidth={1.5} strokeDasharray="5 4" />
+            </>
+          );
+        }}
+        tooltip={i => (
+          <>
+            <TipRow swatch={(rates[i] ?? 0) < 0 ? 'bg-neg' : 'bg-chart-save'} value={rates[i] === null ? '–' : percent(rates[i]!)} label={t.savingsRateTitle} />
+            <TipRow value={money(Math.abs(points[i].saved))} label={points[i].saved < 0 ? t.overspent : t.saved} />
+          </>
+        )}
+      />
+    </div>
   );
 }

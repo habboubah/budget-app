@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { motion } from 'motion/react';
-import { AlertTriangle, BarChart3, CalendarDays, Settings } from 'lucide-react';
+import { AlertTriangle, BarChart3, CalendarDays, Lightbulb, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import translations, { fmt } from './translations';
 import { Category, Entry, EntryDraft, MonthKey } from './types';
@@ -13,6 +13,7 @@ import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
 import { MonthActionsSheet } from './components/MonthActionsSheet';
 import { StatsView } from './components/StatsView';
+import { InsightsView } from './components/InsightsView';
 import { SettingsView } from './components/SettingsView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
@@ -35,7 +36,7 @@ export default function App() {
   const t = translations[language];
   const { toast, show, hide } = useToast();
 
-  const [tab, setTab] = useState<'month' | 'stats' | 'settings'>('month');
+  const [tab, setTab] = useState<'month' | 'stats' | 'insights' | 'settings'>('month');
   const [showCategories, setShowCategories] = useState(false);
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
   const [categorySheet, setCategorySheet] = useState<CategorySheetMode>(null);
@@ -348,6 +349,15 @@ export default function App() {
             t={t}
             onMonth={setMonth}
           />
+        ) : screen === 'insights' ? (
+          <InsightsView
+            month={month}
+            balances={balances}
+            data={data}
+            language={language}
+            t={t}
+            onMonth={setMonth}
+          />
         ) : (
           <MonthView
             month={month}
@@ -389,6 +399,7 @@ export default function App() {
         tabs={[
           { id: 'month', label: t.tabMonth, icon: CalendarDays },
           { id: 'stats', label: t.tabStats, icon: BarChart3 },
+          { id: 'insights', label: t.tabInsights, icon: Lightbulb },
           { id: 'settings', label: t.tabSettings, icon: Settings },
         ]}
         // On every tab: a receipt can be noted down from anywhere, into the month shown.

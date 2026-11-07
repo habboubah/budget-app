@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
 import { MonthBalance } from '../logic';
-import { formatMoney, monthLabel, monthLeft } from '../logic';
+import { formatMoney, monthLabel, monthLeft, monthSettled } from '../logic';
 import { Strings, fmt, plural } from '../translations';
 import { tapLight } from '../ui/haptics';
 import { useCountUp } from '../ui/useCountUp';
@@ -19,18 +19,23 @@ interface Props {
  * the accent's gradient (the hero).
  *
  * On top, big, what is on the account now (only what is ticked as paid), with
- * a ring for how many of the month's bills are paid, and small beneath it
- * what was carried over. Below, the month in two columns, paid and still
- * pending — income and expenses — and beneath them what will
- * be left once everything pending is settled.
+ * a ring for how many of the month's bills are paid; smaller beneath it the
+ * balance once everything pending is settled, then what was carried over.
+ * Below, the month's income, expenses and net in two columns: what is paid so
+ * far, and what it comes to with the pending entries settled (only while
+ * anything is pending).
  */
 export function BalanceCard({ balance: b, t, onOpening }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   // Open bills of earlier months still to settle, and everything open in all.
   const carryOpen = b.openingEnd - b.openingNow;
-  // Income less expenses this month: ticked so far, and still pending.
+  // This month so far, and as it will be once everything pending is settled.
   const left = monthLeft(b);
-  const endLabel = b.openCount ? plural(b.openCount, t.afterPendingOne, t.afterPendingMany) : t.allSettled;
+  const settled = monthSettled(b);
+  const anyOpen = b.incomeOpen !== 0 || b.expenseOpen !== 0;
+  // The balance after the pending entries — shown while it says something new.
+  const showEnd = b.openCount > 0 || b.end !== b.now;
+  const endLabel = b.openCount ? plural(b.openCount, t.afterPendingOne, t.afterPendingMany) : t.afterPending;
   const carryLabel = b.overridden
     ? t.carryManual
     : b.prevKey
@@ -47,6 +52,15 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
           <div className="min-w-0 flex-1">
             <p className="eyebrow text-on-hero-mute">{t.balanceNow}</p>
             <BigMoney cents={b.now} money={money} />
+            {showEnd && (
+              <p className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <span className="text-label text-on-hero-mute wrap-prose tabular-nums">{endLabel}</span>
+                <span className="rounded-num text-heading font-bold text-on-hero whitespace-nowrap">
+                  <span className="sr-only">{money(b.end)}</span>
+                  <span aria-hidden="true"><CountingMoney cents={b.end} money={money} /></span>
+                </span>
+              </p>
+            )}
           </div>
           {b.expenseCount > 0 && (
             <PaidRing paid={b.expensePaidCount} total={b.expenseCount} label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })} />
@@ -67,30 +81,29 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
         </button>
       </div>
 
-      {/* Income and expenses, paid and still pending side by side, and what the
-          month leaves over (both columns, without the carry-over); under them
-          the balance once everything pending is settled. On a frosted panel,
-          so the money colours read on any accent. */}
-      <div className="mx-2 mb-2 rounded-md hero-panel px-3.5 pt-2.5 pb-3">
+      {/* Income, expenses and net: paid so far, and with the pending entries
+          settled (the second column only while anything is pending). On a
+          frosted panel, so the money colours read on any accent. */}
+      <div className="mx-2 mb-2 rounded-md hero-panel px-3.5 pt-2.5 pb-2">
         <table className="w-full text-label">
           <thead>
-            {/* The columns speak for themselves (pending in its own colour); VoiceOver still hears their names. */}
+            {/* The columns speak for themselves (the settled one in the pending colour); VoiceOver still hears their names. */}
             <tr className="sr-only">
               <td />
               <th scope="col">{t.colPaid}</th>
-              <th scope="col">{t.colOpen}</th>
+              {anyOpen && <th scope="col">{t.colSettled}</th>}
             </tr>
           </thead>
           <tbody>
             <tr>
               <th scope="row" className="py-1.5 text-start font-normal text-on-hero-mute">{t.income}</th>
               <MoneyCell text={money(b.incomePaid, 'exceptZero')} tone={b.incomePaid ? 'text-on-hero-pos' : 'text-on-hero-soft'} />
-              <MoneyCell text={money(b.incomeOpen, 'exceptZero')} tone={b.incomeOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} />
+              {anyOpen && <MoneyCell text={money(settled.income, 'exceptZero')} tone={b.incomeOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} />}
             </tr>
             <tr>
               <th scope="row" className="py-1.5 text-start font-normal text-on-hero-mute">{t.expenses}</th>
               <MoneyCell text={money(b.expensePaid ? -b.expensePaid : 0)} tone={b.expensePaid ? 'text-on-hero' : 'text-on-hero-soft'} />
-              <MoneyCell text={money(b.expenseOpen ? -b.expenseOpen : 0)} tone={b.expenseOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} />
+              {anyOpen && <MoneyCell text={money(settled.expense ? -settled.expense : 0)} tone={b.expenseOpen ? 'text-on-hero-warn' : 'text-on-hero-soft'} />}
             </tr>
           </tbody>
           <tfoot>
@@ -98,27 +111,16 @@ export function BalanceCard({ balance: b, t, onOpening }: Props) {
               <th scope="row" className="pt-2.5 pb-1 text-start font-semibold text-on-hero">{t.leftThisMonth}</th>
               <MoneyCell strong text={money(left.paid, 'exceptZero')}
                 tone={left.paid > 0 ? 'text-on-hero-pos' : left.paid < 0 ? 'text-on-hero-neg' : 'text-on-hero-soft'} />
-              <MoneyCell strong text={money(left.open, 'exceptZero')} tone={left.open ? 'text-on-hero-warn' : 'text-on-hero-soft'} />
+              {anyOpen && <MoneyCell strong text={money(settled.net, 'exceptZero')} tone={left.open ? 'text-on-hero-warn' : 'text-on-hero-soft'} />}
             </tr>
           </tfoot>
         </table>
-
-        {/* Both columns together: what will be left once everything open is settled. */}
-        <div className="mt-1.5 pt-2.5 border-t border-on-hero/15 flex items-end gap-3">
-          <p className="min-w-0 flex-1 text-caption text-on-hero-mute wrap-prose tabular-nums">
-            {b.count > 0 ? endLabel : null}
-          </p>
-          <p className={`rounded-num text-heading font-bold ${b.end < 0 ? 'text-on-hero-neg' : 'text-on-hero'}`}>
-            <span className="sr-only">{`${b.count > 0 ? endLabel : t.afterPending}: ${money(b.end)}`}</span>
-            <span aria-hidden="true"><span className="text-on-hero-soft font-semibold me-1">=</span><CountingMoney cents={b.end} money={money} /></span>
-          </p>
-        </div>
       </div>
     </section>
   );
 }
 
-/** One amount in the paid / open table. */
+/** One amount in the paid / settled table. */
 function MoneyCell({ text, tone, strong }: { text: string; tone: string; strong?: boolean }) {
   return (
     <td className={`ps-3 text-end num whitespace-nowrap ${strong ? 'pt-2.5 pb-1 font-bold' : 'py-1.5 font-semibold'} ${tone}`}>{text}</td>

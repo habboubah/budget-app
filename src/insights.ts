@@ -92,6 +92,17 @@ export function finishedMonths(points: MonthPoint[], today = new Date(), last = 
   return (done.length ? done : points.filter(p => p.key === now)).slice(-last);
 }
 
+/** The intervals offered for an average over `count` finished months: 3, 6 and 12 where there are more, then all (0). */
+export function averageSpans(count: number): number[] {
+  return [...[3, 6, 12].filter(n => n < count), 0];
+}
+
+/** The last `span` finished months (0 = all of them): what an average per month runs over. */
+export function averageMonths(points: MonthPoint[], span: number, today = new Date()): MonthKey[] {
+  const done = finishedMonths(points, today, Infinity);
+  return (span ? done.slice(-span) : done).map(p => p.key);
+}
+
 const avg = (xs: number[]) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : 0);
 
 export interface SavingsInsight {
@@ -158,6 +169,69 @@ export function budgetSplit(entries: Entry[], categories: Category[], months: Mo
   return { ...out, saved: out.income - out.needs - out.wants };
 }
 
+export type Bucket = 'need' | 'want' | 'save';
+
+export interface RulePart {
+  bucket: Bucket;
+  /** The rule's share of income: 50, 30, 20. */
+  target: number;
+  /** Per month on average: needs or wants spent, or what was saved (income − needs − wants). */
+  amount: number;
+  /** The target share of the average income, in cents. */
+  budget: number;
+  /** amount / income in %, or null without income. */
+  share: number | null;
+  /** Needs and wants within their share, saving at least its share. */
+  ok: boolean;
+  /** Its biggest categories, per month on average (for saving: the "save" ones, an ETF plan). */
+  top: { category: Category; amount: number }[];
+}
+
+export interface RuleCheck {
+  income: number;
+  parts: RulePart[];
+  /** How many of the three the average month meets. */
+  met: number;
+  /** Each month with income: how many of the three it met. */
+  months: { key: MonthKey; met: number }[];
+}
+
+const TARGETS: [Bucket, number][] = [['need', 50], ['want', 30], ['save', 20]];
+
+function ruleParts(split: BudgetSplit, top: (b: Bucket) => RulePart['top'] = () => []): RulePart[] {
+  const amounts: Record<Bucket, number> = { need: split.needs, want: split.wants, save: split.saved };
+  return TARGETS.map(([bucket, target]) => {
+    const amount = amounts[bucket];
+    const budget = Math.round((split.income * target) / 100);
+    const ok = split.income > 0 && (bucket === 'save' ? amount >= budget : amount <= budget);
+    return { bucket, target, amount, budget, share: split.income > 0 ? (amount / split.income) * 100 : null, ok, top: top(bucket) };
+  });
+}
+
+/**
+ * How the average month (over `months`) keeps to 50/30/20: each part against
+ * its share of income — in % and in euros — with its biggest categories, how
+ * many of the three it meets, and the same count month by month.
+ */
+export function budgetRule(entries: Entry[], categories: Category[], months: MonthKey[]): RuleCheck {
+  const split = budgetSplit(entries, categories, months);
+  const inRange = new Set(months);
+  const n = Math.max(1, months.length);
+  const sums = new Map<string, number>();
+  for (const e of entries) if (inRange.has(e.month)) sums.set(e.categoryId, (sums.get(e.categoryId) ?? 0) + e.amount);
+  const top = (b: Bucket) => categories
+    .filter(c => c.kind === 'expense' && budgetOf(c) === b && (sums.get(c.id) ?? 0) > 0)
+    .map(c => ({ category: c, amount: Math.round((sums.get(c.id) ?? 0) / n) }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 3);
+  const parts = ruleParts(split, top);
+  const perMonth = months
+    .map(key => ({ key, split: budgetSplit(entries, categories, [key]) }))
+    .filter(m => m.split.income > 0)
+    .map(m => ({ key: m.key, met: ruleParts(m.split).filter(p => p.ok).length }));
+  return { income: split.income, parts, met: parts.filter(p => p.ok).length, months: perMonth };
+}
+
 export interface Commitment {
   name: string;
   categoryId: string;
@@ -199,32 +273,40 @@ export interface Unusual {
 }
 
 /**
- * Expense categories where `month` differs from the months before it by at
- * least 20 % and 25 € — "Einkaufen: 31 % mehr als üblich". The current month
- * is still filling up, so for it only "more than usual" counts.
+ * Expense categories where a month (or several, `months`) differs from the up
+ * to six months before by at least 20 % and 25 € a month — "Einkaufen: 31 %
+ * mehr als üblich". Over several months `usual` is what as many usual months
+ * cost. The current month is still filling up, so while it is part of the
+ * period only "more than usual" counts.
  */
-export function unusual(entries: Entry[], categories: Category[], month: MonthKey, before: MonthKey[], today = new Date()): Unusual[] {
-  const prior = before.filter(m => m < month).slice(-6);
-  if (prior.length < 2) return [];
-  const running = month >= monthKeyOf(today);
+export function unusual(entries: Entry[], categories: Category[], months: MonthKey | MonthKey[], before: MonthKey[], today = new Date()): Unusual[] {
+  const period = Array.isArray(months) ? months : [months];
+  const prior = unusualBasis(period, before);
+  if (!period.length || prior.length < 2) return [];
+  const running = period.some(m => m >= monthKeyOf(today));
   const totals = (keys: MonthKey[]) => {
     const set = new Set(keys);
     const m = new Map<string, number>();
     for (const e of entries) if (set.has(e.month)) m.set(e.categoryId, (m.get(e.categoryId) ?? 0) + e.amount);
     return m;
   };
-  const now = totals([month]);
+  const now = totals(period);
   const past = totals(prior);
   return categories
     .filter(c => c.kind === 'expense')
     .map(c => {
       const total = now.get(c.id) ?? 0;
-      const usual = Math.round((past.get(c.id) ?? 0) / prior.length);
+      const usual = Math.round(((past.get(c.id) ?? 0) / prior.length) * period.length);
       return { category: c, total, usual, diff: total - usual };
     })
-    .filter(u => u.usual > 0 && Math.abs(u.diff) >= Math.max(2500, u.usual * 0.2) && (!running || u.diff > 0))
+    .filter(u => u.usual > 0 && Math.abs(u.diff) >= Math.max(2500 * period.length, u.usual * 0.2) && (!running || u.diff > 0))
     .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
     .slice(0, 3);
+}
+
+/** The months "usual" is measured on: up to six before the period starts. */
+export function unusualBasis(period: MonthKey[], before: MonthKey[]): MonthKey[] {
+  return period.length ? before.filter(m => m < period[0]).slice(-6) : [];
 }
 
 /* ------------------------------------------------- hints, like "unusual" */
@@ -344,10 +426,11 @@ export function categoryTrends(entries: Entry[], categories: Category[], months:
     .slice(0, 4);
 }
 
-/** The month's largest expense entries, with their share of all its expenses. */
-export function biggestExpenses(entries: Entry[], categories: Category[], month: MonthKey, count = 3): { entry: Entry; share: number }[] {
+/** The largest expense entries of a month (or several), with their share of all its expenses. */
+export function biggestExpenses(entries: Entry[], categories: Category[], months: MonthKey | MonthKey[], count = 3): { entry: Entry; share: number }[] {
   const k = kinds(categories);
-  const mine = entries.filter(e => e.month === month && isExpense(k, e));
+  const period = new Set(Array.isArray(months) ? months : [months]);
+  const mine = entries.filter(e => period.has(e.month) && isExpense(k, e));
   const total = mine.reduce((s, e) => s + e.amount, 0);
   if (!total) return [];
   return [...mine].sort((a, b) => b.amount - a.amount).slice(0, count).map(entry => ({ entry, share: entry.amount / total }));

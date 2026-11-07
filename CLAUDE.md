@@ -36,18 +36,30 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   `src/excelImport.ts` plans the import as pure data (`planExcelImport`) that
   the preview sheet shows and `applyExcelImport` writes. Tests build their own
   .xlsx in memory; never commit a real one (it is someone's finances).
-- **Statistics** beyond sums (savings rate, reserve, forecast, 50/30/20,
-  commitments, unusual months, and the hints beside them — `biggestExpenses`,
+- **Statistics and Insights are two tabs.** `StatsView` is the long view
+  (charts, the average per category over the last 3 / 6 / 12 / all finished
+  months — `averageMonths` / `averageSpans` —, where the money went by payee
+  over this month or the last 2 / 3 / 6 / 12 — `topNames` over `monthsEnding`).
+  `InsightsView` holds the rest: savings rate (per month against the 20 %
+  target), 50/30/20 (`budgetRule`: each part against its share, in euros, its
+  biggest categories, how many of the three are met, month by month),
+  reserve, forecast, commitments, trends, best and weakest month, then hints
+  for one month (‹ › to switch) — *unusual* and *biggest expenses* also over
+  the last 2 / 3 / 6 months (`unusual` / `biggestExpenses` take several
+  months; `unusualBasis` = the up to six before). Cards are `ui/Card`
+  (`Card`, `CardAction`, `MenuPicker` — a native select in a capsule).
+  All of it beyond sums lives in `src/insights.ts`, pure and tested (also
   `newNames`, `missingRegulars`, `priceChanges`, `categoryTrends`; a hint card
-  only shows when it has something to say) live in `src/insights.ts`, pure
-  and tested.
+  only shows when it has something to say).
   In the 50/30/20 split a category counts as `need`, `want` or `save`
   (`budgetOf`); `save` expenses stay in *saved*.
   Averages use *finished* months (`finishedMonths`), never the running one.
+  Percentages go through `formatPercent()` (an Arabic "%" stays on its side).
 - **Charts** (`components/Charts.tsx`) follow the dataviz skill. Series
   colours are tokens: `chart-in` / `chart-out` / `chart-save` / `chart-line` / `chart-want`
   (saved columns stand above the zero line, an overspend hangs below it in
-  `neg`),
+  `neg`; in the 50/30/20 bars *saved* is `chart-in`, as `chart-save` sits too
+  close to `chart-want`),
   and per category `bg-hue-chart` / `fill-hue-chart` under `data-hue` — one
   OKLCH step per hue and theme (`--t-<hue>-chart`). The default categories'
   colours pass `validate_palette.js`; re-run it when changing them.

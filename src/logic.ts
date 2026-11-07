@@ -165,6 +165,33 @@ export function addMonths(key: MonthKey, n: number): MonthKey {
   return `${Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}`;
 }
 
+/**
+ * A share in percent the locale's way — "40 %" (de), "40%" (en), and in
+ * Arabic with direction marks, so the sign stays on its side. `value` is
+ * already in percent (40, not 0.4).
+ */
+export function formatPercent(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(value / 100).replace('-', '−');
+}
+
+/** A run of months in words: "August – Oktober 2026", "Dez. 25 – März 26", or one month. */
+export function monthSpanLabel(keys: MonthKey[], locale: string): string {
+  if (!keys.length) return '';
+  const first = keys[0];
+  const last = keys[keys.length - 1];
+  if (first === last) return monthLabel(first, locale);
+  if (first.slice(0, 4) === last.slice(0, 4)) {
+    const { year, month } = parseMonthKey(first);
+    return `${new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(year, month - 1, 1))} – ${monthLabel(last, locale)}`;
+  }
+  return `${monthLabel(first, locale, 'short')} – ${monthLabel(last, locale, 'short')}`;
+}
+
+/** The `n` months up to and including `last`, oldest first. */
+export function monthsEnding(last: MonthKey, n: number): MonthKey[] {
+  return Array.from({ length: Math.max(0, n) }, (_, i) => addMonths(last, i - n + 1));
+}
+
 /** Whole months from a to b (b − a). */
 export function monthsBetween(a: MonthKey, b: MonthKey): number {
   const x = parseMonthKey(a);
@@ -329,6 +356,13 @@ export function monthLeft(t: Totals): { paid: number; open: number; total: numbe
   const paid = t.incomePaid - t.expensePaid;
   const open = t.incomeOpen - t.expenseOpen;
   return { paid, open, total: paid + open };
+}
+
+/** The month as it will look once everything pending is settled: income, expenses and their difference. */
+export function monthSettled(t: Totals): { income: number; expense: number; net: number } {
+  const income = t.incomePaid + t.incomeOpen;
+  const expense = t.expensePaid + t.expenseOpen;
+  return { income, expense, net: income - expense };
 }
 
 function kindLookup(categories: Category[]): (id: string) => CategoryKind {
@@ -712,14 +746,15 @@ export interface NameTotal {
 }
 
 /**
- * Where the money went, by shop or payee: every expense of the month grouped
- * by name ("Lidl" ×6), largest total first.
+ * Where the money went, by shop or payee: every expense of the months given
+ * grouped by name ("Lidl" ×6), largest total first.
  */
-export function topNames(entries: Entry[], categories: Category[], month: MonthKey, limit = 6): NameTotal[] {
+export function topNames(entries: Entry[], categories: Category[], months: MonthKey[], limit = Infinity): NameTotal[] {
   const kind = kindLookup(categories);
+  const inRange = new Set(months);
   const groups = new Map<string, NameTotal>();
   for (const e of entries) {
-    if (e.month !== month || kind(e.categoryId) !== 'expense' || e.amount === 0) continue;
+    if (!inRange.has(e.month) || kind(e.categoryId) !== 'expense' || e.amount === 0) continue;
     const k = normalizeName(e.name);
     const g = groups.get(k);
     if (g) { g.total += e.amount; g.count++; } else groups.set(k, { name: e.name, categoryId: e.categoryId, total: e.amount, count: 1 });

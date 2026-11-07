@@ -3,8 +3,8 @@ import {
   addMonths, amountToInput, averageByCategory, balanceFor, canRemoveFromMonth, carryCandidates, carryOver, categoryBreakdown,
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
-  restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, upgradeCategories,
-  normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, topCategories, laterCopies,
+  restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, monthsEnding, monthSpanLabel, formatPercent, upgradeCategories,
+  normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, monthSettled, topCategories, laterCopies,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -290,6 +290,8 @@ describe('what a month leaves over', () => {
     ];
     expect(monthLeft(monthTotals(entries, cats, '2026-11'))).toEqual({ paid: 311459, open: 69400, total: 380859 });
     expect(monthLeft(monthTotals([], cats, '2026-11'))).toEqual({ paid: 0, open: 0, total: 0 });
+    expect(monthSettled(monthTotals(entries, cats, '2026-11'))).toEqual({ income: 494159, expense: 113300, net: 380859 });
+    expect(monthSettled(monthTotals([], cats, '2026-11'))).toEqual({ income: 0, expense: 0, net: 0 });
   });
 });
 
@@ -365,11 +367,31 @@ describe('statistics', () => {
   });
 
   it('groups expenses by name', () => {
-    expect(topNames(entries, cats, '2026-11')).toEqual([
+    expect(topNames(entries, cats, ['2026-11'])).toEqual([
       { name: 'Miete', categoryId: 'fixed', total: 100000, count: 1 },
       { name: 'Lidl', categoryId: 'groceries', total: 10000, count: 2 },
       { name: 'Rewe', categoryId: 'groceries', total: 3000, count: 1 },
     ]);
+    expect(topNames(entries, cats, ['2026-11'], 1).map(x => x.name)).toEqual(['Miete']);
+    expect(topNames(entries, cats, ['2026-08'])).toEqual([]);
+  });
+
+  it('lists the months ending with one, oldest first', () => {
+    expect(monthsEnding('2026-11', 1)).toEqual(['2026-11']);
+    expect(monthsEnding('2026-02', 3)).toEqual(['2025-12', '2026-01', '2026-02']);
+  });
+
+  it('names a run of months', () => {
+    expect(monthSpanLabel(['2026-08', '2026-09', '2026-10'], 'de-DE')).toBe('August – Oktober 2026');
+    expect(monthSpanLabel(['2026-10'], 'en-GB')).toBe('October 2026');
+    expect(monthSpanLabel(['2025-12', '2026-01'], 'de-DE')).toBe('Dez. 25 – Jan. 26');
+    expect(monthSpanLabel([], 'de-DE')).toBe('');
+  });
+
+  it('writes percentages the locale\'s way', () => {
+    expect(formatPercent(40, 'de-DE')).toBe('40\u00a0%');
+    expect(formatPercent(23.4, 'en-GB')).toBe('23%');
+    expect(formatPercent(-55, 'en-GB')).toBe('−55%');
   });
 
   it('builds a history, months not started included', () => {

@@ -65,19 +65,23 @@ month, and the two numbers that matter: **what is on the account now** and
   balance is carried over automatically — set it by hand for the first month or
   when the real account has drifted ("⋯" → Kontostand am Monatsanfang). Open
   entries left in earlier months are flagged with a link to them.
-- **Statistics.** From the long view down to one month, the reading last:
-  - *all months* (last 12, or all): income vs. expenses, the balance at each
-    month's end, the average per category, and every category per month as
-    grouped columns (tap the legend to hide one; switch to income) — hover /
-    tap for values, or open the table;
-  - *one month in detail*: what was saved and where the money went, by
-    category (paid vs. open) or by payee ("Lidl · 6×");
-  - *insights* (Auswertung): savings rate, emergency reserve in months of
-    spending (3–6 is the usual advice), a forecast for the year's end and 12
-    months out, the 50/30/20 rule (needs / wants / saved — set per category
-    whether it counts as *Bedarf*, *Wünsche* or *Sparen*, so an ETF plan in
-    *Geldanlage* is saved, not spent), fixed commitments per month and per year,
-    what was unusual this month, and the best and weakest month.
+- **Statistics.** The long view (last 12 months, or all): income vs.
+  expenses, the balance at each month's end, income and expenses as lines,
+  saved and overspent, the average per category over the last 3 / 6 / 12 / all
+  finished months, every category per month as grouped columns (tap the
+  legend to hide one, or show / hide all), and where the money went by payee
+  over this month or the last 2, 3, 6 or 12 ("Lidl · 6× · 12 %") — hover / tap
+  for values, or open the table.
+- **Insights** (Analyse), a tab of their own: the savings rate month by month
+  against the 20 % target, the 50/30/20 rule (needs / wants / saved — each
+  against its share, in euros, with its biggest categories, how many of the
+  three targets are met and in which months; set per category whether it
+  counts as *Bedarf*, *Wünsche* or *Sparen*, so an ETF plan in *Geldanlage* is
+  saved, not spent), emergency reserve in months of spending (3–6 is the usual
+  advice), a forecast for the year's end and 12 months out, fixed commitments,
+  trends, the best and weakest month — and hints for one month: what was
+  unusual and the biggest expenses (also over the last 2, 3 or 6 months), new
+  names, missing regulars, new prices.
 - **Settings.** Categories — besides the six above, the usual categories of a
   German banking app are built in, switched off for new months until you want
   them: *Bekleidung, Einkäufe, Telekommunikation, Mobilität, Reisen, Freizeit
@@ -156,7 +160,7 @@ TestFlight, the same way Fahrtwerk and Korb ship. The full first-time checklist
 | `src/App.tsx` | Tabs, pushed screens (no router), sheets, toasts |
 | `src/store.ts` | All state, persisted to `localStorage` (`spartopf-*` keys) |
 | `src/logic.ts` | Pure logic — money parsing/formatting, months, the two balances, carry-over, statistics, storage validation, CSV (tested in `logic.test.ts`) |
-| `src/insights.ts` | Savings rate, reserve, forecast, 50/30/20, commitments, unusual months (tested in `insights.test.ts`) |
+| `src/insights.ts` | Savings rate, reserve, forecast, 50/30/20 check, commitments, unusual months, hints (tested in `insights.test.ts`) |
 | `src/xlsx.ts`, `src/excelImport.ts` | Reading an .xlsx on the device, and turning a budget sheet into months (tested in `excelImport.test.ts`) |
 | `src/data/defaults.ts` | Built-in categories, name suggestions, emoji |
 | `src/translations.ts` | All UI text, `de` and `en` |

@@ -12,7 +12,7 @@ export interface Tab<T extends string> {
 
 /**
  * The tab bar as iOS draws it today: a floating capsule above the home
- * indicator — Monat · Statistik · Einstellungen, the current one on a soft
+ * indicator — Monat · Statistik · Analyse · Optionen, the current one on a soft
  * pill in the accent's tint — and, beside it, the round add button on the
  * accent's gradient, in thumb reach on every tab.
  * The page fades out behind it rather than being cut off by a bar.

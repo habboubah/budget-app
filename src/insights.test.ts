@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  bestWorst, budgetSplit, categoryAverages, categoryMatrix, commitments, finishedMonths, forecast, monthSeries,
+  averageMonths, averageSpans, unusualBasis, bestWorst, budgetRule, budgetSplit, categoryAverages, categoryMatrix, commitments, finishedMonths, forecast, monthSeries,
   monthsToYearEnd, reserveMonths, savings, unusual, priceChanges, missingRegulars, newNames, categoryTrends, biggestExpenses,
 } from './insights';
 import { computeBalances } from './logic';
@@ -61,6 +61,16 @@ describe('smart numbers', () => {
     expect(finishedMonths(points, new Date(2026, 9, 15)).map(p => p.key)).toEqual(['2026-08', '2026-09']);
     expect(finishedMonths(points, new Date(2026, 7, 2)).map(p => p.key)).toEqual(['2026-08']);
   });
+  it('averages over the last few finished months, or all of them', () => {
+    const today = new Date(2026, 10, 7);
+    expect(averageMonths(points, 2, today)).toEqual(['2026-09', '2026-10']);
+    expect(averageMonths(points, 0, today)).toEqual(['2026-08', '2026-09', '2026-10']);
+    expect(averageMonths(points, 12, today)).toEqual(['2026-08', '2026-09', '2026-10']);
+    expect(averageMonths(points, 3, new Date(2026, 9, 15))).toEqual(['2026-08', '2026-09']);
+    expect(averageSpans(3)).toEqual([0]);
+    expect(averageSpans(5)).toEqual([3, 0]);
+    expect(averageSpans(13)).toEqual([3, 6, 12, 0]);
+  });
   it('works out the savings rate over several months', () => {
     const s = savings(points);
     expect(s.rate).toBeCloseTo(354000 / 900000);
@@ -86,6 +96,23 @@ describe('smart numbers', () => {
       e('2026-10', 'investment', 'ETF-Sparplan', 300)];
     expect(budgetSplit(month, cats, ['2026-10'])).toEqual({ income: 300000, needs: 100000, wants: 20000, saved: 180000 });
   });
+  it('checks the 50/30/20 rule on average and month by month', () => {
+    const two = [
+      e('2026-09', 'income', 'Gehalt', 3000), e('2026-09', 'fixed', 'Miete', 1500), e('2026-09', 'groceries', 'Lidl', 300), e('2026-09', 'leisure', 'Kino', 600),
+      e('2026-10', 'income', 'Gehalt', 3000), e('2026-10', 'fixed', 'Miete', 1000), e('2026-10', 'groceries', 'Lidl', 200), e('2026-10', 'leisure', 'Kino', 600),
+      e('2026-10', 'investment', 'ETF-Sparplan', 300),
+    ];
+    const r = budgetRule(two, cats, ['2026-09', '2026-10']);
+    expect(r.parts.map(p => [p.bucket, p.amount, p.budget, Math.round(p.share!), p.ok])).toEqual([
+      ['need', 150000, 150000, 50, true], ['want', 60000, 90000, 20, true], ['save', 90000, 60000, 30, true],
+    ]);
+    expect(r.met).toBe(3);
+    expect(r.parts[0].top.map(x => [x.category.id, x.amount])).toEqual([['fixed', 125000], ['groceries', 25000]]);
+    expect(r.parts[2].top.map(x => x.category.id)).toEqual(['investment']);
+    // September spent 60 % on needs: two of three.
+    expect(r.months).toEqual([{ key: '2026-09', met: 2 }, { key: '2026-10', met: 3 }]);
+    expect(budgetRule([], cats, ['2026-10'])).toMatchObject({ income: 0, met: 0, months: [] });
+  });
   it('lists recurring commitments per month and per year', () => {
     const c = commitments(data, '2026-10');
     expect(c.items.map(i => [i.name, i.monthly, i.yearly, i.repeat])).toEqual([
@@ -102,6 +129,18 @@ describe('smart numbers', () => {
     const running = unusual(entries, cats, '2026-10', ['2026-08', '2026-09', '2026-10'], new Date(2026, 9, 10));
     expect(running.map(x => x.category.id)).toEqual(['groceries']);
     expect(unusual(entries, cats, '2026-09', ['2026-08', '2026-09'])).toEqual([]);
+  });
+  it('compares several months with as many usual ones', () => {
+    const hist = [
+      ...['2026-03', '2026-04', '2026-05'].map(m => e(m, 'groceries', 'Lidl', 400)),
+      ...['2026-06', '2026-07'].map(m => e(m, 'groceries', 'Lidl', 600)),
+    ];
+    const keys = ['2026-03', '2026-04', '2026-05', '2026-06', '2026-07'];
+    const u = unusual(hist, cats, ['2026-06', '2026-07'], keys, new Date(2026, 11, 1));
+    expect(u.map(x => [x.category.id, x.total, x.usual, x.diff])).toEqual([['groceries', 120000, 80000, 40000]]);
+    expect(unusualBasis(['2026-06', '2026-07'], keys)).toEqual(['2026-03', '2026-04', '2026-05']);
+    // Fewer than two months before the period: nothing to compare with.
+    expect(unusual(hist, cats, ['2026-04', '2026-05', '2026-06', '2026-07'], keys)).toEqual([]);
   });
   it('names the best and the weakest month', () => {
     expect(bestWorst(points)).toMatchObject({ best: { key: '2026-08' }, worst: { key: '2026-10' } });
@@ -140,5 +179,7 @@ describe('hints', () => {
   it('names the biggest expenses with their share', () => {
     const b = biggestExpenses(entries, cats, '2026-10', 2);
     expect(b.map(x => [x.entry.name, Math.round(x.share * 100)])).toEqual([['Miete', 49], ['Lidl', 34]]);
+    const two = biggestExpenses(entries, cats, ['2026-09', '2026-10'], 1);
+    expect(two.map(x => [x.entry.name, x.entry.month])).toEqual([['Miete', '2026-09']]);
   });
 });
