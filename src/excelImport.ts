@@ -153,7 +153,7 @@ export function planExcelImport(sheets: Sheet[], categories: Category[], lang: s
       const kind: CategoryKind = INCOME_WORDS.some(w => k.includes(w)) ? 'income' : 'expense';
       const hue: Hue = HUES.find(h => !usedHues.has(h)) ?? 'stone';
       usedHues.add(hue);
-      const c: Category = { id: newId(), names: { [lang]: cleanText(header, 40) }, emoji: kind === 'income' ? '💶' : '📦', hue, kind, repeat: 'none' };
+      const c: Category = { id: newId(), names: { [lang]: cleanText(header, 40) }, emoji: kind === 'income' ? '💰' : '📦', hue, kind, repeat: 'none' };
       all.push(c);
       newCategories.push(c);
       id = c.id;

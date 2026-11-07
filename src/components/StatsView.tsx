@@ -1,6 +1,6 @@
 import { CSSProperties, ReactNode, useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { AppData, CategoryKind, MonthKey } from '../types';
+import { AppData, MonthKey } from '../types';
 import {
   MonthBalance, addMonths, balanceFor, categoryBreakdown, displayName, formatMoney, monthKeyOf, monthLabel, topNames,
 } from '../logic';
@@ -14,7 +14,7 @@ import { IconButton } from '../ui/Button';
 import { Segmented } from '../ui/Field';
 import { Picture } from '../ui/Picture';
 import { CountingMoney } from '../ui/CountingMoney';
-import { AverageBars, BalanceChart, BudgetSplitBar, CategoryMonthChart, IncomeExpenseChart, SavedSpark } from './Charts';
+import { AverageBars, BalanceChart, IncomeExpenseLines, BudgetSplitBar, CategoryMonthChart, IncomeExpenseChart, SavedSpark } from './Charts';
 
 interface Props {
   /** The month the detail section at the bottom shows. */
@@ -30,8 +30,9 @@ type Range = 'last12' | 'all';
 
 /**
  * Statistics, from the long view to the single month, the reading last:
- *  1. all months — income vs expenses, balance at month end, the average per
- *     category, and each category per month;
+ *  1. all months — income vs expenses (columns), balance at month end,
+ *     income and expenses as lines, the average per category (income first),
+ *     and each category per month (income and expenses together);
  *  2. one month in detail — what was saved, where the money went;
  *  3. insights — savings rate, emergency reserve, forecast, 50/30/20, fixed
  *     commitments, what was unusual, best and weakest month.
@@ -39,7 +40,6 @@ type Range = 'last12' | 'all';
 export function StatsView({ month, balances, data, language, t, onMonth }: Props) {
   const { entries, categories } = data;
   const [range, setRange] = useState<Range>('last12');
-  const [kind, setKind] = useState<CategoryKind>('expense');
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   const today = new Date();
   const current = monthKeyOf(today);
@@ -48,9 +48,8 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
   const points = useMemo(() => (range === 'all' ? all : all.slice(-12)), [all, range]);
   const keys = useMemo(() => points.map(p => p.key), [points]);
   const averages = useMemo(() => categoryAverages(entries, categories, keys), [entries, categories, keys]);
-  const expenseMatrix = useMemo(() => categoryMatrix(entries, categories, keys, 'expense'), [entries, categories, keys]);
-  const incomeMatrix = useMemo(() => categoryMatrix(entries, categories, keys, 'income'), [entries, categories, keys]);
-  const matrix = kind === 'income' && incomeMatrix.categories.length ? incomeMatrix : expenseMatrix;
+  // Income and expenses in one chart (the legend chips hide either).
+  const matrix = useMemo(() => categoryMatrix(entries, categories, keys), [entries, categories, keys]);
 
   // Insights average over finished months (the running one is half entered).
   const finished = useMemo(() => finishedMonths(all, today), [all]);
@@ -92,20 +91,20 @@ export function StatsView({ month, balances, data, language, t, onMonth }: Props
         </Card>
       )}
 
+      {points.length > 1 && (
+        <Card title={t.incomeExpensesOverTime}>
+          <IncomeExpenseLines points={points} selected={month} t={t} onPick={onMonth} />
+        </Card>
+      )}
+
       {averages.length > 0 && (
         <Card title={t.averageByCategory} sub={plural(points.length, t.averageOverOne, t.averageOver)}>
           <AverageBars items={averages} language={language} t={t} />
         </Card>
       )}
 
-      {expenseMatrix.categories.length > 0 && (
+      {matrix.categories.length > 0 && (
         <Card title={t.categoriesPerMonth}>
-          {incomeMatrix.categories.length > 0 && (
-            <div className="mb-3">
-              <Segmented<CategoryKind> label={t.categoriesPerMonth} value={kind} onChange={setKind}
-                options={[{ value: 'expense', label: t.expenses }, { value: 'income', label: t.income }]} />
-            </div>
-          )}
           <CategoryMonthChart matrix={matrix} months={keys} selected={month} language={language} t={t} onPick={onMonth} />
         </Card>
       )}

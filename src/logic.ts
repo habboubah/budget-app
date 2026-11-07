@@ -1,10 +1,10 @@
 import {
   AppData, Backup, Category, CategoryKind, Entry, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
 } from './types';
-import { MERGED_V4, NEW_IN_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
+import { MERGED_V4, NEW_IN_V5, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 
 /** Bump when a stored shape changes, and migrate in `normalizeState`. */
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -880,7 +880,8 @@ export function upgradeCategories(categories: Category[], from = 1): Category[] 
  * the restaurants arrive (`NEW_IN_V5`): after the groceries, and in the
  * running month and later started ones; earlier months without a list of
  * their own get the standard ones they showed until now, so they stay as
- * they were.
+ * they were. Below 6, built-ins whose picture changed (`SHIPPED_V5`) get the
+ * new one where the user kept the old.
  */
 export function upgradeData(data: AppData, from = 1, today = new Date()): AppData {
   if (from >= SCHEMA_VERSION) return data;
@@ -935,6 +936,10 @@ export function upgradeData(data: AppData, from = 1, today = new Date()): AppDat
         return m.categories ? m : { ...m, categories: before };
       });
     }
+  }
+  if (from < 6 && categories.length) {
+    const shipped = new Map(defaultCategories().map(c => [c.id, c]));
+    categories = categories.map(c => (SHIPPED_V5[c.id]?.emoji.includes(c.emoji) ? { ...c, emoji: shipped.get(c.id)!.emoji } : c));
   }
   return { categories, entries, months };
 }

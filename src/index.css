@@ -89,6 +89,7 @@
   --color-chart-out:  var(--t-chart-out);
   --color-chart-line: var(--t-chart-line);
   --color-chart-want: var(--t-chart-want);
+  --color-chart-save: var(--t-chart-save);
   --color-chart-label: var(--t-chart-label);
 
   --radius-sm: 12px;
@@ -220,6 +221,8 @@
   --t-chart-out:  #4E66B8;
   --t-chart-line: var(--acc-l);
   --t-chart-want: #AD5C15;
+  /* What a month saved, beside income and expenses (validate_palette: passes with chart-in / chart-out). */
+  --t-chart-save: #A06A00;
   /* Text inside a filled chart block: white on the darker day fills, near-black on the lighter night fills. */
   --t-chart-label: #FFFFFF;
 
@@ -296,6 +299,7 @@
   --t-chart-out:  #6F7FD0;
   --t-chart-line: var(--acc-d);
   --t-chart-want: #D27830;
+  --t-chart-save: #B88A22;
   --t-chart-label: #000000;
 
   --t-scrim:    rgba(0, 0, 0, 0.6);

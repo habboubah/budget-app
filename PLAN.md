@@ -27,7 +27,7 @@ One bank account only, on purpose.
 
 | Concept | What it is | Example |
 |---|---|---|
-| **Category** (`Category`) | Income or expense, with a name, emoji and colour, and whether its new entries repeat by default. Ordered: the month page follows this order. | 💶 Einkommen, 🏠 Wohnen, 🚗 Auto |
+| **Category** (`Category`) | Income or expense, with a name, emoji and colour, and whether its new entries repeat by default. Ordered: the month page follows this order. | 💰 Einkommen, 🏠 Wohnen, 🚗 Auto |
 | **Entry** (`Entry`) | One line in a month: name, amount, category, paid or open, repeat (none / monthly / yearly), optional due day and note. | Miete · 1.050,00 € · open · monatlich · am 1. |
 | **Month** (`MonthRecord`) | A started month (`2026-11`). Optionally a manual opening balance that overrides the carry-over (to match the real bank). | November 2026 |
 | **Series** (`seriesId`) | The thread that links "Miete" in October to "Miete" in November, so carrying over never duplicates and statistics can follow one cost over time. | |

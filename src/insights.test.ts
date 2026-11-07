@@ -45,11 +45,13 @@ describe('categories over time', () => {
     expect(m.values.get('2026-09')?.get('car')).toBeUndefined();
     expect(m.max).toBe(102000);
     expect(categoryMatrix(entries, cats, ['2026-09'], 'income').categories.map(c => c.id)).toEqual(['income']);
+    // Without a kind, income and expenses side by side.
+    expect(categoryMatrix(entries, cats, ['2026-09', '2026-10']).categories.map(c => c.id)).toEqual(['income', 'fixed', 'car', 'extra', 'groceries']);
   });
-  it('averages per category, expenses first, largest first', () => {
+  it('averages per category, income first, then expenses largest first', () => {
     const a = categoryAverages(entries, cats, ['2026-08', '2026-09', '2026-10']);
     expect(a.map(x => [x.category.id, x.average])).toEqual([
-      ['fixed', 100667], ['groceries', 50000], ['extra', 23333], ['car', 8000], ['income', 300000],
+      ['income', 300000], ['fixed', 100667], ['groceries', 50000], ['extra', 23333], ['car', 8000],
     ]);
   });
 });

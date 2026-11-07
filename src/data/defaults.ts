@@ -23,7 +23,7 @@ import { Category, Names } from '../types';
  * Settings, and brought back with "Standard wiederherstellen".
  */
 const CATEGORIES: Category[] = [
-  { id: 'income', names: { de: 'Einkommen', en: 'Income', ar: 'الدخل' }, emoji: '💶', hue: 'leaf', kind: 'income', repeat: 'monthly', builtin: true },
+  { id: 'income', names: { de: 'Einkommen', en: 'Income', ar: 'الدخل' }, emoji: '💰', hue: 'leaf', kind: 'income', repeat: 'monthly', builtin: true },
   { id: 'fixed', names: { de: 'Wohnen', en: 'Home', ar: 'المنزل' }, emoji: '🏠', hue: 'sky', kind: 'expense', repeat: 'monthly', budget: 'need', builtin: true },
   { id: 'car', names: { de: 'Auto', en: 'Car', ar: 'السيارة' }, emoji: '🚗', hue: 'carrot', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
   { id: 'extra', names: { de: 'Sonstiges', en: 'Others', ar: 'أخرى' }, emoji: '📦', hue: 'lavender', kind: 'expense', repeat: 'none', budget: 'want', builtin: true },
@@ -90,6 +90,14 @@ export const SHIPPED_V3: Record<string, { names: Names; emoji?: string[] }> = {
  */
 export const NEW_IN_V5: Record<string, string[]> = {
   restaurants: ['restaurant', 'restaurants', 'restaurants und cafes', 'essen gehen', 'gastronomie', 'مطعم', 'مطاعم', 'المطاعم'],
+};
+
+/**
+ * Schema 6: Einkommen gets a money bag (💰) instead of the banknote, which
+ * read like money going out — where the user still has the banknote.
+ */
+export const SHIPPED_V5: Record<string, { emoji: string[] }> = {
+  income: { emoji: ['💶'] },
 };
 
 /** Built-in expense categories that are basic needs, for data saved before `budget` existed. */

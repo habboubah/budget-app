@@ -52,6 +52,14 @@ function columnPath(x: number, w: number, top: number, base: number): string {
   return `M${x},${base}V${top + r}Q${x},${top} ${x + r},${top}H${x + w - r}Q${x + w},${top} ${x + w},${top + r}V${base}Z`;
 }
 
+/** A column hanging down from the zero line to `bottom` (a negative value), rounded at its foot. */
+function columnPathDown(x: number, w: number, bottom: number, base: number): string {
+  const h = bottom - base;
+  if (h <= 0.5) return '';
+  const r = Math.min(4, w / 2, h);
+  return `M${x},${base}V${bottom - r}Q${x},${bottom} ${x + r},${bottom}H${x + w - r}Q${x + w},${bottom} ${x + w},${bottom - r}V${base}Z`;
+}
+
 function axisMonth(key: MonthKey, locale: string, wide: boolean): string {
   const { year, month } = parseMonthKey(key);
   return new Intl.DateTimeFormat(locale, { month: wide ? 'short' : 'narrow' }).format(new Date(year, month - 1, 1));
@@ -205,25 +213,43 @@ interface SeriesProps {
 
 /* ------------------------------------------------- income vs expenses */
 
-/** Income and expenses per month, side by side. */
+/**
+ * Income, expenses and what each month saved, side by side; a month that
+ * spent more than came in shows the overspend as a red column below the zero
+ * line — above means saved, below means overspent, whatever the colours.
+ */
 export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps) {
-  const ticks = niceTicks(0, Math.max(1, ...points.map(p => Math.max(p.income, p.expense))));
+  const lo = Math.min(0, ...points.map(p => p.saved));
+  const ticks = niceTicks(lo, Math.max(1, ...points.map(p => Math.max(p.income, p.expense, p.saved))));
+  const yLo = ticks[0];
   const top = ticks[ticks.length - 1];
-  const y = (v: number) => PAD_T + PLOT_H - (v / top) * PLOT_H;
-  const base = PAD_T + PLOT_H;
+  const y = (v: number) => PAD_T + PLOT_H - ((v - yLo) / (top - yLo)) * PLOT_H;
+  const base = y(0);
   const money = (c: number) => formatMoney(c, t.locale);
+  const anyOver = points.some(p => p.saved < 0);
   return (
     <div>
-      <Legend items={[{ label: t.chartLegendIncome, className: 'bg-chart-in' }, { label: t.chartLegendExpenses, className: 'bg-chart-out' }]} />
+      <Legend items={[
+        { label: t.chartLegendIncome, className: 'bg-chart-in' },
+        { label: t.chartLegendExpenses, className: 'bg-chart-out' },
+        { label: t.saved, className: 'bg-chart-save' },
+        ...(anyOver ? [{ label: t.overspent, className: 'bg-neg' }] : []),
+      ]} />
       <ChartFrame
-        months={points.map(p => p.key)} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
-        label={i => `${monthLabel(points[i].key, t.locale)}: ${t.income} ${money(points[i].income)}, ${t.expenses} ${money(points[i].expense)}`}
+        months={points.map(p => p.key)} minSlot={30} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
+        zero={yLo < 0}
+        label={i => `${monthLabel(points[i].key, t.locale)}: ${t.income} ${money(points[i].income)}, ${t.expenses} ${money(points[i].expense)}, ${
+          points[i].saved < 0 ? t.overspent : t.saved} ${money(Math.abs(points[i].saved))}`}
         marks={(cx, slot, active) => points.map((p, i) => {
-          const w = Math.max(3, Math.min(12, (slot - 10) / 2));
+          const w = Math.max(3, Math.min(10, (slot - 12) / 3));
+          const x0 = cx(i) - 1.5 * w - 2;
           return (
             <g key={p.key} opacity={active === null || active === i ? 1 : 0.45}>
-              <path d={columnPath(cx(i) - w - 1, w, y(p.income), base)} className="fill-chart-in" />
-              <path d={columnPath(cx(i) + 1, w, y(p.expense), base)} className="fill-chart-out" />
+              <path d={columnPath(x0, w, y(p.income), base)} className="fill-chart-in" />
+              <path d={columnPath(x0 + w + 2, w, y(p.expense), base)} className="fill-chart-out" />
+              {p.saved >= 0
+                ? <path d={columnPath(x0 + 2 * (w + 2), w, y(p.saved), base)} className="fill-chart-save" />
+                : <path d={columnPathDown(x0 + 2 * (w + 2), w, y(p.saved), base)} className="fill-neg" />}
             </g>
           );
         })}
@@ -231,9 +257,9 @@ export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps)
           <>
             <TipRow swatch="bg-chart-in" value={money(points[i].income)} label={t.income} />
             <TipRow swatch="bg-chart-out" value={money(points[i].expense)} label={t.expenses} />
-            <p className={`text-caption font-semibold mt-1 num ${points[i].saved < 0 ? 'text-neg' : 'text-fg-mute'}`}>
-              {points[i].saved < 0 ? t.overspent : t.saved}: {money(Math.abs(points[i].saved))}
-            </p>
+            {points[i].saved < 0
+              ? <TipRow swatch="bg-neg" value={money(-points[i].saved)} label={t.overspent} />
+              : <TipRow swatch="bg-chart-save" value={money(points[i].saved)} label={t.saved} />}
           </>
         )}
       />
@@ -281,6 +307,64 @@ export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
       )}
       tooltip={i => <TipRow swatch="bg-chart-line" value={money(points[i].end)} label={t.balanceEnd} />}
     />
+  );
+}
+
+/* ----------------------------------------------- income and expenses, lines */
+
+/**
+ * Income and expenses month by month as two lines — the long view of the
+ * columns above, read like the balance line: the newest values labelled at
+ * the end of each line, every month in the tooltip.
+ */
+export function IncomeExpenseLines({ points, selected, t, onPick }: SeriesProps) {
+  const ticks = niceTicks(0, Math.max(1, ...points.map(p => Math.max(p.income, p.expense))));
+  const top = ticks[ticks.length - 1];
+  const y = (v: number) => PAD_T + PLOT_H - (v / top) * PLOT_H;
+  const last = points.length - 1;
+  const money = (c: number) => formatMoney(c, t.locale);
+  const series = [
+    { key: 'income', value: (p: MonthPoint) => p.income, stroke: 'stroke-chart-in', fill: 'fill-chart-in', label: t.income },
+    { key: 'expense', value: (p: MonthPoint) => p.expense, stroke: 'stroke-chart-out', fill: 'fill-chart-out', label: t.expenses },
+  ];
+  // The higher line's label above its last point, the lower one's below, so they never overlap.
+  const incomeOnTop = points[last].income >= points[last].expense;
+  return (
+    <div>
+      <Legend items={[{ label: t.chartLegendIncome, className: 'bg-chart-in' }, { label: t.chartLegendExpenses, className: 'bg-chart-out' }]} />
+      <ChartFrame
+        months={points.map(p => p.key)} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
+        label={i => `${monthLabel(points[i].key, t.locale)}: ${t.income} ${money(points[i].income)}, ${t.expenses} ${money(points[i].expense)}`}
+        marks={(cx, _slot, active) => (
+          <>
+            {series.map(s => (
+              <path
+                key={s.key}
+                d={points.map((p, i) => `${i ? 'L' : 'M'}${cx(i).toFixed(1)},${y(s.value(p)).toFixed(1)}`).join('')}
+                fill="none" className={s.stroke} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round"
+              />
+            ))}
+            {series.map(s => [...new Set([last, active ?? last])].map(i => (
+              <circle key={`${s.key}-${i}`} cx={cx(i)} cy={y(s.value(points[i]))} r={4.5} className={`${s.fill} stroke-surface`} strokeWidth={2} />
+            )))}
+            {active === null && series.map(s => {
+              const above = (s.key === 'income') === incomeOnTop;
+              return (
+                <text key={s.key} x={cx(last) - 8} y={y(s.value(points[last])) + (above ? -11 : 19)} textAnchor="end" className="fill-fg text-caption font-bold num">
+                  {money(s.value(points[last]))}
+                </text>
+              );
+            })}
+          </>
+        )}
+        tooltip={i => (
+          <>
+            <TipRow swatch="bg-chart-in" value={money(points[i].income)} label={t.income} />
+            <TipRow swatch="bg-chart-out" value={money(points[i].expense)} label={t.expenses} />
+          </>
+        )}
+      />
+    </div>
   );
 }
 
@@ -375,9 +459,10 @@ export function AverageBars({ items, language, t }: {
     <ul className="space-y-3">
       {items.map(({ category: c, average }, i) => {
         const name = displayName(c.names, language);
-        const firstIncome = c.kind === 'income' && items[i - 1]?.category.kind !== 'income';
+        // Income comes first; a hairline where the expenses begin.
+        const firstExpense = c.kind === 'expense' && items[i - 1]?.category.kind === 'income';
         return (
-          <li key={c.id} data-hue={c.hue} className={firstIncome && i > 0 ? 'pt-3 hairline-t' : ''}>
+          <li key={c.id} data-hue={c.hue} className={firstExpense ? 'pt-3 hairline-t' : ''}>
             <div className="flex items-baseline gap-2">
               <span className="emoji text-[15px]" aria-hidden="true">{c.emoji}</span>
               <span className="min-w-0 flex-1 text-label text-fg wrap-compound">{name}</span>

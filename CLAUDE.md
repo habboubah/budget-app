@@ -42,7 +42,9 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   (`budgetOf`); `save` expenses stay in *saved*.
   Averages use *finished* months (`finishedMonths`), never the running one.
 - **Charts** (`components/Charts.tsx`) follow the dataviz skill. Series
-  colours are tokens: `chart-in` / `chart-out` / `chart-line` / `chart-want`,
+  colours are tokens: `chart-in` / `chart-out` / `chart-save` / `chart-line` / `chart-want`
+  (saved columns stand above the zero line, an overspend hangs below it in
+  `neg`),
   and per category `bg-hue-chart` / `fill-hue-chart` under `data-hue` — one
   OKLCH step per hue and theme (`--t-<hue>-chart`). The default categories'
   colours pass `validate_palette.js`; re-run it when changing them.
@@ -63,7 +65,8 @@ two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
   **schema 5** (`NEW_IN_V5`) adds *Restaurants* after the groceries — skipped
   if the user already has a category of that name — and into the running and
   later started months' lists; earlier months without a list get the old
-  standard ones frozen in (`upgradeData(data, from, today)`). Ids
+  standard ones frozen in (`upgradeData(data, from, today)`); **schema 6**
+  (`SHIPPED_V5`) gives *Einkommen* 💰 instead of 💶 where unchanged. Ids
   stay as history: `fixed` = Wohnen, `extra` = Sonstiges (also where orphaned
   entries go). `upgradeCategories()` (run once by
   `loadInitial` for storage below version 2, and by `parseBackup` for older

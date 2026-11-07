@@ -534,7 +534,7 @@ describe('upgrading categories saved before schema 2', () => {
     // From version 2 on, only the restaurants (schema 5) are still to come.
     const v2 = parseBackup(JSON.stringify({ ...old, schemaVersion: 2 }));
     expect(v2.ok && v2.data.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries', 'restaurants']);
-    const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 5 }));
+    const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 6 }));
     expect(current.ok && current.data.categories.length).toBe(4);
   });
 });
@@ -547,7 +547,7 @@ describe('Arabic', () => {
     expect(up.map(c => c.names.ar)).toEqual(['الدخل', undefined, 'السيارة']);
     expect(up[1].names).toEqual({ de: 'Miete & Nebenkosten' });
     expect(up).toHaveLength(3);
-    expect(upgradeCategories(up, 5)).toBe(up);
+    expect(upgradeCategories(up, 6)).toBe(up);
   });
   it('reads amounts typed on an Arabic keyboard', () => {
     expect(normalizeDigits('١٬٠٥٠٫٥٠')).toBe('1,050.50');
@@ -595,7 +595,7 @@ describe('schema 4: Wohnen and Sonstiges', () => {
     expect(up.categories.find(c => c.id === 'extra')!.emoji).toBe('📦');
     expect(up.entries.map(x => [x.name, x.categoryId, x.order])).toEqual([['IKEA', 'fixed', undefined], ['Post', 'extra', undefined], ['Miete', 'fixed', 0]]);
     expect(up.months[0].categories).toEqual(['income', 'fixed', 'extra', 'restaurants']);
-    expect(upgradeData(up, 5)).toBe(up);
+    expect(upgradeData(up, 6)).toBe(up);
   });
   it('keeps a name the user chose', () => {
     const d = v3();
@@ -633,7 +633,7 @@ describe('schema 5: Restaurants', () => {
     expect(shown('2026-11')).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family']);
     expect(up.months.find(m => m.key === '2026-12')!.categories).toBeUndefined();
     expect(shown('2026-12')).toContain('restaurants');
-    expect(upgradeData(up, 5, today)).toBe(up);
+    expect(upgradeData(up, 6, today)).toBe(up);
   });
   it('leaves it out when the user already has one of their own', () => {
     const d = v4();
@@ -641,5 +641,15 @@ describe('schema 5: Restaurants', () => {
     const up = upgradeData(d, 4, today);
     expect(up.categories.some(c => c.id === 'restaurants')).toBe(false);
     expect(up.months.find(m => m.key === '2026-11')!.categories).not.toContain('restaurants');
+  });
+});
+
+describe('schema 6: the income picture', () => {
+  it('swaps the banknote for the money bag, unless the user chose another', () => {
+    const shipped = defaultCategories().find(c => c.id === 'income')!;
+    const d = (emoji: string): AppData => ({ categories: [{ ...shipped, emoji }], entries: [], months: [] });
+    expect(upgradeData(d('💶'), 5).categories[0].emoji).toBe('💰');
+    expect(upgradeData(d('🏦'), 5).categories[0].emoji).toBe('🏦');
+    expect(upgradeData(d('💶'), 6).categories[0].emoji).toBe('💶');
   });
 });

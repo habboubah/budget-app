@@ -49,9 +49,10 @@ export interface CategoryMatrix {
 }
 
 /** Each category's total per month — the grouped bars. */
-export function categoryMatrix(entries: Entry[], categories: Category[], months: MonthKey[], kind: CategoryKind): CategoryMatrix {
+export function categoryMatrix(entries: Entry[], categories: Category[], months: MonthKey[], kind?: CategoryKind): CategoryMatrix {
   const inRange = new Set(months);
-  const ofKind = new Map(categories.filter(c => c.kind === kind).map(c => [c.id, c]));
+  // No kind: income and expenses together, in the user's category order.
+  const ofKind = new Map(categories.filter(c => !kind || c.kind === kind).map(c => [c.id, c]));
   const values = new Map<MonthKey, Map<string, number>>(months.map(m => [m, new Map()]));
   const used = new Set<string>();
   let max = 0;
@@ -66,7 +67,7 @@ export function categoryMatrix(entries: Entry[], categories: Category[], months:
   return { categories: categories.filter(c => used.has(c.id) && ofKind.has(c.id)), values, max };
 }
 
-/** Average per month of every category (of either kind) with money in the range. */
+/** Average per month of every category with money in the range: income first, then expenses, each largest first. */
 export function categoryAverages(entries: Entry[], categories: Category[], months: MonthKey[]): { category: Category; average: number }[] {
   if (!months.length) return [];
   const inRange = new Set(months);
@@ -75,7 +76,7 @@ export function categoryAverages(entries: Entry[], categories: Category[], month
   return categories
     .filter(c => (sums.get(c.id) ?? 0) > 0)
     .map(c => ({ category: c, average: Math.round((sums.get(c.id) ?? 0) / months.length) }))
-    .sort((a, b) => (a.category.kind === b.category.kind ? b.average - a.average : a.category.kind === 'expense' ? -1 : 1));
+    .sort((a, b) => (a.category.kind === b.category.kind ? b.average - a.average : a.category.kind === 'income' ? -1 : 1));
 }
 
 /**

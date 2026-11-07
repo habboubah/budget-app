@@ -79,7 +79,15 @@ export default function App() {
   const dir = nav.current.dir;
   const rtl = t.dir === 'rtl' ? -1 : 1;
 
-  useEffect(() => { window.scrollTo(0, 0); }, [month, screen]);
+  // Another screen starts at its top. Another month does too on the month
+  // page — but the statistics keep their place, so stepping through months
+  // there doesn't throw the reader back up.
+  useEffect(() => { window.scrollTo(0, 0); }, [screen]);
+  const shownMonth = useRef(month);
+  useEffect(() => {
+    if (shownMonth.current !== month && screen === 'month') window.scrollTo(0, 0);
+    shownMonth.current = month;
+  }, [month]);
 
   useEffect(() => {
     const handle = CapacitorApp.addListener('backButton', () => {
