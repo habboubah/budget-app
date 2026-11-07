@@ -1,13 +1,14 @@
-import { CSSProperties, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppData, Category, MonthKey } from '../types';
 import {
   MonthBalance, addMonths, balanceFor, displayName, formatMoney, formatPercent, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding,
 } from '../logic';
 import {
-  bestWorst, biggestExpenses, budgetRule, budgetSplit, categoryTrends, commitments, finishedMonths, forecast, missingRegulars,
+  bestWorst, biggestExpenses, budgetRule, budgetSplit, categoryTrends, finishedMonths, forecast, missingRegulars,
   monthSeries, monthsToYearEnd, newNames, priceChanges, reserveMonths, savings, unusual, unusualBasis,
 } from '../insights';
+import { ContractItem, contractItems } from '../contracts';
 import { Strings, fmt } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
 import { Picture } from '../ui/Picture';
@@ -15,6 +16,7 @@ import { Card, MenuPicker } from '../ui/Card';
 import { tapLight } from '../ui/haptics';
 import { BUCKET_STYLE, BudgetSplitBar, RuleBar, SavingsRateChart } from './Charts';
 import { BudgetsCard } from './BudgetsCard';
+import { ContractsCard } from './ContractsCard';
 
 interface Props {
   /** The month the hints at the bottom are about. */
@@ -26,20 +28,25 @@ interface Props {
   onMonth: (m: MonthKey) => void;
   /** Set or change a category's monthly budget. */
   onBudget: (c: Category) => void;
+  /** Open a recurring cost's contract details. */
+  onContract: (item: ContractItem) => void;
+  /** Push the whole list of contracts. */
+  onContractsAll: () => void;
 }
 
 /** The savings target of the 50/30/20 rule, also the line in the savings-rate chart. */
 const SAVE_TARGET = 20;
 
 /**
- * The insights, a tab of their own: commitments, trends, best and weakest
- * month; then hints for one month (switchable): unusual, biggest expenses
- * (both over a period), new names, missing regulars, new prices; and at the
- * bottom, over finished months, savings rate (month by month against the
- * 20 % target), 50/30/20 (each part against its share, in euros, month by
- * month), reserve and forecast.
+ * Planen, a tab of its own: the month's budgets and the subscriptions and
+ * contracts first — what to plan — then trends, best and weakest month;
+ * hints for one month (switchable): unusual, biggest expenses (both over a
+ * period), new names, missing regulars, new prices; and at the bottom, over
+ * finished months, savings rate (month by month against the 20 % target),
+ * 50/30/20 (each part against its share, in euros, month by month), reserve
+ * and forecast.
  */
-export function InsightsView({ month, balances, data, language, t, onMonth, onBudget }: Props) {
+export function InsightsView({ month, balances, data, language, t, onMonth, onBudget, onContract, onContractsAll }: Props) {
   const { entries, categories } = data;
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   const today = new Date();
@@ -57,7 +64,7 @@ export function InsightsView({ month, balances, data, language, t, onMonth, onBu
   const rule = useMemo(() => budgetRule(entries, categories, finishedKeys), [entries, categories, finishedKeys.join()]);
   const split = budgetSplit(entries, categories, finishedKeys);
   const latest = [...all].reverse().find(p => p.key <= current)?.key ?? all[all.length - 1]?.key;
-  const fixed = latest ? commitments(data, latest) : { items: [], monthly: 0, yearly: 0 };
+  const contracts = useMemo(() => (latest ? contractItems(data, latest, today) : []), [data, latest]);
   // Only finished months: the running one isn't the best month yet, whatever it promises.
   const bw = bestWorst(finishedMonths(all, today, 12));
   const trends = categoryTrends(entries, categories, finishedKeys);
@@ -97,36 +104,11 @@ export function InsightsView({ month, balances, data, language, t, onMonth, onBu
 
       {finished.length < 2 && <p className="px-2 text-label text-fg-mute wrap-prose">{t.needMoreMonths}</p>}
 
+      {/* Then what is spoken for every month: subscriptions and contracts. */}
+      <ContractsCard items={contracts} categories={categories} averageIncome={sv.averageIncome} t={t}
+        onOpen={onContract} onAll={onContractsAll} />
+
       <div className="grid gap-5 sm:grid-cols-2">
-        <Card title={t.commitmentsTitle}>
-          {fixed.items.length === 0 ? (
-            <p className="text-label text-fg-mute wrap-prose">{t.commitmentsNone}</p>
-          ) : (
-            <>
-              <p className="text-heading font-semibold text-fg tabular-nums">{fmt(t.commitmentsLine, { monthly: money(fixed.monthly), yearly: money(fixed.yearly) })}</p>
-              {sv.averageIncome > 0 && (
-                <p className="text-caption text-fg-mute mt-1 wrap-prose">{fmt(t.commitmentsShare, { p: Math.round((fixed.monthly / sv.averageIncome) * 100) })}</p>
-              )}
-              <ul className="mt-3 divide-hairline-inset">
-                {fixed.items.slice(0, 6).map(i => {
-                  const c = categories.find(x => x.id === i.categoryId);
-                  return (
-                    <li key={`${i.name}-${i.categoryId}`} className="relative py-2 flex items-start gap-2" style={{ '--sep': '0px' } as CSSProperties}>
-                      <span className="emoji text-[15px] mt-0.5" aria-hidden="true">{c?.emoji}</span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-label text-fg wrap-compound">{i.name}</span>
-                        <span className="block text-caption text-fg-mute tabular-nums">
-                          {i.repeat === 'yearly' ? t.repeatsYearly : fmt(t.perYear, { amount: money(i.yearly) })}
-                        </span>
-                      </span>
-                      <span className="text-label font-semibold text-fg num">{money(i.repeat === 'monthly' ? i.monthly : i.yearly)}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
-          )}
-        </Card>
 
         {trends.length > 0 && (
           <Card title={t.trendTitle} sub={t.trendSub}>

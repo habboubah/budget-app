@@ -625,7 +625,8 @@ export function SavingsRateChart({ points, selected, t, onPick, target = 20 }: S
   return (
     <div>
       <LegendToggles label={t.chartShow} hidden={hidden} onToggle={toggle} items={[
-        { key: 'rate', label: t.savingsRateTitle, className: 'bg-chart-save' },
+        // Green, not amber: amber means "open" across the app.
+        { key: 'rate', label: t.savingsRateTitle, className: 'bg-chart-in' },
         ...(anyOver ? [{ key: 'over', label: t.overspent, className: 'bg-neg' }] : []),
         { key: 'target', label: fmt(t.targetPct, { p: target }), className: '!h-0 !rounded-none border-t-2 border-dashed border-fg-mute' },
       ]} />
@@ -647,7 +648,7 @@ export function SavingsRateChart({ points, selected, t, onPick, target = 20 }: S
                 return (
                   <g key={p.key} opacity={active === null || active === i ? 1 : 0.45}>
                     {r >= 0
-                      ? <path d={columnPath(cx(i) - w / 2, w, y(r), base)} className="fill-chart-save" />
+                      ? <path d={columnPath(cx(i) - w / 2, w, y(r), base)} className="fill-chart-in" />
                       : <path d={columnPathDown(cx(i) - w / 2, w, y(r), base)} className="fill-neg" />}
                   </g>
                 );
@@ -658,7 +659,7 @@ export function SavingsRateChart({ points, selected, t, onPick, target = 20 }: S
         }}
         tooltip={i => (!visible(rates[i]) ? null : (
           <>
-            <TipRow swatch={rates[i]! < 0 ? 'bg-neg' : 'bg-chart-save'} value={percent(rates[i]!)} label={t.savingsRateTitle} />
+            <TipRow swatch={rates[i]! < 0 ? 'bg-neg' : 'bg-chart-in'} value={percent(rates[i]!)} label={t.savingsRateTitle} />
             <TipRow value={money(Math.abs(points[i].saved))} label={points[i].saved < 0 ? t.overspent : t.saved} />
           </>
         ))}

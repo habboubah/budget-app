@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ACCENTS, Accent, AppData, Category, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
+import { ACCENTS, Accent, AppData, Category, Contract, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
   SCHEMA_VERSION, canRemoveFromMonth, carryCandidates, upgradeData, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
@@ -13,6 +13,7 @@ const K = {
   categories: 'spartopf-categories',
   entries: 'spartopf-entries',
   months: 'spartopf-months',
+  contracts: 'spartopf-contracts',
   lang: 'spartopf-lang',
   theme: 'spartopf-theme',
   accent: 'spartopf-accent',
@@ -57,6 +58,7 @@ function loadInitial(): AppData {
     categories: missing ? defaultCategories() : rawCategories,
     entries: readJson(K.entries),
     months: readJson(K.months),
+    contracts: readJson(K.contracts),
   });
   // Saved by an older version: new and renamed built-in categories, merges.
   const data = missing ? loaded : upgradeData(loaded, meta?.schemaVersion ?? 1);
@@ -72,6 +74,8 @@ export function useAppStore() {
   const [categories, setCategories] = useState<Category[]>(initial.categories);
   const [entries, setEntries] = useState<Entry[]>(initial.entries);
   const [months, setMonths] = useState<MonthRecord[]>(initial.months);
+  /** Contract details per recurring series — data, so part of a backup. */
+  const [contracts, setContracts] = useState<Record<string, Contract>>(initial.contracts ?? {});
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = readString(K.theme);
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
@@ -109,6 +113,7 @@ export function useAppStore() {
   useEffect(() => { persist(K.categories, JSON.stringify(categories)); }, [categories]);
   useEffect(() => { persist(K.entries, JSON.stringify(entries)); }, [entries]);
   useEffect(() => { persist(K.months, JSON.stringify(months)); }, [months]);
+  useEffect(() => { persist(K.contracts, JSON.stringify(contracts)); }, [contracts]);
   useEffect(() => { persist(K.intro, introDone ? '1' : '0'); }, [introDone]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.meta, JSON.stringify({ schemaVersion: SCHEMA_VERSION, seeded: true })); }, []);
@@ -142,8 +147,12 @@ export function useAppStore() {
     return () => mq.removeEventListener('change', apply);
   }, [themeMode]);
 
-  const data: AppData = useMemo(() => ({ categories, entries, months }), [categories, entries, months]);
-  const balances = useMemo(() => computeBalances(data), [data]);
+  const data: AppData = useMemo(
+    () => ({ categories, entries, months, ...(Object.keys(contracts).length ? { contracts } : {}) }),
+    [categories, entries, months, contracts],
+  );
+  // Contracts don't move money: the balances don't follow them.
+  const balances = useMemo(() => computeBalances({ categories, entries, months }), [categories, entries, months]);
 
   /* ---------------------------------------------------------------- months */
 
@@ -382,6 +391,7 @@ export function useAppStore() {
     setCategories(fixed.categories);
     setEntries(fixed.entries);
     setMonths(fixed.months.length ? fixed.months : [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fixed.categories) }]);
+    setContracts(fixed.contracts ?? {});
   };
 
   const resetAll = () => {
@@ -389,7 +399,20 @@ export function useAppStore() {
     setCategories(fresh);
     setEntries([]);
     setMonths([{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fresh) }]);
+    setContracts({});
     setIntroDone(false);
+  };
+
+  /* ------------------------------------------------------------- contracts */
+
+  /** Set (or with `undefined` clear) a series' contract details; returns what was there, for undo. */
+  const setContract = (seriesId: string, contract: Contract | undefined): Contract | undefined => {
+    const before = contracts[seriesId];
+    setContracts(prev => {
+      const { [seriesId]: _old, ...rest } = prev;
+      return contract && Object.keys(contract).length ? { ...rest, [seriesId]: contract } : rest;
+    });
+    return before;
   };
 
   return {
@@ -403,7 +426,7 @@ export function useAppStore() {
     startMonth, pullRecurring, setOpening, removeMonth, restoreMonth, hideCategory, showCategory,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
-    setCategories, importData, resetAll,
+    setCategories, importData, resetAll, setContract,
     newId: uid,
   };
 }

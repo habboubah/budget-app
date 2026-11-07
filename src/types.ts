@@ -41,6 +41,21 @@ export interface Category {
   builtin?: boolean;
 }
 
+/**
+ * A recurring cost as a contract (schema 10), kept per entry series, so it
+ * follows the bill from month to month: when it runs until, how long before
+ * that it must be cancelled, and by how much it renews when it isn't.
+ */
+export interface Contract {
+  /** The day it runs until — and, unless cancelled, renews from — YYYY-MM-DD. */
+  end?: string;
+  /** Notice in months (Kündigungsfrist): cancel at least this long before `end`. Unset = none. */
+  notice?: number;
+  /** How many months it renews by when not cancelled. Unset = 12. */
+  renews?: number;
+  note?: string;
+}
+
 export type Budget = 'need' | 'want' | 'save';
 
 /** A calendar month as `YYYY-MM`. Compare with `<` / `>`: the format sorts. */
@@ -98,6 +113,8 @@ export interface AppData {
   categories: Category[];
   entries: Entry[];
   months: MonthRecord[];
+  /** Contract details by `Entry.seriesId` (schema 10). Unset or missing = none. */
+  contracts?: Record<string, Contract>;
 }
 
 /** A backup file / stored payload. */

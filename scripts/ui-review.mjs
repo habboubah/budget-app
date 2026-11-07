@@ -196,6 +196,17 @@ const SCREENS = [
   } },
   { name: 'insights', run: tab(2), audit: 'page' },
   { name: 'insights-full', run: tab(2), full: true },
+  // Planen → a contract's details, and the whole list of contracts.
+  { name: 'contract-sheet', run: async page => {
+    await tab(2)(page);
+    await page.locator('main section').nth(1).locator('li button').first().click();
+  }, wait: dialog, audit: 'dialog' },
+  { name: 'contracts', run: async page => {
+    await tab(2)(page);
+    // "Alle (n)" beside the card's title; with four or fewer there is none, and the card shows them all.
+    const all = page.locator('main section').nth(1).locator(':scope > div:first-child > button');
+    if (await all.count()) { await all.click(); await page.waitForTimeout(600); }
+  }, audit: 'page' },
   { name: 'settings', run: tab(3), audit: 'page' },
   { name: 'settings-full', run: tab(3), full: true },
   { name: 'categories', run: openCategories, audit: 'page' },

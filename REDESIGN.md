@@ -555,3 +555,32 @@ category for every month (no rollover), reminders without amounts by default.
   sentences). Tests: `nearFraction`, `balanceChange`, open parts in
   `monthSeries` (143 pass). `scripts/ui-review.mjs` gained `stats-category`,
   `stats-payees`. Audit clean on stats (SE, 16 × DE/AR × light/dark).
+- [x] **9 · Planen and Abos & Verträge (#6)** — the tab is **Planen** / Plan /
+  التخطيط with the piggy bank (its id stays `insights`); the title is the tab
+  label. It opens on the Budgets card, then **Abos & Verträge**, which
+  replaces *Feste Kosten*. `src/contracts.ts`: `contractItems` turns the
+  recurring spending series into contracts, as the fixed costs count them
+  (monthly series with an entry in the month, yearly ones with one in the last
+  twelve months): what one payment costs, per month and per year, the next
+  payment (still open in its month, or the coming one on its day), the last
+  price change within twelve months ("+1,00 € seit Mai"); deadlines within
+  90 days first, then the dearest per year. `nextDeadline`: end − notice;
+  once that day has passed, the end it renews to (`renews` months, 12 unless
+  set), counted from the first end so the day doesn't drift (31 Jan → 28 Feb
+  → 31 Mar) — 9 tests. **Schema 10:** `AppData.contracts`, keyed by
+  `Entry.seriesId` (`end`, `notice`, `renews`, `note`), its own storage key,
+  part of backups, normalised on load and import, cleared by *Alle Daten
+  löschen*. The card: "9 feste Kosten · … im Monat · … im Jahr", the share of
+  the average income, the first four rows, *Alle (n)* pushes the whole list
+  (pushed screen `contracts`, edge swipe). A row: picture, name, "13,99 €
+  mtl.", then "kündbar bis 30. Nov." (amber within 60 days) or "fällig am /
+  nächste am …", and the price change. New `ContractSheet`: *Läuft bis*
+  (date), *Kündigungsfrist* (Keine, 1, 2, 3, 6, 12 Monate), *Verlängert sich
+  um* (1, 3, 6, 12, 24 Monate), a note (customer number), the result in one
+  sentence ("Kündige bis spätestens Montag, 30. November 2026, dann endet der
+  Vertrag am …"), *Vertragsdaten entfernen*; saving and removing are
+  undoable. The savings-rate bars are `chart-in` now, so amber means "open"
+  on both tabs. `scripts/ui-review.mjs` gained `contract-sheet`, `contracts`.
+  152 tests pass; audit clean on insights, contract-sheet, contracts (SE, 16
+  × DE/AR × light/dark). **For step 11 (reminders):** the cancel-by day is
+  the natural second reminder source after open bills.

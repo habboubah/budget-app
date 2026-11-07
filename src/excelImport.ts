@@ -283,6 +283,7 @@ export function applyExcelImport(data: AppData, plan: ImportPlan, now = Date.now
     ...plan.months.map(m => (m.opening !== undefined ? { key: m.key, opening: m.opening, startedAt: now } : { key: m.key, startedAt: now })),
   ].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
   return {
+    ...data,
     categories: [...data.categories, ...plan.newCategories],
     entries: [...data.entries.filter(e => !keys.has(e.month)), ...plan.months.flatMap(m => m.entries)],
     months,

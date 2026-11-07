@@ -2,14 +2,17 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { motion, useTransform } from 'motion/react';
-import { AlertTriangle, BarChart3, CalendarDays, Lightbulb, Settings } from 'lucide-react';
+import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import translations, { fmt } from './translations';
-import { Category, Entry, EntryDraft, MonthKey } from './types';
+import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { MonthView } from './components/MonthView';
 import { BudgetSheet } from './components/BudgetSheet';
 import { DueSoonView } from './components/DueSoonView';
+import { ContractsView } from './components/ContractsView';
+import { ContractSheet } from './components/ContractSheet';
+import { ContractItem, contractItems } from './contracts';
 import { MonthPickerSheet } from './components/MonthPickerSheet';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
@@ -35,10 +38,10 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'dueSoon';
+type PushedId = 'categories' | 'dueSoon' | 'contracts';
 type ScreenId = TabId | PushedId;
 /** The tab each pushed screen sits on. */
-const PARENT: Record<PushedId, TabId> = { categories: 'settings', dueSoon: 'month' };
+const PARENT: Record<PushedId, TabId> = { categories: 'settings', dueSoon: 'month', contracts: 'insights' };
 
 export default function App() {
   const store = useAppStore();
@@ -71,6 +74,8 @@ export default function App() {
   const [openingOpen, setOpeningOpen] = useState(false);
   /** The category whose monthly budget is being set. */
   const [budgetFor, setBudgetFor] = useState<Category | null>(null);
+  /** The recurring cost whose contract details are being edited. */
+  const [contractFor, setContractFor] = useState<ContractItem | null>(null);
   /** The month's "⋯" menu is open from this button. */
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
   /** The category the round add button opens with: the one used last. */
@@ -310,6 +315,17 @@ export default function App() {
     show(t.restoreDefaultsDone, { label: t.undo, run: () => store.setCategories(before) });
   };
 
+  /** The contracts as Planen lists them: those of the newest month up to today. */
+  const contractMonth = [...data.months].reverse().find(m => m.key <= monthKeyOf())?.key ?? data.months[data.months.length - 1]?.key;
+  const contracts = useMemo(() => (contractMonth ? contractItems(data, contractMonth) : []), [data, contractMonth]);
+
+  const saveContract = (item: ContractItem, contract: Contract | undefined) => {
+    const before = store.setContract(item.seriesId, contract);
+    show(fmt(contract ? t.contractSaved : t.contractRemoved, { name: item.name }), {
+      label: t.undo, run: () => store.setContract(item.seriesId, before),
+    });
+  };
+
   const saveBudget = (c: Category, limit: number | undefined) => {
     const before = c.limit;
     store.updateCategory(c.id, { limit });
@@ -325,7 +341,9 @@ export default function App() {
   /** Every screen, by name — the tab roots and what can be pushed over them. */
   const screenFor = (id: ScreenId) => (
     <>
-        {id === 'dueSoon' ? (
+        {id === 'contracts' ? (
+          <ContractsView items={contracts} categories={categories} t={t} onBack={back} onOpen={setContractFor} />
+        ) : id === 'dueSoon' ? (
           <DueSoonView
             data={data}
             language={language}
@@ -390,6 +408,8 @@ export default function App() {
             t={t}
             onMonth={setMonth}
             onBudget={setBudgetFor}
+            onContract={setContractFor}
+            onContractsAll={() => push('contracts')}
           />
         ) : (
           <MonthView
@@ -485,7 +505,7 @@ export default function App() {
         tabs={[
           { id: 'month', label: t.tabMonth, icon: CalendarDays },
           { id: 'stats', label: t.tabStats, icon: BarChart3 },
-          { id: 'insights', label: t.tabInsights, icon: Lightbulb },
+          { id: 'insights', label: t.tabInsights, icon: PiggyBank },
           { id: 'settings', label: t.tabSettings, icon: Settings },
         ]}
         // On every tab: a receipt can be noted down from anywhere, into the month shown.
@@ -532,6 +552,14 @@ export default function App() {
             ? fmt(t.openingReset, { month: monthLabel(balance.prevKey, t.locale) })
             : t.openingSaved);
         }}
+      />
+
+      <ContractSheet
+        item={contractFor}
+        category={contractFor ? categories.find(c => c.id === contractFor.categoryId) : undefined}
+        t={t}
+        onClose={() => setContractFor(null)}
+        onSave={saveContract}
       />
 
       <BudgetSheet

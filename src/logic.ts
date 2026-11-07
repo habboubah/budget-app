@@ -1,11 +1,12 @@
 import {
-  AppData, Backup, Category, CategoryKind, Entry, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
+  AppData, Backup, Category, CategoryKind, Contract, Entry, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 
 /** Bump when a stored shape changes, and migrate in `normalizeState`.
- *  9: monthly budgets (`Category.limit`) — optional, so nothing to migrate. */
-export const SCHEMA_VERSION = 9;
+ *  9: monthly budgets (`Category.limit`) — optional, so nothing to migrate.
+ *  10: contract details per recurring series (`AppData.contracts`) — optional too. */
+export const SCHEMA_VERSION = 10;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -955,7 +956,33 @@ export function normalizeState(raw: unknown): AppData {
     if (!started.has(e.month)) { months.push({ key: e.month, startedAt: e.createdAt }); started.add(e.month); }
   }
   months.sort((a, b) => (a.key < b.key ? -1 : 1));
-  return { categories, entries, months };
+  const contracts = normalizeContracts(v.contracts);
+  return { categories, entries, months, ...(contracts ? { contracts } : {}) };
+}
+
+/** One series' contract details: a real day, a notice and a renewal of whole months, a short note. Null when nothing is left. */
+export function normalizeContract(v: unknown): Contract | null {
+  if (!isObj(v)) return null;
+  const months = (x: unknown, lo: number, hi: number) => (typeof x === 'number' && Number.isInteger(x) && x >= lo && x <= hi ? x : undefined);
+  const c: Contract = {};
+  if (isIsoDay(v.end)) c.end = v.end;
+  const notice = months(v.notice, 0, 24);
+  if (notice !== undefined) c.notice = notice;
+  const renews = months(v.renews, 1, 60);
+  if (renews !== undefined) c.renews = renews;
+  const note = typeof v.note === 'string' ? cleanText(v.note, 200) : '';
+  if (note) c.note = note;
+  return Object.keys(c).length ? c : null;
+}
+
+function normalizeContracts(v: unknown): Record<string, Contract> | undefined {
+  if (!isObj(v)) return undefined;
+  const out: Record<string, Contract> = {};
+  for (const [id, raw] of Object.entries(v)) {
+    const c = id && id.length <= 80 ? normalizeContract(raw) : null;
+    if (c) out[id] = c;
+  }
+  return Object.keys(out).length ? out : undefined;
 }
 
 const sameNames = (a: Names, b: Names) =>
@@ -1069,7 +1096,7 @@ export function upgradeData(data: AppData, from = 1, today = new Date()): AppDat
     const shipped = new Map(defaultCategories().map(c => [c.id, c]));
     categories = categories.map(c => (SHIPPED_V5[c.id]?.emoji.includes(c.emoji) ? { ...c, emoji: shipped.get(c.id)!.emoji } : c));
   }
-  return { categories, entries, months };
+  return { ...data, categories, entries, months };
 }
 
 export function makeBackup(data: AppData, now = new Date()): Backup {
