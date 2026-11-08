@@ -361,6 +361,40 @@ export function useAppStore() {
     setEntries(prev => prev.map(x => byId.get(x.id) ?? x));
   };
 
+  /**
+   * Split one payment into parts that share a new splitId (plan 21). The parts
+   * inherit the original's month, date, paid, repeat and bank ref, so every
+   * total and the import matching stay right. Returns the original for undo.
+   */
+  const splitEntry = (id: string, parts: { categoryId: string; name: string; amount: number }[]): { original: Entry; splitId: string } | null => {
+    const original = entries.find(e => e.id === id);
+    if (!original || parts.length < 2) return null;
+    const splitId = original.splitId ?? uid();
+    const now = Date.now();
+    const made: Entry[] = parts.map((p, i) => ({
+      id: uid(),
+      month: original.month,
+      categoryId: p.categoryId,
+      name: p.name,
+      amount: p.amount,
+      paid: original.paid,
+      repeat: original.repeat,
+      seriesId: uid(),
+      createdAt: now + i,
+      splitId,
+      ...(original.date ? { date: original.date } : {}),
+      ...(original.paidAt ? { paidAt: original.paidAt } : {}),
+      ...(original.ref ? { ref: original.ref } : {}),
+    }));
+    setEntries(prev => [...prev.filter(e => e.id !== id), ...made]);
+    made.forEach(p => showCategory(original.month, p.categoryId));
+    return { original, splitId };
+  };
+
+  /** Undo a split: drop the parts, put the original back. */
+  const unsplit = (original: Entry, partSplitId: string) =>
+    setEntries(prev => [...prev.filter(e => !(e.splitId === partSplitId && e.month === original.month)), ...(prev.some(e => e.id === original.id) ? [] : [original])]);
+
   const removeEntry = (id: string): { entry: Entry; index: number } | null => {
     const index = entries.findIndex(e => e.id === id);
     if (index === -1) return null;
@@ -608,6 +642,7 @@ export function useAppStore() {
     data, categories, entries, months, balances,
     startMonth, pullRecurring, setOpening, setReconciled, removeMonth, restoreMonth, hideCategory, showCategory,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,
+    splitEntry, unsplit,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
     setCategories, importData, restoreData, resetAll, setContract,
     favorites, addFavorite, removeFavorite, restoreFavorite, reorderFavorites,

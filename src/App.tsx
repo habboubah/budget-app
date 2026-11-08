@@ -28,6 +28,7 @@ import { MonthPickerSheet } from './components/MonthPickerSheet';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
 import { ReconcileSheet } from './components/ReconcileSheet';
+import { SplitSheet } from './components/SplitSheet';
 import { MonthActionsMenu } from './components/MonthActionsMenu';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
@@ -125,6 +126,7 @@ export default function App() {
   const [entrySheet, setEntrySheet] = useState<EntrySheetMode>(null);
   const [openingOpen, setOpeningOpen] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
+  const [splitEntry, setSplitEntry] = useState<Entry | null>(null);
   const [goalSheet, setGoalSheet] = useState<GoalSheetMode>(null);
   const [ruleSheet, setRuleSheet] = useState<RuleSheetMode>(null);
   /** The scope menu when a category is corrected during an import (plan 20). */
@@ -913,6 +915,19 @@ export default function App() {
           return !!created;
         }}
         goals={store.goals}
+        onSplit={e => setSplitEntry(e)}
+      />
+
+      <SplitSheet
+        entry={splitEntry}
+        categories={categories}
+        language={language}
+        t={t}
+        onClose={() => setSplitEntry(null)}
+        onSplit={(id, parts) => {
+          const done = store.splitEntry(id, parts);
+          if (done) show(t.splitPayDone, { label: t.undo, run: () => store.unsplit(done.original, done.splitId) });
+        }}
       />
 
       <OpeningSheet

@@ -91,6 +91,8 @@ export interface Entry {
   goalId?: string;
   /** Free tags (plan 14 data; schema 14), lowercase, without "#", at most 5. */
   tags?: string[];
+  /** Shared by the parts of a split payment (schema 16, plan 21). */
+  splitId?: string;
 }
 
 /** A month the user has started. Entries only live in started months. */

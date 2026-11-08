@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, Check, ChevronDown, ChevronUp, Hash, Plus, Repeat as RepeatIcon, Star, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, ChevronUp, Hash, Plus, Repeat as RepeatIcon, Split, Star, Trash2 } from 'lucide-react';
 import { Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
 import { budgetOf } from '../data/defaults';
 import {
@@ -41,6 +41,8 @@ interface Props {
   onPinFavorite?: (fav: Omit<Favorite, 'id'>) => boolean;
   /** Open savings goals, for the "Für: …" pill on a Sparen category (plan 12). */
   goals?: Goal[];
+  /** Split this (existing) payment into parts (plan 21). */
+  onSplit?: (entry: Entry) => void;
 }
 
 /** A compact control in the entry sheet's last row (date, status, repeat, note). */
@@ -62,7 +64,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * once unless changed, so most entries are amount + name + save. (A due day
  * is no longer asked for; one already on an entry is kept.)
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onUseFavorite, onPinFavorite, goals = [] }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onUseFavorite, onPinFavorite, goals = [], onSplit }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -574,6 +576,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               }}>
               {pinned ? t.favoriteSaved : t.pinFavorite}
             </Button>
+          )}
+          {editing && onSplit && !income && !editing.splitId && (
+            <Button variant="ghost" full icon={Split} onClick={() => { onClose(); onSplit(editing); }}>{t.splitPayAction}</Button>
           )}
           {editing && (
             <Button variant="danger" full icon={Trash2} onClick={() => { onDelete(editing.id); onClose(); }}>{t.deleteEntry}</Button>

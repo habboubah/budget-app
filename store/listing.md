@@ -165,6 +165,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد عند الاستيراد: صحّح فئة ليحفظها Spartopf كقاعدة – ويمكنه استبعاد التحويلات. ويتعرّف على ملفات CSV من تطبيقات أخرى.
 
+**DE:** Neu: eine Zahlung aufteilen. Ein Kassenbon für Lebensmittel und Drogerie wird zu zwei Posten in ihren Kategorien.
+
+**EN:** New: split a payment. One receipt for food and household goods becomes two entries in their categories.
+
+**AR:** جديد: تقسيم الدفعة. فاتورة واحدة لمواد غذائية ومنزلية تصبح بندين في فئتيهما.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

@@ -11,8 +11,9 @@ import { isSupportedCurrency } from './currency';
  *  12: pinned favourites (`AppData.favorites`) — optional, unset = none.
  *  13: savings goals (`AppData.goals`, `Entry.goalId`) — optional, unset = none.
  *  14: entry tags (`Entry.tags`) — optional, unset = none.
- *  15: import rules (`AppData.rules`) — optional, unset = none. */
-export const SCHEMA_VERSION = 15;
+ *  15: import rules (`AppData.rules`) — optional, unset = none.
+ *  16: split payments (`Entry.splitId`) — optional, unset = none. */
+export const SCHEMA_VERSION = 16;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -222,6 +223,11 @@ export function amountToInput(cents: number, locale: string): string {
 /** An entry's effect on the account: + for income, − for an expense. */
 export function signedAmount(amount: number, kind: CategoryKind): number {
   return kind === 'income' ? amount : -amount;
+}
+
+/** The parts of a split payment (plan 21): entries in the same month sharing a splitId, as entered. */
+export function splitParts(entries: Entry[], splitId: string, month: MonthKey): Entry[] {
+  return entries.filter(e => e.splitId === splitId && e.month === month).sort((a, b) => a.createdAt - b.createdAt);
 }
 
 /** The outcome of matching the app's "now" balance against the bank's (plan 10). */
@@ -698,6 +704,8 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
     // A recurring entry keeps its goal (a standing order fills the pot, plan 12) and its tags (plan 26).
     if (e.goalId) copy.goalId = e.goalId;
     if (e.tags?.length) copy.tags = [...e.tags];
+    // A split payment carries all its parts; they keep their shared splitId (plan 21).
+    if (e.splitId) copy.splitId = e.splitId;
     return copy;
   });
 }
@@ -1074,6 +1082,8 @@ function normalizeEntry(v: unknown): Entry | null {
   if (goalId) e.goalId = goalId.slice(0, 80);
   const tags = normalizeTags(v.tags);
   if (tags.length) e.tags = tags;
+  const splitId = str(v.splitId);
+  if (splitId) e.splitId = splitId.slice(0, 80);
   return e;
 }
 

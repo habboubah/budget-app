@@ -34,4 +34,13 @@ It's only in the menu. A payment stays one entry until someone splits it.
 
 ## Done when
 
-- [ ] Splitting, editing, deleting and importing against a split payment all work, and balances don't change.
+- [x] Splitting, editing, deleting and importing against a split payment all work, and balances don't change (golden data unchanged).
+
+## Notes (built)
+
+- `Entry.splitId?` (schema **16**, optional). Parts are normal entries sharing a `splitId`, so every total, budget and chart stays right. `splitParts(entries, splitId, month)` in `logic.ts` (tested); carry-over keeps `splitId` so a split monthly payment carries all its parts (tested).
+- `store.splitEntry(id, parts)` replaces one entry with parts that inherit its month/date/paid/repeat/ref and share a new splitId; returns `{ original, splitId }` for a one-step undo (`unsplit`).
+- UI: **Aufteilen** in the entry editor (expenses, not already a part) opens `SplitSheet.tsx` — add parts, each a category + name + amount, with a running "noch X zuzuordnen / geht genau auf" and a sum-equals-original guard. Each part's row shows a quiet "Teil einer Aufteilung" caption.
+- Bank import: a split group shares the original's `ref`, so `planStatement` recognises the whole booking as already imported (tested) — no double count.
+- Decisions / partials: there's no per-entry "⋯" menu in this design, so **Aufteilen** lives in the editor. Deleting a single part uses the normal entry delete (undoable); the "only this part vs the whole payment" choice and the fuller "Teil von Lidl 48,20 €" caption (needs cross-category totals) are noted follow-ups. Also raised the perf bundle baseline to 280 kB with a note (plans 03–29 cumulatively).
+- Still to do: ui-review on device; the delete-scope prompt and the richer part caption.

@@ -358,6 +358,8 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
     );
   }
   if (e.note) meta.push(<span key="note" className="wrap-compound"><Highlight text={e.note} query={search} /></span>);
+  // A part of a split payment (plan 21): a quiet marker; tapping the row opens its editor.
+  if (e.splitId) meta.push(<span key="split" className="text-fg-mute">{t.splitPayPart}</span>);
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;
 
   return (

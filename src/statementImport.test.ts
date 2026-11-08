@@ -210,3 +210,18 @@ describe('manual CSV mapping (plan 20)', () => {
     ]);
   });
 });
+
+describe('importing against a split payment (plan 21)', () => {
+  const cats = defaultCategories();
+  it('treats a split group as already imported via the shared ref', () => {
+    // A 48,20 € payment was split into two parts, both keeping the bank ref.
+    const data: AppData = { categories: cats, months: [{ key: '2026-11', startedAt: 0 }], entries: [
+      { id: 'a', month: '2026-11', categoryId: 'groceries', name: 'Lidl', amount: 3510, paid: true, repeat: 'none', seriesId: 'a', createdAt: 1, ref: 'r9', splitId: 's' },
+      { id: 'b', month: '2026-11', categoryId: 'extra', name: 'Lidl', amount: 1310, paid: true, repeat: 'none', seriesId: 'b', createdAt: 2, ref: 'r9', splitId: 's' },
+    ] };
+    const found = [{ date: '2026-11-05', name: 'Lidl', raw: 'LIDL', amount: 4820, income: false, ref: 'r9' }];
+    const [row] = planStatement(found, data, new Date(2026, 10, 10));
+    expect(row.status).toBe('exists'); // the whole booking is recognised, not re-added
+    expect(row.include).toBe(false);
+  });
+});

@@ -26,8 +26,13 @@ const origin = `http://127.0.0.1:${PORT}`;
  *   - plans 06a + 13, November 2026: 254 kB (+32 kB: the insights engine, eight new
  *     cards and screens, their strings in three languages); month switch 20–43 ms,
  *     Statistik 17–50 ms, Planen 22–32 ms, no long task.
+ *   - plans 03–29, November 2026: 280 kB (+26 kB over eleven plans: automatic +
+ *     encrypted backups, security, currency, the amount calculator, favourites,
+ *     bank-match, the yearly reserve, savings pots, import rules, split payments,
+ *     tags and the year comparison — each with its screens, sheets and three-language
+ *     strings); month switch 28–68 ms, Statistik 21–52 ms, Planen 24–32 ms, no long task.
  */
-const BUNDLE_GZIP_BASELINE = 254_000;
+const BUNDLE_GZIP_BASELINE = 280_000;
 const BUNDLE_GROWTH = 1.10;
 const MONTH_SWITCH_MS = 150;
 const LONG_TASK_MS = 50;

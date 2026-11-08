@@ -6,7 +6,7 @@ import {
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, monthsEnding, monthSpanLabel, formatPercent, upgradeCategories,
   normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, monthSettled, topCategories, laterCopies,
   leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth, formatMoneyEstimate, compactMoney, evalAmount, MAX_FAVORITES, reconcile,
-  normalizeTags, MAX_TAGS,
+  normalizeTags, MAX_TAGS, splitParts,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -1040,5 +1040,26 @@ describe('import rules (plan 20)', () => {
     ] };
     const back = parseBackup(JSON.stringify(makeBackup(d)));
     expect(back.ok && back.data.rules?.[0].match.contains).toBe('rewe');
+  });
+});
+
+describe('split payments (plan 21)', () => {
+  it('finds the parts of a split in a month, and a split monthly payment carries its parts over', () => {
+    const parts: Entry[] = [
+      { id: 'p1', month: '2026-11', categoryId: 'groceries', name: 'Lebensmittel', amount: 3510, paid: true, repeat: 'monthly', seriesId: 'p1', createdAt: 1, splitId: 'sx' },
+      { id: 'p2', month: '2026-11', categoryId: 'extra', name: 'Drogerie', amount: 1310, paid: true, repeat: 'monthly', seriesId: 'p2', createdAt: 2, splitId: 'sx' },
+    ];
+    expect(splitParts(parts, 'sx', '2026-11').map(p => p.amount)).toEqual([3510, 1310]);
+    const copies = carryOver(parts, '2026-12', 1000, (() => { let i = 0; return () => `c${++i}`; })());
+    expect(copies.every(c => c.splitId === 'sx')).toBe(true);
+    expect(copies.map(c => c.amount)).toEqual([3510, 1310]);
+  });
+
+  it('keeps splitId through normalizeState and a backup', () => {
+    const d: AppData = { categories: defaultCategories(), entries: [
+      { id: 'p1', month: '2026-11', categoryId: 'groceries', name: 'A', amount: 100, paid: true, repeat: 'none', seriesId: 'p1', createdAt: 0, splitId: 'sx' },
+    ], months: [{ key: '2026-11', startedAt: 0 }] };
+    const back = parseBackup(JSON.stringify(makeBackup(d)));
+    expect(back.ok && back.data.entries[0].splitId).toBe('sx');
   });
 });

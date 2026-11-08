@@ -62,6 +62,11 @@ month, and the two numbers that matter: **what is on the account now** and
   the entry there. All of this month's categories show at once, the rest behind
   *Weitere*. "Sichern & nächster" for a stack of receipts (keeps the date).
   Deleting is undoable.
+- **Split a payment.** In an entry's editor, *Aufteilen* turns one receipt
+  ("Lidl 48,20 €") into parts in different categories ("Lebensmittel 35,10 € ·
+  Drogerie 13,10 €") that must add up to the original. The parts are normal
+  entries, so every total stays right, and re-importing the bank payment
+  recognises the whole booking. Undoable.
 - **Import rules.** Correct an imported entry's category and Spartopf offers to
   remember it — *nur diesen*, *auch künftige "REWE"*, or *auch alle bisherigen*.
   Rules can also leave transfers out (*nicht übernehmen*). Manage them in
