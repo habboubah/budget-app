@@ -6,6 +6,11 @@ import path from 'node:path';
 import { cfg, root, launchArgs, slideData, shoot, copyFor, die } from './render.mjs';
 
 const fg = cfg.featureGraphic;
+// Google Play only: without a featureGraphic block there is nothing to make.
+if (!fg) {
+  console.log('– no featureGraphic in screenshots.config.json (App Store only) — skipped');
+  process.exit(0);
+}
 const slide = cfg.slides.find(s => s.id === fg.slide);
 if (!slide) die(`featureGraphic.slide is "${fg.slide}", which is not a slide id in screenshots.config.json.`);
 

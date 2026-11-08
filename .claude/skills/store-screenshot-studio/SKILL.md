@@ -1,20 +1,19 @@
 ---
 name: store-screenshot-studio
-description: Turn the raw app captures in screenshots/raw/ into polished, store-ready marketing screenshots — device mockup frames, branded backgrounds, benefit headlines — plus the Google Play feature graphic. Use when asked to refresh, restyle or regenerate marketing screenshots, store listing images, App Store or Play Store artwork, headlines on screenshots, or the feature graphic.
+description: Turn the raw app captures in screenshots/<locale>/ into polished, store-ready marketing screenshots — device mockup frames, branded backgrounds, benefit headlines — plus the Google Play feature graphic. Use when asked to refresh, restyle or regenerate marketing screenshots, store listing images, App Store or Play Store artwork, headlines on screenshots, or the feature graphic.
 ---
 
-> Copied from pizza-driver-log (Fahrtwerk). The scripts are generic, but the
-> settings in this folder (`config*.json`, copy texts, theme) still describe
-> Fahrtwerk's screens and wording — adapt them to Spartopf (its screens, the
-> demo data in `scripts/screenshots.mjs`, DE / EN / AR copy, the petrol accent)
-> before the first run, and treat any remaining "Fahrtwerk" as Spartopf.
+> Adapted from pizza-driver-log (Fahrtwerk) for Spartopf: the ten captures of
+> `scripts/screenshots.mjs` per language, the petrol theme, DE / EN copy. App
+> Store only so far — the Play targets and feature graphic come back through
+> the config (see its `//targets` note) once there is an Android app.
 
 
 # Store screenshot studio
 
 Raw capture in → marketing slide out. The raw captures come from the
 `app-store-screenshots` skill (`npm run screenshots`), which writes plain,
-unstyled app screens to `screenshots/raw/`. This skill frames, brands and
+unstyled app screens to `screenshots/de/` and `screenshots/en/`. This skill frames, brands and
 captions them.
 
 **Never edit the pixels inside the device frame.** The app UI in a slide must be
@@ -46,7 +45,7 @@ user to confirm or edit** before rendering anything. Write the agreed text to
 ### 2. Render one slide — approval gate
 
 ```bash
-node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide wallet --locale en --out /tmp/proof.png --scale 1
+node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide month --locale de --out /tmp/proof.png --scale 1
 ```
 
 `--scale 1` renders at a third of export size, which is fast and enough to judge.

@@ -8,11 +8,14 @@ import { cfg, root, launchArgs, slideData, shoot, die } from './render.mjs';
 
 const outDir = path.join(root, cfg.outDir);
 
-// Only ever removes directories this script owns, so a hand-made file dropped
-// into screenshots/store/ survives a rerun.
-for (const t of [...cfg.targets.map(t => t.id), 'play-feature']) {
-  const dir = path.join(outDir, t);
-  if (existsSync(dir)) rmSync(dir, { recursive: true });
+// Only ever removes folders this script makes — a current target, or one an
+// earlier config made (apple-6.9, apple-6.5, play-…) — so no stale size is left
+// next to the set to upload, and a hand-made file in screenshots/store/ survives.
+const ours = name => cfg.targets.some(t => t.id === name) || /^(apple|iphone|play)-/.test(name);
+if (existsSync(outDir)) {
+  for (const name of readdirSync(outDir)) {
+    if (ours(name)) rmSync(path.join(outDir, name), { recursive: true });
+  }
 }
 
 const browser = await chromium.launch({ args: launchArgs });

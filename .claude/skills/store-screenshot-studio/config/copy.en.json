@@ -1,17 +1,47 @@
 {
   "locale": "en",
   "dir": "ltr",
-  "appName": "Fahrtwerk",
-  "featureGraphic": {
-    "headline": "Know what you earn",
-    "subline": "Trip log, cash-up and stats for delivery drivers"
-  },
+  "appName": "Spartopf",
   "slides": {
-    "wallet":  { "headline": "Know what's in your pocket", "subline": "Cash, tips and costs, live for the shift" },
-    "log":     { "headline": "Log a delivery in seconds",  "subline": "Cash or online, fee and tip, one tap" },
-    "stats":   { "headline": "See what you actually earn", "subline": "Wage, tips and fees, week to year" },
-    "cashup":  { "headline": "Hand over the right amount", "subline": "An end-of-shift cash-up that adds up" },
-    "fuel":    { "headline": "Track fuel and consumption", "subline": "Every fill-up against your odometer" },
-    "private": { "headline": "Stays on your phone",        "subline": "No account, no cloud, no tracking" }
+    "month": {
+      "headline": "Know what's left this month",
+      "subline": "Your balance now and at month end, at a glance"
+    },
+    "entry": {
+      "headline": "Note a purchase in seconds",
+      "subline": "Type the amount, tap a suggestion, done"
+    },
+    "backup": {
+      "headline": "Stays on your phone",
+      "subline": "No cloud: back up to a file, import Excel"
+    },
+    "budgets": {
+      "headline": "A budget for each category",
+      "subline": "See what's left as the month goes"
+    },
+    "next-month": {
+      "headline": "New month in one tap",
+      "subline": "Recurring items carry over automatically"
+    },
+    "stats": {
+      "headline": "See how your months went",
+      "subline": "Worth a look: hints from your months"
+    },
+    "history": {
+      "headline": "Compare month by month",
+      "subline": "Income, spending and balance over time"
+    },
+    "category": {
+      "headline": "Every category in detail",
+      "subline": "Where you shop and what costs most"
+    },
+    "report": {
+      "headline": "What your month brought",
+      "subline": "Result, budgets and what changed"
+    },
+    "plan": {
+      "headline": "Are you on track?",
+      "subline": "Spending so far against a usual month"
+    }
   }
 }

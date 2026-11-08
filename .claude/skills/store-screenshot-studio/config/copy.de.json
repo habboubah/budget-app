@@ -1,17 +1,47 @@
 {
   "locale": "de",
   "dir": "ltr",
-  "appName": "Fahrtwerk",
-  "featureGraphic": {
-    "headline": "Weißt du, was bleibt",
-    "subline": "Fahrtenbuch, Abrechnung und Statistik für Lieferfahrer"
-  },
+  "appName": "Spartopf",
   "slides": {
-    "wallet":  { "headline": "Sieh, was du dabei hast",   "subline": "Bar, Trinkgeld und Kosten, live für die Schicht" },
-    "log":     { "headline": "Fahrt in Sekunden erfasst", "subline": "Bar oder online, Kosten und Trinkgeld, ein Tipp" },
-    "stats":   { "headline": "Sieh, was du wirklich verdienst", "subline": "Lohn, Trinkgeld und Kosten, Woche bis Jahr" },
-    "cashup":  { "headline": "Gib den richtigen Betrag ab", "subline": "Die Abrechnung am Schichtende, die aufgeht" },
-    "fuel":    { "headline": "Tanken und Verbrauch im Blick", "subline": "Jede Tankfüllung am Kilometerstand" },
-    "private": { "headline": "Bleibt auf deinem Handy",    "subline": "Kein Konto, keine Cloud, kein Tracking" }
+    "month": {
+      "headline": "Sieh, was am Monatsende bleibt",
+      "subline": "Kontostand jetzt und am Monatsende, auf einen Blick"
+    },
+    "entry": {
+      "headline": "Ausgabe in Sekunden notiert",
+      "subline": "Betrag tippen, Vorschlag antippen, fertig"
+    },
+    "backup": {
+      "headline": "Bleibt auf deinem Handy",
+      "subline": "Keine Cloud: Sicherung als Datei, Excel-Import"
+    },
+    "budgets": {
+      "headline": "Ein Budget für jede Kategorie",
+      "subline": "Sieh, was im Monat noch übrig ist"
+    },
+    "next-month": {
+      "headline": "Neuer Monat mit einem Tipp",
+      "subline": "Wiederkehrende Posten kommen automatisch mit"
+    },
+    "stats": {
+      "headline": "Sieh, wie es gelaufen ist",
+      "subline": "Das fällt auf: Hinweise aus deinen Monaten"
+    },
+    "history": {
+      "headline": "Monat für Monat im Vergleich",
+      "subline": "Einnahmen, Ausgaben und Kontostand im Verlauf"
+    },
+    "category": {
+      "headline": "Jede Kategorie im Detail",
+      "subline": "Wo du einkaufst und was am meisten kostet"
+    },
+    "report": {
+      "headline": "Was der Monat gebracht hat",
+      "subline": "Ergebnis, Budgets und was sich verändert hat"
+    },
+    "plan": {
+      "headline": "Bist du im Plan?",
+      "subline": "Ausgaben bis heute gegen einen üblichen Monat"
+    }
   }
 }

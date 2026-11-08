@@ -1,126 +1,83 @@
 ---
 name: app-store-screenshots
-description: Regenerate the App Store and Google Play marketing screenshots for Spartopf. Use when asked to update, refresh, or regenerate store screenshots, listing images, or marketing shots, or to add a screen/device/locale to the screenshot set.
+description: Regenerate the raw App Store screenshots of Spartopf (npm run screenshots → screenshots/<de|en>/, ten screens per language). Use when asked to update, refresh or regenerate store screenshots, or to add, drop or reorder a screen in the set. The framed, captioned upload set is the store-screenshot-studio skill.
 ---
 
-> Copied from pizza-driver-log (Fahrtwerk). The scripts are generic, but the
-> settings in this folder (`config*.json`, copy texts, theme) still describe
-> Fahrtwerk's screens and wording — adapt them to Spartopf (its screens, the
-> demo data in `scripts/screenshots.mjs`, DE / EN / AR copy, the petrol accent)
-> before the first run, and treat any remaining "Fahrtwerk" as Spartopf.
+# App Store screenshots (raw captures)
 
+`scripts/screenshots.mjs` builds the app, seeds it with demo data and captures
+**ten screens per language** — the most App Store Connect takes per slot — as
+plain app screens. `store-screenshot-studio` (`npm run store-screenshots`) then
+frames and captions them at the size App Store Connect asks for. Upload those,
+not these: the raw size (1290 × 2796) fits no required slot.
 
-# App Store screenshots
-
-Seeds the app with a demo dataset, walks every screen in a headless browser and
-shoots each one at every store resolution.
-
-## Running it
+## Run it
 
 ```bash
-npm run screenshots
+npx playwright install chromium        # once per Mac
+npm run screenshots                    # all ten, DE and EN
+npm run screenshots -- --only 08-category,10-plan    # just these, e.g. after a fix
+npm run store-screenshots              # the framed upload set from these
 ```
 
-That is the whole pipeline: `vite build` → serve `dist/` → seed `localStorage` →
-click through every screen → write PNGs to `screenshots/`. Takes ~30s for the
-current one-device set. Nothing is left running afterwards.
-
-Prerequisites: `npm install`, plus the browser binary once per machine:
-
-```bash
-npx playwright install chromium --only-shell
-```
+Run it on the Mac, so the emoji and system font are Apple's own.
 
 ## What comes out
 
-`screenshots/raw/<index>-<screen>.png`, e.g. `01-today.png`. These are the plain
-app captures; `store-screenshot-studio` turns them into the polished marketing
-set. **One shot per screen**:
-13 screens, English only, 1284×2778 (the 6.5" slot). A `-<locale>` or `-<device>`
-suffix appears only once `config.json` lists more than one of them, so nothing
-can overwrite anything.
+`screenshots/de/` and `screenshots/en/`, 1290 × 2796 PNG (430 × 932 pt @3x):
 
-App Store Connect accepts **1242×2688 or 1284×2778** portrait for this listing —
-those are the 6.5" sizes. Anything else is rejected on upload, so keep the device
-entry on one of them.
-Each run deletes the previous generated files first (only ones matching
-`<digits>-*.png`; anything hand-made in `screenshots/` is left alone).
+| # | file | screen | how it is reached |
+|---|---|---|---|
+| 1 | `01-month` | the running month, both balances | start screen |
+| 2 | `02-entry` | new entry, 47,85 € at Lidl | groceries' add row → type → suggestion chip |
+| 3 | `03-backup` | Sichern und übertragen: "Alles bleibt auf diesem Gerät, es gibt keine Cloud" | Einstellungen → that row |
+| 4 | `04-budgets` | Auto, Sonstiges, Lebensmittel with their budgets | month scrolled to the car card |
+| 5 | `05-next-month` | next month, not started, what it carries over | › in the header |
+| 6 | `06-stats` | Statistik: *Das fällt auf* | tab 2 |
+| 7 | `07-history` | Statistik: *Verlauf* | tab 2, scrolled to `#history-title` |
+| 8 | `08-category` | Lebensmittel's own page | Statistik → *Wofür das Geld geht* → its row |
+| 9 | `09-report` | Monatsbericht of last month | ‹ → ⋯ → Monatsbericht |
+| 10 | `10-plan` | Planen: *{Monat} bis heute*, budgets | tab 3 |
 
-To swap or add a size, edit the `devices` row in `config.json`:
+A full run empties both folders first, so a screen dropped from the list can't
+linger. A screen that can't be reached is reported by name (`✗ de/08-category: …`),
+the others are still taken, and the run exits non-zero.
 
-| device id | width | height | scale | pixels | slot |
-|---|---|---|---|---|---|
-| `iphone65` | 428 | 926 | 3 | 1284×2778 | 6.5" — **the current one**, accepted by App Store Connect |
-| `iphone65alt` | 414 | 896 | 3 | 1242×2688 | 6.5" — the other size App Store Connect accepts |
-| `iphone17promax` | 440 | 956 | 3 | 1320×2868 | 6.9" (17 Pro Max) |
-| `iphone17pro` | 402 | 874 | 3 | 1206×2622 | 6.3" (17 / 17 Pro — same panel, identical output) |
-| `iphone69` | 430 | 932 | 3 | 1290×2796 | 6.9" (15/16 Pro Max) |
-| `android` | 360 | 640 | 3 | 1080×1920 | Play phone — inside Play's 2:1 ratio limit |
+## The demo data
 
-Play and the App Store cannot share one file: no size satisfies both the 6.5"
-requirement and Play's ratio limit. Add the `android` row when you upload there.
+Six months ending in the running month (`sampleData`, the same as
+`scripts/ui-review.mjs`): salary, child benefit, rent and other fixed costs,
+fuel, groceries at five shops, extras, Kita — partly paid in the running month,
+generated relative to today so the first screen always says *Dieser Monat*.
+Plus the shipped categories (loaded through Vite from `src/data/defaults.ts`)
+with four budgets: Lebensmittel 650 €, Auto 400 €, Sonstiges 150 €, Restaurants
+120 €. English uses English names and UK shops.
 
-Adding `"de"` to `locales` renders the German set alongside the English one.
-Every added locale or device multiplies the file count by one more full pass.
+## Adding, dropping or reordering a screen
 
-## Files
-
-- `config.json` — screens, devices, locales, theme, output folder, frozen clock.
-- `capture.mjs` — the whole pipeline. Reads `config.json`; no screen names in the code.
-- `screenshots/fixtures/demo-data.json` — the seed dataset (8 work days, 130 trips,
-  3 refuellings, €-settings). Plausible amounts, no personal data, no empty states.
-
-## Determinism
-
-Same fixture in → same pixels out. Three things make that hold, all in `config.json`:
-
-- **Frozen clock** (`freezeAt`). The app derives "Today" and every statistics window
-  from `Date.now()`. The clock is pinned to `2026-07-29T21:45+02:00` in
-  `Europe/Berlin`. Its date part **must** equal the newest `workDay` in the fixture
-  or Today stops saying "Today" — the run aborts if they drift apart.
-- **Fresh `localStorage` per page load.** Seeding clears storage first, so a rerun
-  can't inherit anything. `pizza-driver-last-backup` is seeded too, which suppresses
-  the "time to back up" nag banner on Today.
-- **Pixel-stable shots.** Screens cross-fade via `AnimatePresence`, so a fixed wait
-  captured blank pages. Each shot is retaken until two consecutive frames are
-  byte-identical.
-
-Service workers are blocked (a cached SW would serve the previous build), CSS
-transitions are disabled per page, the browser runs with `reducedMotion: 'reduce'`,
-and text rasterisation is pinned via launch flags.
-
-What is **not** byte-stable: Chromium's anti-aliasing of thin SVG icon strokes
-varies by up to 3/255 on roughly 0.1% of pixels between runs. It is invisible, it
-survives every raster/GPU flag combination tried, and it does not move a single
-number, glyph or layout box. Compare reruns by eye, not by checksum.
-
-## Adding a screen
-
-The app has **no router** — `App.tsx` holds nav state in `useState`, so every screen
-is reached by clicking. Add an entry to `screens` in `config.json`:
-
-```json
-{ "name": "settings", "steps": ["nav[aria-label='Primary'] button >> nth=3", "main button >> nth=1"], "scrollY": 600 }
-```
-
-- `steps` — Playwright selectors, clicked in order from a fresh load of `/`.
-- `scrollY` — optional, scrolls before the shot (for long screens like Settings).
-- Order in the array sets the filename index. Reordering is free; no script changes.
-
-Useful locale-independent handles (aria-labels are translated, so avoid them):
+Edit `SCREENS` in `scripts/screenshots.mjs`. Each entry is a `name` (its
+filename; the number is the store order) and an optional `run(page, l)` that
+gets there from a fresh load of `/` on the running month. The app has no router,
+so every screen is reached by clicking. Labels the clicks need per language live
+in `L`. Handles that have proved stable (also used by `scripts/ui-review.mjs`):
 
 | target | selector |
 |---|---|
-| tab bar | `nav[aria-label='Primary'] button >> nth=0..3` (Today/History/Stats/More) |
-| list rows on a screen | `main button >> nth=N` |
-| the FAB | `button.fixed.rounded-full` |
-| header overflow "…" | `header button >> nth=-1` |
+| tab bar (Monat, Statistik, Planen, Einstellungen) | `nav button:not(.hero)` nth 0–3 — the `tab(page, n)` helper |
+| a category's card on the month | `main section[data-drop-category="<id>"]` |
+| month ‹ › | `button[aria-label="<prev/next label>"]` |
+| month ⋯ menu | `header button` last, then `getByRole('menuitem', { name })` |
+| a row of *Wofür das Geld geht* | `main li[data-hue] > button` |
+| an open sheet | `[role="dialog"]` |
 
-If a selector doesn't resolve, the run **stops** and names the screen, device,
-locale and step. It never skips a screen quietly.
+Find a card by its category **id**, not its display name: names change (a
+rename of "Einkaufen" once broke this script). Ten is App Store Connect's
+maximum per slot — to add one, drop one. Every screen also needs a slide in
+`store-screenshot-studio` (its `config/screenshots.config.json` and both
+`config/copy.*.json`), and its headline may only claim what the capture shows.
 
-## Changing the demo data
+## Leftovers
 
-Edit `screenshots/fixtures/demo-data.json` — it is a plain backup-format payload
-(`workDays` / `fuelEntries` / `settings`), the same shape the app's own import
-accepts. If you change the newest day, update `freezeAt` in `config.json` to match.
+`capture.mjs`, `compare.mjs`, `config.json` and `config.redesign.json` in this
+folder came over from pizza-driver-log (Fahrtwerk) and are not used by
+`npm run screenshots`.

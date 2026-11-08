@@ -182,19 +182,22 @@ checked against Apple's character limits).
 
 ```bash
 npx playwright install chromium      # once per Mac
-npm run screenshots
+npm run screenshots                  # raw app captures → screenshots/de, screenshots/en
+npm run store-screenshots            # framed, captioned set → screenshots/store/iphone-6.3/
 ```
 
-Result: `screenshots/de/` and `screenshots/en/`, 5 images each at
-**1290 × 2796** – the required *iPhone 6.9″* slot:
-month · new entry · next month · statistics · history.
+Upload `screenshots/store/iphone-6.3/de/` and `…/en/`: 10 images each (the
+most a slot takes) at **1206 × 2622**, the size of the required *iPhone with
+Dynamic Island (medium display)* slot (6.1″/6.3″) – month · new entry · backup ·
+budgets · next month · statistics · history · category · month report · Planen.
+The raw captures (1290 × 2796) don't fit that slot.
 
 ### 8b. Version 1.0 (German)
 
 App Store Connect → Spartopf → left: **iOS App 1.0 – Prepare for Submission**
 [Vorbereitung für Einreichung]:
 
-- [ ] **Screenshots** → *iPhone 6.9″ Display* → drag in the 5 images from `screenshots/de/`.
+- [ ] **Screenshots** → *iPhone with Dynamic Island (medium display)* → drag in the 10 images from `screenshots/store/iphone-6.3/de/`.
 - [ ] **Promotional Text** [Werbetext], **Description** [Beschreibung],
       **Keywords** → from `store/listing.md` (DE).
 - [ ] **Support URL** → `https://habboubah.github.io/privacy-policy/spartopf/de/`
@@ -207,7 +210,7 @@ App Store Connect → Spartopf → left: **iOS App 1.0 – Prepare for Submissio
 ### 8c. Add English (optional, recommended)
 
 Language menu at the top right (*German*) → add **English (U.K.)** → fill the same
-fields with the English texts and the images from `screenshots/en/`.
+fields with the English texts and the images from `screenshots/store/iphone-6.3/en/`.
 
 ### 8d. App Information (left menu) [App-Informationen]
 

@@ -86,6 +86,10 @@ def check(path, store, expect_w, expect_h, expect_fmt, kind):
         errors.append(f"{rel}: format {fmt}, expected {expect_fmt}")
         status = "FAIL"
 
+    if store == "apple" and alpha:
+        errors.append(f"{rel}: has an alpha channel; App Store Connect rejects transparency")
+        status = "FAIL"
+
     if store == "play":
         if alpha:
             errors.append(f"{rel}: has an alpha channel; Play needs JPEG or 24-bit PNG")
@@ -124,8 +128,8 @@ for target in CFG["targets"]:
 
 # ---- feature graphic ---------------------------------------------------------
 
-fg = CFG["featureGraphic"]
-for locale in CFG["locales"]:
+fg = CFG.get("featureGraphic")  # Google Play only; absent for an App Store-only set
+for locale in (CFG["locales"] if fg else []):
     check(os.path.join(OUT, "play-feature", locale, "feature-graphic.jpg"),
           "play", fg["width"], fg["height"], fg["format"], "feature")
 
@@ -133,7 +137,9 @@ for locale in CFG["locales"]:
 
 for locale in CFG["locales"]:
     copy = json.load(open(os.path.join(SKILL, f"config/copy.{locale}.json")))
-    entries = list(copy["slides"].items()) + [("featureGraphic", copy["featureGraphic"])]
+    entries = list(copy["slides"].items())
+    if fg:
+        entries.append(("featureGraphic", copy["featureGraphic"]))
     for slide_id, text in entries:
         head = text["headline"]
         words = len(head.split())

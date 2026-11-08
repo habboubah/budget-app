@@ -3,7 +3,7 @@
 // export.mjs / feature_graphic.mjs / preview.mjs drive.
 //
 // CLI (the approval proof in step 2 of SKILL.md):
-//   node scripts/render.mjs --slide wallet --locale en --out /tmp/proof.png --scale 1
+//   node scripts/render.mjs --slide month --locale de --out /tmp/proof.png --scale 1
 import { chromium } from 'playwright';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -44,7 +44,8 @@ export function slideData(slide, locale, extra = {}) {
   const text = copy.slides[slide.id];
   if (!text) die(`slide "${slide.id}" has no copy in config/copy.${locale}.json.`);
 
-  const rawFile = path.join(root, cfg.rawDir, slide.raw);
+  // One capture folder per language: rawDir may say {locale}.
+  const rawFile = path.join(root, cfg.rawDir.replaceAll('{locale}', locale), slide.raw);
   let size;
   try {
     size = pngSize(rawFile);
@@ -67,6 +68,7 @@ export function slideData(slide, locale, extra = {}) {
     background: bg,
     rawUrl: pathToFileURL(rawFile).href,
     rawAspect: `${size.width} / ${size.height}`,
+    rawRows: size.height,
     focus: slide.focus || null,
     // Panoramic offset; 1/0 makes the background a plain single-slide gradient.
     panoramaCount: bg.panoramic ? cfg.slides.length : 1,

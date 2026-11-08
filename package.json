@@ -10,6 +10,7 @@
     "build:ios": "vite build && npx cap sync ios && npx cap open ios",
     "assets:generate": "npx @capacitor/assets generate --ios --iconBackgroundColor '#10313A' --splashBackgroundColor '#F2F2F7' --splashBackgroundColorDark '#000000'",
     "screenshots": "node scripts/screenshots.mjs",
+    "store-screenshots": "node .claude/skills/store-screenshot-studio/scripts/export.mjs && node .claude/skills/store-screenshot-studio/scripts/feature_graphic.mjs && node .claude/skills/store-screenshot-studio/scripts/preview.mjs && python3 .claude/skills/store-screenshot-studio/scripts/validate.py",
     "release": "node scripts/release.js",
     "release:ios": "node scripts/release.js",
     "release:first": "node scripts/release.js --keep-version",

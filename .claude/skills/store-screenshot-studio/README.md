@@ -1,6 +1,6 @@
 # store-screenshot-studio
 
-Turns the raw app captures in `screenshots/raw/` into store-ready marketing
+Turns the raw app captures in `screenshots/<locale>/` into store-ready marketing
 screenshots — device frame, branded background, benefit headline — plus the
 Google Play feature graphic and a contact sheet.
 
@@ -25,7 +25,7 @@ file misses a store spec.
 Individual steps, for iterating:
 
 ```bash
-node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide wallet --locale en --out /tmp/proof.png --scale 1
+node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide month --locale de --out /tmp/proof.png --scale 1
 node .claude/skills/store-screenshot-studio/scripts/export.mjs
 node .claude/skills/store-screenshot-studio/scripts/feature_graphic.mjs
 node .claude/skills/store-screenshot-studio/scripts/preview.mjs
@@ -36,14 +36,13 @@ python3 .claude/skills/store-screenshot-studio/scripts/validate.py
 
 ```
 screenshots/store/
-  apple-6.9/{en,de}/01-wallet.png … 06-private.png     1320×2868 PNG
-  apple-6.5/{en,de}/…                                  1242×2688 PNG
-  play-phone/{en,de}/…                                 1080×1920 JPEG
-  play-feature/{en,de}/feature-graphic.jpg             1024×500  JPEG
+  iphone-6.3/{de,en}/01-month.png … 10-plan.png        1206×2622 PNG
   contact-sheet.png
 ```
 
-Each run deletes and rewrites only the target folders it owns.
+`iphone-6.3` is the set for App Store Connect's required *iPhone with Dynamic
+Island (medium display)* slot. Each run deletes and rewrites only the folders
+this script makes, including ones from older configs (`apple-6.9`, `apple-6.5`).
 
 ## Layout of the skill
 

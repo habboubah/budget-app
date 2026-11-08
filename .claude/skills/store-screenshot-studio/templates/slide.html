@@ -54,6 +54,9 @@
   // The screen box takes the capture's own aspect ratio, so the app pixels are
   // placed, never stretched and never cropped by a mismatched frame.
   set('--screen-aspect', d.rawAspect);
+  // The status-bar band repeats the capture's first pixel row (slide.css).
+  set('--raw-url', `url("${d.rawUrl}")`);
+  set('--raw-rows', d.rawRows);
 
   if (d.focus) {
     set('--focus-x', `${d.focus.x * 100}%`);

@@ -99,11 +99,18 @@ html, body {
 
 /* The captures start at the app's own header — there is no status-bar strip in
    them — so the island gets its own band. Without it the island sits on top of
-   the screen title. */
+   the screen title. The band is painted with the capture's own first pixel
+   row, stretched to the band's height (one source row = 100% of the band), so
+   whatever is at the top of the screen — the accent wash, the dimmed backdrop
+   behind a sheet, the plain grey — carries on under the island as on a phone. */
 .statusbar {
   position: relative;
   height: 9vw;
-  background: var(--app-bg);
+  background-color: var(--app-bg);
+  background-image: var(--raw-url);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% calc(var(--raw-rows) * 100%);
 }
 
 .shot {

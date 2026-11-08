@@ -1,33 +1,95 @@
 {
-  "rawDir": "screenshots/raw",
+  "//rawDir": "Where scripts/screenshots.mjs writes its captures; {locale} is replaced per language.",
+  "rawDir": "screenshots/{locale}",
   "outDir": "screenshots/store",
   "previewFile": "screenshots/store/contact-sheet.png",
-
-  "//locales": "Each locale needs a config/copy.<locale>.json. `dir` there drives RTL.",
-  "locales": ["en", "de"],
-
+  "//locales": "Each locale needs a config/copy.<locale>.json and a capture folder. `dir` there drives RTL.",
+  "locales": [
+    "de",
+    "en"
+  ],
   "//slides": "Order is the store order. `raw` is a filename in rawDir. `layout`: standard | full-bleed | angled | zoom. `zoom` needs `focus` (fractions of the raw image: x/y are the centre, scale is the magnification). `device`: iphone | pixel.",
   "slides": [
-    { "id": "wallet",  "raw": "01-today.png",   "layout": "standard",   "device": "iphone", "background": "warm" },
-    { "id": "log",     "raw": "03-trip-add.png","layout": "full-bleed", "device": "iphone", "background": "warm" },
-    { "id": "stats",   "raw": "09-stats.png",   "layout": "standard",   "device": "iphone", "background": "warm" },
-    { "id": "cashup",  "raw": "07-summary.png", "layout": "angled",     "device": "iphone", "background": "warm" },
-    { "id": "fuel",    "raw": "11-fuel.png",    "layout": "standard",   "device": "iphone", "background": "warm" },
-    { "id": "private", "raw": "12-settings.png","layout": "zoom",       "device": "iphone", "background": "warm",
-      "//focus": "Zoom always crops horizontally. Aim at a band whose content is centred (a card, a control row), not at full-width body text, or words get cut at the edges.",
-      "focus": { "x": 0.5, "y": 0.33, "scale": 1.18 } }
+    {
+      "id": "month",
+      "raw": "01-month.png",
+      "layout": "standard",
+      "device": "iphone",
+      "background": "petrol"
+    },
+    {
+      "id": "entry",
+      "raw": "02-entry.png",
+      "layout": "full-bleed",
+      "device": "iphone",
+      "background": "petrol"
+    },
+    {
+      "id": "backup",
+      "raw": "03-backup.png",
+      "layout": "standard",
+      "device": "iphone",
+      "background": "petrol"
+    },
+    {
+      "id": "budgets",
+      "raw": "04-budgets.png",
+      "layout": "standard",
+      "device": "iphone",
+      "background": "petrol"
+    },
+    {
+      "id": "next-month",
+      "raw": "05-next-month.png",
+      "layout": "angled",
+      "device": "iphone",
+      "background": "petrol"
+    },
+    {
+      "id": "stats",
+      "raw": "06-stats.png",
+      "layout": "standard",
+      "device": "iphone",
+      "background": "petrol"
+    },
+    {
+      "id": "history",
+      "raw": "07-history.png",
+      "layout": "standard",
+      "device": "iphone",
+      "background": "petrol"
+    },
+    {
+      "id": "category",
+      "raw": "08-category.png",
+      "layout": "full-bleed",
+      "device": "iphone",
+      "background": "petrol"
+    },
+    {
+      "id": "report",
+      "raw": "09-report.png",
+      "layout": "standard",
+      "device": "iphone",
+      "background": "petrol"
+    },
+    {
+      "id": "plan",
+      "raw": "10-plan.png",
+      "layout": "angled",
+      "device": "iphone",
+      "background": "petrol"
+    }
   ],
-
-  "//targets": "Exact export pixels. Play gets JPEG because JPEG cannot carry an alpha channel, which is how the no-transparency rule is satisfied by construction rather than by post-processing.",
+  "//targets": "Exact export pixels. App Store Connect requires the \"iPhone with Dynamic Island (medium display)\" slot (iPhone 6.1\"/6.3\"), which accepts only 1206x2622 or 1179x2556 portrait; the large 6.9\"/6.5\" slots are optional and scaled from it. So one target, one folder: screenshots/store/iphone-6.3/<locale>/. For Google Play add { \"id\": \"play-phone\", \"store\": \"play\", \"width\": 1080, \"height\": 1920, \"scale\": 3, \"format\": \"jpeg\", \"quality\": 92 } and a featureGraphic block (1024x500 JPEG, plus featureGraphic copy in every copy file).",
   "targets": [
-    { "id": "apple-6.9",  "store": "apple", "width": 1320, "height": 2868, "scale": 3, "format": "png" },
-    { "id": "apple-6.5",  "store": "apple", "width": 1242, "height": 2688, "scale": 3, "format": "png" },
-    { "id": "play-phone", "store": "play",  "width": 1080, "height": 1920, "scale": 3, "format": "jpeg", "quality": 92 }
-  ],
-
-  "//featureGraphic": "Google Play only. Exactly 1024x500, no transparency.",
-  "featureGraphic": {
-    "width": 1024, "height": 500, "format": "jpeg", "quality": 92,
-    "slide": "wallet", "background": "warm"
-  }
+    {
+      "id": "iphone-6.3",
+      "store": "apple",
+      "width": 1206,
+      "height": 2622,
+      "scale": 3,
+      "format": "png"
+    }
+  ]
 }
