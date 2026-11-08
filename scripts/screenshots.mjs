@@ -42,6 +42,7 @@ const L = {
     addTo: /^Zu .+ hinzufügen$/,
     amount: '47,85',
     chip: 'Lidl',
+    suggestions: 'Vorschläge',
     groceries: 'Lebensmittel',
     where: 'Wofür das Geld geht',
     next: 'Nächster Monat',
@@ -59,6 +60,7 @@ const L = {
     addTo: /^Add to /,
     amount: '47.85',
     chip: 'Lidl',
+    suggestions: 'Suggestions',
     groceries: 'Groceries',
     where: 'Where the money goes',
     next: 'Next month',
@@ -143,10 +145,16 @@ const SCREENS = [
   // Groceries' add row → 47,85 → the "Lidl" suggestion.
   { name: '02-entry', run: async (page, l) => {
     await page.locator('main section[data-drop-category="groceries"]').getByRole('button', { name: l.addTo }).last().click();
-    await page.waitForSelector('[role="dialog"]');
+    const dialog = page.locator('[role="dialog"]');
+    await dialog.waitFor();
     await pause(page, 600);
     await page.keyboard.type(l.amount);
-    await page.click(`[role="dialog"] button:text-is("${l.chip}")`);
+    // Only the three most-used names show at first; "Lidl" may be behind "Alle (n)".
+    // Once it is tapped the list narrows to it again, so the capture looks the same.
+    const group = dialog.getByRole('group', { name: l.suggestions });
+    const chip = group.locator(`button:text-is("${l.chip}")`);
+    if (!(await chip.isVisible())) await group.locator('button[aria-expanded="false"]').click();
+    await chip.click();
   } },
   // Einstellungen → Sichern und übertragen: "Alles bleibt auf diesem Gerät, es gibt keine Cloud."
   { name: '03-backup', run: async (page, l) => {
