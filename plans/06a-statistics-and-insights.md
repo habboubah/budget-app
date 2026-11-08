@@ -73,7 +73,7 @@ Built together with plan 13 (phase 4) in one pass, November 2026.
 - [x] perf-check, ui-review screens, after captures, docs, `npm run check`.
 
 **Performance** (next to plan 01's baselines):
-- Vitest, ten generated years (18.101 entries), book + every Statistik and Planen figure: 16 ms CPU, 22–28 ms wall (budget 50 ms). It was 107 ms until `computeBalances` grouped the entries by month in one pass (it read every entry once per month) and `budgetRule` / `monthReview`'s budgets stopped rescanning the book.
+- Vitest, ten generated years (18.101 entries), book + every Statistik and Planen figure: 26–30 ms, the fastest of five runs while the other test files run beside it (budget 50 ms). It was 107 ms until `computeBalances` grouped the entries by month in one pass (it read every entry once per month) and `budgetRule` / `monthReview`'s budgets stopped rescanning the book. CI hasn't run it yet; a slower runner has about 40 % headroom.
 - `perf-check.mjs` (desktop Chromium, the demo year): month switch 21–43 ms (150), switch to Statistik 18–43 ms and to Planen 20–27 ms (new budget 200 ms), no long task.
 - Main bundle 253,3 kB gzip: the baseline moves from 221 to 254 kB (+32 kB: the engine, eight new cards and screens, about 200 strings × three languages; 38 keys of the removed cards went). Splitting the pushed screens into lazy chunks would save less than 10 kB and flash an empty screen on push, so it wasn't done.
 

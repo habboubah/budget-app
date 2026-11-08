@@ -202,19 +202,18 @@ describe('speed', () => {
   it('builds ten years of entries and every Statistik and Planen figure in under 50 ms', () => {
     const data = generated(5, 120, '2026-11', 148);
     expect(data.entries.length).toBeGreaterThan(18000);
-    // Warm up once (the first call compiles), then take the best of three. Vitest
-    // runs test files side by side, which stretches wall time; the CPU time this
-    // process spends is what the code costs, so that is what the budget holds.
+    // Warm up once (the first call compiles), then the fastest of five runs:
+    // vitest runs test files side by side, and the fastest run is the one the
+    // others disturbed least. (Not process.cpuUsage(): it counts every thread
+    // of the process and, on Windows, ticks in 15.6 ms steps.)
     everything(buildBook(data), today);
-    const runs = [0, 1, 2].map(() => {
+    const runs = [0, 1, 2, 3, 4].map(() => {
       const t0 = performance.now();
-      const c0 = process.cpuUsage();
       everything(buildBook(data), today);
-      const c = process.cpuUsage(c0);
-      return { wall: performance.now() - t0, cpu: (c.user + c.system) / 1000 };
+      return performance.now() - t0;
     });
-    const best = Math.min(...runs.map(r => r.cpu));
-    console.log(`ten years, ${data.entries.length} entries: ${best.toFixed(1)} ms CPU (wall ${runs.map(r => r.wall.toFixed(1)).join(', ')} ms)`);
+    const best = Math.min(...runs);
+    console.log(`ten years, ${data.entries.length} entries: ${best.toFixed(1)} ms (runs ${runs.map(r => r.toFixed(1)).join(', ')})`);
     expect(best).toBeLessThan(50);
   });
 });
