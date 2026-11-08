@@ -1015,3 +1015,30 @@ describe('tags (plan 26)', () => {
     expect(lines[1].endsWith(';#urlaub #italien')).toBe(true);
   });
 });
+
+describe('import rules (plan 20)', () => {
+  const cats = defaultCategories();
+  it('keeps valid rules and drops the malformed', () => {
+    const state = normalizeState({
+      categories: cats, entries: [], months: [],
+      rules: [
+        { id: 'a', match: { field: 'payee', contains: 'REWE' }, set: { categoryId: 'groceries', name: 'Rewe' }, createdAt: 1 },
+        { id: 'b', match: { field: 'purpose', contains: 'Umbuchung' }, set: { skip: true }, createdAt: 2 },
+        { id: 'c', match: { field: 'nope', contains: 'x' }, set: { categoryId: 'extra' } }, // bad field
+        { id: 'd', match: { field: 'name', contains: '' }, set: { categoryId: 'extra' } }, // empty text
+        { id: 'e', match: { field: 'name', contains: 'x' }, set: {} },                      // empty set
+      ],
+    });
+    const rules = state.rules ?? [];
+    expect(rules.map(r => r.id)).toEqual(['a', 'b']);
+    expect(rules[1].set).toEqual({ skip: true });
+  });
+
+  it('travels through a backup', () => {
+    const d: AppData = { categories: cats, entries: [], months: [], rules: [
+      { id: 'a', match: { field: 'payee', contains: 'rewe' }, set: { categoryId: 'groceries' }, createdAt: 0 },
+    ] };
+    const back = parseBackup(JSON.stringify(makeBackup(d)));
+    expect(back.ok && back.data.rules?.[0].match.contains).toBe('rewe');
+  });
+});

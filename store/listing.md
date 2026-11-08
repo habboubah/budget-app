@@ -159,6 +159,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد في الإحصاءات: اعرض سنة كاملة وقارن مصاريفك بالعام السابق.
 
+**DE:** Neu beim Import: Korrigierst du eine Kategorie, merkt sich Spartopf das als Regel – und lässt auf Wunsch Umbuchungen weg. CSVs anderer Apps werden erkannt.
+
+**EN:** New on import: correct a category and Spartopf remembers it as a rule – and can leave transfers out. CSVs from other apps are recognised.
+
+**AR:** جديد عند الاستيراد: صحّح فئة ليحفظها Spartopf كقاعدة – ويمكنه استبعاد التحويلات. ويتعرّف على ملفات CSV من تطبيقات أخرى.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

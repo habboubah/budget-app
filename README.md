@@ -62,6 +62,12 @@ month, and the two numbers that matter: **what is on the account now** and
   the entry there. All of this month's categories show at once, the rest behind
   *Weitere*. "Sichern & nächster" for a stack of receipts (keeps the date).
   Deleting is undoable.
+- **Import rules.** Correct an imported entry's category and Spartopf offers to
+  remember it — *nur diesen*, *auch künftige "REWE"*, or *auch alle bisherigen*.
+  Rules can also leave transfers out (*nicht übernehmen*). Manage them in
+  *Optionen → Haushaltsbuch → Regeln*. CSV exports from other budget apps
+  (Finanzguru, Outbank, YNAB, Cashew and more) are recognised by their columns,
+  and an unfamiliar file is mapped by its best guess.
 - **Tags.** Give an entry free tags from the sheet's "+" menu (*# Tag*). Search
   finds `#urlaub`, and once any tag exists *Statistik → Wofür das Geld geht*
   gains a **Tags** view ("Urlaub · 1.840 € · 23 Einträge"); the CSV export has a

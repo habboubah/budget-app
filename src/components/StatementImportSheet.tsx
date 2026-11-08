@@ -20,6 +20,8 @@ interface Props {
   t: Strings;
   onClose: () => void;
   onConfirm: (rows: PlannedRow[]) => void;
+  /** A row's category was changed — offer to make it an import rule (plan 20). */
+  onReclassified?: (row: PlannedRow, categoryId: string, anchor: HTMLElement) => void;
 }
 
 /**
@@ -29,7 +31,7 @@ interface Props {
  * new entry, already entered (left out unless ticked), or an open entry that
  * gets ticked off. Grouped by month; nothing changes until the button.
  */
-export function StatementImportSheet({ state, categories, language, t, onClose, onConfirm }: Props) {
+export function StatementImportSheet({ state, categories, language, t, onClose, onConfirm, onReclassified }: Props) {
   const [rows, setRows] = useState<PlannedRow[]>([]);
   useEffect(() => { if (state?.phase === 'review') setRows(state.rows); }, [state]);
   const money = (c: number, income: boolean) => formatMoney(income ? c : -c, t.locale, 'exceptZero');
@@ -127,7 +129,7 @@ export function StatementImportSheet({ state, categories, language, t, onClose, 
                             <span className="sr-only">{t.category}</span>
                             <select
                               value={r.categoryId}
-                              onChange={e => patch(r.key, { categoryId: e.target.value })}
+                              onChange={e => { const id = e.target.value; patch(r.key, { categoryId: id }); onReclassified?.({ ...r, categoryId: id }, id, e.currentTarget); }}
                               disabled={r.status === 'pay'}
                               className="absolute inset-0 w-full opacity-0 appearance-none"
                             >
@@ -137,6 +139,7 @@ export function StatementImportSheet({ state, categories, language, t, onClose, 
                           {r.status === 'exists' && <span>{t.importStatusExists}</span>}
                           {r.status === 'pay' && <span className="text-warn font-medium wrap-prose">{fmt(t.importStatusPay, { name: r.match?.name ?? '' })}</span>}
                           {r.found.foreignCurrency && <span className="text-warn font-medium wrap-prose">{fmt(t.importForeignCurrency, { currency: r.found.foreignCurrency })}</span>}
+                          {r.skipped && <span className="text-fg-mute wrap-prose">{t.ruleSkipShort}</span>}
                         </div>
                       </div>
                     </li>

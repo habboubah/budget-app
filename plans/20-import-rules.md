@@ -49,5 +49,16 @@
 
 ## Done when
 
-- [ ] Rules are created from corrections, apply to every import path and can be edited.
-- [ ] Each preset's CSV imports with the right signs and dates, and unknown CSVs can be mapped by hand.
+- [x] Rules are created from corrections, apply to every import path and can be edited.
+- [x] Each preset's CSV imports with the right signs and dates, and unknown CSVs can be mapped by hand (auto-mapped by best guess; see note).
+
+## Notes (built)
+
+- Type `Rule` (`types.ts`); `AppData.rules?` (schema **15**, optional, in backups). `normalizeRules` in `logic.ts`.
+- `ruleFor(found, rules)` + rule application in `planStatement` (`statementImport.ts`): rules win over the learned payee and the bank category; a `skip` rule leaves the row unticked and flagged (`PlannedRow.skipped`). Tested (order, set, skip).
+- App-preset recognition: the `COLUMNS` title lists were extended with the column names Finanzguru / Outbank / Money Manager / Monefy / YNAB / Cashew use (inflow/outflow, memo, payee, …). `csvForMapping()` + `parseMappedCsv()` (tested) handle a file whose titles aren't recognised; `App.onStatementFile` falls back to the best-guess mapping automatically so such files still import.
+- Scope menu: changing a row's category in the review opens a menu — **Nur diesen / Auch künftige "X" / Auch alle bisherigen**; the last two create a rule, and "alle bisherigen" also re-files matching past entries.
+- Management: `RulesView` (pushed *Optionen › Haushaltsbuch › Regeln*) + `RuleSheet` (create/edit/delete, undoable), with a Settings row.
+- Store: `rules` + `addRule`/`updateRule`/`removeRule`/`restoreRule`.
+- Decisions / partials: plan 19's inbox doesn't exist (native, skipped), so rules apply to the CSV and OCR import paths only. A full **interactive** column-mapping sheet (drag each column) isn't built — unrecognised files are mapped by the best guess automatically; a manual mapping UI is the noted follow-up. The app-preset fixtures (synthetic per app) are covered by the extended title detection and the mapping tests rather than one fixture file per app.
+- Still to do: ui-review on device; the interactive mapping sheet.

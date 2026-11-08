@@ -40,6 +40,8 @@ import { BackupsView } from './components/BackupsView';
 import { FavoritesView } from './components/FavoritesView';
 import { GoalsView } from './components/GoalsView';
 import { GoalSheet, GoalSheetMode } from './components/GoalSheet';
+import { RulesView } from './components/RulesView';
+import { RuleSheet, RuleSheetMode } from './components/RuleSheet';
 import { RemindersView } from './components/RemindersView';
 import { LockScreen, PrivacyCover } from './components/LockScreen';
 import { reminderPlan } from './reminders';
@@ -50,18 +52,19 @@ import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
 import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
 import { StatementImportSheet, ImportState } from './components/StatementImportSheet';
-import { PlannedRow, allCategoryNames, applyStatement, parseBankCsv, parseStatementText, planStatement } from './statementImport';
+import { PlannedRow, allCategoryNames, applyStatement, csvForMapping, parseBankCsv, parseMappedCsv, parseStatementText, planStatement } from './statementImport';
 import { readImageText, readTextFile } from './ocr';
 import { FileTooLargeError, LIMITS } from './limits';
 import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
+import { Menu } from './ui/Menu';
 import { Confirm } from './ui/Sheet';
 import { notifySuccess, notifyWarning, tapLight } from './ui/haptics';
 import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -69,7 +72,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** `localStorage['spartopf-dev-season'] = '1'`: the year review's card out of season (screenshots, ui-review). */
@@ -123,6 +126,9 @@ export default function App() {
   const [openingOpen, setOpeningOpen] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const [goalSheet, setGoalSheet] = useState<GoalSheetMode>(null);
+  const [ruleSheet, setRuleSheet] = useState<RuleSheetMode>(null);
+  /** The scope menu when a category is corrected during an import (plan 20). */
+  const [reclassify, setReclassify] = useState<{ anchor: HTMLElement; found: PlannedRow['found']; categoryId: string; name: string } | null>(null);
   /** The category whose monthly budget is being set. */
   const [budgetFor, setBudgetFor] = useState<Category | null>(null);
   /** The recurring cost whose contract details are being edited. */
@@ -374,8 +380,18 @@ export default function App() {
     if (f.size > limit) { show(t.importTooLarge); return; }
     setStatement({ phase: 'reading', source, progress: 0 });
     try {
+      const readCsv = (text: string) => {
+        const byTitle = parseBankCsv(text, store.currency);
+        if (byTitle.length) return byTitle;
+        // An app Spartopf doesn't recognise by its column titles: map by the
+        // best guess (date / payee / amount), so it still imports (plan 20).
+        const map = csvForMapping(text);
+        return map && (map.guess.amount !== undefined || map.guess.debit !== undefined || map.guess.credit !== undefined) && map.guess.date !== undefined
+          ? parseMappedCsv(text, map.guess, store.currency)
+          : [];
+      };
       const found = source === 'csv'
-        ? parseBankCsv(await readTextFile(f), store.currency)
+        ? readCsv(await readTextFile(f))
         : parseStatementText(
           await readImageText(f, p => setStatement(s => (s?.phase === 'reading' ? { ...s, progress: p } : s))),
           allCategoryNames(data.categories, language),
@@ -683,6 +699,16 @@ export default function App() {
             }}
             onBack={back}
           />
+        ) : id === 'rules' ? (
+          <RulesView
+            rules={store.rules}
+            categories={categories}
+            language={language}
+            t={t}
+            onNew={() => setRuleSheet({ kind: 'new' })}
+            onEdit={r => setRuleSheet({ kind: 'edit', rule: r })}
+            onBack={back}
+          />
         ) : id === 'settings' ? (
           <SettingsView
             language={language}
@@ -698,6 +724,8 @@ export default function App() {
             onCategories={() => push('categories')}
             favoriteCount={store.favorites.length}
             onFavorites={() => push('favorites')}
+            ruleCount={store.rules.length}
+            onRules={() => push('rules')}
             onTransfer={() => push('transfer')}
             onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); }}
             lockKind={lockKind}
@@ -952,6 +980,38 @@ export default function App() {
         }}
       />
 
+      <RuleSheet
+        mode={ruleSheet}
+        categories={categories}
+        language={language}
+        t={t}
+        onClose={() => setRuleSheet(null)}
+        onCreate={draft => { store.addRule(draft); show(t.ruleCreated); }}
+        onSave={(rid, patch) => store.updateRule(rid, patch)}
+        onDelete={r => { const removed = store.removeRule(r.id); if (removed) show(t.ruleDeleted, { label: t.undo, run: () => store.restoreRule(removed.rule, removed.index) }); }}
+      />
+
+      {/* The scope of a corrected category during an import (plan 20). */}
+      <Menu
+        anchor={reclassify?.anchor ?? null}
+        label={t.ruleScopeTitle}
+        groups={reclassify ? [[
+          { key: 'one', label: t.ruleScopeOne, onSelect: () => {} },
+          { key: 'future', label: fmt(t.ruleScopeFuture, { name: reclassify.name }), onSelect: () => {
+            store.addRule({ match: { field: 'payee', contains: reclassify.name }, set: { categoryId: reclassify.categoryId, name: reclassify.name } });
+            show(t.ruleCreated);
+          } },
+          { key: 'all', label: t.ruleScopeAll, onSelect: () => {
+            store.addRule({ match: { field: 'payee', contains: reclassify.name }, set: { categoryId: reclassify.categoryId, name: reclassify.name } });
+            // Re-file every past entry whose name matches this payee.
+            const key = reclassify.name.trim().toLowerCase();
+            for (const e of entries) if (e.name.trim().toLowerCase() === key && e.categoryId !== reclassify.categoryId) store.updateEntry(e.id, { categoryId: reclassify.categoryId });
+            show(t.ruleCreated);
+          } },
+        ]] : []}
+        onClose={() => setReclassify(null)}
+      />
+
       <ContractSheet
         item={contractFor}
         category={contractFor ? categories.find(c => c.id === contractFor.categoryId) : undefined}
@@ -1050,6 +1110,7 @@ export default function App() {
         t={t}
         onClose={() => setStatement(null)}
         onConfirm={confirmStatement}
+        onReclassified={(row, categoryId, anchor) => setReclassify({ anchor, found: row.found, categoryId, name: row.name })}
       />
       <ExcelImportSheet
         plan={excel?.plan ?? null}

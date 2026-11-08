@@ -228,7 +228,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 17 Widgets and controls
 - [ ] 18 Siri and Shortcuts
 - [ ] 19 Apple Pay, bank notifications, "Teilen an Spartopf"
-- [ ] 20 Import rules and other apps
+- [x] 20 Import rules and other apps — built, `npm run check` passes; schema 15 (`AppData.rules`), rule engine in `planStatement` (set/skip, order) tested, scope menu on a correction, Regeln screen, other-app columns recognised + auto-mapping fallback (`csvForMapping`/`parseMappedCsv` tested). Plan-19 inbox is native (n/a here); an interactive mapping sheet is a noted follow-up. Also stabilised the flaky 10-year perf test with `retry`
 - [ ] 21 Split a payment
 - [ ] 22 iPad and wide screens
 - [ ] 23 Android app

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ACCENTS, Accent, AppData, Category, Contract, Entry, Favorite, Goal, MonthKey, MonthRecord, ThemeMode } from './types';
+import { ACCENTS, Accent, AppData, Category, Contract, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
   MAX_FAVORITES, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
@@ -85,6 +85,8 @@ export function useAppStore() {
   const [favorites, setFavorites] = useState<Favorite[]>(initial.favorites ?? []);
   /** Savings goals, "Spartöpfe" — data, so part of a backup (plan 12). */
   const [goals, setGoals] = useState<Goal[]>(initial.goals ?? []);
+  /** Import rules — data, so part of a backup (plan 20). */
+  const [rules, setRules] = useState<Rule[]>(initial.rules ?? []);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = readString(K.theme);
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
@@ -177,8 +179,9 @@ export function useAppStore() {
       ...(currency !== DEFAULT_CURRENCY ? { currency } : {}),
       ...(favorites.length ? { favorites } : {}),
       ...(goals.length ? { goals } : {}),
+      ...(rules.length ? { rules } : {}),
     }),
-    [categories, entries, months, contracts, currency, favorites, goals],
+    [categories, entries, months, contracts, currency, favorites, goals, rules],
   );
   // Every change to the book goes to storage (debounced, written atomically; storage.ts).
   useEffect(() => { saver.save(data); }, [data]);
@@ -437,6 +440,7 @@ export function useAppStore() {
     setCurrency(isSupportedCurrency(fixed.currency) ? fixed.currency : DEFAULT_CURRENCY);
     setFavorites(fixed.favorites ?? []);
     setGoals(fixed.goals ?? []);
+    setRules(fixed.rules ?? []);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -459,6 +463,7 @@ export function useAppStore() {
     setContracts({});
     setFavorites([]);
     setGoals([]);
+    setRules([]);
     setCurrency(currencyForLocale(navigator.language));
     setIntroDone(false);
     setTipsDone(false);
@@ -549,6 +554,28 @@ export function useAppStore() {
     if (entryIds.length) setEntries(prev => prev.map(e => (entryIds.includes(e.id) ? { ...e, goalId: r.goal.id } : e)));
   };
 
+  /* ----------------------------------------------------------- import rules */
+
+  /** Create an import rule (plan 20); returns it. A dupe (same match + set) is reused. */
+  const addRule = (rule: Omit<Rule, 'id' | 'createdAt'>): Rule => {
+    const created: Rule = { id: uid(), createdAt: Date.now(), ...rule };
+    setRules(prev => [...prev, created]);
+    return created;
+  };
+
+  const updateRule = (id: string, patch: Partial<Omit<Rule, 'id'>>) =>
+    setRules(prev => prev.map(r => (r.id === id ? { ...r, ...patch } : r)));
+
+  const removeRule = (id: string): { rule: Rule; index: number } | null => {
+    const index = rules.findIndex(r => r.id === id);
+    if (index === -1) return null;
+    setRules(prev => prev.filter(r => r.id !== id));
+    return { rule: rules[index], index };
+  };
+
+  const restoreRule = (r: Rule, index: number) =>
+    setRules(prev => (prev.some(x => x.id === r.id) ? prev : [...prev.slice(0, index), r, ...prev.slice(index)]));
+
   /* ------------------------------------------------------------- contracts */
 
   /** Set (or with `undefined` clear) a series' contract details; returns what was there, for undo. */
@@ -585,6 +612,7 @@ export function useAppStore() {
     setCategories, importData, restoreData, resetAll, setContract,
     favorites, addFavorite, removeFavorite, restoreFavorite, reorderFavorites,
     goals, addGoal, updateGoal, closeGoal, withdrawGoal, removeGoal, restoreGoal,
+    rules, addRule, updateRule, removeRule, restoreRule,
     lastExport, markExported: () => setLastExport(new Date().toISOString().slice(0, 10)),
     copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),
     newId: uid,

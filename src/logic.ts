@@ -1,5 +1,5 @@
 import {
-  AppData, Backup, Category, CategoryKind, Contract, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
+  AppData, Backup, Category, CategoryKind, Contract, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -10,8 +10,9 @@ import { isSupportedCurrency } from './currency';
  *  11: book currency (`AppData.currency`, ISO 4217) — optional, unset = EUR.
  *  12: pinned favourites (`AppData.favorites`) — optional, unset = none.
  *  13: savings goals (`AppData.goals`, `Entry.goalId`) — optional, unset = none.
- *  14: entry tags (`Entry.tags`) — optional, unset = none. */
-export const SCHEMA_VERSION = 14;
+ *  14: entry tags (`Entry.tags`) — optional, unset = none.
+ *  15: import rules (`AppData.rules`) — optional, unset = none. */
+export const SCHEMA_VERSION = 15;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1118,12 +1119,14 @@ export function normalizeState(raw: unknown): AppData {
   const currency = isSupportedCurrency(v.currency) ? v.currency : undefined;
   const favorites = normalizeFavorites(v.favorites, categories);
   const goals = normalizeGoals(v.goals);
+  const rules = normalizeRules(v.rules);
   return {
     categories, entries, months,
     ...(contracts ? { contracts } : {}),
     ...(currency ? { currency } : {}),
     ...(favorites ? { favorites } : {}),
     ...(goals ? { goals } : {}),
+    ...(rules ? { rules } : {}),
   };
 }
 
@@ -1222,6 +1225,28 @@ function normalizeGoals(v: unknown): Goal[] | undefined {
     if (typeof raw.start === 'number' && Number.isFinite(raw.start) && raw.start !== 0) g.start = Math.max(-MAX_CENTS, Math.min(Math.round(raw.start), MAX_CENTS));
     if (typeof raw.closedAt === 'number' && Number.isFinite(raw.closedAt)) g.closedAt = raw.closedAt;
     out.push(g);
+  }
+  return out.length ? out : undefined;
+}
+
+/** Import rules (schema 15, plan 20): a field + text to match, and what to set (or skip). */
+function normalizeRules(v: unknown): Rule[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: Rule[] = [];
+  for (const raw of v) {
+    if (!isObj(raw) || !isObj(raw.match) || !isObj(raw.set)) continue;
+    const field = raw.match.field;
+    const contains = typeof raw.match.contains === 'string' ? raw.match.contains.trim().slice(0, 80) : '';
+    if ((field !== 'name' && field !== 'purpose' && field !== 'payee') || !contains) continue;
+    let set: Rule['set'] | null = null;
+    if (raw.set.skip === true) set = { skip: true };
+    else {
+      const categoryId = typeof raw.set.categoryId === 'string' && raw.set.categoryId ? raw.set.categoryId : undefined;
+      const name = typeof raw.set.name === 'string' ? cleanText(raw.set.name) : undefined;
+      if (categoryId || name) set = { ...(categoryId ? { categoryId } : {}), ...(name ? { name } : {}) };
+    }
+    if (!set) continue;
+    out.push({ id: typeof raw.id === 'string' && raw.id ? raw.id : uid(), match: { field, contains }, set, createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : 0 });
   }
   return out.length ? out : undefined;
 }

@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { Bell, Check, ChevronRight, Coins, Download, Fingerprint, Languages, Lock, Palette, ScanFace, Star, SunMoon, Tags, Trash2 } from 'lucide-react';
+import { Bell, Check, ChevronRight, Coins, Download, Filter, Fingerprint, Languages, Lock, Palette, ScanFace, Star, SunMoon, Tags, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import translations, { Language, Strings, fmt, languages } from '../translations';
@@ -25,6 +25,8 @@ interface Props {
   onCategories: () => void;
   favoriteCount: number;
   onFavorites: () => void;
+  ruleCount: number;
+  onRules: () => void;
   /** Pushes "Sichern und übertragen": backup, Excel, CSV. */
   onTransfer: () => void;
   onDeleteAll: () => void;
@@ -183,6 +185,13 @@ export function SettingsView(p: Props) {
           leading={<IconTile icon={Star} hue="lemon" />}
           trailing={<Next value={p.favoriteCount || undefined} />}
           onClick={p.onFavorites}
+        />
+        <Row
+          label={t.rulesRow}
+          sub={t.rulesRowSub}
+          leading={<IconTile icon={Filter} hue="sand" />}
+          trailing={<Next value={p.ruleCount || undefined} />}
+          onClick={p.onRules}
         />
         <Row
           label={t.transferTitle}

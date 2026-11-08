@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { applyStatement, cleanPayee, parseBankCsv, parseDay, parseStatementText, planStatement, signedCents } from './statementImport';
+import { applyStatement, cleanPayee, csvForMapping, parseBankCsv, parseDay, parseMappedCsv, parseStatementText, planStatement, ruleFor, signedCents } from './statementImport';
 import { defaultCategories } from './data/defaults';
-import { AppData, Entry } from './types';
+import { AppData, Entry, Rule } from './types';
 
 // Made-up transactions in the shape of a Sparkasse CSV-CAMT export (no real data).
 const HEADER = '"Auftragskonto";"Buchungstag";"Valutadatum";"Buchungstext";"Verwendungszweck";"Glaeubiger ID";"Mandatsreferenz";"Kundenreferenz (End-to-End)";"Sammlerreferenz";"Lastschrift Ursprungsbetrag";"Auslagenersatz Ruecklastschrift";"Beguenstigter/Zahlungspflichtiger";"Kontonummer/IBAN";"BIC (SWIFT-Code)";"Betrag";"Waehrung";"Info";"Kategorie"';
@@ -163,5 +163,50 @@ describe('planning an import', () => {
     expect(pay.sort()).toEqual([entries[1].id, entries[3].id].sort());
     const again = planStatement(parseBankCsv(CSV), { ...data, entries: [...entries, ...add] }, new Date(2026, 10, 7));
     expect(again.filter(r => r.status === 'new')).toEqual([]);
+  });
+});
+
+describe('import rules (plan 20)', () => {
+  const cats = defaultCategories();
+  const found = { date: '2026-11-05', name: 'Rewe', raw: 'REWE SAGT DANKE/Markt 1', amount: 2000, income: false, ref: 'r1' };
+
+  it('fires on a name/payee/purpose contains match, oldest rule first', () => {
+    const r1: Rule = { id: 'a', match: { field: 'payee', contains: 'rewe' }, set: { categoryId: 'groceries', name: 'Rewe' }, createdAt: 1 };
+    const r2: Rule = { id: 'b', match: { field: 'payee', contains: 'rewe' }, set: { categoryId: 'extra' }, createdAt: 2 };
+    expect(ruleFor(found, [r2, r1])?.id).toBe('a'); // older wins regardless of array order
+    expect(ruleFor(found, [])).toBeNull();
+  });
+
+  it('a set rule overrides the category and name', () => {
+    const data: AppData = { categories: cats, entries: [], months: [{ key: '2026-11', startedAt: 0 }], rules: [
+      { id: 'a', match: { field: 'payee', contains: 'rewe' }, set: { categoryId: 'groceries', name: 'Rewe' }, createdAt: 1 },
+    ] };
+    const [row] = planStatement([found], data, new Date(2026, 10, 10));
+    expect(row.categoryId).toBe('groceries');
+    expect(row.name).toBe('Rewe');
+  });
+
+  it('a skip rule leaves the row unticked and flagged', () => {
+    const transfer = { date: '2026-11-05', name: 'Umbuchung', raw: 'Umbuchung Sparkonto', amount: 10000, income: false, ref: 'r2' };
+    const data: AppData = { categories: cats, entries: [], months: [{ key: '2026-11', startedAt: 0 }], rules: [
+      { id: 's', match: { field: 'purpose', contains: 'umbuchung' }, set: { skip: true }, createdAt: 1 },
+    ] };
+    const [row] = planStatement([transfer], data, new Date(2026, 10, 10));
+    expect(row.skipped).toBe(true);
+    expect(row.include).toBe(false);
+  });
+});
+
+describe('manual CSV mapping (plan 20)', () => {
+  it('offers a mapping for an unrecognised table and reads it by hand', () => {
+    const text = 'Datum X;Wer;Wieviel\n05.11.2026;Rewe;-20,00\n04.11.2026;Lohn;3000,00\n';
+    const map = csvForMapping(text);
+    expect(map).toBeTruthy();
+    expect(map!.header).toEqual(['Datum X', 'Wer', 'Wieviel']);
+    const found = parseMappedCsv(text, { date: 0, payee: 1, amount: 2 });
+    expect(found.map(f => [f.name, f.amount, f.income])).toEqual([
+      ['Rewe', 2000, false],
+      ['Lohn', 300000, true],
+    ]);
   });
 });

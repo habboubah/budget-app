@@ -127,6 +127,17 @@ export interface AppData {
   favorites?: Favorite[];
   /** Savings goals, "Spartöpfe" (schema 13). Unset or missing = none. */
   goals?: Goal[];
+  /** Import rules, applied to bank/other-app imports (schema 15, plan 20). Unset = none. */
+  rules?: Rule[];
+}
+
+/** An import rule (plan 20): when a field contains text, set a category/name or skip the row. */
+export interface Rule {
+  id: string;
+  match: { field: 'name' | 'purpose' | 'payee'; contains: string };
+  /** Either reclassify/rename the row, or drop it (a transfer). */
+  set: { categoryId?: string; name?: string } | { skip: true };
+  createdAt: number;
 }
 
 /** A savings goal (plan 12). Money "in" a goal is a paid entry in a Sparen category carrying its `goalId`. */

@@ -201,7 +201,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `start` offset plus its paid entries; deleting a goal keeps the entries and
   drops the link; `src/insights/goals.ts` `goalProgress`); **schema 14**
   `Entry.tags` (plan 26: `normalizeTags`, `#tag` search, `tagTotals`, a Tags
-  column in the CSV) — all optional, nothing to migrate, all in backups. What
+  column in the CSV); **schema 15** `AppData.rules` (plan 20: import rules —
+  `ruleFor` applied in `planStatement` before the learned payee and bank
+  category; `set` reclassifies/renames, `skip` drops a transfer) — all optional,
+  nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
   `backup-schema-*.json`; `compat.test.ts`: they load, keep what they held,

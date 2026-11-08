@@ -1,4 +1,4 @@
-import { AppData, Category, Entry, MonthKey } from './types';
+import { AppData, Category, Entry, MonthKey, Rule } from './types';
 import { displayName, isIsoDay, monthKeyOf, normalizeDigits, normalizeName, parseAmount, uid } from './logic';
 import { OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3 } from './data/defaults';
 import { LIMITS, checkCount } from './limits';
@@ -49,6 +49,8 @@ export interface PlannedRow {
   match?: Entry;
   /** Taken over when confirmed (new and pay are, exists is not, by default). */
   include: boolean;
+  /** A rule marked this as not to import (a transfer); it starts unticked and is flagged (plan 20). */
+  skipped?: boolean;
 }
 
 /* ------------------------------------------------------------- reading */
@@ -156,15 +158,18 @@ export function parseCsv(text: string): string[][] {
 const fold = (s: string) => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z]/g, '');
 
 const COLUMNS = {
-  date: ['buchungstag', 'buchungsdatum', 'buchung', 'datum', 'date', 'bookingdate', 'wertstellung', 'valutadatum'],
-  amount: ['betrag', 'betrageur', 'umsatz', 'umsatzeur', 'amount', 'amounteur', 'betraginclgebuehren'],
-  debit: ['soll', 'belastung', 'debit'],
-  credit: ['haben', 'gutschrift', 'credit'],
+  // German banks, English exports, and other budget apps (Finanzguru, Outbank,
+  // Money Manager, Monefy, YNAB, Cashew) are recognised by these titles (plan 20).
+  date: ['buchungstag', 'buchungsdatum', 'buchung', 'datum', 'date', 'bookingdate', 'wertstellung', 'valutadatum', 'period', 'time', 'transactiondate'],
+  amount: ['betrag', 'betrageur', 'umsatz', 'umsatzeur', 'amount', 'amounteur', 'betraginclgebuehren', 'value', 'summe', 'inflow'],
+  debit: ['soll', 'belastung', 'debit', 'outflow', 'ausgabe', 'expense'],
+  credit: ['haben', 'gutschrift', 'credit', 'inflow', 'einnahme', 'income'],
   payee: ['beguenstigterzahlungspflichtiger', 'auftraggeberempfaenger', 'zahlungsempfaengerin', 'zahlungspflichtiger',
-    'namezahlungsbeteiligter', 'empfaenger', 'auftraggeberbeguenstigter', 'auftraggeber', 'payee', 'partnername', 'counterparty', 'name'],
-  purpose: ['verwendungszweck', 'purpose', 'paymentreference', 'reference', 'beschreibung', 'description'],
+    'namezahlungsbeteiligter', 'empfaenger', 'auftraggeberbeguenstigter', 'auftraggeber', 'payee', 'partnername', 'counterparty', 'name',
+    'beneficiary', 'gegenkonto', 'transactionpartner', 'title'],
+  purpose: ['verwendungszweck', 'purpose', 'paymentreference', 'reference', 'beschreibung', 'description', 'memo', 'notes', 'note', 'comment'],
   type: ['buchungstext', 'umsatzart', 'vorgang', 'transactiontype', 'type'],
-  category: ['kategorie', 'category'],
+  category: ['kategorie', 'category', 'maincategory', 'categoryname'],
   currency: ['waehrung', 'currency', 'waehrungbetrag', 'currencycode'],
 } as const;
 
@@ -175,6 +180,63 @@ function columnOf(header: string[], names: readonly string[]): number {
     if (i !== -1) return i;
   }
   return -1;
+}
+
+export type MappableField = 'date' | 'amount' | 'debit' | 'credit' | 'payee' | 'purpose' | 'category';
+export type ColumnMapping = Partial<Record<MappableField, number>>;
+
+/**
+ * For a CSV Spartopf can't place by its column titles (plan 20): the header
+ * row's cells and a best-guess mapping, so the user can map the columns by
+ * hand. `null` when the file isn't a table at all.
+ */
+export function csvForMapping(text: string): { header: string[]; sample: string[][]; guess: ColumnMapping } | null {
+  const rows = parseCsv(text.replace(/^/, ''));
+  if (rows.length < 2) return null;
+  // The row with the most non-empty cells in the first few lines is the header.
+  let headerAt = 0;
+  let best = -1;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const filled = rows[i].filter(c => c.trim()).length;
+    if (filled > best) { best = filled; headerAt = i; }
+  }
+  const header = rows[headerAt];
+  const guess: ColumnMapping = {};
+  for (const field of ['date', 'amount', 'debit', 'credit', 'payee', 'purpose', 'category'] as MappableField[]) {
+    const i = columnOf(header, COLUMNS[field]);
+    if (i !== -1) guess[field] = i;
+  }
+  return { header, sample: rows.slice(headerAt + 1, headerAt + 4), guess };
+}
+
+/** Transactions from a CSV mapped by hand (plan 20). */
+export function parseMappedCsv(text: string, mapping: ColumnMapping, bookCurrency = 'EUR'): Found[] {
+  const rows = parseCsv(text.replace(/^/, ''));
+  checkCount(rows.length, LIMITS.csvRows);
+  const cell = (r: string[], i: number | undefined) => (i === undefined ? '' : r[i] ?? '');
+  // Skip the header row itself: the first row where the date column parses is the first data row.
+  const out: Found[] = [];
+  let started = false;
+  for (const r of rows) {
+    const date = parseDay(cell(r, mapping.date));
+    let cents = mapping.amount !== undefined ? signedCents(cell(r, mapping.amount)) : null;
+    if (cents === null && (mapping.debit !== undefined || mapping.credit !== undefined)) {
+      const d = signedCents(cell(r, mapping.debit)) ?? 0;
+      const c = signedCents(cell(r, mapping.credit)) ?? 0;
+      cents = c ? Math.abs(c) : d ? -Math.abs(d) : null;
+    }
+    if (!date || !cents) { if (started) continue; else continue; }
+    started = true;
+    const raw = cell(r, mapping.payee);
+    const purpose = cell(r, mapping.purpose);
+    out.push({
+      date, name: cleanPayee(raw, purpose, ''), raw: raw || purpose, amount: Math.abs(cents), income: cents > 0,
+      bankCategory: cell(r, mapping.category) || undefined,
+      ref: fingerprint(date, cents, raw || purpose, purpose),
+    });
+  }
+  void bookCurrency; // currency column not part of manual mapping; rows assumed in the book's currency
+  return out;
 }
 
 /**
@@ -334,8 +396,26 @@ const daysApart = (a?: string, b?: string) =>
  *  - new — otherwise.
  * Each entry matches one transaction at most.
  */
+/**
+ * The import rule that fires for a transaction (plan 20), or null. Rules are
+ * tried oldest first; the first whose field contains its text wins. The field
+ * `payee` and `name` both read the cleaned name; `purpose` reads the raw text.
+ */
+export function ruleFor(f: Found, rules: Rule[] = []): Rule | null {
+  const haystacks = {
+    name: f.name.toLowerCase(),
+    payee: `${f.name} ${f.raw}`.toLowerCase(),
+    purpose: f.raw.toLowerCase(),
+  };
+  for (const r of [...rules].sort((a, b) => a.createdAt - b.createdAt)) {
+    if (haystacks[r.match.field].includes(r.match.contains.toLowerCase())) return r;
+  }
+  return null;
+}
+
 export function planStatement(found: Found[], data: AppData, today = new Date()): PlannedRow[] {
   const { categories, entries } = data;
+  const rules = data.rules ?? [];
   const byId = new Map(categories.map(c => [c.id, c]));
   const incomeId = categories.find(c => c.kind === 'income')?.id;
   const fallback = (byId.has(OTHER_CATEGORY.id) ? OTHER_CATEGORY.id : categories.find(c => c.kind === 'expense')?.id) ?? '';
@@ -350,10 +430,18 @@ export function planStatement(found: Found[], data: AppData, today = new Date())
   return found.map((f, i) => {
     const key = normalizeName(f.name);
     const prior = known(key);
-    let categoryId = prior?.categoryId ?? (f.bankCategory ? bankMap.get(fold(f.bankCategory)) : undefined) ?? (f.income ? incomeId : fallback) ?? fallback;
-    if (f.income !== (byId.get(categoryId)?.kind === 'income') && incomeId) categoryId = f.income ? incomeId : (prior && !f.income ? prior.categoryId : fallback);
-    if (!f.income && byId.get(categoryId)?.kind === 'income') categoryId = fallback;
-    const name = prior?.name ?? f.name;
+    // Rules win over the learned payee and the bank's category (plan 20).
+    const rule = ruleFor(f, rules);
+    const ruleSkip = !!rule && 'skip' in rule.set;
+    const ruleCategory = rule && !('skip' in rule.set) ? rule.set.categoryId : undefined;
+    const ruleName = rule && !('skip' in rule.set) ? rule.set.name : undefined;
+    let categoryId = (ruleCategory && byId.has(ruleCategory) ? ruleCategory : undefined)
+      ?? prior?.categoryId ?? (f.bankCategory ? bankMap.get(fold(f.bankCategory)) : undefined) ?? (f.income ? incomeId : fallback) ?? fallback;
+    if (!ruleCategory) {
+      if (f.income !== (byId.get(categoryId)?.kind === 'income') && incomeId) categoryId = f.income ? incomeId : (prior && !f.income ? prior.categoryId : fallback);
+      if (!f.income && byId.get(categoryId)?.kind === 'income') categoryId = fallback;
+    }
+    const name = ruleName ?? prior?.name ?? f.name;
     const month: MonthKey = f.date ? f.date.slice(0, 7) : monthKeyOf(today);
     const kindOf = (e: Entry) => byId.get(e.categoryId)?.kind === 'income';
     let status: RowStatus = 'new';
@@ -368,8 +456,8 @@ export function planStatement(found: Found[], data: AppData, today = new Date())
       if (match) status = match.paid ? 'exists' : 'pay';
     }
     if (match) used.add(match.id);
-    // A foreign-currency row starts unticked: the amount is in another currency (plan 07).
-    return { key: `${i}-${f.ref ?? f.name}`, found: f, name, categoryId, status, match, include: status !== 'exists' && !f.foreignCurrency };
+    // A foreign-currency row (plan 07) or a rule-skipped one (plan 20) starts unticked.
+    return { key: `${i}-${f.ref ?? f.name}`, found: f, name, categoryId, status, match, skipped: ruleSkip, include: status !== 'exists' && !f.foreignCurrency && !ruleSkip };
   });
 }
 
