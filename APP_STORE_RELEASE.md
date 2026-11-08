@@ -268,7 +268,7 @@ the skill `.claude/skills/app-store-release` knows these steps.
 | `App Store Connect API key not found at …` | The `.p8` file isn't in `~/.appstoreconnect/private_keys/`. |
 | `No suitable application records were found` | Step 4 – the app doesn't exist in App Store Connect yet. |
 | `No profiles for 'com.habboubah.spartopf' were found` / signing errors | Redo step 3; the API key needs the *App Manager* or *Admin* role. |
-| `The bundle version must be higher than the previously uploaded version` | Just run it again – every run raises the build number. |
+| `The bundle version must be higher than the previously uploaded version` | The script now starts from the highest build App Store Connect, the `v*` tags and the project know, so this shouldn't come back. If it does (e.g. App Store Connect couldn't be reached and a release commit is missing from `main`), run `npm run release:dry` to see the numbers and run the release again. |
 | `Missing package product 'CapApp-SPM'` or similar | Open the project once in Xcode (step 3), or `xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj`. |
 | `xcode-select: error: tool 'xcodebuild' requires Xcode` | Install Xcode in `/Applications`, or `sudo xcode-select -s /Applications/Xcode.app`. |
 | `npm run screenshots`: *Executable doesn't exist* | `npx playwright install chromium` |

@@ -251,3 +251,10 @@ TestFlight, the same way Fahrtwerk and Korb ship. The full first-time checklist
 
 See `CLAUDE.md` for the conventions and `PLAN.md` for the concept and the money
 rules.
+
+
+# screenshot
+cd ~/repos/budget-app
+git am ~/Downloads/spartopf-screenshot-skills.patch
+npx playwright install chromium
+npm run screenshots && npm run store-screenshots

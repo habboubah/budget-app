@@ -30,7 +30,7 @@ const L = {
       ins: 'Haftpflicht', gym: 'Fitnessstudio', fuel: 'Tanken', carIns: 'Kfz-Versicherung', carTax: 'Kfz-Steuer',
       shops: ['Lidl', 'Rewe', 'dm', 'Aldi', 'Edeka'], extras: ['Amazon', 'Apotheke', 'Restaurant', 'Kleidung'], kita: 'Kita',
     },
-    addGroceries: 'Zu Einkaufen hinzufügen',
+    addTo: /^Zu .+ hinzufügen$/,
     next: 'Nächster Monat',
     stats: 'Statistik',
     chip: 'Lidl',
@@ -42,7 +42,7 @@ const L = {
       ins: 'Liability insurance', gym: 'Gym', fuel: 'Fuel', carIns: 'Car insurance', carTax: 'Car tax',
       shops: ['Lidl', 'Tesco', 'Boots', 'Aldi', 'Sainsbury’s'], extras: ['Amazon', 'Pharmacy', 'Restaurant', 'Clothes'], kita: 'Daycare',
     },
-    addGroceries: 'Add to Groceries',
+    addTo: /^Add to /,
     next: 'Next month',
     stats: 'Statistics',
     chip: 'Lidl',
@@ -116,7 +116,9 @@ async function shoot(browser, lang) {
 
   await snap('01-month');
 
-  await page.click(`button[aria-label="${l.addGroceries}"]`); await pause(600);
+  // The groceries card's add button, found by the category's id: its name changes
+  // ("Einkaufen" became "Lebensmittel und Drogerie") and broke a by-name lookup.
+  await page.locator('main section[data-drop-category="groceries"]').getByRole('button', { name: l.addTo }).last().click(); await pause(600);
   await page.keyboard.type(lang === 'de' ? '47,85' : '47.85');
   await page.click(`button:text-is("${l.chip}")`);
   await snap('02-entry');
@@ -125,14 +127,13 @@ async function shoot(browser, lang) {
   await page.click(`button[aria-label="${l.next}"]`); await pause(500);
   await snap('03-next-month');
 
-  await page.click(`nav button:has-text("${l.stats}")`); await pause(500);
-  await page.click(`button[aria-label="${l.next.replace('Nächster', 'Vorheriger').replace('Next', 'Previous')}"]`); await pause(400);
-  await page.click(`button[aria-label="${l.next.replace('Nächster', 'Vorheriger').replace('Next', 'Previous')}"]`); await pause(400);
+  // Statistik shows a period up to the running month now, not one month with ‹ ›.
+  await page.click(`nav button:has-text("${l.stats}")`); await pause(800);
   await snap('04-stats');
 
-  await page.evaluate(() => {
-    const h = [...document.querySelectorAll('h2')].find(x => /letzten|last/i.test(x.textContent ?? ''));
-    h?.scrollIntoView({ block: 'start' });
+  // "Verlauf" / "Over time" — by id, and failing loudly if it is gone, not shooting the wrong screen.
+  await page.locator('#history-title').evaluate(h => {
+    h.scrollIntoView({ block: 'start' });
     window.scrollBy(0, -70);
   });
   await snap('05-history');
