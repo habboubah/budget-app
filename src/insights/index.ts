@@ -14,6 +14,7 @@
  *   outlook.ts   Ausblick: the balance in the coming twelve months (P2)
  *   reserve.ts   Rücklage für jährliche Kosten (plan 11)
  *   goals.ts     Spartöpfe: savings goals and their progress (plan 12)
+ *   tags.ts      tag totals and tags in use (plan 26)
  *   health.ts    Grundbedarf and the Finanz-Check (P6)
  *   highlights.ts  hints as ranked data: Das fällt auf, the contract hints, a month's changes
  *   detail.ts    the category screen and the payee sheet
@@ -30,6 +31,7 @@ export * from './pace';
 export * from './outlook';
 export * from './reserve';
 export * from './goals';
+export * from './tags';
 export * from './health';
 export * from './highlights';
 export * from './detail';

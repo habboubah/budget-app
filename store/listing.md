@@ -147,6 +147,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** أخيرًا أوعية الادخار: حدّد أهدافًا مثل «إجازة»، وتابع التقدّم، وادفع بلمسة واحدة – ويملؤها أمر دائم تلقائيًا.
 
+**DE:** Neu: Tags. Versieh Einträge mit #urlaub, finde sie in der Suche und sieh in der Statistik, was ein Tag zusammen gekostet hat.
+
+**EN:** New: tags. Mark entries with #holiday, find them in search, and see in Statistics what a tag added up to.
+
+**AR:** جديد: الوسوم. ضع وسومًا مثل ‎#إجازة على البنود، وابحث عنها، وشاهد في الإحصاءات كم بلغ وسمٌ مجتمعًا.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

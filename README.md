@@ -62,6 +62,10 @@ month, and the two numbers that matter: **what is on the account now** and
   the entry there. All of this month's categories show at once, the rest behind
   *Weitere*. "Sichern & nächster" for a stack of receipts (keeps the date).
   Deleting is undoable.
+- **Tags.** Give an entry free tags from the sheet's "+" menu (*# Tag*). Search
+  finds `#urlaub`, and once any tag exists *Statistik → Wofür das Geld geht*
+  gains a **Tags** view ("Urlaub · 1.840 € · 23 Einträge"); the CSV export has a
+  tags column. Nothing changes if you never use them.
 - **Favourites.** Pin the small daily entries (Bäcker, Tanken, Kantine) with
   *Als Favorit merken*; they appear as chips at the top of a new entry. One tap
   adds the entry (dated today, paid, undoable); a long press opens it to change

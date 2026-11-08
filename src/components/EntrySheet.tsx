@@ -1,10 +1,10 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, Check, ChevronDown, ChevronUp, Plus, Repeat as RepeatIcon, Star, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, ChevronUp, Hash, Plus, Repeat as RepeatIcon, Star, Trash2 } from 'lucide-react';
 import { Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
 import { budgetOf } from '../data/defaults';
 import {
-  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, parseAmount, suggestNames,
+  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
   normalizeDigits, topCategories,
 } from '../logic';
 import { Strings, fmt } from '../translations';
@@ -75,6 +75,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [dateText, setDateText] = useState('');
   const [note, setNote] = useState('');
   const [noteOpen, setNoteOpen] = useState(false);
+  /** Tags as typed (space- or comma-separated); normalised into the draft (plan 26). */
+  const [tagText, setTagText] = useState('');
+  const [tagsOpen, setTagsOpen] = useState(false);
   const [allCategories, setAllCategories] = useState(false);
   const [allSuggestions, setAllSuggestions] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -89,6 +92,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const amountRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLInputElement>(null);
+  const tagRef = useRef<HTMLInputElement>(null);
   const amountId = useId();
 
   const category = categories.find(c => c.id === categoryId);
@@ -127,6 +131,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setDateText(defaultEntryDate(month));
     setNote('');
     setNoteOpen(false);
+    setTagText('');
+    setTagsOpen(false);
     setShowError(false);
     setAllCategories(false);
     setAllSuggestions(false);
@@ -147,6 +153,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setDateText(e.date ?? '');
       setNote(e.note ?? '');
       setNoteOpen(!!e.note);
+      setTagText((e.tags ?? []).map(x => `#${x}`).join(' '));
+      setTagsOpen(!!e.tags?.length);
       setAllCategories(false);
       setShowError(false);
       setGoalId(e.goalId);
@@ -181,6 +189,13 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   );
   // Three at a glance; the rest behind "All".
   const shownSuggestions = allSuggestions ? suggestions : suggestions.slice(0, 3);
+  // Tag suggestions: tags already in use, minus those already typed (plan 26).
+  const tagSuggestions = useMemo(() => {
+    const used = new Set<string>();
+    for (const e of entries) for (const x of e.tags ?? []) used.add(x);
+    const chosen = new Set(normalizeTags(tagText.split(/[,\s]+/)));
+    return [...used].filter(x => !chosen.has(x)).slice(0, 8);
+  }, [entries, tagText]);
   // Three at a glance (this month's and the most used, the chosen one always
   // among them), every category behind "All".
   const inView = useMemo(
@@ -210,6 +225,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     if (n) d.note = n;
     // The goal link only on a Sparen category (plan 12).
     if (isSaving && goalId && goals.some(g => g.id === goalId)) d.goalId = goalId;
+    const tags = normalizeTags(tagText.split(/[,\s]+/));
+    if (tags.length) d.tags = tags;
     return d;
   };
 
@@ -484,6 +501,16 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               {t.note}
             </button>
           )}
+          {!tagsOpen && (
+            <button
+              type="button"
+              onClick={() => { tapLight(); setTagsOpen(true); requestAnimationFrame(() => tagRef.current?.focus({ preventScroll: true })); }}
+              className={`${PILL} text-fg-mute focus-visible:ring-focus`}
+            >
+              <Hash className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" />
+              {t.tag}
+            </button>
+          )}
         </div>
         {!dateValid && <p role="alert" className="text-caption text-neg px-1">{t.dateHint}</p>}
         <Menu
@@ -507,6 +534,26 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
         {noteOpen && (
           <Field inputRef={noteRef} label={t.note} value={note} onChange={setNote} placeholder={t.notePlaceholder} maxLength={200} enterKeyHint="done" />
+        )}
+
+        {tagsOpen && (
+          <div>
+            <Field inputRef={tagRef} label={t.tags} value={tagText} onChange={setTagText} placeholder={t.tagPlaceholder} maxLength={160} enterKeyHint="done" />
+            {tagSuggestions.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {tagSuggestions.map(tag => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => { tapLight(); setTagText(tt => (normalizeTags(tt.split(/[,\s]+/)).includes(tag) ? tt : `${tt.trim()} #${tag}`.trim())); }}
+                    className="hit-44 min-h-[34px] px-3 rounded-full bg-surface-2 text-fg-mute text-label active:scale-[0.97] transition-transform focus-visible:ring-focus"
+                  >
+                    #{tag}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         <div className="grid gap-2 pt-2">

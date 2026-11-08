@@ -234,7 +234,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 23 Android app
 - [ ] 24 Android capture and widgets
 - [ ] 25 Turkish and more languages
-- [ ] 26 Tags
+- [x] 26 Tags — built, `npm run check` passes; schema 14 (`Entry.tags`), `normalizeTags`/`tagTotals` tested, `#tag` search, entry-sheet "# Tag", Statistik Tags breakdown, CSV tags column (injection-guarded). ui-review on device still to do
 - [ ] 27 Receipts and documents
 - [ ] 28 PDF report
 - [ ] 29 Periods and year comparison

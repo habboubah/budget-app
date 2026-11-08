@@ -34,5 +34,13 @@ There's no tag field until someone picks *Tag* from the "+" menu. The *Tags* opt
 
 ## Done when
 
-- [ ] Tags can be added, searched, totalled and exported.
-- [ ] Nothing changes for people who don't use them.
+- [x] Tags can be added, searched, totalled and exported.
+- [x] Nothing changes for people who don't use them.
+
+## Notes (built)
+
+- `Entry.tags?: string[]` (schema **14**, optional). `normalizeTags()` in `logic.ts` (lowercase, no "#", trimmed, deduped, ≤ `MAX_TAGS` of ≤ `MAX_TAG_LENGTH`), reused by `normalizeEntry` and the entry sheet. Carry-over keeps tags (and, for plan 12, the goalId).
+- Search: `searchEntries` adds each tag as a `#tag` token, so `#urlaub` matches exactly and a plain `urlaub` still matches the word (tested).
+- Totals: `tagTotals(entries, categories, months)` + `tagsInUse()` in `src/insights/tags.ts` (tested). Statistik › *Wofür das Geld geht* gains a **Tags** option (with the period picker) that appears only once a tag exists; `TagsList` shows share and entry count.
+- Entry sheet: a **# Tag** pill next to **+ Notiz** opens a tags field with suggestions from tags in use. CSV export appends a `Tags` column (`#tag #tag`), injection-guarded by plan 05's `textCell`.
+- Still to do: ui-review on device.

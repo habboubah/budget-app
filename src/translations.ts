@@ -286,6 +286,11 @@ const de = {
   fewerCategories: 'Weniger',
   note: 'Notiz',
   notePlaceholder: 'optional',
+  tag: 'Tag',
+  tags: 'Tags',
+  tagPlaceholder: 'z. B. #urlaub #italien',
+  tagEntries: '{n} Einträge',
+  tagHint: 'Tippe beim Eintragen auf „# Tag“, um einen Tag zu setzen. Die Suche findet #tag.',
   saveAndNext: 'Sichern & nächster',
   deleteEntry: 'Eintrag löschen',
 
@@ -812,6 +817,7 @@ const de = {
   csvIncome: 'Einnahme',
   csvExpense: 'Ausgabe',
   csvCurrency: 'Währung',
+  csvTags: 'Tags',
 
   // Excel import
   excelSection: 'Excel',
@@ -1151,6 +1157,11 @@ const en: Strings = {
   fewerCategories: 'Fewer',
   note: 'Note',
   notePlaceholder: 'optional',
+  tag: 'Tag',
+  tags: 'Tags',
+  tagPlaceholder: 'e.g. #holiday #italy',
+  tagEntries: '{n} entries',
+  tagHint: 'When adding an entry, tap "# Tag" to set a tag. Search finds #tag.',
   saveAndNext: 'Save & next',
   deleteEntry: 'Delete entry',
 
@@ -1664,6 +1675,7 @@ const en: Strings = {
   csvIncome: 'Income',
   csvExpense: 'Expense',
   csvCurrency: 'Currency',
+  csvTags: 'Tags',
 
   excelSection: 'Excel',
   importExcel: 'Import from Excel',
@@ -2011,6 +2023,11 @@ const ar: Strings = {
   fewerCategories: 'أقل',
   note: 'ملاحظة',
   notePlaceholder: 'اختياري',
+  tag: 'وسم',
+  tags: 'الوسوم',
+  tagPlaceholder: 'مثل: #إجازة #إيطاليا',
+  tagEntries: 'البنود: {n}',
+  tagHint: 'عند إضافة بند، اضغط على «# وسم» لإضافة وسم. والبحث يجد ‎#وسم.',
   saveAndNext: 'حفظ والتالي',
   deleteEntry: 'حذف البند',
 
@@ -2526,6 +2543,7 @@ const ar: Strings = {
   csvIncome: 'دخل',
   csvExpense: 'مصروف',
   csvCurrency: 'العملة',
+  csvTags: 'الوسوم',
 
   // Excel import
   excelSection: 'Excel',

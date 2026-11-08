@@ -5,7 +5,7 @@ import {
   NameTotal, displayName, formatMoney, formatMoneyApprox, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding,
   normalizeName, topNames,
 } from '../logic';
-import { Book, Fraction, Insight, MonthPoint, WhereRow, balanceChange, nearFraction, savings, upToNow, whereRows } from '../insights';
+import { Book, Fraction, Insight, MonthPoint, TagTotal, WhereRow, balanceChange, nearFraction, savings, tagTotals, upToNow, whereRows } from '../insights';
 import { Strings, fmt } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
 import { Segmented } from '../ui/Field';
@@ -265,14 +265,21 @@ function WhereCard({ book, averageOver, language, t, onCategory, onPayee }: {
   onPayee: (key: string) => void;
 }) {
   const { entries, categories } = book.data;
-  const [view, setView] = useState<'categories' | 'payees'>('categories');
+  const [chosenView, setView] = useState<'categories' | 'payees' | 'tags'>('categories');
   const [period, setPeriod] = useState(1);
   const [expanded, setExpanded] = useState(false);
   const [allRows, setAllRows] = useState(false);
   const where = useMemo(() => whereRows(book, averageOver), [book, averageOver]);
-  const payeeMonths = useMemo(() => monthsEnding(monthKeyOf(), period), [period]);
+  const periodMonths = useMemo(() => monthsEnding(monthKeyOf(), period), [period]);
+  const payeeMonths = periodMonths;
   const payees = useMemo(() => topNames(entries, categories, payeeMonths), [entries, categories, payeeMonths]);
+  // The Tags breakdown appears only once any entry has a tag (plan 26).
+  const hasTags = useMemo(() => entries.some(e => e.tags?.length), [entries]);
+  const tags = useMemo(() => tagTotals(entries, categories, periodMonths), [entries, categories, periodMonths]);
+  // Fall back to categories if the tags view was open but tags are gone.
+  const view = chosenView === 'tags' && !hasTags ? 'categories' : chosenView;
   const total = payees.reduce((sum, p) => sum + p.total, 0);
+  const tagTotal = tags.reduce((sum, x) => sum + x.amount, 0);
   const payeeSpan = monthSpanLabel(payeeMonths, t.locale);
   const rows = allRows ? where.rows : where.rows.slice(0, WHERE_ROWS);
   const scale = Math.max(1, ...where.rows.map(r => Math.max(r.average, r.category.limit ?? 0)));
@@ -282,8 +289,10 @@ function WhereCard({ book, averageOver, language, t, onCategory, onPayee }: {
       title={t.whereMoneyGoes}
       sub={view === 'categories'
         ? fmt(t.averageFrom, { span: monthSpanLabel(averageOver, t.locale) })
-        : total ? fmt(t.whereSub, { span: payeeSpan, total: formatMoney(total, t.locale) }) : payeeSpan}
-      action={view === 'payees' && (
+        : view === 'tags'
+          ? (tagTotal ? fmt(t.whereSub, { span: payeeSpan, total: formatMoney(tagTotal, t.locale) }) : payeeSpan)
+          : total ? fmt(t.whereSub, { span: payeeSpan, total: formatMoney(total, t.locale) }) : payeeSpan}
+      action={(view === 'payees' || view === 'tags') && (
         <MenuPicker
           label={t.wherePeriod}
           value={period}
@@ -292,12 +301,15 @@ function WhereCard({ book, averageOver, language, t, onCategory, onPayee }: {
         />
       )}
     >
-      <Segmented<'categories' | 'payees'> label={t.whereMoneyGoes} value={view} onChange={setView} options={[
+      <Segmented<'categories' | 'payees' | 'tags'> label={t.whereMoneyGoes} value={view} onChange={setView} options={[
         { value: 'categories', label: t.categories },
         { value: 'payees', label: t.payees },
+        ...(hasTags ? [{ value: 'tags' as const, label: t.tags }] : []),
       ]} />
       <div className="mt-4">
-        {view === 'payees' ? (
+        {view === 'tags' ? (
+          <TagsList tags={tags} total={tagTotal} t={t} />
+        ) : view === 'payees' ? (
           <PayeesList payees={payees} total={total} categories={categories} language={language} t={t}
             expanded={expanded} onExpand={() => setExpanded(true)} onPayee={onPayee} />
         ) : where.rows.length === 0 ? (
@@ -373,6 +385,36 @@ function WhereRowButton({ row: r, scale, language, t, onOpen }: {
         </span>
       </button>
     </li>
+  );
+}
+
+/** Tag by tag, largest first, with its share and entry count (plan 26). */
+function TagsList({ tags, total, t }: { tags: TagTotal[]; total: number; t: Strings }) {
+  if (tags.length === 0) return <p className="text-label text-fg-mute wrap-prose">{t.whereNone}</p>;
+  const max = Math.max(1, ...tags.map(x => x.amount));
+  const money = (c: number) => formatMoney(c, t.locale);
+  return (
+    <>
+      <ol className="-mx-4 divide-hairline-inset" style={{ '--sep': '16px' } as CSSProperties}>
+        {tags.map(x => (
+          <li key={x.tag} className="px-4 py-2.5">
+            <div className="flex items-baseline gap-2">
+              <span className="min-w-0 flex-1 text-body text-fg wrap-compound">#{x.tag}</span>
+              <span className="shrink-0 text-body font-semibold num text-fg">{money(x.amount)}</span>
+            </div>
+            <div className="mt-1.5 flex items-center gap-2">
+              <span className="flex-1 h-[6px] rounded-full bg-surface-2 overflow-hidden" aria-hidden="true">
+                <span className="block h-full rounded-full bg-accent-fill" style={{ width: `${Math.round((x.amount / max) * 100)}%` }} />
+              </span>
+              <span className="shrink-0 text-caption text-fg-mute num">
+                {fmt(t.tagEntries, { n: x.count })}{total ? ` · ${formatPercent(Math.round((x.amount / total) * 100), t.locale)}` : ''}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p className="text-caption text-fg-mute mt-3 wrap-prose">{t.tagHint}</p>
+    </>
   );
 }
 

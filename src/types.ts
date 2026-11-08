@@ -89,6 +89,8 @@ export interface Entry {
   ref?: string;
   /** The savings goal this paid entry fills (plan 12). Only on `budget: 'save'` categories. */
   goalId?: string;
+  /** Free tags (plan 14 data; schema 14), lowercase, without "#", at most 5. */
+  tags?: string[];
 }
 
 /** A month the user has started. Entries only live in started months. */
@@ -173,4 +175,6 @@ export interface EntryDraft {
   note?: string;
   /** The savings goal this entry fills (plan 12). */
   goalId?: string;
+  /** Free tags (plan 26). */
+  tags?: string[];
 }

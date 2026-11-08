@@ -6,6 +6,7 @@ import {
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, monthsEnding, monthSpanLabel, formatPercent, upgradeCategories,
   normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, monthSettled, topCategories, laterCopies,
   leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth, formatMoneyEstimate, compactMoney, evalAmount, MAX_FAVORITES, reconcile,
+  normalizeTags, MAX_TAGS,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -531,13 +532,13 @@ describe('CSV export', () => {
     const csv = toCsv(d, 'de', {
       header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
       income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
-      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung',
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags',
     });
     const lines = csv.replace('﻿', '').trim().split('\r\n');
     // A trailing currency column (EUR) is appended after the date (plan 07).
-    expect(lines[0].endsWith(';Währung')).toBe(true);
-    expect(lines[1]).toBe('2026-11;Einkommen;Einnahme;Gehalt;4164,59;bezahlt;einmalig;;;;EUR');
-    expect(lines[2]).toBe('2026-11;Wohnen;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;;;EUR');
+    expect(lines[0].endsWith(';Währung;Tags')).toBe(true);
+    expect(lines[1]).toBe('2026-11;Einkommen;Einnahme;Gehalt;4164,59;bezahlt;einmalig;;;;EUR;');
+    expect(lines[2]).toBe('2026-11;Wohnen;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;;;EUR;');
   });
 
   it('neutralises formula cells so a hostile payee name cannot run in Excel', () => {
@@ -549,7 +550,7 @@ describe('CSV export', () => {
     const csv = toCsv(d, 'de', {
       header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
       income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
-      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung',
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags',
     });
     const lines = csv.replace('', '').trim().split('\r\n');
     // Each dangerous text cell gets a leading apostrophe; the cell is then quoted only if it needs it.
@@ -978,5 +979,39 @@ describe('savings goals (plan 12)', () => {
     const back = parseBackup(JSON.stringify(makeBackup(d)));
     expect(back.ok && back.data.entries[0].goalId).toBe('a');
     expect(back.ok && back.data.goals?.[0].name).toBe('Urlaub');
+  });
+});
+
+describe('tags (plan 26)', () => {
+  it('normalises case, a leading #, and the limits', () => {
+    expect(normalizeTags(['#Urlaub', 'URLAUB', '  Italien  '])).toEqual(['urlaub', 'italien']); // deduped, lowercased, trimmed
+    expect(normalizeTags('#reise')).toEqual(['reise']); // a lone string works too
+    expect(normalizeTags(['a', 'b', 'c', 'd', 'e', 'f'])).toHaveLength(MAX_TAGS); // capped
+    expect(normalizeTags(['x'.repeat(50)])[0]).toHaveLength(30); // length capped
+    expect(normalizeTags(['', '  ', 42])).toEqual([]);
+  });
+
+  it('search finds #tag exactly, and a plain word matches the tag too', () => {
+    const tagged = (name: string, tags: string[]): Entry =>
+      ({ id: name, month: '2026-11', categoryId: 'extra', name, amount: 1000, paid: true, repeat: 'none', seriesId: name, createdAt: 0, tags });
+    const list = [tagged('Flug', ['urlaub', 'italien']), tagged('Buch', ['lesen'])];
+    const find = (q: string) => searchEntries(list, q, { categoryName: () => 'Sonstiges', locale: 'de-DE' }).map(e => e.name);
+    expect(find('#urlaub')).toEqual(['Flug']);
+    expect(find('urlaub')).toEqual(['Flug']);
+    expect(find('#lesen')).toEqual(['Buch']);
+  });
+
+  it('exports a tags column, injection-guarded', () => {
+    const d = data([
+      { ...e('2026-11', 'extra', 'Flug', 50000, true), tags: ['urlaub', 'italien'] },
+    ], [{ key: '2026-11', startedAt: 0 }]);
+    const csv = toCsv(d, 'de', {
+      header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
+      income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags',
+    });
+    const lines = csv.replace('', '').trim().split('\r\n');
+    expect(lines[0].endsWith(';Tags')).toBe(true);
+    expect(lines[1].endsWith(';#urlaub #italien')).toBe(true);
   });
 });

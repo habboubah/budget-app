@@ -9,8 +9,9 @@ import { isSupportedCurrency } from './currency';
  *  10: contract details per recurring series (`AppData.contracts`) — optional too.
  *  11: book currency (`AppData.currency`, ISO 4217) — optional, unset = EUR.
  *  12: pinned favourites (`AppData.favorites`) — optional, unset = none.
- *  13: savings goals (`AppData.goals`, `Entry.goalId`) — optional, unset = none. */
-export const SCHEMA_VERSION = 13;
+ *  13: savings goals (`AppData.goals`, `Entry.goalId`) — optional, unset = none.
+ *  14: entry tags (`Entry.tags`) — optional, unset = none. */
+export const SCHEMA_VERSION = 14;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -693,6 +694,9 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
     if (e.date) copy.date = dayInMonth(key, Number(e.date.slice(8, 10)));
     if (e.note) copy.note = e.note;
     if (e.order !== undefined) copy.order = e.order;
+    // A recurring entry keeps its goal (a standing order fills the pot, plan 12) and its tags (plan 26).
+    if (e.goalId) copy.goalId = e.goalId;
+    if (e.tags?.length) copy.tags = [...e.tags];
     return copy;
   });
 }
@@ -843,7 +847,9 @@ export function searchEntries(entries: Entry[], query: string, { categoryName, l
   return entries.filter(e => {
     let category = names.get(e.categoryId);
     if (category === undefined) names.set(e.categoryId, category = foldForSearch(categoryName(e.categoryId)));
-    const text = `${foldForSearch(e.name)}\n${foldForSearch(e.note ?? '')}\n${category}`;
+    // Tags as "#tag" tokens: "#urlaub" matches exactly, a plain "urlaub" still matches the word inside (plan 26).
+    const tags = e.tags?.length ? '\n' + e.tags.map(x => `#${foldForSearch(x)}`).join(' ') : '';
+    const text = `${foldForSearch(e.name)}\n${foldForSearch(e.note ?? '')}\n${category}${tags}`;
     return terms.every(t => text.includes(t) || amountMatches(e.amount, t, locale));
   });
 }
@@ -1065,6 +1071,8 @@ function normalizeEntry(v: unknown): Entry | null {
   if (ref) e.ref = ref.slice(0, 200);
   const goalId = str(v.goalId);
   if (goalId) e.goalId = goalId.slice(0, 80);
+  const tags = normalizeTags(v.tags);
+  if (tags.length) e.tags = tags;
   return e;
 }
 
@@ -1146,6 +1154,26 @@ function normalizeContracts(v: unknown): Record<string, Contract> | undefined {
 
 /** How many favourites are kept — two lines of chips, so no "Alle" is needed (plan 09). */
 export const MAX_FAVORITES = 8;
+
+/** At most this many tags per entry, each at most this long (plan 26). */
+export const MAX_TAGS = 5;
+export const MAX_TAG_LENGTH = 30;
+
+/**
+ * Clean a list of tags (plan 26): lowercase, no leading "#", trimmed, deduped,
+ * each at most MAX_TAG_LENGTH, at most MAX_TAGS. Returns [] when there are none.
+ */
+export function normalizeTags(raw: unknown): string[] {
+  const list = Array.isArray(raw) ? raw : typeof raw === 'string' ? [raw] : [];
+  const out: string[] = [];
+  for (const x of list) {
+    if (typeof x !== 'string') continue;
+    const tag = x.replace(/^#+/, '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, MAX_TAG_LENGTH);
+    if (tag && !out.includes(tag)) out.push(tag);
+    if (out.length >= MAX_TAGS) break;
+  }
+  return out;
+}
 
 /**
  * Pinned favourites (schema 12), cleaned: a name and a category are required
@@ -1350,6 +1378,8 @@ export interface CsvLabels {
   repeat: Record<Repeat, string>;
   /** The header for the appended currency column ("Währung"). */
   currency: string;
+  /** The header for the appended tags column ("Tags", plan 26). */
+  tags: string;
 }
 
 /**
@@ -1371,7 +1401,7 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
   const rows = [...data.entries].sort((a, b) =>
     a.month < b.month ? -1 : a.month > b.month ? 1
       : (order.get(a.categoryId) ?? 0) - (order.get(b.categoryId) ?? 0) || a.createdAt - b.createdAt);
-  const lines = [[...labels.header, labels.currency].map(cell).join(';')];
+  const lines = [[...labels.header, labels.currency, labels.tags].map(cell).join(';')];
   for (const e of rows) {
     const c = byId.get(e.categoryId);
     const kind = c?.kind ?? 'expense';
@@ -1382,6 +1412,7 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
       cell(e.dueDay ? String(e.dueDay) : ''), textCell(e.note ?? ''),
       cell(e.date ? `${e.date.slice(8, 10)}.${e.date.slice(5, 7)}.${e.date.slice(0, 4)}` : ''),
       cell(activeCurrency), // the book's currency, appended so the old column order is kept
+      textCell((e.tags ?? []).map(x => `#${x}`).join(' ')), // tags, injection-guarded (plan 26)
     ].join(';'));
   }
   // BOM, so Excel reads the umlauts as UTF-8.
