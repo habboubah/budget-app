@@ -194,7 +194,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (an imported bank transaction's fingerprint); **schema 9** adds
   `Category.limit` (a spending category's monthly budget, cents) and
   **schema 10** `AppData.contracts` (end, notice, renewal, note per recurring
-  series) — both optional, nothing to migrate, both in backups. What older
+  series); **schema 11** `AppData.currency` (plan 07); **schema 12**
+  `AppData.favorites` (plan 09: pinned entries, name + category required, a
+  deleted category falls to `extra`, capped at `MAX_FAVORITES`) — all optional,
+  nothing to migrate, all in backups. What older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
   `backup-schema-*.json`; `compat.test.ts`: they load, keep what they held,
   and come to the same balances). A new schema version adds its fixture. Ids

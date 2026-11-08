@@ -217,7 +217,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 06a Statistics and insights — built with plan 13, `npm run check` passes; VoiceOver, the SE's long tasks, the usability test and a native Arabic read are still to do (see the plan's notes)
 - [x] 07 Currency — built, `npm run check` passes; regional default + a Darstellung setting, formatters/parse/CSV/import all follow it, schema 11 (optional `AppData.currency`), tested. ui-review in CHF/GBP/SAR still to do
 - [x] 08 Calculator in the amount field — built, `npm run check` passes; `evalAmount` tested (precedence, formats, Arabic digits, caps), operator key row above the keyboard. On-device SE keyboard capture still to do
-- [ ] 09 Favourites
+- [x] 09 Favourites — built, `npm run check` passes; pin from the entry sheet, one-tap add (with undo) via chips, manage screen (reorder/remove), schema 12, normalization tested. ui-review on device still to do
 - [ ] 10 Match the bank balance
 - [ ] 11 Reserve for yearly bills
 - [ ] 12 Savings goals

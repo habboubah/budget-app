@@ -117,6 +117,18 @@ export interface AppData {
   contracts?: Record<string, Contract>;
   /** ISO 4217 currency (schema 11). Unset = EUR, so older books stay as they are. */
   currency?: string;
+  /** Pinned entries for one-tap adding (schema 12). Unset or missing = none. */
+  favorites?: Favorite[];
+}
+
+/** A pinned entry: one tap adds it, dated today and paid (plan 09). */
+export interface Favorite {
+  id: string;
+  name: string;
+  categoryId: string;
+  /** Unset means the one-tap opens the sheet with the amount focused instead of saving. */
+  amount?: number;
+  repeat?: Repeat;
 }
 
 /** A backup file / stored payload. */

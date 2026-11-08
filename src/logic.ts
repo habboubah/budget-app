@@ -1,5 +1,5 @@
 import {
-  AppData, Backup, Category, CategoryKind, Contract, Entry, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
+  AppData, Backup, Category, CategoryKind, Contract, Entry, Favorite, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -7,8 +7,9 @@ import { isSupportedCurrency } from './currency';
 /** Bump when a stored shape changes, and migrate in `normalizeState`.
  *  9: monthly budgets (`Category.limit`) — optional, so nothing to migrate.
  *  10: contract details per recurring series (`AppData.contracts`) — optional too.
- *  11: book currency (`AppData.currency`, ISO 4217) — optional, unset = EUR. */
-export const SCHEMA_VERSION = 11;
+ *  11: book currency (`AppData.currency`, ISO 4217) — optional, unset = EUR.
+ *  12: pinned favourites (`AppData.favorites`) — optional, unset = none. */
+export const SCHEMA_VERSION = 12;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1067,7 +1068,13 @@ export function normalizeState(raw: unknown): AppData {
   const contracts = normalizeContracts(v.contracts);
   // Currency (schema 11): keep it only when it is a known two-digit code; anything else falls back to EUR (unset).
   const currency = isSupportedCurrency(v.currency) ? v.currency : undefined;
-  return { categories, entries, months, ...(contracts ? { contracts } : {}), ...(currency ? { currency } : {}) };
+  const favorites = normalizeFavorites(v.favorites, categories);
+  return {
+    categories, entries, months,
+    ...(contracts ? { contracts } : {}),
+    ...(currency ? { currency } : {}),
+    ...(favorites ? { favorites } : {}),
+  };
 }
 
 /** One series' contract details: a real day, a notice and a renewal of whole months, a short note. Null when nothing is left. */
@@ -1093,6 +1100,34 @@ function normalizeContracts(v: unknown): Record<string, Contract> | undefined {
     if (c) out[id] = c;
   }
   return Object.keys(out).length ? out : undefined;
+}
+
+/** How many favourites are kept — two lines of chips, so no "Alle" is needed (plan 09). */
+export const MAX_FAVORITES = 8;
+
+/**
+ * Pinned favourites (schema 12), cleaned: a name and a category are required
+ * (a favourite for a category that no longer exists falls to `extra` when the
+ * entry is made, the same rule entries follow — not dropped here). A bad
+ * amount or repeat is left off. Capped to `MAX_FAVORITES`.
+ */
+function normalizeFavorites(v: unknown, categories: Category[]): Favorite[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const known = new Set(categories.map(c => c.id));
+  const out: Favorite[] = [];
+  for (const raw of v) {
+    if (!isObj(raw)) continue;
+    const name = typeof raw.name === 'string' ? cleanText(raw.name) : '';
+    const categoryId = typeof raw.categoryId === 'string' && raw.categoryId ? raw.categoryId : '';
+    if (!name || !categoryId) continue;
+    const id = typeof raw.id === 'string' && raw.id ? raw.id : uid();
+    const fav: Favorite = { id, name, categoryId: known.has(categoryId) ? categoryId : OTHER_CATEGORY.id };
+    if (typeof raw.amount === 'number' && Number.isFinite(raw.amount) && raw.amount > 0 && raw.amount <= MAX_CENTS) fav.amount = Math.round(raw.amount);
+    if (raw.repeat === 'monthly' || raw.repeat === 'yearly' || raw.repeat === 'none') fav.repeat = raw.repeat;
+    out.push(fav);
+    if (out.length >= MAX_FAVORITES) break;
+  }
+  return out.length ? out : undefined;
 }
 
 const sameNames = (a: Names, b: Names) =>

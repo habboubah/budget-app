@@ -5,8 +5,8 @@ import { motion, useTransform } from 'motion/react';
 import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import translations, { fmt } from './translations';
-import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
-import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
+import { Category, Contract, Entry, EntryDraft, Favorite, MonthKey } from './types';
+import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, isoDay, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { Insight, buildBook, highlights, monthReview, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
@@ -36,6 +36,7 @@ import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
 import { TransferView } from './components/TransferView';
 import { BackupsView } from './components/BackupsView';
+import { FavoritesView } from './components/FavoritesView';
 import { RemindersView } from './components/RemindersView';
 import { LockScreen, PrivacyCover } from './components/LockScreen';
 import { reminderPlan } from './reminders';
@@ -57,7 +58,7 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'backups' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -65,7 +66,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** `localStorage['spartopf-dev-season'] = '1'`: the year review's card out of season (screenshots, ui-review). */
@@ -277,6 +278,20 @@ export default function App() {
     store.expand(d.categoryId);
     setLastCategory(d.categoryId);
     show(fmt(t.entryAdded, { name: d.name }));
+  };
+
+  /**
+   * One-tap add from a favourite (plan 09): with an amount it saves straight
+   * away (today, paid) with the undo toast; without one it opens the sheet
+   * pre-filled, amount focused. `pin` always opens the sheet to change first.
+   */
+  const addFromFavorite = (fav: Favorite, pin = false) => {
+    const categoryId = categories.some(c => c.id === fav.categoryId) ? fav.categoryId : 'extra';
+    if (pin || fav.amount === undefined) {
+      setEntrySheet({ kind: 'new', month, categoryId, preset: { name: fav.name, amount: fav.amount, repeat: fav.repeat } });
+      return;
+    }
+    createEntry(month, { categoryId, name: fav.name, amount: fav.amount, paid: true, repeat: fav.repeat ?? 'none', date: isoDay() });
   };
 
   const deleteEntry = (id: string) => {
@@ -637,6 +652,16 @@ export default function App() {
             onRestore={d => { const before = store.restoreData(d); setMonth(monthKeyOf()); return before; }}
             toast={(label, action) => show(label, action)}
           />
+        ) : id === 'favorites' ? (
+          <FavoritesView
+            favorites={store.favorites}
+            categories={categories}
+            t={t}
+            language={language}
+            onReorder={store.reorderFavorites}
+            onRemove={id => { const removed = store.removeFavorite(id); if (removed) show(t.favoriteRemoved, { label: t.undo, run: () => store.restoreFavorite(removed.favorite, removed.index) }); }}
+            onBack={back}
+          />
         ) : id === 'settings' ? (
           <SettingsView
             language={language}
@@ -650,6 +675,8 @@ export default function App() {
             onLanguage={store.setLanguage}
             onTheme={store.setThemeMode}
             onCategories={() => push('categories')}
+            favoriteCount={store.favorites.length}
+            onFavorites={() => push('favorites')}
             onTransfer={() => push('transfer')}
             onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); }}
             lockKind={lockKind}
@@ -826,6 +853,13 @@ export default function App() {
         onCreate={createEntry}
         onSave={(id, d) => { store.updateEntry(id, d); setLastCategory(d.categoryId); }}
         onDelete={deleteEntry}
+        favorites={store.favorites}
+        onUseFavorite={addFromFavorite}
+        onPinFavorite={fav => {
+          const created = store.addFavorite(fav);
+          show(created ? t.favoriteSaved : t.favoritesFull);
+          return !!created;
+        }}
       />
 
       <OpeningSheet

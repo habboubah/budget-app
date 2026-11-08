@@ -5,7 +5,7 @@ import {
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, monthsEnding, monthSpanLabel, formatPercent, upgradeCategories,
   normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, monthSettled, topCategories, laterCopies,
-  leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth, formatMoneyEstimate, compactMoney, evalAmount,
+  leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth, formatMoneyEstimate, compactMoney, evalAmount, MAX_FAVORITES,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -867,5 +867,51 @@ describe('evalAmount — the amount-field calculator', () => {
   it('caps the number of operands', () => {
     expect(evalAmount(Array(13).fill('1').join('+'), 'de-DE')).toBeNull();
     expect(evalAmount(Array(12).fill('1').join('+'), 'de-DE')).toBe(1200);
+  });
+});
+
+describe('favourites (plan 09)', () => {
+  const cats = defaultCategories();
+  it('keeps good favourites and drops the rest', () => {
+    const state = normalizeState({
+      categories: cats,
+      entries: [],
+      months: [],
+      favorites: [
+        { id: 'a', name: 'Bäcker', categoryId: 'groceries', amount: 480, repeat: 'none' },
+        { id: 'b', name: '', categoryId: 'groceries' },           // no name → dropped
+        { id: 'c', name: 'Tanken', categoryId: 'car' },           // no amount is fine
+        { name: 'Kantine', categoryId: 'extra', amount: -5 },     // bad amount → amount left off, id generated
+        'nope',                                                   // not an object → dropped
+      ],
+    });
+    const favs = state.favorites ?? [];
+    expect(favs.map(f => f.name)).toEqual(['Bäcker', 'Tanken', 'Kantine']);
+    expect(favs[0]).toMatchObject({ amount: 480, repeat: 'none' });
+    expect(favs[1].amount).toBeUndefined();
+    expect(favs[2].amount).toBeUndefined(); // the -5 was rejected
+    expect(favs[2].id).toBeTruthy();
+  });
+
+  it('sends a favourite of a deleted category to Sonstiges (extra)', () => {
+    const state = normalizeState({
+      categories: cats,
+      entries: [],
+      months: [],
+      favorites: [{ id: 'x', name: 'Altes', categoryId: 'does-not-exist', amount: 100 }],
+    });
+    expect(state.favorites?.[0].categoryId).toBe('extra');
+  });
+
+  it('caps the number of favourites', () => {
+    const many = Array.from({ length: MAX_FAVORITES + 3 }, (_, i) => ({ id: `f${i}`, name: `F${i}`, categoryId: 'extra' }));
+    const state = normalizeState({ categories: cats, entries: [], months: [], favorites: many });
+    expect(state.favorites?.length).toBe(MAX_FAVORITES);
+  });
+
+  it('travels through a backup', () => {
+    const d: AppData = { categories: cats, entries: [], months: [], favorites: [{ id: 'a', name: 'Bäcker', categoryId: 'groceries', amount: 480 }] };
+    const back = parseBackup(JSON.stringify(makeBackup(d)));
+    expect(back.ok && back.data.favorites?.[0]).toMatchObject({ name: 'Bäcker', amount: 480 });
   });
 });

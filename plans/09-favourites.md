@@ -43,8 +43,17 @@ The small daily things (Bäcker, Tanken, Kantine) are the entries people give up
 
 ## Done when
 
-- [ ] Pinning, using, reordering and removing all work.
-- [ ] Undo works after a one-tap save.
+- [x] Pinning, using, reordering and removing all work.
+- [x] Undo works after a one-tap save.
+
+## Notes (built)
+
+- Type `Favorite` (`types.ts`); `AppData.favorites?` (schema **12**, optional, in backups). `normalizeFavorites` in `logic.ts` (tested): name + category required, a deleted category falls to `extra`, bad amount/repeat dropped, capped to `MAX_FAVORITES = 8`.
+- `store.ts`: `favorites` state (data, serialised only when non-empty), `addFavorite` (dedupes, respects the cap), `removeFavorite`/`restoreFavorite` (undo), `reorderFavorites`; reset/import/restore handle it.
+- `EntrySheet.tsx`: a chip row at the top of a **new** entry — `FavoriteChip` (tap = use, 500 ms long-press = open pre-filled). "Als Favorit merken" button builds a favourite from the current draft. `App.tsx` `addFromFavorite`: with an amount it saves straight away (today, paid) with the undo toast; without one it opens the sheet, amount focused.
+- `FavoritesView.tsx` (pushed under *Optionen › Haushaltsbuch › Favoriten*): reorder (up/down) and remove with undo. Settings row shows the count.
+- Decision taken here: entries open straight into the sheet (there is no per-row "⋯" menu in this design), so the sheet's "Als Favorit merken" is the entry's pin action; reordering is up/down buttons rather than drag (simpler, VoiceOver-friendly).
+- Still to do: ui-review of the sheet with 0/3/8 favourites in DE + AR on device.
 
 ## Not in this plan
 

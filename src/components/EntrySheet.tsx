@@ -1,9 +1,9 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, Check, ChevronDown, ChevronUp, Plus, Repeat as RepeatIcon, Trash2 } from 'lucide-react';
-import { Category, Entry, EntryDraft, MonthKey, Repeat } from '../types';
+import { CalendarDays, Check, ChevronDown, ChevronUp, Plus, Repeat as RepeatIcon, Star, Trash2 } from 'lucide-react';
+import { Category, Entry, EntryDraft, Favorite, MonthKey, Repeat } from '../types';
 import {
-  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, isIsoDay, isoDay, monthKeyOf, parseAmount, suggestNames,
+  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, parseAmount, suggestNames,
   normalizeDigits, topCategories,
 } from '../logic';
 import { Strings, fmt } from '../translations';
@@ -32,6 +32,12 @@ interface Props {
   onCreate: (month: MonthKey, draft: EntryDraft) => void;
   onSave: (id: string, draft: EntryDraft) => void;
   onDelete: (id: string) => void;
+  /** Pinned favourites, shown as chips at the top of a new entry (plan 09). */
+  favorites?: Favorite[];
+  /** Tap a favourite chip (one-tap add); `pin` from a long press opens it pre-filled. */
+  onUseFavorite?: (fav: Favorite, pin?: boolean) => void;
+  /** Pin the current entry as a favourite; returns false when the limit is reached. */
+  onPinFavorite?: (fav: Omit<Favorite, 'id'>) => boolean;
 }
 
 /** A compact control in the entry sheet's last row (date, status, repeat, note). */
@@ -53,7 +59,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * once unless changed, so most entries are amount + name + save. (A due day
  * is no longer asked for; one already on an entry is kept.)
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onUseFavorite, onPinFavorite }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -71,6 +77,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [showError, setShowError] = useState(false);
   /** The operator key row (plan 08) only while the amount is being typed. */
   const [amountFocused, setAmountFocused] = useState(false);
+  /** Turned on once this entry has been pinned as a favourite in this session (plan 09). */
+  const [pinned, setPinned] = useState(false);
   const [repeatAt, setRepeatAt] = useState<HTMLElement | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -116,6 +124,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
   useEffect(() => {
     if (!mode) return;
+    setPinned(false);
     if (mode.kind === 'edit') {
       const e = mode.entry;
       setCategoryId(e.categoryId);
@@ -217,6 +226,24 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     <Sheet open={!!mode} title={title} closeLabel={t.cancel} onClose={onClose}
       action={{ label: t.save, onClick: () => save(), disabled: !valid }}>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-4">
+        {/* Favourites (plan 09): one tap adds; a long press opens pre-filled. New entries only. */}
+        {!editing && favorites.length > 0 && onUseFavorite && (
+          <div className="-mt-1 flex flex-wrap gap-2" aria-label={t.favorites}>
+            {favorites.map(f => {
+              const c = categories.find(x => x.id === f.categoryId);
+              return (
+                <FavoriteChip
+                  key={f.id}
+                  emoji={c?.emoji}
+                  name={f.name}
+                  amount={f.amount !== undefined ? formatMoneyShort(f.amount, t.locale) : undefined}
+                  onTap={() => { onUseFavorite(f); onClose(); }}
+                  onHold={() => onUseFavorite(f, true)}
+                />
+              );
+            })}
+          </div>
+        )}
         {/* Amount — the one thing every entry needs, so it comes first. */}
         <div className="text-center">
           <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
@@ -445,6 +472,20 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           {!editing && (
             <Button variant="secondary" full disabled={!valid} onClick={() => save(true)}>{t.saveAndNext}</Button>
           )}
+          {onPinFavorite && !!category && !!cleanText(name) && (
+            <Button variant="ghost" full icon={pinned ? Check : Star} disabled={pinned}
+              onClick={() => {
+                const ok = onPinFavorite({
+                  name: cleanText(name) || displayName(category.names, language),
+                  categoryId,
+                  ...(amount !== null ? { amount } : {}),
+                  ...(repeat !== 'none' ? { repeat } : {}),
+                });
+                if (ok) setPinned(true);
+              }}>
+              {pinned ? t.favoriteSaved : t.pinFavorite}
+            </Button>
+          )}
           {editing && (
             <Button variant="danger" full icon={Trash2} onClick={() => { onDelete(editing.id); onClose(); }}>{t.deleteEntry}</Button>
           )}
@@ -501,5 +542,40 @@ function OperatorKeys({ show, t, onInsert }: { show: boolean; t: Strings; onInse
       </div>
     </div>,
     document.body,
+  );
+}
+
+/**
+ * A favourite as a chip (plan 09): a short tap uses it, a long press (500 ms)
+ * opens it pre-filled. The long press cancels the tap so it never does both.
+ */
+function FavoriteChip({ emoji, name, amount, onTap, onHold }: {
+  emoji?: string;
+  name: string;
+  amount?: string;
+  onTap: () => void;
+  onHold: () => void;
+}) {
+  const held = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const start = () => {
+    held.current = false;
+    timer.current = setTimeout(() => { held.current = true; tapLight(); onHold(); }, 500);
+  };
+  const end = () => { if (timer.current) clearTimeout(timer.current); };
+  return (
+    <button
+      type="button"
+      onPointerDown={start}
+      onPointerUp={end}
+      onPointerLeave={end}
+      onPointerCancel={end}
+      onClick={() => { if (!held.current) { tapLight(); onTap(); } }}
+      className="hit-44 min-h-[40px] max-w-full ps-2 pe-3 rounded-full bg-surface-2 text-fg inline-flex items-center gap-1.5 text-label font-medium active:scale-[0.97] transition-transform focus-visible:ring-focus wrap-compound text-start"
+    >
+      {emoji && <span className="emoji text-[15px]" aria-hidden="true">{emoji}</span>}
+      <span className="wrap-compound">{name}</span>
+      {amount && <span className="text-fg-mute num" dir="ltr">{amount}</span>}
+    </button>
   );
 }

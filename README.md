@@ -62,6 +62,11 @@ month, and the two numbers that matter: **what is on the account now** and
   the entry there. All of this month's categories show at once, the rest behind
   *Weitere*. "Sichern & nächster" for a stack of receipts (keeps the date).
   Deleting is undoable.
+- **Favourites.** Pin the small daily entries (Bäcker, Tanken, Kantine) with
+  *Als Favorit merken*; they appear as chips at the top of a new entry. One tap
+  adds the entry (dated today, paid, undoable); a long press opens it to change
+  something first. Reorder and remove them in *Optionen → Haushaltsbuch →
+  Favoriten*. Up to eight.
 - **Carry-over.** Mark entries **monatlich** or **jährlich**. Starting the next
   month shows exactly which ones come along and copies them in as *open*. The
   balance is carried over automatically — set it by hand for the first month or

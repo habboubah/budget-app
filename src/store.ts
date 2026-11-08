@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ACCENTS, Accent, AppData, Category, Contract, Entry, MonthKey, MonthRecord, ThemeMode } from './types';
+import { ACCENTS, Accent, AppData, Category, Contract, Entry, Favorite, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
-  canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
+  MAX_FAVORITES, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid,
 } from './logic';
 import { Currency, DEFAULT_CURRENCY, currencyForLocale, isSupportedCurrency } from './currency';
@@ -81,6 +81,8 @@ export function useAppStore() {
     return value;
   });
   useEffect(() => { setActiveCurrency(currency); }, [currency]);
+  /** Pinned favourites — data, so part of a backup (plan 09). */
+  const [favorites, setFavorites] = useState<Favorite[]>(initial.favorites ?? []);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = readString(K.theme);
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
@@ -171,8 +173,9 @@ export function useAppStore() {
       categories, entries, months,
       ...(Object.keys(contracts).length ? { contracts } : {}),
       ...(currency !== DEFAULT_CURRENCY ? { currency } : {}),
+      ...(favorites.length ? { favorites } : {}),
     }),
-    [categories, entries, months, contracts, currency],
+    [categories, entries, months, contracts, currency, favorites],
   );
   // Every change to the book goes to storage (debounced, written atomically; storage.ts).
   useEffect(() => { saver.save(data); }, [data]);
@@ -418,6 +421,7 @@ export function useAppStore() {
     setMonths(fixed.months.length ? fixed.months : [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fixed.categories) }]);
     setContracts(fixed.contracts ?? {});
     setCurrency(isSupportedCurrency(fixed.currency) ? fixed.currency : DEFAULT_CURRENCY);
+    setFavorites(fixed.favorites ?? []);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -438,6 +442,7 @@ export function useAppStore() {
     setEntries([]);
     setMonths([{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fresh) }]);
     setContracts({});
+    setFavorites([]);
     setCurrency(currencyForLocale(navigator.language));
     setIntroDone(false);
     setTipsDone(false);
@@ -445,6 +450,38 @@ export function useAppStore() {
     setCopyCardDismissed(false);
     try { localStorage.removeItem(K.lastExport); } catch { /* a preference */ }
   };
+
+  /* ------------------------------------------------------------- contracts */
+
+  /* ------------------------------------------------------------- favourites */
+
+  /** Pin a favourite (plan 09); ignored once there are MAX_FAVORITES, or when an equal one exists. */
+  const addFavorite = (fav: Omit<Favorite, 'id'>): Favorite | null => {
+    if (favorites.length >= MAX_FAVORITES) return null;
+    const exists = favorites.some(f => f.name === fav.name && f.categoryId === fav.categoryId && f.amount === fav.amount && f.repeat === fav.repeat);
+    if (exists) return null;
+    const created: Favorite = { id: uid(), ...fav };
+    setFavorites(prev => [...prev, created]);
+    return created;
+  };
+
+  /** Remove a favourite; returns it and its place, for undo. */
+  const removeFavorite = (id: string): { favorite: Favorite; index: number } | null => {
+    const index = favorites.findIndex(f => f.id === id);
+    if (index === -1) return null;
+    setFavorites(prev => prev.filter(f => f.id !== id));
+    return { favorite: favorites[index], index };
+  };
+
+  const restoreFavorite = (favorite: Favorite, index: number) =>
+    setFavorites(prev => (prev.some(f => f.id === favorite.id) ? prev : [...prev.slice(0, index), favorite, ...prev.slice(index)]));
+
+  const reorderFavorites = (ids: string[]) =>
+    setFavorites(prev => {
+      const byId = new Map(prev.map(f => [f.id, f]));
+      const ordered = ids.map(id => byId.get(id)).filter((f): f is Favorite => !!f);
+      return [...ordered, ...prev.filter(f => !ids.includes(f.id))];
+    });
 
   /* ------------------------------------------------------------- contracts */
 
@@ -480,6 +517,7 @@ export function useAppStore() {
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
     setCategories, importData, restoreData, resetAll, setContract,
+    favorites, addFavorite, removeFavorite, restoreFavorite, reorderFavorites,
     lastExport, markExported: () => setLastExport(new Date().toISOString().slice(0, 10)),
     copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),
     newId: uid,
