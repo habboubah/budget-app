@@ -214,14 +214,14 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 04 Encrypted backup files
 - [ ] 05 Security hardening
 - [ ] 06 Data protection at rest
-- [ ] 06a Statistics and insights
+- [x] 06a Statistics and insights — built with plan 13, `npm run check` passes; VoiceOver, the SE's long tasks, the usability test and a native Arabic read are still to do (see the plan's notes)
 - [ ] 07 Currency
 - [ ] 08 Calculator in the amount field
 - [ ] 09 Favourites
 - [ ] 10 Match the bank balance
 - [ ] 11 Reserve for yearly bills
 - [ ] 12 Savings goals
-- [ ] 13 Month report and year review
+- [x] 13 Month report and year review — built with 06a (before 07–12; the goal line waits for plan 12)
 - [ ] 14 Native bridge
 - [ ] 15 Ratings and feedback
 - [ ] 16 Store listing, accessibility labels, permission texts

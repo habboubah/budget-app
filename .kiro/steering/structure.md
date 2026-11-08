@@ -25,7 +25,9 @@
 | `storage.ts` | The only module that reads or writes the user's data: an atomic, SHA-256-checked JSON file in the iOS app's Library (with a `localStorage` mirror), `localStorage` on the web; a debounced `saver` |
 | `types.ts` | Data model: `Category`, `Entry`, `MonthRecord`, `Contract`, `AppData`, `Backup`, `EntryDraft` |
 | `logic.ts` | Core pure logic: money parse / format, months, balances, carry-over, sorting, search, name suggestions, `normalizeState` / `upgradeData`, backup, CSV, `SCHEMA_VERSION`, `uid()` |
-| `insights.ts`, `budgets.ts`, `contracts.ts`, `due.ts`, `reminders.ts` | Pure domain modules behind Planen, budgets, contracts, the due list and the reminder plan |
+| `insights/` | Statistik and Planen, pure and tested per module: `buildBook()` (every entry read once), `usual()` and the thresholds, the series (D1), 50/30/20, hints ranked as `Insight` data, pace, Ausblick, Finanz-Check, category / payee detail, month report and year review; `index.ts` re-exports |
+| `insightText.ts` | A hint in words for the view (translations in, a sentence out) |
+| `budgets.ts`, `contracts.ts`, `due.ts`, `reminders.ts` | Pure domain modules behind budgets, contracts, the due list and the reminder plan |
 | `statementImport.ts`, `excelImport.ts`, `xlsx.ts` | Bank CSV / OCR text import and Excel import |
 | `notify.ts`, `lock.ts`, `ocr.ts`, `export.ts`, `platform.ts`, `dynamicType.ts` | Thin wrappers over native and browser APIs: notifications, Face ID, tesseract, file share / download, `isNative()`, text size |
 | `translations.ts` | All UI text: flat `de` / `en` / `ar` objects, the `Strings` type, `fmt()` |

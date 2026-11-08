@@ -403,7 +403,11 @@ that old `localStorage` loads.
 
 **After step 14:** Statistik and Planen continue in
 [STATISTICS_AND_INSIGHTS.md](STATISTICS_AND_INSIGHTS.md): its phases 0–3
-are plan 06a, phase 4 is plan 13.
+are plan 06a, phase 4 is plan 13. Both are built (November 2026) and refine
+steps 8 and 9: Statistik opens with *Das fällt auf* above *Verlauf*, its
+categories open their own screen, and Planen runs *November bis heute*,
+Budgets, *Ausblick*, *Abos & Verträge*, *Finanz-Check* — the hints block,
+*Trend*, *Bester und schwächster Monat* and *Prognose* are gone.
 
 Nothing gets committed without asking.
 

@@ -5,7 +5,7 @@ import {
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, monthsEnding, monthSpanLabel, formatPercent, upgradeCategories,
   normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, monthSettled, topCategories, laterCopies,
-  leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth,
+  leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth, formatMoneyEstimate, compactMoney,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -327,6 +327,27 @@ describe('what a month leaves over', () => {
     expect(formatMoneyApprox(123499, 'de-DE')).toBe('1.234\u00a0€');
     expect(formatMoneyApprox(840, 'de-DE')).toBe('8,40\u00a0€');
     expect(formatMoneyApprox(7291, 'en-GB')).toBe('€72');
+  });
+
+  it('rounds estimates the way a person says them: 100 € from 10.000 €, 10 € from 1.000 €', () => {
+    expect(formatMoneyEstimate(1739592, 'de-DE')).toBe('17.400\u00a0€');
+    expect(formatMoneyEstimate(2_879_550, 'de-DE')).toBe('28.800\u00a0€');
+    expect(formatMoneyEstimate(123499, 'de-DE')).toBe('1.230\u00a0€');
+    expect(formatMoneyEstimate(98049, 'de-DE')).toBe('980\u00a0€');
+    expect(formatMoneyEstimate(840, 'de-DE')).toBe('8\u00a0€');
+    expect(formatMoneyEstimate(-38049, 'de-DE')).toBe('−380\u00a0€');
+    expect(formatMoneyEstimate(-40, 'de-DE')).toBe('0\u00a0€');
+    expect(formatMoneyEstimate(18000, 'de-DE', 'exceptZero')).toBe('+180\u00a0€');
+    expect(formatMoneyEstimate(1739592, 'en-GB')).toBe('€17,400');
+  });
+
+  it('writes axis amounts short, and groups German thousands the same way throughout', () => {
+    expect(compactMoney(400000, 'de-DE')).toBe('4.000');
+    expect(compactMoney(2000000, 'de-DE')).toBe('20.000');
+    expect(compactMoney(150000000, 'de-DE')).toBe('1,5\u00a0Mio.');
+    expect(compactMoney(-50000, 'de-DE')).toBe('−500');
+    expect(compactMoney(400000, 'en-GB')).toBe('4k');
+    expect(compactMoney(0, 'de-DE')).toBe('0');
   });
 });
 

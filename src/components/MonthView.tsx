@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ListFilter, MoreHorizontal, Plus } from 'lucide-react';
@@ -34,6 +34,11 @@ interface Props {
   openEarlier: Entry[];
   /** The first run's setup card (App builds it), or the tips card after it. */
   setup?: React.ReactNode;
+  /** The month-review card about last month (App builds it; plan 13). */
+  review?: React.ReactNode;
+  /** A search to open with ("Alle Einträge" of a payee), used once. */
+  searchSeed?: string | null;
+  onSearchSeedUsed?: () => void;
   /** No balance card yet: the setup asks for the balance first, instead of a card full of zeros. */
   hideBalance?: boolean;
   language: string;
@@ -112,7 +117,9 @@ export function MonthView(p: Props) {
     : categories.filter(hasCard);
   const emptyCategories = allOpen ? [] : categories.filter(c => !hasCard(c));
 
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(p.searchSeed ?? '');
+  // A payee's "Alle Einträge" opens the page on its search, once.
+  useEffect(() => { if (p.searchSeed) p.onSearchSeedUsed?.(); }, []);
   const searching = searchTerms(query).length > 0;
   // Every month is searched; the category names come from all categories, not just this month's.
   const found = searching
@@ -272,6 +279,8 @@ export function MonthView(p: Props) {
           )}
 
           {p.setup}
+
+          {p.review && <motion.div variants={rise}>{p.review}</motion.div>}
 
           {oldestOpen && (
             <motion.div variants={rise}>

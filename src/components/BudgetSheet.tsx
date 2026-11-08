@@ -20,6 +20,8 @@ interface Props {
   onClose: () => void;
   /** `undefined`: no budget any more. */
   onSave: (category: Category, limit: number | undefined) => void;
+  /** *Verlauf ansehen*: the category's own screen. */
+  onHistory?: (category: Category) => void;
 }
 
 /** "Vorschlag: 650 € (Ø 3 Monate)" under a budget field — tap to take it. */
@@ -47,7 +49,7 @@ export function BudgetSuggestion({ suggestion, t, onTake }: {
  * Offers what the category cost on average over the last finished months
  * (rounded up) as a start, and removes a budget that is there.
  */
-export function BudgetSheet({ category, data, language, t, onClose, onSave }: Props) {
+export function BudgetSheet({ category, data, language, t, onClose, onSave, onHistory }: Props) {
   const [text, setText] = useState('');
   useEffect(() => {
     if (category) setText(category.limit ? amountToInput(category.limit, t.locale) : '');
@@ -91,6 +93,9 @@ export function BudgetSheet({ category, data, language, t, onClose, onSave }: Pr
           <Button type="submit" full size="lg" disabled={!valid}>{t.save}</Button>
           {c.limit !== undefined && (
             <Button variant="ghost" full onClick={() => { onSave(c, undefined); onClose(); }}>{t.budgetRemove}</Button>
+          )}
+          {onHistory && (
+            <Button variant="ghost" full onClick={() => { onClose(); onHistory(c); }}>{t.budgetHistory}</Button>
           )}
         </div>
       </form>

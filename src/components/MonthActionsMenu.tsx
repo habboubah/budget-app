@@ -1,4 +1,4 @@
-import { Camera, ChevronsDownUp, ChevronsUpDown, FileSpreadsheet, Repeat as RepeatIcon, Trash2, Wallet } from 'lucide-react';
+import { BarChart3, Camera, ChevronsDownUp, ChevronsUpDown, FileSpreadsheet, Repeat as RepeatIcon, Trash2, Wallet } from 'lucide-react';
 import { MonthKey } from '../types';
 import { monthLabel } from '../logic';
 import { Strings, fmt } from '../translations';
@@ -9,7 +9,7 @@ import { Menu, MenuItem } from '../ui/Menu';
  * fetch missing recurring entries, fold all categories; import bank
  * transactions; delete the month.
  */
-export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onPull, onCollapseAll, onImportCsv, onImportPhoto, onDelete }: {
+export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onPull, onCollapseAll, onImportCsv, onImportPhoto, onDelete, onReport }: {
   /** The "⋯" button it opens from; null while closed. */
   anchor: HTMLElement | null;
   month: MonthKey;
@@ -28,8 +28,11 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
   onImportCsv: () => void;
   onImportPhoto: () => void;
   onDelete: () => void;
+  /** The month's report (plan 13); only for a started month. */
+  onReport?: () => void;
 }) {
   const month1: MenuItem[] = [
+    ...(started && onReport ? [{ key: 'report', label: t.reportTitle, sub: t.monthReportSub, icon: BarChart3, onSelect: onReport }] : []),
     { key: 'opening', label: prevKey ? t.openingTitle : t.startingBalance, icon: Wallet, onSelect: onOpening },
   ];
   if (started && prevKey) {

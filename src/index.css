@@ -415,6 +415,15 @@
   font-style: normal;
 }
 
+/* A label written inside a plot (an end value, "sonst ≈ …"): a halo in the
+   card's colour keeps it readable where it crosses a line or a band. */
+@utility chart-halo {
+  paint-order: stroke;
+  stroke: var(--t-surface);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
 @utility num {
   font-variant-numeric: tabular-nums;
   direction: ltr;

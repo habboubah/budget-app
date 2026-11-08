@@ -2,6 +2,7 @@
 // for the iPhone, so these are budgets that catch a regression, not promises:
 //   - typing an amount: no long task (≥ 50 ms) while a key is handled
 //   - switching month: the new month painted within 150 ms
+//   - switching to Statistik and to Planen: painted within 200 ms (plan 06a)
 //   - the main bundle: at most 10 % over the recorded gzip size
 // With a year of data (src/fixtures/demo-year.json). Runs on the production
 // build, served by `vite preview`.
@@ -19,14 +20,22 @@ const PORT = 4341;
 const origin = `http://127.0.0.1:${PORT}`;
 
 /**
- * The main chunk's gzip size (level 9) when this was recorded — plan 01,
- * November 2026. Raise it only with a note in the plan whose change made it
- * grow. Recorded at the same time: month switch 23–33 ms, no long task while typing.
+ * The main chunk's gzip size (level 9) when this was recorded. Raise it only
+ * with a note in the plan whose change made it grow.
+ *   - plan 01, November 2026: 221 kB; month switch 23–33 ms, no long task while typing.
+ *   - plans 06a + 13, November 2026: 254 kB (+32 kB: the insights engine, eight new
+ *     cards and screens, their strings in three languages); month switch 20–43 ms,
+ *     Statistik 17–50 ms, Planen 22–32 ms, no long task.
  */
-const BUNDLE_GZIP_BASELINE = 221_000;
+const BUNDLE_GZIP_BASELINE = 254_000;
 const BUNDLE_GROWTH = 1.10;
 const MONTH_SWITCH_MS = 150;
 const LONG_TASK_MS = 50;
+/**
+ * Switching to Statistik or Planen, painted (plan 06a; the iPhone SE's own
+ * check — no long task over 50 ms — is done in Web Inspector on the device).
+ */
+const TAB_SWITCH_MS = 200;
 
 const failures = [];
 const report = (good, msg) => { if (!good) failures.push(msg); console.log(`  ${good ? '✓' : '✗'} ${msg}`); };
@@ -88,6 +97,31 @@ try {
   }
   const worst = Math.max(...switches);
   report(worst <= MONTH_SWITCH_MS, `month switch ${Math.round(Math.min(...switches))}–${Math.round(worst)} ms (budget ${MONTH_SWITCH_MS} ms)`);
+
+  // Switching to Statistik and to Planen (plan 06a): from the tap to the frame that shows the tab.
+  for (const [index, title] of [[1, 'Statistik'], [2, 'Planen']]) {
+    const times = [];
+    let longest = 0;
+    for (let i = 0; i < 3; i++) {
+      await page.evaluate(() => { document.querySelectorAll('nav button:not(.hero)')[0]?.click(); });
+      await page.waitForTimeout(500);
+      await page.evaluate(() => { window.__long = []; });
+      times.push(await page.evaluate(({ index, title }) => new Promise(resolve => {
+        const t0 = performance.now();
+        const done = () => requestAnimationFrame(() => resolve(performance.now() - t0));
+        const shown = () => document.querySelector('h1')?.textContent === title;
+        const mo = new MutationObserver(() => { if (shown()) { mo.disconnect(); done(); } });
+        mo.observe(document.body, { subtree: true, childList: true, characterData: true });
+        document.querySelectorAll('nav button:not(.hero)')[index]?.click();
+      }), { index, title }));
+      await page.waitForTimeout(400);
+      longest = Math.max(longest, ...(await page.evaluate(() => window.__long)), 0);
+    }
+    const slowest = Math.max(...times);
+    report(slowest <= TAB_SWITCH_MS, `switch to ${title} ${Math.round(Math.min(...times))}–${Math.round(slowest)} ms, longest task ${Math.round(longest)} ms (budget ${TAB_SWITCH_MS} ms)`);
+  }
+  await page.evaluate(() => { document.querySelectorAll('nav button:not(.hero)')[0]?.click(); });
+  await page.waitForTimeout(500);
 
   // Typing an amount into a new entry.
   await page.locator('nav button.hero').click();

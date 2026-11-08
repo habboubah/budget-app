@@ -6,95 +6,131 @@
    "end": 895769,
    "net": 255769,
    "perDayOn15th": 15045,
-   "rate": 51.5
+   "spending": 220831,
+   "invested": 20000,
+   "saved": 275769,
+   "rate": 55.53
   },
   {
    "month": "2026-01",
-   "now": 1028077,
-   "end": 1028077,
-   "net": 132308,
-   "perDayOn15th": 7782,
-   "rate": 34.76
+   "now": 962977,
+   "end": 962977,
+   "net": 67208,
+   "perDayOn15th": 3953,
+   "spending": 293392,
+   "invested": 20000,
+   "saved": 87208,
+   "rate": 22.91
   },
   {
    "month": "2026-02",
-   "now": 1141366,
-   "end": 1141366,
+   "now": 1076266,
+   "end": 1076266,
    "net": 113289,
    "perDayOn15th": 8092,
-   "rate": 30.06
+   "spending": 243611,
+   "invested": 20000,
+   "saved": 133289,
+   "rate": 35.36
   },
   {
    "month": "2026-03",
-   "now": 1228130,
-   "end": 1228130,
-   "net": 86764,
-   "perDayOn15th": 5103,
-   "rate": 23.09
+   "now": 1154040,
+   "end": 1154040,
+   "net": 77774,
+   "perDayOn15th": 4574,
+   "spending": 277926,
+   "invested": 20000,
+   "saved": 97774,
+   "rate": 26.02
   },
   {
    "month": "2026-04",
-   "now": 1352639,
-   "end": 1352639,
-   "net": 124509,
-   "perDayOn15th": 7781,
-   "rate": 33.55
+   "now": 1276209,
+   "end": 1276209,
+   "net": 122169,
+   "perDayOn15th": 7635,
+   "spending": 228931,
+   "invested": 20000,
+   "saved": 142169,
+   "rate": 38.31
   },
   {
    "month": "2026-05",
-   "now": 1486302,
-   "end": 1486302,
-   "net": 133663,
-   "perDayOn15th": 7862,
-   "rate": 35.61
+   "now": 1408002,
+   "end": 1408002,
+   "net": 131793,
+   "perDayOn15th": 7752,
+   "spending": 223507,
+   "invested": 20000,
+   "saved": 151793,
+   "rate": 40.45
   },
   {
    "month": "2026-06",
-   "now": 1618121,
-   "end": 1618121,
-   "net": 131819,
-   "perDayOn15th": 8238,
-   "rate": 34.42
+   "now": 1536377,
+   "end": 1536377,
+   "net": 129609,
+   "perDayOn15th": 8100,
+   "spending": 233391,
+   "invested": 20000,
+   "saved": 149609,
+   "rate": 39.06
   },
   {
    "month": "2026-07",
-   "now": 1752323,
-   "end": 1752323,
-   "net": 134202,
-   "perDayOn15th": 7894,
-   "rate": 35.22
+   "now": 1656079,
+   "end": 1656079,
+   "net": 119702,
+   "perDayOn15th": 7041,
+   "spending": 241298,
+   "invested": 20000,
+   "saved": 139702,
+   "rate": 36.67
   },
   {
    "month": "2026-08",
-   "now": 1891994,
-   "end": 1891994,
+   "now": 1795750,
+   "end": 1795750,
    "net": 139671,
    "perDayOn15th": 8215,
-   "rate": 36.59
+   "spending": 222029,
+   "invested": 20000,
+   "saved": 159671,
+   "rate": 41.83
   },
   {
    "month": "2026-09",
-   "now": 2033316,
-   "end": 2024816,
+   "now": 1937072,
+   "end": 1928572,
    "net": 132822,
    "perDayOn15th": 8301,
-   "rate": 35.23
+   "spending": 224178,
+   "invested": 20000,
+   "saved": 152822,
+   "rate": 40.54
   },
   {
    "month": "2026-10",
-   "now": 2146403,
-   "end": 2137903,
-   "net": 113087,
-   "perDayOn15th": 6652,
-   "rate": 30.71
+   "now": 2027259,
+   "end": 2018759,
+   "net": 90187,
+   "perDayOn15th": 5305,
+   "spending": 258113,
+   "invested": 20000,
+   "saved": 110187,
+   "rate": 29.92
   },
   {
    "month": "2026-11",
-   "now": 1939399,
-   "end": 2303601,
+   "now": 1820255,
+   "end": 2184457,
    "net": 165698,
    "perDayOn15th": 10356,
-   "rate": 43.75
+   "spending": 193002,
+   "invested": 20000,
+   "saved": 185698,
+   "rate": 49.04
   }
  ],
  "budgets": [
@@ -138,29 +174,31 @@
   "parts": [
    {
     "bucket": "need",
-    "amount": 217998,
+    "amount": 224500,
     "budget": 193964,
     "ok": false
    },
    {
     "bucket": "want",
-    "amount": 13756,
+    "amount": 17974,
     "budget": 116378,
     "ok": true
    },
    {
     "bucket": "save",
-    "amount": 156173,
+    "amount": 145453,
     "budget": 77585,
     "ok": true
    }
   ]
  },
  "savings": {
-  "rate": 0.3510271372328459,
-  "averageSaved": 136173,
+  "rate": 0.3749514904386952,
+  "averageSaved": 145454,
   "averageIncome": 387927,
-  "averageExpense": 251754,
+  "averageExpense": 242473,
+  "averageInvested": 20000,
+  "averageKept": 125454,
   "months": 11
  },
  "contracts": {
@@ -201,5 +239,301 @@
    "2026-12-04T09:00",
    "Morgen fällig: Kita"
   ]
- ]
+ ],
+ "pace": {
+  "method": "byDay",
+  "basis": [
+   "2026-05",
+   "2026-06",
+   "2026-07",
+   "2026-08",
+   "2026-09",
+   "2026-10"
+  ],
+  "spent": 49028,
+  "usualToday": 52625,
+  "usualTotal": 85111,
+  "projected": 81514,
+  "verdict": "below"
+ },
+ "outlook": {
+  "from": {
+   "key": "2026-11",
+   "end": 2184457
+  },
+  "everyday": {
+   "mid": -85557,
+   "lo": -98780,
+   "hi": -80168
+  },
+  "grundbedarf": 223900,
+  "headline": {
+   "kind": "normal",
+   "month": "2027-11",
+   "amount": 3655385
+  },
+  "months": [
+   [
+    "2026-12",
+    2313626,
+    2300403,
+    2319015,
+    []
+   ],
+   [
+    "2027-01",
+    2377695,
+    2351249,
+    2388473,
+    [
+     "Kfz-Versicherung"
+    ]
+   ],
+   [
+    "2027-02",
+    2506864,
+    2467195,
+    2523031,
+    []
+   ],
+   [
+    "2027-03",
+    2622033,
+    2569141,
+    2643589,
+    [
+     "Kfz-Steuer"
+    ]
+   ],
+   [
+    "2027-04",
+    2751202,
+    2685087,
+    2778147,
+    []
+   ],
+   [
+    "2027-05",
+    2880371,
+    2801033,
+    2912705,
+    []
+   ],
+   [
+    "2027-06",
+    3009540,
+    2916979,
+    3047263,
+    []
+   ],
+   [
+    "2027-07",
+    3138709,
+    3032925,
+    3181821,
+    []
+   ],
+   [
+    "2027-08",
+    3267878,
+    3148871,
+    3316379,
+    []
+   ],
+   [
+    "2027-09",
+    3397047,
+    3264817,
+    3450937,
+    []
+   ],
+   [
+    "2027-10",
+    3526216,
+    3380763,
+    3585495,
+    []
+   ],
+   [
+    "2027-11",
+    3655385,
+    3496709,
+    3720053,
+    []
+   ]
+  ]
+ },
+ "grundbedarf": {
+  "value": 223900,
+  "months": [
+   "2025-12",
+   "2026-01",
+   "2026-02",
+   "2026-03",
+   "2026-04",
+   "2026-05",
+   "2026-06",
+   "2026-07",
+   "2026-08",
+   "2026-09",
+   "2026-10"
+  ],
+  "yearly": 6592
+ },
+ "financeCheck": {
+  "plus": {
+   "rate": 0.38114283192869436,
+   "plusMonths": 6,
+   "months": 6,
+   "ok": true
+  },
+  "onTime": {
+   "count": 1,
+   "sum": 8500,
+   "ok": false
+  },
+  "reserve": {
+   "months": 9.76,
+   "balance": 2184457,
+   "ok": true
+  }
+ },
+ "highlights": [
+  [
+   "betterMonth:2026-10",
+   "worse",
+   {
+    "saved": 110187,
+    "usual": 150701,
+    "diff": -40514,
+    "material": 3398
+   }
+  ],
+  [
+   "unusual:clothing:2026-10",
+   "more",
+   {
+    "total": 22900,
+    "usual": 2417,
+    "diff": 20483,
+    "pct": 847,
+    "material": 3398
+   }
+  ],
+  [
+   "dataCheck:open:2026-09",
+   "open",
+   {
+    "count": 1,
+    "sum": 8500
+   }
+  ]
+ ],
+ "october": {
+  "point": {
+   "key": "2026-10",
+   "income": 368300,
+   "expense": 278113,
+   "spending": 258113,
+   "invested": 20000,
+   "saved": 110187,
+   "kept": 90187,
+   "rate": 0.29917730111322294,
+   "end": 2018759,
+   "incomeOpen": 0,
+   "expenseOpen": 0,
+   "spendingOpen": 0
+  },
+  "usualSaved": 150701,
+  "budgets": {
+   "within": 2,
+   "total": 3
+  },
+  "hints": [
+   "unusual:clothing:2026-10",
+   "trend:groceries:2026-10",
+   "trend:extra:2026-10"
+  ],
+  "open": {
+   "count": 0,
+   "expense": 0,
+   "income": 0
+  },
+  "next": {
+   "month": "2026-11",
+   "fixed": 163974,
+   "yearly": []
+  }
+ },
+ "groceries": {
+  "average": 46514,
+  "share": 18.18,
+  "soFar": 22604,
+  "payees": [
+   [
+    "Edeka",
+    14,
+    66797
+   ],
+   [
+    "Lidl",
+    13,
+    56830
+   ],
+   [
+    "Rewe",
+    12,
+    52884
+   ]
+  ]
+ },
+ "year": {
+  "income": 4149300,
+  "spending": 2639378,
+  "saved": 1509922,
+  "top": [
+   [
+    "fixed",
+    1315278
+   ],
+   [
+    "groceries",
+    494821
+   ],
+   [
+    "car",
+    429824
+   ],
+   [
+    "children",
+    198000
+   ],
+   [
+    "extra",
+    112710
+   ]
+  ],
+  "budgets": [
+   [
+    "groceries",
+    47000
+   ],
+   [
+    "car",
+    40000
+   ],
+   [
+    "extra",
+    11000
+   ],
+   [
+    "clothing",
+    4500
+   ],
+   [
+    "restaurants",
+    3500
+   ]
+  ]
+ }
 }

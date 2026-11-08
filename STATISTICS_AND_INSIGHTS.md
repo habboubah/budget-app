@@ -2,6 +2,7 @@
 
 Research and plan, written on **7 November 2026**. No app code was changed.
 
+- **Status:** built in November 2026, phases 0–4 (plans 06a and 13). What was decided along the way, measured and not yet verified on a device is in the two plans' notes; the ticks in §11 say what is done.
 - **In the roadmap:** phases 0–3 are [plan 06a](plans/06a-statistics-and-insights.md), phase 4 is [plan 13](plans/13-month-review.md). Decisions D1–D8 are taken (§14).
 - **Builds on:**
   - [REDESIGN.md](REDESIGN.md), finished in plan 00. Step 8 *Statistik* and step 9 *Planen* are commits `bd4b7bb` and `9d16ad9`.
@@ -699,10 +700,10 @@ Sizes as in COMPETITOR_ANALYSIS.md: S ≤ 2 days, M 3–10 days, L 2–6 weeks.
    Every KPI is recorded. D1 changes recorded values on purpose: re-record with `npx vitest run src/golden.test.ts -u` and say why in the commit.
 
 **Done when:**
-- [ ] Before and after captures are saved.
-- [ ] For the same month, the month page, Statistik and Planen agree: the same Einnahmen; the month page's expenses = Ausgaben + Angelegt; its result = Kontoplus.
-- [ ] A book without savings categories is unchanged.
-- [ ] Performance budget met.
+- [x] Before and after captures are saved.
+- [x] For the same month, the month page, Statistik and Planen agree: the same Einnahmen; the month page's expenses = Ausgaben + Angelegt; its result = Kontoplus.
+- [x] A book without savings categories is unchanged.
+- [x] Performance budget met.
 
 ### Phase 1 — Two clear tabs (M, a second pass over *Planen*)
 
@@ -730,11 +731,11 @@ Step 9 already renamed the tab (file and id stay `InsightsView.tsx` / `insights`
 7. **CLAUDE.md:** the Statistics/Insights bullet rewritten.
 
 **Done when:**
-- [ ] *Planen* has one scope per card.
-- [ ] Every former hint has a home (§7 table).
-- [ ] No more than three highlights.
-- [ ] Each highlight has an action or a reason not to.
-- [ ] ui-review is clean on `stats`, `stats-full`, `insights`, `insights-full`, `contracts`.
+- [x] *Planen* has one scope per card.
+- [x] Every former hint has a home (§7 table).
+- [x] No more than three highlights.
+- [x] Each highlight has an action or a reason not to.
+- [x] ui-review is clean on `stats`, `stats-full`, `insights`, `insights-full`, `contracts`.
 
 ### Phase 2 — Looking ahead (M)
 
@@ -745,10 +746,10 @@ Step 9 already renamed the tab (file and id stay `InsightsView.tsx` / `insights`
 5. **Plan 11 hook:** `yearlyReserve()` uses `outlook()` for its shortfall.
 
 **Done when:**
-- [ ] Pace is right on the fixtures for both methods, the early-month rule and a stale month.
-- [ ] *Ausblick*'s range collapses when every month is the same.
-- [ ] A yearly bill lands in its month.
-- [ ] roast-my-chart: no 🔴, every 🟠 fixed or justified in the notes.
+- [x] Pace is right on the fixtures for both methods, the early-month rule and a stale month.
+- [x] *Ausblick*'s range collapses when every month is the same.
+- [x] A yearly bill lands in its month.
+- [x] roast-my-chart: no 🔴, every 🟠 fixed or justified in the notes.
 
 ### Phase 3 — Drill-down (M; can run alongside phase 2)
 
@@ -759,9 +760,9 @@ Step 9 already renamed the tab (file and id stay `InsightsView.tsx` / `insights`
 5. **`PayeeSheet`** (`payeeDetail`). *Alle Einträge* runs the existing all-months search with the name.
 
 **Done when:**
-- [ ] The VoiceOver path is complete: Statistik → category → entry → back.
-- [ ] Edge swipe works in DE and AR.
-- [ ] No overflow at `--text 2`.
+- [ ] The VoiceOver path is complete: Statistik → category → entry → back. *(on the iPhone; not done yet)*
+- [ ] Edge swipe works in DE and AR. *(on the iPhone; the pushed screens use the existing swipe, not tried on a device yet)*
+- [x] No overflow at `--text 2`.
 
 ### Phase 4 — Rituals (M)
 
@@ -774,8 +775,8 @@ Step 9 already renamed the tab (file and id stay `InsightsView.tsx` / `insights`
 4. **Align plan 29** (years, comparison) and **plan 28** (PDF) with `yearReview` / `monthReview`.
 
 **Done when:**
-- [ ] The report's figures equal Statistik's for the same month.
-- [ ] The share image never shows amounts unless switched on.
+- [x] The report's figures equal Statistik's for the same month.
+- [x] The share image never shows amounts unless switched on.
 
 ### Phase 5 — Later
 

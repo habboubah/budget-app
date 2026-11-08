@@ -80,9 +80,11 @@ function ruleParts(split: BudgetSplit, top: (b: Bucket) => RulePart['top'] = () 
  * its share of income — in % and in euros — with its biggest categories, how
  * many of the three it meets, and the same count month by month.
  */
-export function budgetRule(entries: Entry[], categories: Category[], months: MonthKey[]): RuleCheck {
-  const split = budgetSplit(entries, categories, months);
+export function budgetRule(all: Entry[], categories: Category[], months: MonthKey[]): RuleCheck {
   const inRange = new Set(months);
+  // The months' entries once; every split below reads only those.
+  const entries = all.filter(e => inRange.has(e.month));
+  const split = budgetSplit(entries, categories, months);
   const n = Math.max(1, months.length);
   const sums = new Map<string, number>();
   for (const e of entries) if (inRange.has(e.month)) sums.set(e.categoryId, (sums.get(e.categoryId) ?? 0) + e.amount);

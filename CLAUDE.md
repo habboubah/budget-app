@@ -2,7 +2,7 @@
 
 Steering file for AI assistants working in this repository. See `PLAN.md` for
 the product concept and the money rules, `README.md` for running and installing,
-`STATISTICS_AND_INSIGHTS.md` for where Statistik and Planen go next.
+`STATISTICS_AND_INSIGHTS.md` for what Statistik and Planen show, and why.
 
 ## What this app is
 Spartopf: a client-only React + Capacitor household budget book, modelled on
@@ -55,45 +55,74 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `IconButton`, `Field`, `Segmented`, `Toast`, `TabBar`, `haptics`…).
   Compose them instead of hand-rolling markup.
 - **Pure logic** goes in `src/logic.ts` (money, months, balances, carry-over,
-  statistics, storage validation) and is tested in `src/logic.test.ts`.
-  Components never do balance arithmetic themselves.
+  statistics, storage validation) and is tested in `src/logic.test.ts`;
+  Statistik and Planen in `src/insights/`. Components never do balance
+  arithmetic themselves.
 - **Excel import** is two layers: `src/xlsx.ts` unzips the file (fflate) and
   reads cell values with string matching — no spreadsheet library — and
   `src/excelImport.ts` plans the import as pure data (`planExcelImport`) that
   the preview sheet shows and `applyExcelImport` writes. Tests build their own
   .xlsx in memory; never commit a real one (it is someone's finances).
-- **Statistik and Planen are two tabs.** `StatsView` answers *how did it go*:
-  6 Monate | 12 Monate | Alle (a segmented control, 6 by default), the three
-  averages over the finished months in view, one income / expense chart (what
-  each month kept written over it, open parts hatched), the balance line,
-  *Wofür das Geld geht* (categories as Ø bars → a category's months;
-  payees with their own period — `topNames` over `monthsEnding`), the table.
-  `InsightsView` is the **Planen** tab (id still `insights`): first the
-  month's **Budgets** (`src/budgets.ts`), then **Abos & Verträge**
-  (`src/contracts.ts`, details per series in `AppData.contracts`), then the
-  rest: trends, best and weakest month,
-  then hints for one month (‹ › to switch) — *unusual* and *biggest
-  expenses* also over the last 2 / 3 / 6 months (`unusual` /
-  `biggestExpenses` take several months; `unusualBasis` = the up to six
-  before) — and at the bottom, under "Sparen und Reserve": savings rate (per
-  month against the 20 % target), 50/30/20 (`budgetRule`: each part against
-  its share, in euros, its biggest categories, how many of the three are met,
-  month by month), reserve, forecast. Cards are `ui/Card`
-  (`Card`, `CardAction`, `MenuPicker` — a native select in a capsule).
-  All of it beyond sums lives in `src/insights.ts`, pure and tested (also
-  `newNames`, `missingRegulars`, `priceChanges`, `categoryTrends`; a hint card
-  only shows when it has something to say).
-  In the 50/30/20 split a category counts as `need`, `want` or `save`
-  (`budgetOf`); `save` expenses stay in *saved*.
-  Averages use *finished* months (`finishedMonths`), never the running one.
-  Percentages go through `formatPercent()` (an Arabic "%" stays on its side).
-  **Next:** `STATISTICS_AND_INSIGHTS.md` (plans 06a and 13). Its definitions
-  (§6) and decisions (§14) apply to every new figure. Until its phase 0
-  lands, `monthSeries` counts a `save` category as spent while `budgetSplit`
-  counts it as saved (decision D1 makes both count it as saved), and
-  `unusual`, `reserveMonths` and `forecast` keep the rules its §4 lists as
-  issues.
-- **Charts** (`components/Charts.tsx`) follow the dataviz skill. Series
+- **Statistik and Planen** (`STATISTICS_AND_INSIGHTS.md`, plans 06a and 13;
+  its definitions §6 and decisions §14 apply to every figure). Statistik looks
+  back, Planen looks ahead; at most three hints per screen, ranked, each with a
+  next step; no score; estimates rounded (`formatMoneyEstimate`, "≈") with
+  their basis named.
+  - **The engine** is `src/insights/` (`index.ts` re-exports, so
+    `import … from './insights'` works), pure and tested next to each module:
+    `book.ts` (`buildBook(data, balances)` reads every entry once; App builds
+    it in a `useMemo` per data change and passes it down — new figures read
+    the book, never rescan entries), `baseline.ts` (`usual()`: the median of
+    the up to six finished months before when four had money, else the mean;
+    `materiality()`; the named thresholds), `series.ts` (D1: `spending` =
+    *Ausgaben* (need + want), `invested` = *Angelegt* (`save` categories),
+    `saved` = income − spending, `kept` = *Kontoplus*, `expense` stays every
+    outflow; `upToNow` — Statistik stops at the running month), `rules.ts`
+    (50/30/20, commitments), `hints.ts` (`unusual` with the robust usual and
+    no yearly entries, trends without yearly entries, …), `pace.ts`,
+    `outlook.ts`, `health.ts` (Grundbedarf, Finanz-Check), `highlights.ts`
+    (hints as `Insight` data: ranked by impact × confidence × kind weight, one
+    per category, `rank`; `highlights` for Statistik, `contractHints` for
+    Planen, `monthHints` for a report), `detail.ts` (category screen, payee
+    sheet, *Wofür* rows), `review.ts` (Monatsbericht, the review card's month,
+    Jahresrückblick, `suggestBudgets`). Nothing there builds a sentence:
+    `src/insightText.ts` turns an Insight into words (tested in every
+    language). Every function takes `today`.
+  - **`StatsView`**: the year card (15 Dec – 31 Jan, ≥ 6 months),
+    *Das fällt auf* (`HintRows.tsx`; "⋯" → *Wie berechnet?* / *Ausblenden*,
+    undoable), then *Verlauf* with 6 / 12 / Alle (the range lives in App:
+    the category screen follows it): the averages with ⓘ and "davon Ø …
+    angelegt", income vs. spending (Angelegt in the tooltip), balance,
+    *Wofür* (rows → `CategoryView`, payees → `PayeeSheet`), the table (an
+    *Angelegt* column when any; a month → its report).
+  - **`InsightsView`** (Planen, id `insights`): `PaceCard` (*November bis
+    heute*), `BudgetsCard`, `OutlookCard` (from three finished months),
+    `ContractsCard` (+ new subscriptions, missing payments with *Eintragen* —
+    the entry sheet prefilled and open — and a price change's yearly effect),
+    slots for plans 11 / 12 / 31, `FinanceCheckCard` (rows with details: the
+    savings-rate chart and 50/30/20, the due list, the reserve meter).
+  - Key figures carry an ⓘ (`ExplainButton`) that opens `ExplainSheet`
+    (*So berechnet*: definition, the user's own numbers, the months, what is
+    left out).
+  - Pushed screens with a parameter — `category`, `monthReport`,
+    `yearReview` — go on the tab they're opened from (`HOME` in App has the
+    fixed ones); their parameter is App state. The month-review card
+    (`ReviewCard`) sits on the running month about the month before, from the
+    second finished month on, until ✕ or opened.
+  - View preferences, not in backups, no amounts: `spartopf-hints-hidden`
+    (dismissed hint ids), `spartopf-reviews-seen` (months and years whose card
+    was dismissed or opened), both capped at 200.
+  - The year review's picture (`shareImage.ts`, `export.shareImage`) is drawn
+    on the device only on tap, without amounts unless switched on.
+    `localStorage['spartopf-dev-season'] = '1'` shows the year card out of
+    season (ui-review uses it).
+  - Averages use *finished* months, never the running one. Percentages go
+    through `formatPercent()`; axis amounts through `compactMoney()`
+    ("4.000" beside "20.000").
+- **Charts** (`components/Charts.tsx`) share one `ChartFrame` for any slots
+  — months, or days (`PaceChart`), where `groups` give VoiceOver week
+  targets and a finger scrubs every day; labels inside a plot get
+  `chart-halo`. They follow the dataviz skill. Series
   colours are tokens: `chart-in` / `chart-out` / `chart-save` / `chart-line` / `chart-want`
   (saved columns stand above the zero line, an overspend hangs below it in
   `neg`; in the 50/30/20 bars *saved* is `chart-in`, as `chart-save` sits too

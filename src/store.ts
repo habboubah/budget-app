@@ -19,7 +19,14 @@ const K = {
   reminders: 'spartopf-reminders',
   lock: 'spartopf-lock',
   collapsed: 'spartopf-collapsed',
+  hintsHidden: 'spartopf-hints-hidden',
+  reviewsSeen: 'spartopf-reviews-seen',
 } as const;
+
+/** Dismissed hints and seen reviews are kept as their last 200 ids — no amounts in them. */
+const KEEP_IDS = 200;
+
+const readIds = (saved: unknown): string[] => (Array.isArray(saved) ? saved.filter((x): x is string => typeof x === 'string').slice(-KEEP_IDS) : []);
 
 function readJson(key: string): unknown {
   try {
@@ -84,6 +91,10 @@ export function useAppStore() {
     const saved = readJson(K.collapsed);
     return Array.isArray(saved) ? saved.filter((x): x is string => typeof x === 'string') : [];
   });
+  /** Hints the user hid (`Insight.id`) — a view preference: not in a backup, no amounts. */
+  const [hintsHidden, setHintsHidden] = useState<string[]>(() => readIds(readJson(K.hintsHidden)));
+  /** Months (YYYY-MM) and years (YYYY) whose review card was dismissed or opened. */
+  const [reviewsSeen, setReviewsSeen] = useState<string[]>(() => readIds(readJson(K.reviewsSeen)));
 
   // The last write of the book failed (disk full; quota or private mode on the
   // web) — the data is at risk and the banner says so until a write succeeds.
@@ -99,6 +110,9 @@ export function useAppStore() {
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
   useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
+  useEffect(() => { persist(K.hintsHidden, JSON.stringify(hintsHidden)); }, [hintsHidden]);
+  useEffect(() => { persist(K.reviewsSeen, JSON.stringify(reviewsSeen)); }, [reviewsSeen]);
+  const remember = (list: string[], id: string) => (list.includes(id) ? list : [...list, id].slice(-KEEP_IDS));
 
   useEffect(() => {
     persist(K.lang, language);
@@ -412,6 +426,12 @@ export function useAppStore() {
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),
     expand: (id: string) => setCollapsed(prev => prev.filter(x => x !== id)),
     setCollapsed,
+    hintsHidden,
+    hideHint: (id: string) => setHintsHidden(prev => remember(prev, id)),
+    showHint: (id: string) => setHintsHidden(prev => prev.filter(x => x !== id)),
+    reviewsSeen,
+    seeReview: (id: string) => setReviewsSeen(prev => remember(prev, id)),
+    unseeReview: (id: string) => setReviewsSeen(prev => prev.filter(x => x !== id)),
     data, categories, entries, months, balances,
     startMonth, pullRecurring, setOpening, removeMonth, restoreMonth, hideCategory, showCategory,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,

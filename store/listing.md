@@ -93,6 +93,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: ميزانيات شهرية مع المبلغ المتاح يوميًا، والبنود المستحقة قريبًا، والبحث في كل الأشهر. يعرض تبويب «التخطيط» اشتراكاتك وعقودك مع مواعيد الإلغاء. وإن شئت، يذكّرك Spartopf بالفواتير المعلّقة ويُقفل بـ Face ID – وبياناتك محفوظة الآن في ملف خاص ومُتحقَّق منه على جهازك.
 
+**DE:** Statistik zeigt oben, was auffällt, und jede Kategorie hat ihre eigene Seite mit Monaten, Empfängern und Einträgen. Planen zeigt, wie der Monat bis heute läuft, wo dein Konto in zwölf Monaten stehen könnte, und einen Finanz-Check. Neu: ein Monatsbericht zu jedem Monat und im Dezember der Jahresrückblick. Geld in Sparkategorien wie einem ETF-Sparplan zählt jetzt überall als gespart.
+
+**EN:** Statistics now opens with what's worth a look, and every category has its own page with its months, payees and entries. Plan shows how this month is going so far, where your account could be in twelve months, and a money check. New: a report for every month, and in December the year in review. Money put into savings categories such as an ETF plan now counts as saved everywhere.
+
+**AR:** تبدأ الإحصاءات الآن بما يلفت النظر، ولكل فئة صفحتها الخاصة بأشهرها ومستفيديها وبنودها. ويعرض التخطيط كيف يسير الشهر حتى اليوم، وأين قد يكون حسابك بعد اثني عشر شهرًا، وفحصًا ماليًا. جديد: تقرير لكل شهر، ومراجعة العام في ديسمبر. والمال الموضوع في فئات الادخار مثل خطة ETF يُحتسب الآن ادخارًا في كل مكان.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

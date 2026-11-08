@@ -1,6 +1,8 @@
 import { Category, CategoryKind, Entry, MonthKey } from '../types';
 import { addMonths, monthKeyOf, normalizeName } from '../logic';
+import { budgetOf } from '../data/defaults';
 import { MonthPoint } from './series';
+import { PRICE_FLOOR, PRICE_SHARE, TREND_FLOOR, TREND_SHARE, UNUSUAL_SHARE, materiality, usual as usualOf } from './baseline';
 
 /*
  * The hints: this month against the usual, what got dearer, what is missing
@@ -12,41 +14,61 @@ import { MonthPoint } from './series';
 export interface Unusual {
   category: Category;
   total: number;
-  /** Average of the months before. */
+  /** What as many usual months cost (§6: the median, or the mean for a lumpy category). */
   usual: number;
   diff: number;
+  /** How the usual was taken, and over which months. */
+  method: 'median' | 'mean';
+  basis: MonthKey[];
+  /** MATERIAL for the period: the smallest difference worth a sentence. */
+  material: number;
 }
 
 /**
- * Expense categories where a month (or several, `months`) differs from the up
- * to six months before by at least 20 % and 25 € a month — "Einkaufen: 31 %
- * mehr als üblich". Over several months `usual` is what as many usual months
- * cost. The current month is still filling up, so while it is part of the
- * period only "more than usual" counts.
+ * Expense categories where a month (or several, `months`) differs from the
+ * usual (§6, over the up to six months before) by at least 20 % of it and by
+ * MATERIAL — "Einkaufen: 31 % mehr als üblich". Over several months `usual`
+ * is what as many usual months cost. Yearly entries are left out on both
+ * sides: the Kfz-Steuer isn't unusual every March. The current month is
+ * still filling up, so while it is part of the period only "more than
+ * usual" counts.
  */
 export function unusual(entries: Entry[], categories: Category[], months: MonthKey | MonthKey[], before: MonthKey[], today = new Date()): Unusual[] {
   const period = Array.isArray(months) ? months : [months];
   const prior = unusualBasis(period, before);
   if (!period.length || prior.length < 2) return [];
   const running = period.some(m => m >= monthKeyOf(today));
-  const totals = (keys: MonthKey[]) => {
-    const set = new Set(keys);
-    const m = new Map<string, number>();
-    for (const e of entries) if (set.has(e.month)) m.set(e.categoryId, (m.get(e.categoryId) ?? 0) + e.amount);
-    return m;
-  };
-  const now = totals(period);
-  const past = totals(prior);
-  return categories
-    .filter(c => c.kind === 'expense')
-    .map(c => {
-      const total = now.get(c.id) ?? 0;
-      const usual = Math.round(((past.get(c.id) ?? 0) / prior.length) * period.length);
-      return { category: c, total, usual, diff: total - usual };
-    })
-    .filter(u => u.usual > 0 && Math.abs(u.diff) >= Math.max(2500 * period.length, u.usual * 0.2) && (!running || u.diff > 0))
-    .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
-    .slice(0, 3);
+  const inPeriod = new Set(period);
+  const at = new Map(prior.map((m, i) => [m, i]));
+  const expense = new Map(categories.filter(c => c.kind === 'expense').map(c => [c.id, c]));
+  const now = new Map<string, number>();
+  const past = new Map<string, number[]>();
+  // What the household spends a month (need and want), for MATERIAL.
+  const spending = prior.map(() => 0);
+  for (const e of entries) {
+    if (e.repeat === 'yearly') continue;
+    const c = expense.get(e.categoryId);
+    if (!c) continue;
+    if (inPeriod.has(e.month)) now.set(c.id, (now.get(c.id) ?? 0) + e.amount);
+    const i = at.get(e.month);
+    if (i === undefined) continue;
+    const row = past.get(c.id) ?? prior.map(() => 0);
+    row[i] += e.amount;
+    past.set(c.id, row);
+    if (budgetOf(c) !== 'save') spending[i] += e.amount;
+  }
+  const material = materiality(usualOf(spending)?.value ?? 0, period.length);
+  const out: Unusual[] = [];
+  for (const c of expense.values()) {
+    const u = usualOf(past.get(c.id) ?? prior.map(() => 0));
+    if (!u || u.value <= 0) continue;
+    const total = now.get(c.id) ?? 0;
+    const usual = u.value * period.length;
+    const diff = total - usual;
+    if (Math.abs(diff) < Math.max(material, usual * UNUSUAL_SHARE) || (running && diff <= 0)) continue;
+    out.push({ category: c, total, usual, diff, method: u.method, basis: prior, material });
+  }
+  return out.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff)).slice(0, 3);
 }
 
 /** The months "usual" is measured on: up to six before the period starts. */
@@ -84,7 +106,7 @@ export function priceChanges(entries: Entry[], categories: Category[], month: Mo
   return [...once(month)]
     .filter(([key, e]) => e.repeat === 'monthly' && before.has(key))
     .map(([key, e]) => ({ name: e.name, categoryId: e.categoryId, before: before.get(key)!.amount, now: e.amount, diff: e.amount - before.get(key)!.amount }))
-    .filter(c => Math.abs(c.diff) >= Math.max(100, c.before * 0.03))
+    .filter(c => Math.abs(c.diff) >= Math.max(PRICE_FLOOR, c.before * PRICE_SHARE))
     .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
     .slice(0, 5);
 }
@@ -148,23 +170,30 @@ export interface Trend {
 
 /**
  * Expense categories moving in one direction: the average of the last three
- * months against the three before, by at least 15 % and 20 €. Needs six
- * months; give it finished ones, oldest first.
+ * months against the three before, by at least 15 % and 20 € (TREND). Needs
+ * six months; give it finished ones, oldest first. Yearly entries are left
+ * out: a yearly bill in one of the two windows is not a trend.
  */
 export function categoryTrends(entries: Entry[], categories: Category[], months: MonthKey[]): Trend[] {
   if (months.length < 6) return [];
-  const last = months.slice(-3);
-  const before = months.slice(-6, -3);
-  const avgOf = (keys: MonthKey[], id: string) =>
-    Math.round(entries.filter(e => e.categoryId === id && keys.includes(e.month)).reduce((s, e) => s + e.amount, 0) / keys.length);
+  const last = new Set(months.slice(-3));
+  const before = new Set(months.slice(-6, -3));
+  const sums = new Map<string, { recent: number; earlier: number }>();
+  for (const e of entries) {
+    if (e.repeat === 'yearly' || (!last.has(e.month) && !before.has(e.month))) continue;
+    const s = sums.get(e.categoryId) ?? { recent: 0, earlier: 0 };
+    if (last.has(e.month)) s.recent += e.amount; else s.earlier += e.amount;
+    sums.set(e.categoryId, s);
+  }
   return categories
     .filter(c => c.kind === 'expense')
     .map(c => {
-      const recent = avgOf(last, c.id);
-      const earlier = avgOf(before, c.id);
+      const s = sums.get(c.id) ?? { recent: 0, earlier: 0 };
+      const recent = Math.round(s.recent / 3);
+      const earlier = Math.round(s.earlier / 3);
       return { category: c, recent, earlier, diff: recent - earlier };
     })
-    .filter(x => x.earlier > 0 && Math.abs(x.diff) >= Math.max(2000, x.earlier * 0.15))
+    .filter(x => x.earlier > 0 && Math.abs(x.diff) >= Math.max(TREND_FLOOR, x.earlier * TREND_SHARE))
     .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
     .slice(0, 4);
 }

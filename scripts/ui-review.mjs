@@ -60,6 +60,8 @@ const LANGS = {
     categories: 'Kategorien',
     transfer: 'Sichern und übertragen',
     reminders: 'An offene Posten erinnern',
+    contracts: 'Abos & Verträge',
+    explain: 'So berechnet',
     names: {
       salary: 'Gehalt', child: 'Kindergeld', rent: 'Miete', power: 'Strom', net: 'Internet', phone: 'Handy',
       ins: 'Haftpflicht', gym: 'Fitnessstudio', fuel: 'Tanken', carIns: 'Kfz-Versicherung', carTax: 'Kfz-Steuer',
@@ -71,6 +73,8 @@ const LANGS = {
     categories: 'الفئات',
     transfer: 'النسخ الاحتياطي والنقل',
     reminders: 'التذكير بالبنود المعلّقة',
+    contracts: 'الاشتراكات والعقود',
+    explain: 'كيف يُحسب',
     // Shop names stay Latin, as on a German receipt: mixed direction on purpose.
     names: {
       salary: 'الراتب', child: 'إعانة الأطفال', rent: 'الإيجار', power: 'الكهرباء', net: 'الإنترنت', phone: 'الجوال',
@@ -130,6 +134,36 @@ const openCategories = async (page, l) => {
   await page.locator('main button', { hasText: l.categories }).first().click();
   await page.waitForTimeout(500);
 };
+/** Statistik → the first row of "Wofür das Geld geht": the category's own screen. */
+const openCategory1 = async page => {
+  await tab(1)(page);
+  const row = page.locator('main li[data-hue] > button').first();
+  await row.scrollIntoViewIfNeeded();
+  await row.click();
+  await page.waitForTimeout(600);
+};
+/** Statistik → "Wofür das Geld geht" → Empfänger. */
+const openPayees = async page => {
+  await tab(1)(page);
+  await page.locator('[role="radiogroup"]').last().locator('[role="radio"]').last().click();
+  await page.waitForTimeout(250);
+};
+/** The month's "⋯" → its first item, the Monatsbericht. */
+const openReport = async page => {
+  await page.locator('header button').last().click();
+  await page.waitForSelector('[role="menu"]');
+  await page.waitForTimeout(300);
+  await page.locator('[role="menuitem"]').first().click();
+  await page.waitForTimeout(600);
+};
+/** Statistik → the year review's card. */
+const openYearReview = async page => {
+  await tab(1)(page);
+  await page.locator('main .hero button').first().click();
+  await page.waitForTimeout(600);
+};
+/** Planen's Abos & Verträge card, found by its title (the cards above it come and go with the data). */
+const contractsCard = (page, l) => page.locator('main section', { has: page.locator('h3', { hasText: l.contracts }) }).first();
 /** Unfolds the balance card's details; returns the id of what it shows (null on a card without them). */
 const openDetails = async page => {
   const toggle = page.locator('section.hero button[aria-controls]').first();
@@ -187,28 +221,49 @@ const SCREENS = [
   }, wait: dialog },
   { name: 'stats', run: tab(1), audit: 'page' },
   { name: 'stats-full', run: tab(1), full: true },
-  // "Wofür das Geld geht": the first category opened to its trend, and the payees.
-  { name: 'stats-category', full: true, run: async page => {
+  // "Wofür das Geld geht" → the first category's own screen (plan 06a), and the payees.
+  { name: 'category', run: openCategory1, audit: 'page' },
+  { name: 'category-full', run: openCategory1, full: true },
+  { name: 'stats-payees', full: true, run: openPayees },
+  // A payee row → its sheet.
+  { name: 'payee-sheet', run: async page => {
+    await openPayees(page);
+    await page.locator('main ol li button').first().click();
+  }, wait: dialog, audit: 'dialog' },
+  // The ⓘ beside the averages → "So berechnet".
+  { name: 'explain-sheet', run: async (page, l) => {
     await tab(1)(page);
-    await page.locator('button[aria-expanded]').first().click();
-    await page.waitForTimeout(250);
-  } },
-  { name: 'stats-payees', full: true, run: async page => {
-    await tab(1)(page);
-    await page.locator('[role="radiogroup"]').last().locator('[role="radio"]').last().click();
-    await page.waitForTimeout(250);
-  } },
+    const info = page.locator(`main button[aria-label^="${l.explain}"]`).first();
+    await info.scrollIntoViewIfNeeded();
+    await info.click();
+  }, wait: dialog, audit: 'dialog' },
+  // The month's "⋯" → Monatsbericht (plan 13).
+  { name: 'month-report', run: openReport, audit: 'page' },
+  { name: 'month-report-full', run: openReport, full: true },
+  // The year review's card, out of season through the dev flag.
+  { name: 'year-review', storage: { 'spartopf-dev-season': '1' }, run: openYearReview, audit: 'page' },
+  { name: 'year-review-full', storage: { 'spartopf-dev-season': '1' }, run: openYearReview, full: true },
   { name: 'insights', run: tab(2), audit: 'page' },
   { name: 'insights-full', run: tab(2), full: true },
-  // Planen → a contract's details, and the whole list of contracts.
-  { name: 'contract-sheet', run: async page => {
+  // Finanz-Check's first row opened: the savings rate and 50/30/20.
+  { name: 'check-detail', full: true, run: async page => {
     await tab(2)(page);
-    await page.locator('main section').nth(1).locator('li button').first().click();
+    const row = page.locator('main button[aria-expanded]').first();
+    await row.scrollIntoViewIfNeeded();
+    await row.click();
+    await page.waitForTimeout(300);
+  } },
+  // Planen → a contract's details, and the whole list of contracts.
+  { name: 'contract-sheet', run: async (page, l) => {
+    await tab(2)(page);
+    const row = contractsCard(page, l).locator('li button').first();
+    await row.scrollIntoViewIfNeeded();
+    await row.click();
   }, wait: dialog, audit: 'dialog' },
-  { name: 'contracts', run: async page => {
+  { name: 'contracts', run: async (page, l) => {
     await tab(2)(page);
     // "Alle (n)" beside the card's title; with four or fewer there is none, and the card shows them all.
-    const all = page.locator('main section').nth(1).locator(':scope > div:first-child > button');
+    const all = contractsCard(page, l).locator(':scope > div:first-child > button');
     if (await all.count()) { await all.click(); await page.waitForTimeout(600); }
   }, audit: 'page' },
   { name: 'settings', run: tab(3), audit: 'page' },
@@ -250,7 +305,7 @@ const SCREENS = [
   { name: 'stats-empty', fresh: true, run: tab(1) },
 ];
 // Snapshotted as static HTML with --dom (mockups start from these).
-const DOM_SCREENS = ['month', 'entry-new', 'stats', 'insights', 'settings'];
+const DOM_SCREENS = ['month', 'entry-new', 'stats', 'insights', 'settings', 'category', 'month-report'];
 const DOM_CONTEXTS = ['16-de-light', '16-ar-dark'];
 
 const only = opt('only', '') ? list('only', '') : null;

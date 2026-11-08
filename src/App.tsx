@@ -7,7 +7,17 @@ import { useAppStore } from './store';
 import translations, { fmt } from './translations';
 import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
+import { Insight, buildBook, highlights, monthReview, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
+import { StatsRange } from './components/StatsView';
+import { CategoryView } from './components/CategoryView';
+import { PayeeSheet } from './components/PayeeSheet';
+import { MonthReportView, ReviewCard } from './components/MonthReportView';
+import { YearReviewView } from './components/YearReviewView';
+import { Explain, ExplainSheet } from './components/ExplainSheet';
+import { hintExplain } from './components/HintRows';
+import { ShareImage, renderShareImage } from './shareImage';
+import { shareImage } from './export';
 import { SetupCard, TipsCard } from './components/SetupCard';
 import { BudgetSheet } from './components/BudgetSheet';
 import { DueSoonView } from './components/DueSoonView';
@@ -45,12 +55,19 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'reminders' | 'dueSoon' | 'contracts';
+type PushedId = 'categories' | 'transfer' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview';
 type ScreenId = TabId | PushedId;
-/** The tab each pushed screen sits on. */
-const PARENT: Record<PushedId, TabId> = { categories: 'settings', transfer: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
+/**
+ * The tab a pushed screen belongs to. Those without one — a category, a
+ * month's report, the year review — are pushed on the tab they are opened
+ * from, so a report opened on Planen doesn't jump to Monat. Their parameter
+ * lives in App state, one per screen.
+ */
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
+/** `localStorage['spartopf-dev-season'] = '1'`: the year review's card out of season (screenshots, ui-review). */
+const devSeason = (() => { try { return localStorage.getItem('spartopf-dev-season') === '1'; } catch { return false; } })();
 
 export default function App() {
   const store = useAppStore();
@@ -61,8 +78,25 @@ export default function App() {
   const [tab, setTab] = useState<TabId>('month');
   /** Per tab, the screen pushed over its root — each tab keeps its place, as on iOS. */
   const [stack, setStack] = useState<Partial<Record<TabId, PushedId>>>({});
-  const push = (to: PushedId) => { setTab(PARENT[to]); setStack(s => ({ ...s, [PARENT[to]]: to })); };
+  const push = (to: PushedId) => {
+    const onTab = HOME[to] ?? tab;
+    setTab(onTab);
+    setStack(s => ({ ...s, [onTab]: to }));
+  };
   const popTo = (onTab: TabId) => setStack(s => ({ ...s, [onTab]: undefined }));
+  /** Every entry read once per change: what Statistik, Planen and the reports compute from. */
+  const book = useMemo(() => buildBook(data, balances), [data, balances]);
+  /** Statistik's period — the category screen follows it. */
+  const [statsRange, setStatsRange] = useState<StatsRange>('6');
+  /** The pushed screens' parameters. */
+  const [shownCategory, setShownCategory] = useState<string | null>(null);
+  const [reportMonth, setReportMonth] = useState<MonthKey>(monthKeyOf);
+  const [reviewYear, setReviewYear] = useState(() => String(new Date().getFullYear()));
+  /** The payee sheet (a normalised name), and a "So berechnet" sheet. */
+  const [payee, setPayee] = useState<string | null>(null);
+  const [explain, setExplain] = useState<Explain | null>(null);
+  /** "Alle Einträge" of a payee: the month page opens on this search. */
+  const [searchSeed, setSearchSeed] = useState<string | null>(null);
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
   const [categorySheet, setCategorySheet] = useState<CategorySheetMode>(null);
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
@@ -428,6 +462,72 @@ export default function App() {
   const quickAddCategory = (lastCategory && categories.some(c => c.id === lastCategory) ? lastCategory : null)
     ?? categories.find(c => c.kind === 'expense')?.id ?? categories[0]?.id;
 
+  // ---- Statistik and Planen: hints, reports, the drill-down (STATISTICS_AND_INSIGHTS.md).
+  const now = monthKeyOf();
+  const statsMonths = useMemo(() => {
+    const all = upToNow(book.points).map(p => p.key);
+    return statsRange === 'all' ? all : all.slice(-Number(statsRange));
+  }, [book, statsRange]);
+  const hints = useMemo(() => highlights(book, new Date(), store.hintsHidden), [book, store.hintsHidden]);
+  const reviewFor = useMemo(() => reviewCardMonth(book, new Date(), store.reviewsSeen), [book, store.reviewsSeen]);
+  const review = useMemo(() => (reviewFor ? monthReview(book, reviewFor, new Date()) : null), [book, reviewFor]);
+  const season = devSeason ? now.slice(0, 4) : reviewSeason();
+  const yearCard = season && !store.reviewsSeen.includes(season) && book.months.filter(k => k.startsWith(`${season}-`) && k <= now).length >= 6 ? season : null;
+
+  const openCategory = (id: string) => { setShownCategory(id); push('category'); };
+  /** Opening a month's report counts as having seen its review card. */
+  const openReport = (m: MonthKey) => { setReportMonth(m); store.seeReview(m); push('monthReport'); };
+  const openYear = (y: string) => { setReviewYear(y); store.seeReview(y); push('yearReview'); };
+  const openMonthPage = (m: MonthKey) => { setMonth(m); setTab('month'); setStack(s => ({ ...s, month: undefined })); };
+  /** A regular payment still missing: the entry sheet with its name, usual amount and category, open. */
+  const addMissing = (i: Insight) => {
+    const categoryId = i.categoryId && categories.some(c => c.id === i.categoryId) ? i.categoryId : quickAddCategory;
+    if (!categoryId) return;
+    setEntrySheet({ kind: 'new', month: now, categoryId, preset: { name: i.name, amount: i.values.usual, paid: false } });
+  };
+  const hintAction = (i: Insight) => {
+    const a = i.action;
+    if (!a) return;
+    if (a.kind === 'category') openCategory(a.target);
+    else if (a.kind === 'budget') { const c = categories.find(x => x.id === a.target); if (c) setBudgetFor(c); }
+    else if (a.kind === 'month') openMonthPage(a.target);
+    else if (a.kind === 'report') openReport(a.target);
+    else if (a.kind === 'contracts') push('contracts');
+    else addMissing(i);
+  };
+  /** Hidden for good (a view preference) — the toast can bring it back. */
+  const hideHint = (i: Insight) => {
+    store.hideHint(i.id);
+    show(t.hintHidden, { label: t.undo, run: () => store.showHint(i.id) });
+  };
+  const hideReview = (id: string) => {
+    store.seeReview(id);
+    show(t.hintHidden, { label: t.undo, run: () => store.unseeReview(id) });
+  };
+  const categoryName = (id: string) => displayName(categories.find(c => c.id === id)?.names, language);
+  /** *Als Budgets übernehmen*: one step, undone in one. */
+  const applyBudgets = (list: { category: Category; amount: number }[]) => {
+    const before = list.map(b => ({ id: b.category.id, limit: categories.find(c => c.id === b.category.id)?.limit }));
+    for (const b of list) store.updateCategory(b.category.id, { limit: b.amount });
+    notifySuccess();
+    show(fmt(t.yearApplied, { n: list.length }), { label: t.undo, run: () => before.forEach(b => store.updateCategory(b.id, { limit: b.limit })) });
+  };
+  /** The year review as a picture: made here, on tap, and handed to the share sheet. */
+  const shareYear = async (image: ShareImage) => {
+    try {
+      await shareImage(`spartopf-${reviewYear}.png`, await renderShareImage(image, t.dir === 'rtl'));
+    } catch (e) {
+      // Closing the share sheet isn't a failure.
+      if (!/cancel|abort/i.test(String((e as Error)?.message ?? e)) && (e as Error)?.name !== 'AbortError') show(t.shareFailed);
+    }
+  };
+  /** A payee's "Alle Einträge": the month page, searching every month for its name. */
+  const searchAll = (name: string) => {
+    setPayee(null);
+    setSearchSeed(name);
+    openMonthPage(now);
+  };
+
   // ---- First run: the setup card on the first month, then the tips.
   const showSetup = !store.introDone && balance.started && !balance.prevKey;
   const kindOf = new Map(categories.map(c => [c.id, c.kind]));
@@ -460,6 +560,31 @@ export default function App() {
     <>
         {id === 'contracts' ? (
           <ContractsView items={contracts} categories={categories} t={t} onBack={back} onOpen={setContractFor} />
+        ) : id === 'category' ? (
+          <CategoryView
+            book={book}
+            categoryId={shownCategory ?? ''}
+            months={statsMonths}
+            language={language}
+            t={t}
+            onBack={back}
+            onBudget={setBudgetFor}
+            onEntry={entry => setEntrySheet({ kind: 'edit', entry })}
+            onPayee={setPayee}
+            onContracts={() => push('contracts')}
+          />
+        ) : id === 'monthReport' ? (
+          <MonthReportView book={book} month={reportMonth} language={language} t={t} onBack={back} onOpenMonth={openMonthPage} />
+        ) : id === 'yearReview' ? (
+          <YearReviewView
+            book={book}
+            year={reviewYear}
+            language={language}
+            t={t}
+            onBack={back}
+            onApplyBudgets={applyBudgets}
+            onShare={image => void shareYear(image)}
+          />
         ) : id === 'dueSoon' ? (
           <DueSoonView
             data={data}
@@ -515,24 +640,38 @@ export default function App() {
           />
         ) : id === 'stats' ? (
           <StatsView
+            book={book}
             month={month}
-            balances={balances}
-            data={data}
+            range={statsRange}
+            onRange={setStatsRange}
             language={language}
             t={t}
+            highlights={hints}
+            yearCard={yearCard}
+            onYear={openYear}
+            onHideYear={hideReview}
             onMonth={setMonth}
+            onHint={hintAction}
+            onHideHint={hideHint}
+            onHowHint={i => setExplain(hintExplain(i, t, categoryName))}
+            onExplain={setExplain}
+            onCategory={openCategory}
+            onPayee={setPayee}
+            onReport={openReport}
           />
         ) : id === 'insights' ? (
           <InsightsView
-            month={month}
-            balances={balances}
-            data={data}
+            book={book}
             language={language}
             t={t}
-            onMonth={setMonth}
+            hidden={store.hintsHidden}
             onBudget={setBudgetFor}
             onContract={setContractFor}
             onContractsAll={() => push('contracts')}
+            onReport={openReport}
+            onAdd={addMissing}
+            onDue={() => push('dueSoon')}
+            onExplain={setExplain}
           />
         ) : (
           <MonthView
@@ -543,6 +682,11 @@ export default function App() {
             candidates={candidates}
             openEarlier={openEarlier}
             setup={setup}
+            review={review && month === now && balance.started && !showSetup ? (
+              <ReviewCard review={review} t={t} onOpen={() => openReport(review.month)} onHide={() => hideReview(review.month)} />
+            ) : null}
+            searchSeed={searchSeed}
+            onSearchSeedUsed={() => setSearchSeed(null)}
             // Nothing to show yet: the setup asks for the balance first.
             hideBalance={showSetup && !balance.overridden && monthEntries.length === 0}
             language={language}
@@ -591,7 +735,7 @@ export default function App() {
           in from a little behind and coming out of a light shade. */}
       {pushed && swipe.swiping && (
         <div className="fixed inset-0 overflow-hidden pointer-events-none" aria-hidden="true" inert>
-          <motion.div style={{ x: swipeUnder }}>{screenFor(PARENT[pushed])}</motion.div>
+          <motion.div style={{ x: swipeUnder }}>{screenFor(tab)}</motion.div>
           <motion.div className="absolute inset-0 scrim" style={{ opacity: swipeShade }} />
         </div>
       )}
@@ -698,7 +842,12 @@ export default function App() {
         t={t}
         onClose={() => setBudgetFor(null)}
         onSave={saveBudget}
+        onHistory={c => openCategory(c.id)}
       />
+
+      <PayeeSheet book={book} nameKey={payee} language={language} t={t} onClose={() => setPayee(null)} onSearch={searchAll} />
+
+      <ExplainSheet explain={explain} t={t} onClose={() => setExplain(null)} />
 
       <MonthActionsMenu
         anchor={actionsAnchor}
@@ -715,6 +864,7 @@ export default function App() {
         onImportCsv={() => statementInput.current?.click()}
         onImportPhoto={() => photoInput.current?.click()}
         onDelete={deleteMonth}
+        onReport={() => openReport(month)}
       />
 
       <CategorySheet

@@ -166,6 +166,34 @@ describe('smart numbers', () => {
     // Fewer than two months before the period: nothing to compare with.
     expect(unusual(hist, cats, ['2026-04', '2026-05', '2026-06', '2026-07'], keys)).toEqual([]);
   });
+  it('keeps one big repair from lifting the usual for months (median)', () => {
+    const six = ['2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08'];
+    const hist = [
+      ...six.map(m => e(m, 'car', 'Tanken', 100)),
+      e('2026-05', 'car', 'Werkstatt', 600),
+      e('2026-09', 'car', 'Tanken', 100),
+    ];
+    // The mean would be 200 € and September 50 % cheaper; the median is 100 €, so nothing to say.
+    expect(unusual(hist, cats, '2026-09', [...six, '2026-09'], new Date(2026, 11, 1))).toEqual([]);
+    const more = [...hist, e('2026-09', 'car', 'Reifen', 150)];
+    expect(unusual(more, cats, '2026-09', [...six, '2026-09'], new Date(2026, 11, 1)).map(u => [u.category.id, u.usual, u.method])).toEqual([['car', 10000, 'median']]);
+  });
+  it('compares a lumpy category with its mean, not with an empty median', () => {
+    const six = ['2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08'];
+    const hist = [e('2026-04', 'clothing', 'C&A', 150), e('2026-07', 'clothing', 'C&A', 150), e('2026-09', 'clothing', 'C&A', 60)];
+    // Usually 50 € a month (150 + 150 over six), not 0: 60 € in September is nothing unusual.
+    expect(unusual(hist, cats, '2026-09', [...six, '2026-09'], new Date(2026, 11, 1))).toEqual([]);
+    const big = [...hist, e('2026-09', 'clothing', 'Mantel', 200)];
+    expect(unusual(big, cats, '2026-09', [...six, '2026-09'], new Date(2026, 11, 1)).map(u => [u.total, u.usual, u.method])).toEqual([[26000, 5000, 'mean']]);
+  });
+  it('leaves yearly bills out, so the Kfz-Steuer is not unusual every year', () => {
+    const six = ['2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08'];
+    const hist = [...six.map(m => e(m, 'car', 'Tanken', 100)), e('2026-09', 'car', 'Tanken', 100), e('2026-09', 'car', 'Kfz-Steuer', 240, { repeat: 'yearly' })];
+    expect(unusual(hist, cats, '2026-09', [...six, '2026-09'], new Date(2026, 11, 1))).toEqual([]);
+    // Nor a trend.
+    const trend = [...six.map((m, i) => e(m, 'car', 'Tanken', 100 + (i === 5 ? 1 : 0))), e('2026-07', 'car', 'Kfz-Steuer', 240, { repeat: 'yearly' })];
+    expect(categoryTrends(trend, cats, six)).toEqual([]);
+  });
   it('names the best and the weakest month', () => {
     expect(bestWorst(points)).toMatchObject({ best: { key: '2026-08' }, worst: { key: '2026-10' } });
     expect(bestWorst(points.slice(0, 1))).toBeNull();

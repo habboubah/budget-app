@@ -1,8 +1,10 @@
 import { CSSProperties } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Category } from '../types';
-import { dayLabel, formatMoney, monthLabel } from '../logic';
+import { dayLabel, formatMoney, formatMoneyWhole, monthLabel } from '../logic';
 import { ContractItem, contractTotals, daysUntil } from '../contracts';
+import { Insight } from '../insights';
+import { insightText } from '../insightText';
 import { Strings, fmt } from '../translations';
 import { Card, CardAction } from '../ui/Card';
 import { Picture } from '../ui/Picture';
@@ -37,8 +39,10 @@ export function ContractRow({ item, category, t, onOpen }: {
 }) {
   const soon = !!item.deadline && daysUntil(item.deadline.cancelBy) <= 60;
   const when = contractWhen(item, t);
-  const change = item.change && fmt(t.contractChange, {
+  // A new price says what it does in a year too (P3): +12 € a month is +144 € a year.
+  const change = item.change && fmt(t.contractChangeYear, {
     amount: formatMoney(item.change.by, t.locale, 'always'), month: monthLabel(item.change.since, t.locale, 'month'),
+    yearly: formatMoneyWhole(item.repeat === 'monthly' ? item.change.by * 12 : item.change.by, t.locale, 'exceptZero'),
   });
   const per = item.repeat === 'monthly' ? t.perMonthShort : t.perYearShort;
   return (
@@ -67,23 +71,60 @@ export function ContractRow({ item, category, t, onOpen }: {
   );
 }
 
+/** A hint under the contracts: a new subscription (P4), or a regular payment still missing (P5) with *Eintragen*. */
+function HintLine({ insight, category, t, onAdd }: { insight: Insight; category?: Category; t: Strings; onAdd?: (i: Insight) => void }) {
+  const words = insightText(insight, t, () => '');
+  return (
+    <li className="min-h-tap px-4 py-2.5 flex items-center gap-3">
+      <Picture emoji={category?.emoji} name={insight.name ?? ''} hue={category?.hue} size="sm" />
+      <span className="min-w-0 flex-1">
+        <span className={`block text-label tabular-nums wrap-prose ${insight.tone === 'warn' ? 'font-semibold text-warn' : 'text-fg'}`}>{words.text}</span>
+        {words.basis && <span className="block text-caption text-fg-mute tabular-nums wrap-prose">{words.basis}</span>}
+      </span>
+      {onAdd && (
+        <button
+          type="button"
+          onClick={() => { tapLight(); onAdd(insight); }}
+          className="shrink-0 -me-2 h-tap px-2 rounded-sm text-label font-semibold text-accent active:opacity-60 focus-visible:ring-focus"
+        >
+          {t.hintActionAdd}
+        </button>
+      )}
+    </li>
+  );
+}
+
 /**
  * Abos & Verträge on Planen: what the recurring costs add up to, how much of
  * the income they take before the month begins, and the first four — those
- * with a deadline coming up first. "Alle (n)" pushes the whole list.
+ * with a deadline coming up first. "Alle (n)" pushes the whole list. Under
+ * them, what is new (a subscription never seen before, P4) and what is
+ * missing this month (a regular payment past its usual day, P5 — one tap
+ * enters it, prefilled and open).
  */
-export function ContractsCard({ items, categories, averageIncome, t, onOpen, onAll }: {
+export function ContractsCard({ items, categories, averageIncome, fresh = [], missing = [], t, onOpen, onAll, onAdd }: {
   items: ContractItem[];
   categories: Category[];
   averageIncome: number;
+  fresh?: Insight[];
+  missing?: Insight[];
   t: Strings;
   onOpen: (item: ContractItem) => void;
   onAll: () => void;
+  onAdd?: (i: Insight) => void;
 }) {
   const money = (c: number) => formatMoney(c, t.locale);
   const totals = contractTotals(items);
   const shown = items.slice(0, 4);
   const byId = new Map(categories.map(c => [c.id, c]));
+  const hints = (title: string, list: Insight[], add?: (i: Insight) => void) => list.length > 0 && (
+    <div className="mt-3 pt-3 hairline-t">
+      <h4 className="text-caption font-semibold text-fg-mute">{title}</h4>
+      <ul className="-mx-4 -mb-2 divide-hairline-inset" style={{ '--sep': '64px' } as CSSProperties}>
+        {list.map(i => <HintLine key={i.id} insight={i} category={i.categoryId ? byId.get(i.categoryId) : undefined} t={t} onAdd={add} />)}
+      </ul>
+    </div>
+  );
   return (
     <Card
       title={t.contractsTitle}
@@ -105,6 +146,8 @@ export function ContractsCard({ items, categories, averageIncome, t, onOpen, onA
           {!items.some(i => i.contract) && <p className="mt-3 text-caption text-fg-mute wrap-prose">{t.contractsHint}</p>}
         </>
       )}
+      {hints(t.contractsNew, fresh)}
+      {hints(t.contractsMissing, missing, onAdd)}
     </Card>
   );
 }

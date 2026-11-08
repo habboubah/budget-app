@@ -1,5 +1,5 @@
 {
- "_about": "A synthetic year (Dec 2025 – Nov 2026, November running on the 15th) for golden.test.ts. Frozen: change it only on purpose.",
+ "_about": "A synthetic year (Dec 2025 – Nov 2026, November running on the 15th) for golden.test.ts: an ETF plan, two yearly bills, undated entries, an opening override in June, a bill left open in September, a lumpy category. Frozen: change it only on purpose.",
  "categories": [
   {
    "id": "income",
@@ -4492,6 +4492,94 @@
    "seriesId": "g-open-sep",
    "createdAt": 1764547299999,
    "date": "2026-09-24"
+  },
+  {
+   "id": "g322",
+   "month": "2026-01",
+   "categoryId": "car",
+   "name": "Kfz-Versicherung",
+   "amount": 65100,
+   "paid": true,
+   "repeat": "yearly",
+   "seriesId": "series-Kfz-Versicherung",
+   "createdAt": 1764547200322,
+   "date": "2026-01-15",
+   "paidAt": 1764547200322
+  },
+  {
+   "id": "g323",
+   "month": "2026-04",
+   "categoryId": "groceries",
+   "name": "Wochenmarkt",
+   "amount": 2340,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "g323",
+   "createdAt": 1764547200323,
+   "paidAt": 1764547200323
+  },
+  {
+   "id": "g324",
+   "month": "2026-05",
+   "categoryId": "groceries",
+   "name": "Wochenmarkt",
+   "amount": 1870,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "g324",
+   "createdAt": 1764547200324,
+   "paidAt": 1764547200324
+  },
+  {
+   "id": "g325",
+   "month": "2026-06",
+   "categoryId": "groceries",
+   "name": "Wochenmarkt",
+   "amount": 2210,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "g325",
+   "createdAt": 1764547200325,
+   "paidAt": 1764547200325
+  },
+  {
+   "id": "g326",
+   "month": "2026-03",
+   "categoryId": "clothing",
+   "name": "C&A",
+   "amount": 8990,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "g326",
+   "createdAt": 1764547200326,
+   "date": "2026-03-14",
+   "paidAt": 1764547200326
+  },
+  {
+   "id": "g327",
+   "month": "2026-07",
+   "categoryId": "clothing",
+   "name": "Zalando",
+   "amount": 14500,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "g327",
+   "createdAt": 1764547200327,
+   "date": "2026-07-05",
+   "paidAt": 1764547200327
+  },
+  {
+   "id": "g328",
+   "month": "2026-10",
+   "categoryId": "clothing",
+   "name": "Mantel",
+   "amount": 22900,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "g328",
+   "createdAt": 1764547200328,
+   "date": "2026-10-24",
+   "paidAt": 1764547200328
   }
  ],
  "months": [
@@ -4522,7 +4610,8 @@
   },
   {
    "key": "2026-06",
-   "startedAt": 1764547200006
+   "startedAt": 1764547200006,
+   "opening": 1406768
   },
   {
    "key": "2026-07",

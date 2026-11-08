@@ -404,6 +404,35 @@ export function formatMoneyApprox(cents: number, locale: string): string {
     .format(euros).replace('-', '−');
 }
 
+/**
+ * An estimate, rounded the way a person would say it — for every "≈" (a
+ * forecast, a projection, a usual month): to 100 € from 10.000 €, to 10 €
+ * from 1.000 €, whole euros below. A forecast with cents reads as a promise.
+ */
+export function formatMoneyEstimate(cents: number, locale: string, sign: 'auto' | 'exceptZero' = 'auto'): string {
+  const euros = Math.abs(cents) / 100;
+  const step = euros >= 10_000 ? 100 : euros >= 1_000 ? 10 : 1;
+  const rounded = Math.round(euros / step) * step;
+  const value = cents < 0 && rounded ? -rounded : rounded;
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
+    .format(value).replace('-', '−');
+}
+
+/**
+ * Euro cents → a short axis label in the reader's own way of writing it:
+ * "4.000", "20.000", "1,5 Mio." in German, "4K" in English, "4 آلاف" in
+ * Arabic. German compact notation leaves four-digit numbers ungrouped
+ * ("4000" beside "20.000"); where the engine doesn't group them on request,
+ * amounts under a million go in standard notation instead.
+ */
+export function compactMoney(cents: number, locale: string): string {
+  const v = cents / 100;
+  const opts = { notation: 'compact', maximumFractionDigits: 1, useGrouping: 'always' } as Intl.NumberFormatOptions;
+  let out = new Intl.NumberFormat(locale, opts).format(v);
+  if (Math.abs(v) < 1e6 && /\d{4}/.test(out)) out = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(v);
+  return out.replace('-', '−');
+}
+
 function kindLookup(categories: Category[]): (id: string) => CategoryKind {
   const m = new Map(categories.map(c => [c.id, c.kind]));
   return id => m.get(id) ?? 'expense';
@@ -436,10 +465,16 @@ export interface MonthBalance extends Totals {
  */
 export function computeBalances(data: AppData): MonthBalance[] {
   const months = [...data.months].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  // Every month's entries in one pass (ten years would otherwise be read once per month).
+  const byMonth = new Map<MonthKey, Entry[]>();
+  for (const e of data.entries) {
+    const list = byMonth.get(e.month);
+    if (list) list.push(e); else byMonth.set(e.month, [e]);
+  }
   const out: MonthBalance[] = [];
   let prev: MonthBalance | undefined;
   for (const m of months) {
-    const totals = monthTotals(data.entries, data.categories, m.key);
+    const totals = monthTotals(byMonth.get(m.key) ?? [], data.categories, m.key);
     const outstanding = prev ? prev.end - prev.now : 0;
     const overridden = m.opening !== undefined;
     const openingNow = overridden ? m.opening! : prev?.now ?? 0;

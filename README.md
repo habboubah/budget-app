@@ -76,24 +76,39 @@ month, and the two numbers that matter: **what is on the account now** and
 - **Reminders and a lock** (iPhone app): a notification before an open bill is
   due and a week before a contract's last day to cancel — without amounts
   unless you want them; Face ID (or the passcode) when opening Spartopf.
-- **Statistics.** How it went, over 6 or 12 months or all: the average income,
+- **Statistics** — *how did it go?* First **Das fällt auf**: at most three
+  ranked hints, each with a next step (a category above its usual, a trend, a
+  better or weaker month, a record, a month with items still open or a week
+  without entries, one big expense) — "⋯" hides one, *Wie berechnet?* explains
+  it. Then **Verlauf**, over 6 or 12 months or all: the average income,
   spending and savings of the finished months, one chart of income and
-  expenses with what each month kept (still open or expected is hatched), the
-  balance at each month's end, where the money goes by category (tap one for
-  its months) or by payee over this month or the last 2, 3, 6 or 12 ("Lidl ·
-  6× · 12 %") — tap for values, or open the table.
-- **Planen**, a tab of its own: the month's budgets, then **Abos & Verträge** —
-  every recurring cost with its next payment and price changes; add when a
-  contract ends and its notice period, and it says by when to cancel. Then the savings rate month by month
-  against the 20 % target, the 50/30/20 rule (needs / wants / saved — each
-  against its share, in euros, with its biggest categories, how many of the
-  three targets are met and in which months; set per category whether it
-  counts as *Bedarf*, *Wünsche* or *Sparen*, so an ETF plan in *Geldanlage* is
-  saved, not spent), emergency reserve in months of spending (3–6 is the usual
-  advice), a forecast for the year's end and 12 months out, fixed commitments,
-  trends, the best and weakest month — and hints for one month: what was
-  unusual and the biggest expenses (also over the last 2, 3 or 6 months), new
-  names, missing regulars, new prices.
+  spending with what each month kept (still open or expected is hatched), the
+  balance at each month's end, where the money goes by category (Ø, share,
+  how it moved against the months before, the budget as a tick) or by payee,
+  and the table — a month opens its **Monatsbericht**. A category opens its own
+  screen: its months with the Ø and its budget, so far / Ø / this year, the
+  budget kept, where its money goes, its biggest entries and fixed costs. A
+  payee opens a sheet with its months and *Alle Einträge*. Money put into a
+  savings category (an ETF plan in *Geldanlage*) counts as saved, not spent,
+  everywhere in the statistics. From 15 December to January, the
+  **Jahresrückblick**: the year in numbers, budgets for the next year to take
+  over in one step, and a picture to share — without amounts unless you want
+  them.
+- **Planen** — *how is it going, what's coming?* **November bis heute**:
+  everyday spending so far against a usual month at the same day, where it
+  would end, and where it goes. The month's **budgets**. **Ausblick**: the
+  balance at the end of each of the next twelve months, with yearly bills in
+  their month and a range from calm to pricey months. **Abos & Verträge**:
+  every recurring cost with its next payment, price changes (with what they do
+  in a year) and notice deadlines, new subscriptions, and regular payments
+  still missing this month — one tap enters them. **Finanz-Check**: more in
+  than out (the savings rate and 50/30/20), bills on time, and the reserve in
+  months of basic needs (3–6 is a rule of thumb). Every key figure has an ⓘ
+  that shows how it is worked out, with your own numbers.
+- **Monatsbericht** for any month — from the month's "⋯", Planen or the table:
+  what it saved against a usual month, budgets kept, what changed, where the
+  money went, what is still open, and the month after. At the start of a
+  month a card on the month page sums up the one before.
 - **Optionen.** Categories and budgets — besides the eight above, the usual categories of a
   German banking app are built in, switched off for new months until you want
   them: *Bekleidung, Einkäufe, Telekommunikation, Mobilität, Reisen, Freizeit
@@ -173,7 +188,8 @@ TestFlight, the same way Fahrtwerk and Korb ship. The full first-time checklist
 | `src/store.ts` | All state; view preferences in `localStorage` |
 | `src/storage.ts` | The household book on disk: a checksummed file written atomically in the iPhone app, `localStorage` on the web (tested in `storage.test.ts`) |
 | `src/logic.ts` | Pure logic — money parsing/formatting, months, the two balances, carry-over, statistics, storage validation, CSV (tested in `logic.test.ts`) |
-| `src/insights.ts` | Savings rate, reserve, forecast, 50/30/20 check, commitments, unusual months, hints (tested in `insights.test.ts`) |
+| `src/insights/` | Statistik and Planen, pure and tested next to each module: the book (every entry read once), "usual" and the thresholds, the series (D1), 50/30/20, the hints and their ranking, pace, Ausblick, Finanz-Check, the category and payee details, the month report and the year review (`insights.test.ts` too) |
+| `src/insightText.ts` | A hint in words, in every language (tested) |
 | `src/budgets.ts`, `src/contracts.ts`, `src/due.ts` | Monthly budgets and their pace, subscriptions & contracts with notice deadlines, what is due next (each with its tests) |
 | `src/reminders.ts`, `src/notify.ts`, `src/lock.ts` | The reminder plan (pure, tested), scheduling it on the iPhone, the Face ID lock |
 | `src/fixtures/` | What older versions stored and backed up, and a demo year with its golden values; `compat.test.ts` and `golden.test.ts` load them |
