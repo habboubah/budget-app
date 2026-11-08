@@ -72,6 +72,10 @@ month, and the two numbers that matter: **what is on the account now** and
   balance is carried over automatically — set it by hand for the first month or
   when the real account has drifted ("⋯" → Kontostand am Monatsanfang). Open
   entries left in earlier months are flagged with a link to them.
+- **Match the bank.** "⋯" → *Mit Bank abgleichen*: type what your bank shows,
+  and Spartopf books the difference as a "Kontoabgleich" entry (so you see
+  where it came from) or, if you prefer, moves the month's opening balance.
+  Undoable; the balance card then notes "Abgeglichen am …".
 - **Budgets.** Give a spending category a monthly budget (with a suggestion
   from what it cost on average): its card shows paid and open against it, a
   tick for today, "noch 212,88 €" or "50,04 € drüber". *Diesen Monat übrig*

@@ -41,6 +41,8 @@ interface Props {
   onSearchSeedUsed?: () => void;
   /** No balance card yet: the setup asks for the balance first, instead of a card full of zeros. */
   hideBalance?: boolean;
+  /** When this month was last matched against the bank (plan 10). */
+  reconciledAt?: number;
   language: string;
   t: Strings;
   onMonth: (m: MonthKey) => void;
@@ -257,7 +259,7 @@ export function MonthView(p: Props) {
           onOpenMonth={m => { setQuery(''); p.onMonth(m); }}
         />
       ) : (<>
-      {!p.hideBalance && <BalanceCard balance={balance} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} />}
+      {!p.hideBalance && <BalanceCard balance={balance} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} />}
 
       {/* Keyed by month: stepping to another one brings its cards in afresh
           (the balance card above stays, and its numbers run to the new values). */}

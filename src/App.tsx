@@ -27,6 +27,7 @@ import { ContractItem, contractItems } from './contracts';
 import { MonthPickerSheet } from './components/MonthPickerSheet';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
+import { ReconcileSheet } from './components/ReconcileSheet';
 import { MonthActionsMenu } from './components/MonthActionsMenu';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
@@ -118,6 +119,7 @@ export default function App() {
   const [month, setMonth] = useState<MonthKey>(monthKeyOf);
   const [entrySheet, setEntrySheet] = useState<EntrySheetMode>(null);
   const [openingOpen, setOpeningOpen] = useState(false);
+  const [reconcileOpen, setReconcileOpen] = useState(false);
   /** The category whose monthly budget is being set. */
   const [budgetFor, setBudgetFor] = useState<Category | null>(null);
   /** The recurring cost whose contract details are being edited. */
@@ -747,6 +749,7 @@ export default function App() {
             onDelete={e => deleteEntry(e.id)}
             onPickMonth={() => setMonthPickerOpen(true)}
             onOpening={() => setOpeningOpen(true)}
+            reconciledAt={store.months.find(m => m.key === month)?.reconciledAt}
             onCategories={() => push('categories')}
             collapsed={store.collapsed}
             onCollapse={store.toggleCollapsed}
@@ -881,6 +884,37 @@ export default function App() {
         }}
       />
 
+      <ReconcileSheet
+        open={reconcileOpen}
+        month={month}
+        now={balance.now}
+        currentOpening={balance.openingNow}
+        extraId="extra"
+        incomeId={categories.find(c => c.kind === 'income')?.id ?? 'income'}
+        t={t}
+        onClose={() => setReconcileOpen(false)}
+        onBook={draft => {
+          const id = uid();
+          const now = Date.now();
+          const entry: Entry = { id, month, seriesId: id, createdAt: now, ...draft, paidAt: now };
+          store.addEntry(entry);
+          store.showCategory(month, draft.categoryId);
+          const prevRec = store.setReconciled(month, now);
+          show(t.reconcileDone, { label: t.undo, run: () => { store.removeEntry(id); store.setReconciled(month, prevRec); } });
+        }}
+        onAdjustOpening={opening => {
+          const prevOpening = store.months.find(m => m.key === month)?.opening;
+          const prevRec = store.setReconciled(month, Date.now());
+          setSetupNow(null);
+          store.setOpening(month, opening);
+          show(t.reconcileDone, { label: t.undo, run: () => { store.setOpening(month, prevOpening); store.setReconciled(month, prevRec); } });
+        }}
+        onAgree={() => {
+          const prevRec = store.setReconciled(month, Date.now());
+          show(t.reconcileDone, { label: t.undo, run: () => store.setReconciled(month, prevRec) });
+        }}
+      />
+
       <ContractSheet
         item={contractFor}
         category={contractFor ? categories.find(c => c.id === contractFor.categoryId) : undefined}
@@ -913,6 +947,7 @@ export default function App() {
         t={t}
         onClose={() => setActionsAnchor(null)}
         onOpening={() => setOpeningOpen(true)}
+        onReconcile={() => setReconcileOpen(true)}
         onPull={() => { const n = store.pullRecurring(month); show(fmt(t.pulled, { n })); }}
         onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
         onImportCsv={() => statementInput.current?.click()}

@@ -1,5 +1,5 @@
 import {
-  AppData, Backup, Category, CategoryKind, Contract, Entry, Favorite, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
+  AppData, Backup, Category, CategoryKind, Contract, Entry, EntryDraft, Favorite, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -219,6 +219,42 @@ export function amountToInput(cents: number, locale: string): string {
 /** An entry's effect on the account: + for income, − for an expense. */
 export function signedAmount(amount: number, kind: CategoryKind): number {
   return kind === 'income' ? amount : -amount;
+}
+
+/** The outcome of matching the app's "now" balance against the bank's (plan 10). */
+export interface Reconcile {
+  /** bank − app, signed cents. 0 means they already agree. */
+  diff: number;
+  /** Book the difference as a paid entry (the default). Absent when there's no difference. */
+  entry?: EntryDraft;
+  /** Or move the month's opening balance by the difference. Absent when there's no difference. */
+  opening?: number;
+}
+
+/**
+ * Match the app's current account balance against what the bank shows
+ * (plan 10). Returns the difference and the two ways to fix it: a paid
+ * "Kontoabgleich" entry (an expense in `extraId` when the bank shows less, an
+ * income in `incomeId` when it shows more), or a new month opening that shifts
+ * everything by the difference. No difference → neither, just `diff: 0`.
+ */
+export function reconcile(
+  now: number,
+  bank: number,
+  opts: { extraId: string; incomeId: string; name: string; currentOpening: number; date?: string },
+): Reconcile {
+  const diff = bank - now;
+  if (diff === 0) return { diff: 0 };
+  const income = diff > 0;
+  const entry: EntryDraft = {
+    categoryId: income ? opts.incomeId : opts.extraId,
+    name: opts.name,
+    amount: Math.abs(diff),
+    paid: true,
+    repeat: 'none',
+    ...(opts.date ? { date: opts.date } : {}),
+  };
+  return { diff, entry, opening: opts.currentOpening + diff };
 }
 
 /* ------------------------------------------------------------------ months */
@@ -1034,6 +1070,7 @@ function normalizeMonth(v: unknown): MonthRecord | null {
   const m: MonthRecord = { key: v.key, startedAt: typeof v.startedAt === 'number' ? v.startedAt : 0 };
   if (Array.isArray(v.categories)) m.categories = [...new Set(v.categories.filter((x): x is string => typeof x === 'string'))];
   if (typeof v.opening === 'number' && Number.isFinite(v.opening)) m.opening = Math.round(Math.max(-MAX_CENTS, Math.min(MAX_CENTS, v.opening)));
+  if (typeof v.reconciledAt === 'number' && Number.isFinite(v.reconciledAt)) m.reconciledAt = v.reconciledAt;
   return m;
 }
 

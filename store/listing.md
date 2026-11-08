@@ -129,6 +129,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: المفضّلة. ثبّت المخبز أو الوقود أو المقصف وأضِفها في المرة القادمة بلمسة واحدة.
 
+**DE:** Neu: Mit Bank abgleichen. Trag den echten Kontostand ein, und Spartopf bucht die Differenz – nachvollziehbar und mit Rückgängig.
+
+**EN:** New: match the bank balance. Enter the real balance and Spartopf books the difference – traceable and undoable.
+
+**AR:** جديد: المطابقة مع البنك. أدخِل الرصيد الفعلي ليُسجّل Spartopf الفرق – بشكل واضح وقابل للتراجع.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

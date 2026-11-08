@@ -122,9 +122,15 @@ try {
     // Reading takes a while in headless Chromium; either the review sheet or a "nothing found" toast ends it.
     await page.waitForFunction(() => document.querySelector('[role="dialog"] button[type="submit"], [role="dialog"] button.hero') || document.querySelector('[role="status"]'), null, { timeout: 120000 });
     await page.waitForTimeout(500);
-    // Close the review sheet without importing (its ✕), and wait until it has gone.
-    const sheet = page.locator('[role="dialog"]');
-    if (await sheet.count()) await sheet.locator('button[aria-label]').first().click();
+    // Close the review sheet without importing, and wait until it has gone.
+    // Headless OCR is flaky: retry Escape / the ✕ until no dialog is left, so
+    // a lingering sheet can't block the next step.
+    for (let i = 0; i < 10 && await page.locator('[role="dialog"]').count(); i++) {
+      await page.keyboard.press('Escape').catch(() => {});
+      const close = page.locator('[role="dialog"] button[aria-label]').first();
+      if (await close.count()) await close.click({ timeout: 2000 }).catch(() => {});
+      await page.waitForTimeout(300);
+    }
     await page.waitForFunction(() => !document.querySelector('[role="dialog"]'), null, { timeout: 10000 });
   });
   await step('a backup exported', async () => {
@@ -132,11 +138,14 @@ try {
     await page.locator('main button', { hasText: 'Sichern und übertragen' }).click();
     await page.waitForTimeout(400);
     // Opens the export sheet (plan 04); export without a password so no key
-    // derivation or password entry is needed in the check.
-    await page.locator('main button', { hasText: 'Sicherung exportieren' }).click();
+    // derivation or password entry is needed in the check. The row is the
+    // first "Sicherung exportieren" button on the screen.
+    const exportRow = page.locator('main button', { hasText: 'Sicherung exportieren' }).first();
+    await exportRow.scrollIntoViewIfNeeded();
+    await exportRow.click();
     await page.waitForSelector('[role="dialog"]');
     await page.locator('[role="dialog"] [role="switch"][aria-label="Ohne Passwort exportieren"]').click();
-    const download = page.waitForEvent('download', { timeout: 10000 });
+    const download = page.waitForEvent('download', { timeout: 15000 });
     await page.locator('[role="dialog"] button[type="submit"]').click();
     await download;
   });

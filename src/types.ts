@@ -100,6 +100,8 @@ export interface MonthRecord {
    *  can be taken out, another added. Unset (months from before) = all. */
   categories?: string[];
   startedAt: number;
+  /** When the month was last matched against the bank (ms epoch, plan 10). Unset = never. */
+  reconciledAt?: number;
 }
 
 export type ThemeMode = 'system' | 'light' | 'dark';

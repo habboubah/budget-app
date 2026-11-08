@@ -40,8 +40,17 @@ One menu item, one sheet, one field. No reconciliation workflow and no ticking e
 
 ## Done when
 
-- [ ] Both choices work and can be undone.
-- [ ] Next month's carry-over is correct.
+- [x] Both choices work and can be undone.
+- [x] Next month's carry-over is correct (golden data unchanged).
+
+## Notes (built)
+
+- `reconcile(now, bank, { extraId, incomeId, name, currentOpening, date })` in `logic.ts` (tested): `{ diff, entry?, opening? }`. Bank less → a paid expense in `extra`; bank more → paid income in the first income category; the `opening` alternative shifts the month opening by the difference. No difference → `{ diff: 0 }`.
+- `MonthRecord.reconciledAt?` (optional, no schema bump — kept by `normalizeState`). `store.setReconciled(key, when)` returns the previous value for undo.
+- `ReconcileSheet.tsx`: one field, the difference line, a Segmented choice (book entry / adjust opening), and "Stimmt überein ✓" when they agree. From the month "⋯" → *Mit Bank abgleichen* (started months). Both paths and the agree path show an undo toast that reverts the entry/opening **and** `reconciledAt`.
+- The balance-card details show "Abgeglichen am …" (`reconciledAt` passed App → MonthView → BalanceCard).
+- Also hardened `scripts/privacy-check.mjs`: the OCR review sheet is now dismissed with a retry loop (Escape / ✕) so a flaky headless-OCR run can't leave a sheet blocking the next step.
+- Still to do: ui-review on device.
 
 ## Not in this plan
 

@@ -5,7 +5,7 @@ import {
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, monthsEnding, monthSpanLabel, formatPercent, upgradeCategories,
   normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, monthSettled, topCategories, laterCopies,
-  leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth, formatMoneyEstimate, compactMoney, evalAmount, MAX_FAVORITES,
+  leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth, formatMoneyEstimate, compactMoney, evalAmount, MAX_FAVORITES, reconcile,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -913,5 +913,38 @@ describe('favourites (plan 09)', () => {
     const d: AppData = { categories: cats, entries: [], months: [], favorites: [{ id: 'a', name: 'Bäcker', categoryId: 'groceries', amount: 480 }] };
     const back = parseBackup(JSON.stringify(makeBackup(d)));
     expect(back.ok && back.data.favorites?.[0]).toMatchObject({ name: 'Bäcker', amount: 480 });
+  });
+});
+
+describe('reconcile — match the bank balance (plan 10)', () => {
+  const opts = { extraId: 'extra', incomeId: 'income', name: 'Kontoabgleich', currentOpening: 200000 };
+
+  it('books an expense when the bank shows less', () => {
+    const r = reconcile(100000, 97660, opts); // 23,40 € less
+    expect(r.diff).toBe(-2340);
+    expect(r.entry).toMatchObject({ categoryId: 'extra', amount: 2340, paid: true, repeat: 'none' });
+    expect(r.opening).toBe(200000 - 2340); // adjust-opening alternative
+  });
+
+  it('books income when the bank shows more', () => {
+    const r = reconcile(100000, 105000, opts);
+    expect(r.diff).toBe(5000);
+    expect(r.entry).toMatchObject({ categoryId: 'income', amount: 5000, paid: true });
+    expect(r.opening).toBe(205000);
+  });
+
+  it('reports no difference and offers nothing to book', () => {
+    const r = reconcile(100000, 100000, opts);
+    expect(r).toEqual({ diff: 0 });
+  });
+
+  it('works off an overridden opening (the opening shifts by the difference)', () => {
+    const r = reconcile(100000, 99000, { ...opts, currentOpening: 150000 });
+    expect(r.opening).toBe(149000);
+  });
+
+  it('carries a date onto the booked entry', () => {
+    const r = reconcile(100000, 99000, { ...opts, date: '2026-11-07' });
+    expect(r.entry?.date).toBe('2026-11-07');
   });
 });

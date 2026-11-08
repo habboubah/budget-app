@@ -246,6 +246,17 @@ export function useAppStore() {
     });
   };
 
+  /** Mark a month as matched against the bank (plan 10); returns the previous value for undo. */
+  const setReconciled = (key: MonthKey, when: number | undefined): number | undefined => {
+    const before = months.find(m => m.key === key)?.reconciledAt;
+    setMonths(prev => prev.map(m => {
+      if (m.key !== key) return m;
+      const { reconciledAt: _drop, ...rest } = m;
+      return when === undefined ? rest : { ...rest, reconciledAt: when };
+    }));
+    return before;
+  };
+
   /** Remove a month and its entries; returns them for undo. */
   const removeMonth = (key: MonthKey): { month: MonthRecord; entries: Entry[] } | null => {
     const month = months.find(m => m.key === key);
@@ -513,7 +524,7 @@ export function useAppStore() {
     unseeReview: (id: string) => setReviewsSeen(prev => prev.filter(x => x !== id)),
     currency, setCurrency: (c: Currency) => setCurrency(c),
     data, categories, entries, months, balances,
-    startMonth, pullRecurring, setOpening, removeMonth, restoreMonth, hideCategory, showCategory,
+    startMonth, pullRecurring, setOpening, setReconciled, removeMonth, restoreMonth, hideCategory, showCategory,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
     setCategories, importData, restoreData, resetAll, setContract,

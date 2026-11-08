@@ -15,6 +15,8 @@ interface Props {
   onOpening: () => void;
   /** Swiped sideways: one month on (1) or back (−1). */
   onSwipe?: (delta: 1 | -1) => void;
+  /** When this month was last matched against the bank (ms epoch, plan 10). */
+  reconciledAt?: number;
 }
 
 /** How far (px) or how fast (px/s) a swipe has to go to turn the month. */
@@ -45,7 +47,7 @@ type Note = { text: string; tone: string };
  * figures run to their new values). The ‹ › in the bar do the same for
  * everyone else; the list below keeps its own swipes (paid, delete).
  */
-export function BalanceCard({ balance: b, t, onOpening, onSwipe }: Props) {
+export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   const [details, setDetails] = useState(false);
   const detailsId = useId();
@@ -134,6 +136,11 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe }: Props) {
             >
               <CarryRow balance={b} t={t} money={money} onOpening={onOpening} />
               <Workings balance={b} t={t} money={money} />
+              {reconciledAt && (
+                <p className="px-4 py-2 text-caption text-on-hero-mute">
+                  {fmt(t.reconciledOn, { date: new Date(reconciledAt).toLocaleDateString(t.locale, { day: 'numeric', month: 'short' }) })}
+                </p>
+              )}
             </motion.div>
           )}
         </>
