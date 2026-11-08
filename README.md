@@ -53,7 +53,9 @@ month, and the two numbers that matter: **what is on the account now** and
   With a due day ("fällig am 14."), open entries turn **überfällig** once the
   day has passed. How often an entry repeats shows in the editor only.
 - **Fast entry.** The amount comes first (German or English number format both
-  work: `1.050,00`, `45,12`, `12.5`). Name suggestions come from every entry in
+  work: `1.050,00`, `45,12`, `12.5`). A row of **+ − × ÷** keys sits above the
+  keyboard while you type the amount, so `12,50+4,80` adds up to `17,30` on
+  save — no mental maths for a receipt or a split bill. Name suggestions come from every entry in
   every month (this category's first, then the built-in ideas, then other
   categories') and narrow with each letter typed; tapping "Miete" fills in last
   month's amount and due day, and a name from another category ("Lidl") moves

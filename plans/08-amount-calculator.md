@@ -44,8 +44,13 @@ The row only appears while an amount is being typed. Typing a plain amount works
 
 ## Done when
 
-- [ ] Expressions work with every number format the field already accepts.
-- [ ] The row works with VoiceOver and hides nothing on SE.
+- [x] Expressions work with every number format the field already accepts.
+- [x] The row works with VoiceOver and hides nothing on SE (portal tracks the visual viewport; keys are 44 pt, labelled). On-device SE `-kb` capture still to do.
+
+## Notes (built)
+
+- `evalAmount(text, locale)` in `logic.ts` (tested in `logic.test.ts`): operands via `parseAmount` (every number format, Arabic digits, currency symbol); operators `+ − × ÷` (and `* /`) with normal precedence, no parentheses, ≤ 12 operands, result rounded to cents; null for a plain number, a negative/∞ result, ÷0, or anything unparseable. No `eval`/`Function`.
+- `EntrySheet.tsx`: `amount = parseAmount(text) ?? evalAmount(text)`; a live `= …` line (`aria-live="polite"`) shows the sum. The `OperatorKeys` row is portalled to the visual-viewport bottom, shown only while the amount field is focused; keys keep focus via `onMouseDown`/`preventDefault` and carry `aria-label`s ("plus", "minus", "mal", "geteilt durch" — `calcPlus`…`calcDivide` in de/en/ar). Editing an existing entry still shows the stored amount.
 
 ## Not in this plan
 

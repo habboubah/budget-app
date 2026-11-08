@@ -5,7 +5,7 @@ import {
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, monthsEnding, monthSpanLabel, formatPercent, upgradeCategories,
   normalizeDigits, upgradeData, foldForSearch, searchEntries, highlightRanges, monthLeft, monthSettled, topCategories, laterCopies,
-  leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth, formatMoneyEstimate, compactMoney,
+  leftPerDay, formatMoneyApprox, formatMoneyWhole, SCHEMA_VERSION, searchByMonth, formatMoneyEstimate, compactMoney, evalAmount,
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -824,5 +824,48 @@ describe('schema 8: Kinder', () => {
     expect(up.months[0].categories).toEqual(['income', 'family', 'children']);
     const own = { ...v7, categories: [...v7.categories, { id: 'k1', names: { de: 'Kinder' }, emoji: '👶', hue: 'sand' as const, kind: 'expense' as const, repeat: 'none' as const }] };
     expect(upgradeData(own, 7, new Date(2026, 10, 7)).categories.some(c => c.id === 'children')).toBe(false);
+  });
+});
+
+describe('evalAmount — the amount-field calculator', () => {
+  it('adds and subtracts money amounts (German)', () => {
+    expect(evalAmount('12,50+4,80', 'de-DE')).toBe(1730);
+    expect(evalAmount('20-4,50', 'de-DE')).toBe(1550);
+  });
+
+  it('honours precedence: × and ÷ before + and −', () => {
+    expect(evalAmount('2+3×4', 'de-DE')).toBe(1400); // 2 + 12 = 14,00
+    expect(evalAmount('2+3*4', 'de-DE')).toBe(1400);
+  });
+
+  it('multiplies and divides', () => {
+    expect(evalAmount('3×9,99', 'de-DE')).toBe(2997);
+    expect(evalAmount('10÷4', 'de-DE')).toBe(250); // 2,50
+    expect(evalAmount('10/4', 'de-DE')).toBe(250);
+  });
+
+  it('reads English marks and Arabic digits', () => {
+    expect(evalAmount('1,050.50+9.50', 'en-GB')).toBe(106000);
+    expect(evalAmount('١٢٫٥٠+٤٫٨٠', 'de-DE')).toBe(1730);
+  });
+
+  it('returns null for a plain number (the field handles that)', () => {
+    expect(evalAmount('12,50', 'de-DE')).toBeNull();
+  });
+
+  it('waits on a trailing operator and rejects the unparseable', () => {
+    expect(evalAmount('12,50+', 'de-DE')).toBeNull();
+    expect(evalAmount('+12,50', 'de-DE')).toBeNull();
+    expect(evalAmount('abc', 'de-DE')).toBeNull();
+  });
+
+  it('refuses a negative result and a division by zero', () => {
+    expect(evalAmount('4-10', 'de-DE')).toBeNull();
+    expect(evalAmount('10÷0', 'de-DE')).toBeNull();
+  });
+
+  it('caps the number of operands', () => {
+    expect(evalAmount(Array(13).fill('1').join('+'), 'de-DE')).toBeNull();
+    expect(evalAmount(Array(12).fill('1').join('+'), 'de-DE')).toBe(1200);
   });
 });

@@ -130,6 +130,57 @@ export function parseAmount(text: string, locale = 'de-DE'): number | null {
 }
 
 /**
+ * A small sum typed into the amount field (plan 08): "12,50+4,80", "3×9,99",
+ * "20-4,50". Operands go through `parseAmount` (so every number format, Arabic
+ * digits and the currency symbol work); operators are + − × ÷ (and * /) with
+ * normal precedence, no parentheses, at most 12 operands. The result is
+ * rounded to cents. Returns null for a plain number with no operator (the
+ * field handles that), a negative or non-finite result, a division by zero, or
+ * anything unparseable. No `eval`, no `Function`.
+ */
+export function evalAmount(text: string, locale = 'de-DE'): number | null {
+  const s = normalizeDigits(text).replace(/[×xX*]/g, '*').replace(/[÷:/]/g, '/');
+  // Split on the operators, keeping them; a leading minus would make the first operand negative, which parseAmount rejects.
+  const tokens = s.split(/\s*([+\-*/])\s*/).filter(t => t !== '');
+  if (tokens.length < 3 || tokens.length % 2 === 0) return null; // operand (op operand)+, so odd and ≥ 3
+  const operands = tokens.filter((_, i) => i % 2 === 0);
+  const ops = tokens.filter((_, i) => i % 2 === 1);
+  if (operands.length > 12) return null;
+  // Operands as cents (integers); keep them as numbers of cents.
+  const nums: number[] = [];
+  for (const o of operands) {
+    const cents = parseAmount(o, locale);
+    if (cents === null) return null;
+    nums.push(cents);
+  }
+  if (ops.some(o => !'+-*/'.includes(o))) return null;
+  // × and ÷ first. Work in cents; a product/quotient of two money values is
+  // treated as "times a plain number", which is what a receipt sum means.
+  const vals = [nums[0]];
+  const pending: string[] = [];
+  for (let i = 0; i < ops.length; i++) {
+    const op = ops[i];
+    const next = nums[i + 1];
+    if (op === '*' || op === '/') {
+      const prev = vals.pop()!;
+      if (op === '/') {
+        if (next === 0) return null;
+        vals.push(Math.round((prev / next) * 100)); // next is cents → divide by (next/100)
+      } else {
+        vals.push(Math.round((prev * next) / 100)); // prev × (next/100)
+      }
+    } else {
+      pending.push(op);
+      vals.push(next);
+    }
+  }
+  let total = vals[0];
+  for (let i = 0; i < pending.length; i++) total += pending[i] === '+' ? vals[i + 1] : -vals[i + 1];
+  if (!Number.isFinite(total) || total < 0 || total > MAX_CENTS) return null;
+  return total;
+}
+
+/**
  * The book's currency (plan 07). A module-level value so the many formatters
  * don't each need it threaded through every call site; the store sets it from
  * `AppData.currency` (EUR when unset). Tests set it explicitly. Changing it

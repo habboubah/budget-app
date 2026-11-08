@@ -117,6 +117,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: عملات أخرى. يختار Spartopf عملتك حسب منطقتك (مثل CHF وGBP وSAR)، ويمكنك تغييرها من الإعدادات.
 
+**DE:** Neu: Rechnen im Betragsfeld. Tippe 12,50+4,80 und Spartopf trägt 17,30 ein – mit + − × ÷ über der Tastatur.
+
+**EN:** New: do the maths in the amount field. Type 12.50+4.80 and Spartopf enters 17.30 – with + − × ÷ above the keyboard.
+
+**AR:** جديد: احسب في حقل المبلغ. اكتب 12,50+4,80 ليُدخِل Spartopf 17,30 – مع + − × ÷ فوق لوحة المفاتيح.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

@@ -1,8 +1,9 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CalendarDays, Check, ChevronDown, ChevronUp, Plus, Repeat as RepeatIcon, Trash2 } from 'lucide-react';
 import { Category, Entry, EntryDraft, MonthKey, Repeat } from '../types';
 import {
-  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, isIsoDay, isoDay, monthKeyOf, parseAmount, suggestNames,
+  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, isIsoDay, isoDay, monthKeyOf, parseAmount, suggestNames,
   normalizeDigits, topCategories,
 } from '../logic';
 import { Strings, fmt } from '../translations';
@@ -68,6 +69,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [allCategories, setAllCategories] = useState(false);
   const [allSuggestions, setAllSuggestions] = useState(false);
   const [showError, setShowError] = useState(false);
+  /** The operator key row (plan 08) only while the amount is being typed. */
+  const [amountFocused, setAmountFocused] = useState(false);
   const [repeatAt, setRepeatAt] = useState<HTMLElement | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -76,6 +79,23 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
   const category = categories.find(c => c.id === categoryId);
   const income = category?.kind === 'income';
+
+  /** Insert an operator at the caret of the amount field, keeping focus (plan 08). */
+  const insertOp = (op: string) => {
+    const el = amountRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? amountText.length;
+    const end = el.selectionEnd ?? amountText.length;
+    const next = amountText.slice(0, start) + op + amountText.slice(end);
+    setAmountText(next);
+    setShowError(false);
+    // Put the caret after the inserted operator, next frame (after React re-renders).
+    requestAnimationFrame(() => {
+      el.focus({ preventScroll: true });
+      const at = start + op.length;
+      el.setSelectionRange(at, at);
+    });
+  };
 
   const reset = (keepCategory?: string) => {
     const c = categories.find(x => x.id === (keepCategory ?? (mode?.kind === 'new' ? mode.categoryId : ''))) ?? categories[0];
@@ -121,7 +141,10 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     }
   }, [mode]);
 
-  const amount = parseAmount(amountText, t.locale);
+  // A plain amount, or a small sum ("12,50+4,80") the field can add up (plan 08).
+  const computed = evalAmount(amountText, t.locale);
+  const amount = parseAmount(amountText, t.locale) ?? computed;
+  const isExpression = computed !== null;
   const due = /^\d{1,2}$/.test(dueText.trim()) ? Number(dueText) : undefined;
   const dueValid = dueText.trim() === '' || (due !== undefined && due >= 1 && due <= 31);
   // A date inside the entry's month, or none (entries from before dates existed).
@@ -211,6 +234,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               placeholder="0,00"
               value={amountText}
               onChange={e => { setAmountText(normalizeDigits(e.target.value)); setShowError(false); }}
+              onFocus={() => setAmountFocused(true)}
+              onBlur={() => setAmountFocused(false)}
               onKeyDown={e => {
                 if (e.key !== 'Enter') return;
                 e.preventDefault();
@@ -223,6 +248,12 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             />
             <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">€</span>
           </div>
+          {/* The running sum, announced politely — "= 17,30 €" (plan 08). */}
+          {isExpression && amount !== null && (
+            <p dir="ltr" aria-live="polite" className="text-label text-accent font-semibold mt-1 rounded-num">
+              = {formatMoney(amount, t.locale)}
+            </p>
+          )}
           {showError && amount === null && (
             <p id={`${amountId}-err`} role="alert" className="text-caption text-neg mt-1">{t.amountInvalid}</p>
           )}
@@ -419,6 +450,56 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           )}
         </div>
       </form>
+      {/* The + − × ÷ row, only while the amount is being typed (plan 08). */}
+      <OperatorKeys show={amountFocused} t={t} onInsert={insertOp} />
     </Sheet>
+  );
+}
+
+/**
+ * A slim row of calculator keys pinned to the top of the keyboard while the
+ * amount field is focused (plan 08). Portalled to <body> and positioned on the
+ * visual viewport's bottom edge, the same way the sheet follows the keyboard.
+ * Keys use onMouseDown/preventDefault so the field keeps focus (and the
+ * keyboard stays up) when a key is pressed.
+ */
+function OperatorKeys({ show, t, onInsert }: { show: boolean; t: Strings; onInsert: (op: string) => void }) {
+  const [bottom, setBottom] = useState(0);
+  useLayoutEffect(() => {
+    const v = window.visualViewport;
+    if (!show || !v) return;
+    const update = () => setBottom(Math.max(0, window.innerHeight - v.height - v.offsetTop));
+    update();
+    v.addEventListener('resize', update);
+    v.addEventListener('scroll', update);
+    return () => { v.removeEventListener('resize', update); v.removeEventListener('scroll', update); };
+  }, [show]);
+  if (!show) return null;
+  const keys: { op: string; label: string }[] = [
+    { op: '+', label: t.calcPlus },
+    { op: '−', label: t.calcMinus },
+    { op: '×', label: t.calcTimes },
+    { op: '÷', label: t.calcDivide },
+  ];
+  return createPortal(
+    <div className="fixed inset-x-0 z-[60] pointer-events-none" style={{ bottom }}>
+      <div className="mx-auto w-full max-w-xl px-2 pb-1">
+        <div className="pointer-events-auto flex gap-1 rounded-sm bg-surface-2 p-1 glass-chrome">
+          {keys.map(k => (
+            <button
+              key={k.op}
+              type="button"
+              aria-label={k.label}
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => { tapLight(); onInsert(k.op); }}
+              className="flex-1 min-h-[44px] rounded-[10px] bg-surface text-fg text-[20px] font-semibold active:scale-[0.96] transition-transform focus-visible:ring-focus"
+            >
+              {k.op}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
