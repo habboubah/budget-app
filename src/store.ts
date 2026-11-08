@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ACCENTS, Accent, AppData, Category, Contract, Entry, Favorite, MonthKey, MonthRecord, ThemeMode } from './types';
+import { ACCENTS, Accent, AppData, Category, Contract, Entry, Favorite, Goal, MonthKey, MonthRecord, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
   MAX_FAVORITES, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
@@ -83,6 +83,8 @@ export function useAppStore() {
   useEffect(() => { setActiveCurrency(currency); }, [currency]);
   /** Pinned favourites — data, so part of a backup (plan 09). */
   const [favorites, setFavorites] = useState<Favorite[]>(initial.favorites ?? []);
+  /** Savings goals, "Spartöpfe" — data, so part of a backup (plan 12). */
+  const [goals, setGoals] = useState<Goal[]>(initial.goals ?? []);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = readString(K.theme);
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
@@ -174,8 +176,9 @@ export function useAppStore() {
       ...(Object.keys(contracts).length ? { contracts } : {}),
       ...(currency !== DEFAULT_CURRENCY ? { currency } : {}),
       ...(favorites.length ? { favorites } : {}),
+      ...(goals.length ? { goals } : {}),
     }),
-    [categories, entries, months, contracts, currency, favorites],
+    [categories, entries, months, contracts, currency, favorites, goals],
   );
   // Every change to the book goes to storage (debounced, written atomically; storage.ts).
   useEffect(() => { saver.save(data); }, [data]);
@@ -433,6 +436,7 @@ export function useAppStore() {
     setContracts(fixed.contracts ?? {});
     setCurrency(isSupportedCurrency(fixed.currency) ? fixed.currency : DEFAULT_CURRENCY);
     setFavorites(fixed.favorites ?? []);
+    setGoals(fixed.goals ?? []);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -454,6 +458,7 @@ export function useAppStore() {
     setMonths([{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fresh) }]);
     setContracts({});
     setFavorites([]);
+    setGoals([]);
     setCurrency(currencyForLocale(navigator.language));
     setIntroDone(false);
     setTipsDone(false);
@@ -494,6 +499,56 @@ export function useAppStore() {
       return [...ordered, ...prev.filter(f => !ids.includes(f.id))];
     });
 
+  /* ---------------------------------------------------------- savings goals */
+
+  /** Create a savings goal (plan 12); returns it. */
+  const addGoal = (goal: Omit<Goal, 'id' | 'createdAt'>): Goal => {
+    const created: Goal = { id: uid(), createdAt: Date.now(), ...goal };
+    setGoals(prev => [...prev, created]);
+    return created;
+  };
+
+  const updateGoal = (id: string, patch: Partial<Omit<Goal, 'id'>>) =>
+    setGoals(prev => prev.map(g => {
+      if (g.id !== id) return g;
+      const next = { ...g, ...patch };
+      if (next.due === undefined) delete next.due;
+      if (!next.start) delete next.start;
+      if (!next.closedAt) delete next.closedAt;
+      return next;
+    }));
+
+  /** Close a goal (reached or given up); it stays in history. `undefined` reopens it. */
+  const closeGoal = (id: string, when: number | undefined = Date.now()) => updateGoal(id, { closedAt: when });
+
+  /** Take money out of a goal (plan 12): lower its saved amount via `start`. Returns the previous start, for undo. */
+  const withdrawGoal = (id: string, amount: number): number | undefined => {
+    const before = goals.find(g => g.id === id)?.start;
+    updateGoal(id, { start: (before ?? 0) - amount });
+    return before;
+  };
+
+  interface RemovedGoal { goal: Goal; index: number }
+
+  /** Delete a goal; its entries stay (they are still savings), only the link is dropped. Returns it for undo. */
+  const removeGoal = (id: string): RemovedGoal | null => {
+    const index = goals.findIndex(g => g.id === id);
+    if (index === -1) return null;
+    setGoals(prev => prev.filter(g => g.id !== id));
+    // Unlink the entries (keep them as plain savings).
+    setEntries(prev => prev.map(e => {
+      if (e.goalId !== id) return e;
+      const { goalId: _drop, ...rest } = e;
+      return rest;
+    }));
+    return { goal: goals[index], index };
+  };
+
+  const restoreGoal = (r: RemovedGoal, entryIds: string[]) => {
+    setGoals(prev => (prev.some(g => g.id === r.goal.id) ? prev : [...prev.slice(0, r.index), r.goal, ...prev.slice(r.index)]));
+    if (entryIds.length) setEntries(prev => prev.map(e => (entryIds.includes(e.id) ? { ...e, goalId: r.goal.id } : e)));
+  };
+
   /* ------------------------------------------------------------- contracts */
 
   /** Set (or with `undefined` clear) a series' contract details; returns what was there, for undo. */
@@ -529,6 +584,7 @@ export function useAppStore() {
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
     setCategories, importData, restoreData, resetAll, setContract,
     favorites, addFavorite, removeFavorite, restoreFavorite, reorderFavorites,
+    goals, addGoal, updateGoal, closeGoal, withdrawGoal, removeGoal, restoreGoal,
     lastExport, markExported: () => setLastExport(new Date().toISOString().slice(0, 10)),
     copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),
     newId: uid,

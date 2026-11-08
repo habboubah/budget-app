@@ -1,7 +1,8 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CalendarDays, Check, ChevronDown, ChevronUp, Plus, Repeat as RepeatIcon, Star, Trash2 } from 'lucide-react';
-import { Category, Entry, EntryDraft, Favorite, MonthKey, Repeat } from '../types';
+import { Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
+import { budgetOf } from '../data/defaults';
 import {
   amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, parseAmount, suggestNames,
   normalizeDigits, topCategories,
@@ -38,6 +39,8 @@ interface Props {
   onUseFavorite?: (fav: Favorite, pin?: boolean) => void;
   /** Pin the current entry as a favourite; returns false when the limit is reached. */
   onPinFavorite?: (fav: Omit<Favorite, 'id'>) => boolean;
+  /** Open savings goals, for the "Für: …" pill on a Sparen category (plan 12). */
+  goals?: Goal[];
 }
 
 /** A compact control in the entry sheet's last row (date, status, repeat, note). */
@@ -59,7 +62,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * once unless changed, so most entries are amount + name + save. (A due day
  * is no longer asked for; one already on an entry is kept.)
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onUseFavorite, onPinFavorite }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onUseFavorite, onPinFavorite, goals = [] }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -79,6 +82,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [amountFocused, setAmountFocused] = useState(false);
   /** Turned on once this entry has been pinned as a favourite in this session (plan 09). */
   const [pinned, setPinned] = useState(false);
+  /** The savings goal this entry fills, on a Sparen category (plan 12). */
+  const [goalId, setGoalId] = useState<string | undefined>(undefined);
+  const [goalMenuAt, setGoalMenuAt] = useState<HTMLElement | null>(null);
   const [repeatAt, setRepeatAt] = useState<HTMLElement | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -87,6 +93,10 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
   const category = categories.find(c => c.id === categoryId);
   const income = category?.kind === 'income';
+  /** A savings category: it can fill a goal (plan 12). */
+  const isSaving = category?.kind === 'expense' && budgetOf(category) === 'save';
+  const openGoalsList = goals.filter(g => !g.closedAt);
+  const chosenGoal = goals.find(g => g.id === goalId);
 
   /** Insert an operator at the caret of the amount field, keeping focus (plan 08). */
   const insertOp = (op: string) => {
@@ -120,6 +130,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setShowError(false);
     setAllCategories(false);
     setAllSuggestions(false);
+    setGoalId(undefined);
   };
 
   useEffect(() => {
@@ -138,6 +149,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setNoteOpen(!!e.note);
       setAllCategories(false);
       setShowError(false);
+      setGoalId(e.goalId);
     } else {
       reset();
       if (mode.preset?.name) setName(mode.preset.name);
@@ -196,6 +208,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     if (dateText) d.date = dateText;
     const n = cleanText(note, 200);
     if (n) d.note = n;
+    // The goal link only on a Sparen category (plan 12).
+    if (isSaving && goalId && goals.some(g => g.id === goalId)) d.goalId = goalId;
     return d;
   };
 
@@ -285,6 +299,24 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             <p id={`${amountId}-err`} role="alert" className="text-caption text-neg mt-1">{t.amountInvalid}</p>
           )}
         </div>
+
+        {/* The savings goal this fills (plan 12): only for a Sparen category, only when goals exist. */}
+        {isSaving && openGoalsList.length > 0 && (
+          <button
+            type="button"
+            onClick={e => setGoalMenuAt(e.currentTarget)}
+            className="min-h-tap px-3.5 rounded-full bg-surface-2 inline-flex items-center gap-1.5 text-label font-medium text-fg active:scale-[0.97] transition-transform focus-visible:ring-focus"
+          >
+            {chosenGoal ? (
+              <>
+                <span className="emoji text-[15px]" aria-hidden="true">{chosenGoal.emoji}</span>
+                <span className="wrap-compound">{fmt(t.entryForGoal, { name: chosenGoal.name })}</span>
+              </>
+            ) : (
+              <span className="text-fg-mute">{t.entryForGoalNone}</span>
+            )}
+          </button>
+        )}
 
         {/* What for — the placeholder says it; three of the user's own names below. */}
         <div>
@@ -461,6 +493,16 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             key: r.value, label: r.label, sub: r.sub, icon: r.value === repeat ? Check : undefined, onSelect: () => setRepeat(r.value),
           }))]}
           onClose={() => setRepeatAt(null)}
+        />
+
+        <Menu
+          anchor={goalMenuAt}
+          label={t.entryForGoalNone}
+          groups={[[
+            { key: 'none', label: t.entryForGoalClear, icon: goalId ? undefined : Check, onSelect: () => setGoalId(undefined) },
+            ...openGoalsList.map(g => ({ key: g.id, label: g.name, icon: g.id === goalId ? Check : undefined, onSelect: () => setGoalId(g.id) })),
+          ]]}
+          onClose={() => setGoalMenuAt(null)}
         />
 
         {noteOpen && (

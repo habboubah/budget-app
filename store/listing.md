@@ -141,6 +141,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد في التخطيط: احتياطي للتكاليف السنوية. يخبرك Spartopf بالمبلغ الذي ينبغي أن تضعه جانبًا شهريًا كي لا تُربك فاتورة سنوية شهرًا بأكمله.
 
+**DE:** Endlich Spartöpfe: Leg Ziele wie „Urlaub“ an, sieh den Fortschritt und zahl mit einem Tipp ein – auch per Dauerauftrag.
+
+**EN:** Savings pots at last: set goals like "Holiday", watch the progress, and pay in with one tap – a standing order fills them by itself.
+
+**AR:** أخيرًا أوعية الادخار: حدّد أهدافًا مثل «إجازة»، وتابع التقدّم، وادفع بلمسة واحدة – ويملؤها أمر دائم تلقائيًا.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

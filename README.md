@@ -111,8 +111,10 @@ month, and the two numbers that matter: **what is on the account now** and
   balance at the end of each of the next twelve months, with yearly bills in
   their month and a range from calm to pricey months. **Rücklage für jährliche
   Kosten** (when the book has a yearly bill): how much to set aside a month,
-  the next bills coming up, and whether the account covers them. **Abos &
-  Verträge**:
+  the next bills coming up, and whether the account covers them. **Spartöpfe**:
+  savings goals with a progress ring and "noch 97 € im Monat bis Juni"; a
+  "Sparen"-Eintrag can be put into a pot, recurring ones fill it by themselves.
+  **Abos & Verträge**:
   every recurring cost with its next payment, price changes (with what they do
   in a year) and notice deadlines, new subscriptions, and regular payments
   still missing this month — one tap enters them. **Finanz-Check**: more in

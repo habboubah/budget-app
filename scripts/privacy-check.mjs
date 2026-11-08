@@ -134,6 +134,12 @@ try {
     await page.waitForFunction(() => !document.querySelector('[role="dialog"]'), null, { timeout: 10000 });
   });
   await step('a backup exported', async () => {
+    // Guard against a lingering sheet from the flaky headless-OCR step: start
+    // from a clean slate so nothing can intercept the taps below.
+    if (await page.locator('[role="dialog"]').count()) {
+      await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(300);
+    }
     await tab(3);
     await page.locator('main button', { hasText: 'Sichern und übertragen' }).click();
     await page.waitForTimeout(400);

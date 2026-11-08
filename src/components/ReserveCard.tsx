@@ -11,10 +11,12 @@ import { Picture } from '../ui/Picture';
  * the account covers them. Shown only when the book has a yearly entry
  * (the view renders it conditionally).
  */
-export function ReserveCard({ reserve, categories, t }: {
+export function ReserveCard({ reserve, categories, t, onCreateGoal }: {
   reserve: YearlyReserve;
   categories: Category[];
   t: Strings;
+  /** Turn the reserve into a savings goal (plan 12), pre-filling name, target and due. */
+  onCreateGoal?: () => void;
 }) {
   const byId = new Map(categories.map(c => [c.id, c]));
   return (
@@ -32,6 +34,15 @@ export function ReserveCard({ reserve, categories, t }: {
         </p>
       ) : (
         <p className="text-caption text-fg-mute mt-0.5 wrap-prose">{t.reserveCovered}</p>
+      )}
+      {onCreateGoal && (
+        <button
+          type="button"
+          onClick={onCreateGoal}
+          className="mt-3 min-h-tap px-3.5 rounded-full bg-surface-2 text-accent text-label font-medium active:scale-[0.97] transition-transform focus-visible:ring-focus"
+        >
+          {t.reserveAsGoal}
+        </button>
       )}
       {reserve.upcoming.length > 0 && (
         <div className="mt-4 pt-3 hairline-t">

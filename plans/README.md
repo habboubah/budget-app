@@ -220,7 +220,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 09 Favourites — built, `npm run check` passes; pin from the entry sheet, one-tap add (with undo) via chips, manage screen (reorder/remove), schema 12, normalization tested. ui-review on device still to do
 - [x] 10 Match the bank balance — built, `npm run check` passes; `reconcile()` tested (less/more/equal/overridden/date), book-entry or adjust-opening with undo, "Abgeglichen am" on the card. ui-review on device still to do
 - [x] 11 Reserve for yearly bills — built, `npm run check` passes; `yearlyReserve()` tested, card on Planen shown only with a yearly entry. "Als Spartopf anlegen" waits for plan 12. ui-review on device still to do
-- [ ] 12 Savings goals
+- [x] 12 Savings goals — built, `npm run check` passes; schema 13 (`goals`, `Entry.goalId`), `goalProgress` tested, Planen card + pushed Spartöpfe screen (create/edit/withdraw/close/delete, all undoable), goal pill on Sparen entries, plan 11's "Als Spartopf anlegen". Skipped the first-goal "pick a Sparen category" prompt (Geldanlage already ships as save); ui-review/VoiceOver on device still to do
 - [x] 13 Month report and year review — built with 06a (before 07–12; the goal line waits for plan 12)
 - [ ] 14 Native bridge
 - [ ] 15 Ratings and feedback

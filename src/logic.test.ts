@@ -948,3 +948,35 @@ describe('reconcile — match the bank balance (plan 10)', () => {
     expect(r.entry?.date).toBe('2026-11-07');
   });
 });
+
+describe('savings goals (plan 12)', () => {
+  const cats = defaultCategories();
+  it('keeps good goals and drops the nameless or targetless', () => {
+    const state = normalizeState({
+      categories: cats, entries: [], months: [],
+      goals: [
+        { id: 'a', name: 'Urlaub', emoji: '🏖️', hue: 'mint', target: 120000, due: '2026-06', createdAt: 1 },
+        { id: 'b', name: '', target: 1000 },           // no name
+        { id: 'c', name: 'Kein Ziel', target: 0 },     // no target
+        { name: 'Auto', target: 500000, hue: 'nope' }, // bad hue → default, id generated
+      ],
+    });
+    const goals = state.goals ?? [];
+    expect(goals.map(g => g.name)).toEqual(['Urlaub', 'Auto']);
+    expect(goals[0]).toMatchObject({ due: '2026-06', target: 120000 });
+    expect(goals[1].hue).toBe('mint');
+    expect(goals[1].id).toBeTruthy();
+  });
+
+  it('keeps a goalId on a paid entry, and the goal travels through a backup', () => {
+    const d: AppData = {
+      categories: cats,
+      entries: [{ id: 'e1', month: '2026-01', categoryId: 'investment', name: 'ETF', amount: 30000, paid: true, repeat: 'none', seriesId: 'e1', createdAt: 0, goalId: 'a' }],
+      months: [],
+      goals: [{ id: 'a', name: 'Urlaub', emoji: '🏖️', hue: 'mint', target: 120000, createdAt: 0 }],
+    };
+    const back = parseBackup(JSON.stringify(makeBackup(d)));
+    expect(back.ok && back.data.entries[0].goalId).toBe('a');
+    expect(back.ok && back.data.goals?.[0].name).toBe('Urlaub');
+  });
+});

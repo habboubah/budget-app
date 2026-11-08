@@ -10,6 +10,7 @@ import { ContractsCard } from './ContractsCard';
 import { PaceCard } from './PaceCard';
 import { OutlookCard } from './OutlookCard';
 import { ReserveCard } from './ReserveCard';
+import { GoalsCard } from './GoalsCard';
 import { FinanceCheckCard } from './FinanceCheckCard';
 import { Explain } from './ExplainSheet';
 
@@ -31,6 +32,10 @@ interface Props {
   onAdd: (i: Insight) => void;
   /** Push "Demnächst fällig". */
   onDue: () => void;
+  /** Push the Spartöpfe screen (plan 12). */
+  onGoals: () => void;
+  /** Turn the yearly reserve into a savings goal (plans 11 + 12). */
+  onReserveGoal: (target: number, due?: MonthKey) => void;
   onExplain: (e: Explain) => void;
 }
 
@@ -43,7 +48,7 @@ interface Props {
  * 11 (Rücklage), 12 (Spartöpfe) and 31 (Schulden), and *Finanz-Check*.
  * Looking back is Statistik's.
  */
-export function InsightsView({ book, language, t, hidden, onBudget, onContract, onContractsAll, onReport, onAdd, onDue, onExplain }: Props) {
+export function InsightsView({ book, language, t, hidden, onBudget, onContract, onContractsAll, onReport, onAdd, onDue, onGoals, onReserveGoal, onExplain }: Props) {
   const data = book.data;
   const today = new Date();
   const current = monthKeyOf(today);
@@ -79,9 +84,18 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
       <ContractsCard items={contracts} categories={data.categories} averageIncome={averageIncome}
         fresh={hints.fresh} missing={hints.missing} t={t} onOpen={onContract} onAll={onContractsAll} onAdd={onAdd} />
 
-      {reserve && <ReserveCard reserve={reserve} categories={data.categories} t={t} />}
+      {reserve && (
+        <ReserveCard
+          reserve={reserve}
+          categories={data.categories}
+          t={t}
+          onCreateGoal={() => onReserveGoal(reserve.upcoming.reduce((s, u) => s + u.amount, 0) || reserve.monthly * 12, reserve.upcoming[0]?.month)}
+        />
+      )}
 
-      {/* Slots: Spartöpfe (plan 12), Schulden (plan 31). */}
+      <GoalsCard data={data} t={t} today={today} onOpen={onGoals} />
+
+      {/* Slot: Schulden (plan 31). */}
 
       {check ? (
         <FinanceCheckCard check={check} points={chart} data={data} language={language} t={t} onReport={onReport} onDue={onDue} onExplain={onExplain} />

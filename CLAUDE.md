@@ -196,7 +196,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   **schema 10** `AppData.contracts` (end, notice, renewal, note per recurring
   series); **schema 11** `AppData.currency` (plan 07); **schema 12**
   `AppData.favorites` (plan 09: pinned entries, name + category required, a
-  deleted category falls to `extra`, capped at `MAX_FAVORITES`) — all optional,
+  deleted category falls to `extra`, capped at `MAX_FAVORITES`); **schema 13**
+  `AppData.goals` + `Entry.goalId` (plan 12: savings pots; saved = a goal's
+  `start` offset plus its paid entries; deleting a goal keeps the entries and
+  drops the link; `src/insights/goals.ts` `goalProgress`) — all optional,
   nothing to migrate, all in backups. What older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
   `backup-schema-*.json`; `compat.test.ts`: they load, keep what they held,

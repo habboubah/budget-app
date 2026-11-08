@@ -1,5 +1,5 @@
 import {
-  AppData, Backup, Category, CategoryKind, Contract, Entry, EntryDraft, Favorite, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
+  AppData, Backup, Category, CategoryKind, Contract, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -8,8 +8,9 @@ import { isSupportedCurrency } from './currency';
  *  9: monthly budgets (`Category.limit`) — optional, so nothing to migrate.
  *  10: contract details per recurring series (`AppData.contracts`) — optional too.
  *  11: book currency (`AppData.currency`, ISO 4217) — optional, unset = EUR.
- *  12: pinned favourites (`AppData.favorites`) — optional, unset = none. */
-export const SCHEMA_VERSION = 12;
+ *  12: pinned favourites (`AppData.favorites`) — optional, unset = none.
+ *  13: savings goals (`AppData.goals`, `Entry.goalId`) — optional, unset = none. */
+export const SCHEMA_VERSION = 13;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1062,6 +1063,8 @@ function normalizeEntry(v: unknown): Entry | null {
   if (typeof v.order === 'number' && Number.isFinite(v.order)) e.order = v.order;
   const ref = str(v.ref);
   if (ref) e.ref = ref.slice(0, 200);
+  const goalId = str(v.goalId);
+  if (goalId) e.goalId = goalId.slice(0, 80);
   return e;
 }
 
@@ -1106,11 +1109,13 @@ export function normalizeState(raw: unknown): AppData {
   // Currency (schema 11): keep it only when it is a known two-digit code; anything else falls back to EUR (unset).
   const currency = isSupportedCurrency(v.currency) ? v.currency : undefined;
   const favorites = normalizeFavorites(v.favorites, categories);
+  const goals = normalizeGoals(v.goals);
   return {
     categories, entries, months,
     ...(contracts ? { contracts } : {}),
     ...(currency ? { currency } : {}),
     ...(favorites ? { favorites } : {}),
+    ...(goals ? { goals } : {}),
   };
 }
 
@@ -1163,6 +1168,32 @@ function normalizeFavorites(v: unknown, categories: Category[]): Favorite[] | un
     if (raw.repeat === 'monthly' || raw.repeat === 'yearly' || raw.repeat === 'none') fav.repeat = raw.repeat;
     out.push(fav);
     if (out.length >= MAX_FAVORITES) break;
+  }
+  return out.length ? out : undefined;
+}
+
+/** Savings goals (schema 13), cleaned: a name and a positive target are required. */
+function normalizeGoals(v: unknown): Goal[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: Goal[] = [];
+  for (const raw of v) {
+    if (!isObj(raw)) continue;
+    const name = typeof raw.name === 'string' ? cleanText(raw.name) : '';
+    const target = typeof raw.target === 'number' && Number.isFinite(raw.target) && raw.target >= 1 ? Math.min(Math.round(raw.target), MAX_CENTS) : 0;
+    if (!name || !target) continue;
+    const g: Goal = {
+      id: typeof raw.id === 'string' && raw.id ? raw.id : uid(),
+      name,
+      emoji: typeof raw.emoji === 'string' && raw.emoji ? raw.emoji.slice(0, 8) : '🎯',
+      hue: (HUES as readonly string[]).includes(raw.hue as string) ? raw.hue as Hue : 'mint',
+      target,
+      createdAt: typeof raw.createdAt === 'number' && Number.isFinite(raw.createdAt) ? raw.createdAt : 0,
+    };
+    if (isMonthKey(raw.due)) g.due = raw.due;
+    // `start` is an offset: a positive amount already saved, or negative after money was taken out.
+    if (typeof raw.start === 'number' && Number.isFinite(raw.start) && raw.start !== 0) g.start = Math.max(-MAX_CENTS, Math.min(Math.round(raw.start), MAX_CENTS));
+    if (typeof raw.closedAt === 'number' && Number.isFinite(raw.closedAt)) g.closedAt = raw.closedAt;
+    out.push(g);
   }
   return out.length ? out : undefined;
 }

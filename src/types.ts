@@ -87,6 +87,8 @@ export interface Entry {
   order?: number;
   /** A bank transaction's fingerprint, for entries imported from a statement — the same one isn't imported twice. */
   ref?: string;
+  /** The savings goal this paid entry fills (plan 12). Only on `budget: 'save'` categories. */
+  goalId?: string;
 }
 
 /** A month the user has started. Entries only live in started months. */
@@ -121,6 +123,25 @@ export interface AppData {
   currency?: string;
   /** Pinned entries for one-tap adding (schema 12). Unset or missing = none. */
   favorites?: Favorite[];
+  /** Savings goals, "Spartöpfe" (schema 13). Unset or missing = none. */
+  goals?: Goal[];
+}
+
+/** A savings goal (plan 12). Money "in" a goal is a paid entry in a Sparen category carrying its `goalId`. */
+export interface Goal {
+  id: string;
+  name: string;
+  emoji: string;
+  hue: Hue;
+  /** The target amount in cents. */
+  target: number;
+  /** Optional target month (YYYY-MM). */
+  due?: MonthKey;
+  /** An amount already saved before the app tracked it (cents). */
+  start?: number;
+  createdAt: number;
+  /** When the goal was closed (reached or given up); it stays in history. */
+  closedAt?: number;
 }
 
 /** A pinned entry: one tap adds it, dated today and paid (plan 09). */
@@ -150,4 +171,6 @@ export interface EntryDraft {
   dueDay?: number;
   date?: string;
   note?: string;
+  /** The savings goal this entry fills (plan 12). */
+  goalId?: string;
 }

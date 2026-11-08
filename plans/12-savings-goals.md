@@ -54,7 +54,16 @@ The app is called "savings pot" and has no pots. Goals are what bring people bac
 
 ## Done when
 
-- [ ] Goals can be created, filled by entries (recurring ones too), reached, closed and deleted, and balances never change because of it.
+- [x] Goals can be created, filled by entries (recurring ones too), reached, closed and deleted, and balances never change because of it (golden data unchanged).
+
+## Notes (built)
+
+- Types `Goal` and `Entry.goalId?` / `EntryDraft.goalId?`; schema **13** (`AppData.goals`, `Entry.goalId`, optional). `normalizeGoals` (name + target required; `start` is an offset that may be negative after a withdrawal). `goalProgress(data, goal, today)`, `openGoals`, `hasSavingsCategory` in `src/insights/goals.ts` (tested).
+- `store.ts`: `goals` state (data, in backups), `addGoal`/`updateGoal`/`closeGoal` (reopen with `undefined`)/`withdrawGoal` (lowers saved via `start`, undoable)/`removeGoal` (keeps entries, drops the link) + `restoreGoal`.
+- UI: `GoalsView.tsx` (pushed *Planen › Spartöpfe*: ring, create, edit, take out, close/reopen, delete — all undoable), `GoalSheet.tsx` (create/edit, with a preset for plan 11), `GoalsCard.tsx` (compact card on Planen, or the quiet "Für etwas sparen?" row when empty). A **"Für: …"** goal pill in the entry sheet, only on a Sparen category.
+- Plan 11's **Als Spartopf anlegen** on the ReserveCard opens the goal sheet pre-filled (target = the coming yearly bills, due = the next one).
+- Decisions taken here: "Geld entnehmen" is modelled as lowering the goal's `start` offset (keeps it pure, no new entry kind, balances untouched); reaching the target shows "Geschafft 🎉" on the card (the short haptic on reach is left for the native build). The "first goal without a Sparen category" one-time prompt from the plan is not built — `Geldanlage` ships with `budget: 'save'`, and a user can mark any category Sparen; the pill simply appears on save categories. Goal reminders are out of scope as the plan says.
+- Still to do: ui-review on device; VoiceOver on the ring.
 
 ## Not in this plan
 
