@@ -1178,7 +1178,14 @@ export interface CsvLabels {
  * first, in category order within a month.
  */
 export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
-  const cell = (s: string) => (/[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
+  const quote = (s: string) => (/[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
+  const cell = (s: string) => quote(s);
+  // A text cell the user or a bank controls (category name, entry name, note):
+  // guard against CSV injection — a cell that starts with =, +, -, @, a tab or
+  // a carriage return runs as a formula when opened in Excel. A leading
+  // apostrophe makes Excel treat the whole cell as text. Amounts and dates are
+  // formatted by the app, so they use `cell` and keep their leading sign.
+  const textCell = (s: string) => quote(/^[=+\-@\t\r]/.test(s) ? `'${s}` : s);
   const order = new Map(data.categories.map((c, i) => [c.id, i]));
   const byId = new Map(data.categories.map(c => [c.id, c]));
   const rows = [...data.entries].sort((a, b) =>
@@ -1190,10 +1197,11 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
     const kind = c?.kind ?? 'expense';
     const value = (signedAmount(e.amount, kind) / 100).toFixed(2).replace('.', ',');
     lines.push([
-      e.month, displayName(c?.names, lang), kind === 'income' ? labels.income : labels.expense, e.name, value,
-      e.paid ? labels.paid : labels.open, labels.repeat[e.repeat], e.dueDay ? String(e.dueDay) : '', e.note ?? '',
-      e.date ? `${e.date.slice(8, 10)}.${e.date.slice(5, 7)}.${e.date.slice(0, 4)}` : '',
-    ].map(cell).join(';'));
+      cell(e.month), textCell(displayName(c?.names, lang)), cell(kind === 'income' ? labels.income : labels.expense),
+      textCell(e.name), cell(value), cell(e.paid ? labels.paid : labels.open), cell(labels.repeat[e.repeat]),
+      cell(e.dueDay ? String(e.dueDay) : ''), textCell(e.note ?? ''),
+      cell(e.date ? `${e.date.slice(8, 10)}.${e.date.slice(5, 7)}.${e.date.slice(0, 4)}` : ''),
+    ].join(';'));
   }
   // BOM, so Excel reads the umlauts as UTF-8.
   return '﻿' + lines.join('\r\n') + '\r\n';

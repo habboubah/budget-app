@@ -4,6 +4,7 @@ import { AppData } from '../types';
 import { Strings } from '../translations';
 import { isoDay, makeBackup, parseBackup, toCsv } from '../logic';
 import { decryptBackup, encryptBackup, isEncryptedBackup } from '../crypto';
+import { LIMITS } from '../limits';
 import { downloadFile } from '../export';
 import { Group, Row, IconTile } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
@@ -57,24 +58,30 @@ export function BackupGroup({ data, language, t, onImport, onImportExcel, toast,
     void downloadFile(`spartopf-${isoDay()}.csv`, csv, 'text/csv').then(() => onExported?.()).catch(() => {});
   };
 
+  /** parseBackup, then refuse an unreasonably large book (plan 05). */
+  const accept = (parsed: ReturnType<typeof parseBackup>): boolean => {
+    if (!parsed.ok) { toast(t[parsed.error]); return true; }
+    if (parsed.data.entries.length > LIMITS.backupEntries) { toast(t.importTooLarge); return true; }
+    setPending(parsed.data);
+    return true;
+  };
+
   /** A plain or encrypted backup, loaded from disk. */
   const onFile = async (f: File | undefined) => {
     if (!f) return;
-    const text = await f.text();
     if (file.current) file.current.value = '';
+    if (f.size > LIMITS.backupBytes) { toast(t.importTooLarge); return; }
+    const text = await f.text();
     if (isEncryptedBackup(text)) { setLocked(text); return; }
-    const parsed = parseBackup(text);
-    if (!parsed.ok) { toast(t[parsed.error]); return; }
-    setPending(parsed.data);
+    accept(parseBackup(text));
   };
 
   const unlock = async (password: string): Promise<boolean> => {
     if (!locked) return false;
     try {
       const parsed = parseBackup(await decryptBackup(locked, password));
-      if (!parsed.ok) { toast(t[parsed.error]); setLocked(null); return true; }
       setLocked(null);
-      setPending(parsed.data);
+      accept(parsed);
       return true;
     } catch {
       return false; // wrong password or a tampered file

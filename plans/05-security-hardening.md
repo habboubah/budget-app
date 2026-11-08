@@ -94,11 +94,22 @@ Points 1–8 above, one commit each. Points 1, 2 and 7 get tests.
 
 ## Done when
 
-- [ ] CSV injection and zip bombs are handled and tested.
-- [ ] Every importer has a size limit.
-- [ ] The production build ships the CSP, and every feature still works on iOS and the web.
-- [ ] Dependencies are pinned and audited in `npm run check`.
-- [ ] `SECURITY.md` exists.
+- [x] CSV injection and zip bombs are handled and tested.
+- [x] Every importer has a size limit.
+- [x] The production build ships the CSP, and every feature still works on the web (privacy check's OCR step passes under the CSP). iOS device check still to do.
+- [x] Dependencies are pinned and audited in `npm run check`.
+- [x] `SECURITY.md` exists.
+
+## Notes (built)
+
+1. **CSV injection** — `toCsv()` (`logic.ts`) gained `textCell()`: a leading `'` on the three user/bank-controlled columns (category, name, note) when they start with `= + - @ \t \r`; amounts/dates keep their sign. Tested in `logic.test.ts`.
+2. **Import limits** — `src/limits.ts` (`LIMITS`, `checkBytes`, `checkCount`, `FileTooLargeError`), tested in `limits.test.ts`. Wired into `readXlsx` (per-entry + total unzip cap via `unzipSync({ filter })`, rejects a zip bomb — tested), `parseBankCsv` (row cap), and the file-size checks in `App.tsx` (xlsx/csv/image) and `BackupGroup.tsx` (backup bytes + entry count). New strings `importTooLarge` / `importTooMany` in de/en/ar.
+3. **CSP** — a build-only Vite plugin (`vite.config.ts`) injects the policy. `'wasm-unsafe-eval'` + `worker-src blob:` for tesseract.js; OCR verified under it by the privacy check.
+4. **Web view** — `capacitor.config.ts` does not set `webContentsDebuggingEnabled` (debug-only by default in Capacitor 8). "Links open in the system browser" still to confirm on a device; the app currently opens no external links.
+5. **Dependencies** — all pinned to exact versions; `check:security` adds `npm audit --omit=dev --audit-level=high`; **fflate bumped 0.8.2 → 0.8.3** (the audit flagged a ZIP64 infinite-loop advisory, directly relevant here). Vetting guidance added to CLAUDE.md.
+6. **No data in logs** — `scripts/no-console.mjs` fails the build on `console.*` in `src/` (test files excepted).
+7. **One wipe** — `wipeAll()` + `onWipe()` registry in `storage.ts`; `resetAll()` now calls it plus `cancelAllReminders()`.
+8. **`SECURITY.md`** at the repo root (threats → mitigations → plan).
 
 ## Not in this plan
 

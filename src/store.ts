@@ -7,7 +7,8 @@ import {
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { ReminderPrefs, normalizeReminderPrefs } from './reminders';
-import { hydratedData, loadStored, saver } from './storage';
+import { hydratedData, loadStored, saver, wipeAll } from './storage';
+import { cancelAllReminders } from './notify';
 
 /** View preferences: localStorage, here. The data itself goes through storage.ts. */
 const K = {
@@ -408,8 +409,11 @@ export function useAppStore() {
   };
 
   const resetAll = () => {
-    // The files and the mirror go first (no copy of the old book stays behind); the fresh book is saved after.
-    void saver.forget();
+    // Everything goes first (no copy of the old book stays behind): the data
+    // file, its snapshots, pending reminders, and whatever later plans
+    // registered with onWipe. The fresh book is saved after (plan 05).
+    void wipeAll();
+    void cancelAllReminders();
     const fresh = defaultCategories();
     setCategories(fresh);
     setEntries([]);

@@ -537,6 +537,26 @@ describe('CSV export', () => {
     expect(lines[1]).toBe('2026-11;Einkommen;Einnahme;Gehalt;4164,59;bezahlt;einmalig;;;');
     expect(lines[2]).toBe('2026-11;Wohnen;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;;');
   });
+
+  it('neutralises formula cells so a hostile payee name cannot run in Excel', () => {
+    const d = data([
+      e('2026-11', 'extra', '=HYPERLINK("http://evil","klick")', 1000, true),
+      e('2026-11', 'extra', 'PayPal', 2000, true, { note: '+49 123' }),
+      e('2026-11', 'extra', '-Rabatt', 3000, true),
+    ], [{ key: '2026-11', startedAt: 0 }]);
+    const csv = toCsv(d, 'de', {
+      header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
+      income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' },
+    });
+    const lines = csv.replace('', '').trim().split('\r\n');
+    // Each dangerous text cell gets a leading apostrophe; the cell is then quoted only if it needs it.
+    expect(lines.some(l => l.includes(`"'=HYPERLINK(`))).toBe(true);
+    expect(lines.some(l => l.includes(`'+49 123`))).toBe(true);
+    expect(lines.some(l => l.includes(`'-Rabatt`))).toBe(true);
+    // The amount column keeps its real leading minus — it is not a formula.
+    expect(lines.some(l => /;-\d/.test(l))).toBe(true);
+  });
 });
 
 describe('categories per month', () => {

@@ -20,11 +20,47 @@ const ocrFiles = {
   },
 };
 
+/*
+ * A Content-Security-Policy on production builds only (plan 05). Dev and HMR
+ * stay untouched. `'wasm-unsafe-eval'` is for tesseract.js's WebAssembly;
+ * `worker-src blob:` is its worker; `img-src data: blob:` is the OCR canvas
+ * and inline icons; `connect-src 'self'` keeps every request on the app's own
+ * origin (the privacy check enforces that nothing else leaves).
+ */
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
+  "worker-src 'self' blob:",
+  "img-src 'self' data: blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "form-action 'none'",
+].join('; ');
+
+const csp = {
+  name: 'spartopf-csp',
+  apply: 'build' as const,
+  transformIndexHtml(html: string) {
+    return {
+      html,
+      tags: [{
+        tag: 'meta',
+        attrs: { 'http-equiv': 'Content-Security-Policy', content: CSP },
+        injectTo: 'head-prepend' as const,
+      }],
+    };
+  },
+};
+
 export default defineConfig(() => {
   return {
     define: { __APP_VERSION__: JSON.stringify(pkg.version) },
     plugins: [
       ocrFiles,
+      csp,
       react(),
       tailwindcss(),
       VitePWA({

@@ -17,6 +17,19 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 - Capacitor 8 wraps `dist/` into the `ios/` native project. `vite-plugin-pwa`
   makes the web build installable and offline.
 - npm only.
+- **Dependencies are pinned to exact versions** (no `^`/`~`). `npm run check`
+  runs `npm audit --omit=dev --audit-level=high`. Before adding one: prefer the
+  platform (WebCrypto, not a crypto library) and what's already here; read the
+  package's recent releases, open issues, maintainer count and licence, and
+  skim the code it ships; pin the exact version and note why in the plan file.
+  Anything that touches secrets or financial data gets our own small native
+  plugin, not a third-party one.
+- **Security (plan 05).** `src/limits.ts` caps every import (bytes + count);
+  `readXlsx` rejects zip bombs; `toCsv` neutralises formula cells; a CSP ships
+  on production builds (`vite.config.ts`); `src/crypto.ts` (WebCrypto) encrypts
+  exports; `wipeAll()`/`onWipe()` in `storage.ts` erase everything on *Alle
+  Daten löschen*; no `console.*` in app source (`check:security`). See
+  `SECURITY.md` for the threat model.
 
 ## Architecture rules (mirrors pizza-driver-log and shopping-list)
 - **No router.** `App.tsx` holds the active tab plus one state per pushed
@@ -432,7 +445,11 @@ print or commit them. Submitting for review is manual. Full checklist:
 
 ## Before calling a change done
 1. `npm run check` — it runs, in order:
-   - `lint` and `test`, which include `compat.test.ts` (what every older
+   - `lint`;
+   - `check:security` (`scripts/no-console.mjs` + `npm audit --omit=dev
+     --audit-level=high`): no `console.*` in app source, no known high
+     vulnerability in a shipped dependency;
+   - `test`, which includes `compat.test.ts` (what every older
      version stored or backed up still loads, with the same balances) and
      `golden.test.ts` (a frozen demo year against `fixtures/golden.json`: the
      balances, per day, budgets, savings rate, 50/30/20, contracts, reminders);

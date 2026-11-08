@@ -52,6 +52,15 @@ export async function syncReminders(plan: PlannedReminder[]): Promise<void> {
   });
 }
 
+/** Cancel every pending reminder (part of "Alle Daten löschen", plan 05). */
+export async function cancelAllReminders(): Promise<void> {
+  if (!isNative()) return;
+  try {
+    const { notifications } = await LocalNotifications.getPending();
+    if (notifications.length) await LocalNotifications.cancel({ notifications: notifications.map(n => ({ id: n.id })) });
+  } catch { /* nothing pending */ }
+}
+
 /** A tap on a reminder: the month it is about, or the contracts. */
 export function onReminderTap(open: (target: { month: MonthKey; screen?: 'contracts' }) => void): () => void {
   if (!isNative()) return () => {};

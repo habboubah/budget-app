@@ -1,6 +1,7 @@
 import { AppData, Category, Entry, MonthKey } from './types';
 import { displayName, isIsoDay, monthKeyOf, normalizeDigits, normalizeName, parseAmount, uid } from './logic';
 import { OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3 } from './data/defaults';
+import { LIMITS, checkCount } from './limits';
 
 /*
  * Bank transactions into entries — from a bank's CSV export (Sparkasse
@@ -182,6 +183,7 @@ function columnOf(header: string[], names: readonly string[]): number {
  */
 export function parseBankCsv(text: string): Found[] {
   const rows = parseCsv(text.replace(/^﻿/, ''));
+  checkCount(rows.length, LIMITS.csvRows);
   const at = rows.findIndex((r, i) => i < 40 && columnOf(r, COLUMNS.date) !== -1
     && (columnOf(r, COLUMNS.amount) !== -1 || columnOf(r, COLUMNS.debit) !== -1));
   if (at === -1) return [];

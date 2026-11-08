@@ -212,7 +212,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 02 Durable storage — built and tested; the iPhone test (wipe WebKit data, relaunch) is still to do
 - [x] 03 Automatic backups and restore — built and `npm run check` passes; snapshots, pruning and restore are tested. The on-device test (move the clock forward, restore, undo) is still to do on an iPhone, and the 90-day card's "OS backup is off" half waits for plan 06 (it shows on the 90-day rule alone for now)
 - [x] 04 Encrypted backup files — built, `npm run check` passes, crypto round-trip/tamper tested; the on-device AirDrop test and the SE timing check are still to do
-- [ ] 05 Security hardening
+- [x] 05 Security hardening — built, `npm run check` passes (now also `check:security`); CSV injection, zip bomb and import limits tested, CSP ships on builds and OCR works under it, deps pinned + audited (fflate → 0.8.3), `SECURITY.md` added. The iOS on-device CSP/OCR check and "links open in the system browser" are still to confirm
 - [ ] 06 Data protection at rest
 - [x] 06a Statistics and insights — built with plan 13, `npm run check` passes; VoiceOver, the SE's long tasks, the usability test and a native Arabic read are still to do (see the plan's notes)
 - [ ] 07 Currency

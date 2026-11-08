@@ -507,6 +507,27 @@ export const setHydrated = (data: AppData) => { hydrated = data; };
 
 export const saver: Saver = createSaver(isNative() ? capacitorFs : null, undefined, { snapshots: true });
 
+/*
+ * One wipe for "Alle Daten löschen" (plan 05). The data file and its
+ * snapshots go through `saver.forget()`; everything else with its own files or
+ * secrets registers a cleaner here, so a later plan (widgets, attachments,
+ * pairing keys, bank credentials) is wiped by the same button. A cleaner that
+ * throws is ignored — a wipe must finish.
+ */
+const wipeCleaners = new Set<() => void | Promise<void>>();
+
+/** Register something to be erased on "Alle Daten löschen". Returns the unregister. */
+export function onWipe(cleaner: () => void | Promise<void>): () => void {
+  wipeCleaners.add(cleaner);
+  return () => wipeCleaners.delete(cleaner);
+}
+
+/** Erase everything: the data file and snapshots, then every registered cleaner. */
+export async function wipeAll(): Promise<void> {
+  await saver.forget();
+  await Promise.all([...wipeCleaners].map(async c => { try { await c(); } catch { /* a wipe must finish */ } }));
+}
+
 /** What is waiting goes to disk when the app leaves the screen. */
 export function installFlushTriggers() {
   window.addEventListener('pagehide', () => { void saver.flush(); });

@@ -48,6 +48,7 @@ import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonth
 import { StatementImportSheet, ImportState } from './components/StatementImportSheet';
 import { PlannedRow, allCategoryNames, applyStatement, parseBankCsv, parseStatementText, planStatement } from './statementImport';
 import { readImageText, readTextFile } from './ocr';
+import { FileTooLargeError, LIMITS } from './limits';
 import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
 import { Confirm } from './ui/Sheet';
@@ -335,12 +336,13 @@ export default function App() {
   const onExcelFile = async (f: File | undefined) => {
     if (excelInput.current) excelInput.current.value = '';
     if (!f) return;
+    if (f.size > LIMITS.xlsxBytes) { show(t.importTooLarge); return; }
     try {
       const plan = planExcelImport(readXlsx(new Uint8Array(await f.arrayBuffer())), categories, language);
       if (!plan.months.length) { show(t.excelNoMonths); return; }
       setExcel({ plan, fileName: f.name });
-    } catch {
-      show(t.excelInvalid);
+    } catch (e) {
+      show(e instanceof FileTooLargeError ? t[e.key] : t.excelInvalid);
     }
   };
 
@@ -348,6 +350,8 @@ export default function App() {
     if (statementInput.current) statementInput.current.value = '';
     if (photoInput.current) photoInput.current.value = '';
     if (!f) return;
+    const limit = source === 'csv' ? LIMITS.csvBytes : LIMITS.imageBytes;
+    if (f.size > limit) { show(t.importTooLarge); return; }
     setStatement({ phase: 'reading', source, progress: 0 });
     try {
       const found = source === 'csv'
@@ -358,9 +362,9 @@ export default function App() {
         );
       if (!found.length) { setStatement(null); show(t.importNothing); return; }
       setStatement({ phase: 'review', source, rows: planStatement(found, data) });
-    } catch {
+    } catch (e) {
       setStatement(null);
-      show(t.importFailed);
+      show(e instanceof FileTooLargeError ? t[e.key] : t.importFailed);
     }
   };
 

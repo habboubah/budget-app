@@ -1,4 +1,5 @@
 import { unzipSync, strFromU8 } from 'fflate';
+import { FileTooLargeError, LIMITS, checkBytes } from './limits';
 
 /**
  * A minimal .xlsx reader — just enough to read the values out of a workbook
@@ -53,9 +54,30 @@ export function colName(i: number): string {
   return s;
 }
 
-/** Every sheet of the workbook, in the order the tabs are shown. Throws on a file that isn't an .xlsx. */
+/**
+ * Every sheet of the workbook, in the order the tabs are shown. Throws on a
+ * file that isn't an .xlsx, and on a zip bomb: the file itself is capped
+ * (`xlsxBytes`), only the workbook / shared strings / sheet XML are unzipped,
+ * any single entry over `xlsxEntryBytes` is skipped, and once the entries we
+ * read pass `xlsxTotalBytes` in total we stop (FileTooLargeError).
+ */
 export function readXlsx(bytes: Uint8Array): Sheet[] {
-  const files = unzipSync(bytes);
+  checkBytes(bytes.length, LIMITS.xlsxBytes);
+  let unzipped = 0;
+  const files = unzipSync(bytes, {
+    filter: f => {
+      // Only the parts we actually read; skip anything huge (a zip bomb).
+      const wanted = f.name === 'xl/workbook.xml'
+        || f.name === 'xl/_rels/workbook.xml.rels'
+        || f.name === 'xl/sharedStrings.xml'
+        || f.name.startsWith('xl/worksheets/');
+      if (!wanted) return false;
+      if (f.originalSize > LIMITS.xlsxEntryBytes) return false;
+      unzipped += f.originalSize;
+      if (unzipped > LIMITS.xlsxTotalBytes) throw new FileTooLargeError('importTooLarge');
+      return true;
+    },
+  });
   const workbook = file(files, 'xl/workbook.xml');
   if (!workbook) throw new Error('not an xlsx workbook');
 
