@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { FILE, FsLike, PREV, StorageCorruptError, TMP, createSaver, hydrate, readEnvelope, writeLocal } from './storage';
+import {
+  BACKUP_DIR, FILE, FsLike, PRE_RESTORE, PREV, StorageCorruptError, TMP,
+  createSaver, hydrate, listSnapshots, readEnvelope, readSnapshot, restoreSnapshot, snapshotsToKeep, takeSnapshot, writeLocal,
+} from './storage';
 import { computeBalances } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData } from './types';
@@ -21,6 +24,7 @@ function memFs(files: Record<string, string> = {}) {
       m.set(b, v);
     },
     remove: async p => { m.delete(p); },
+    list: async dir => [...m.keys()].filter(p => p.startsWith(`${dir}/`)).map(p => p.slice(dir.length + 1)).filter(n => !n.includes('/')),
   };
   return { fs, files: m, log };
 }
@@ -232,5 +236,96 @@ describe('moving over from localStorage', () => {
     expect(fresh.source).toBe('migrated');
     expect(fresh.data.months).toHaveLength(1);
     expect(fresh.data.entries).toEqual([]);
+  });
+});
+
+describe('snapshotsToKeep', () => {
+  it('keeps the last 14 days in full', () => {
+    const dates = Array.from({ length: 20 }, (_, i) => `2026-11-${String(i + 1).padStart(2, '0')}`);
+    const kept = snapshotsToKeep(dates, '2026-11-20');
+    // 2026-11-07 … 2026-11-20 is fourteen days.
+    expect(kept).toContain('2026-11-20');
+    expect(kept).toContain('2026-11-07');
+    expect(kept).not.toContain('2026-11-06');
+  });
+
+  it('then keeps the newest snapshot of each of the last twelve months (older than 14 days)', () => {
+    const dates = [
+      '2025-12-05', '2025-12-20', // older month, keep only the newest
+      '2026-01-10', '2026-02-10', '2026-03-10', '2026-04-10', '2026-05-10',
+      '2026-06-10', '2026-07-10', '2026-08-10', '2026-09-10', '2026-10-10',
+    ];
+    const kept = snapshotsToKeep(dates, '2026-11-20');
+    expect(kept).toContain('2025-12-20'); // newest of December 2025
+    expect(kept).not.toContain('2025-12-05'); // the older December one is dropped
+    expect(kept).toContain('2026-10-10');
+    // Twelve months back from November 2026 is December 2025; November 2025 falls out.
+    expect(snapshotsToKeep(['2025-11-30', ...dates], '2026-11-20')).not.toContain('2025-11-30');
+  });
+
+  it('handles month ends and a leap day beyond the 14-day window', () => {
+    // Pick a today far enough that February falls outside the last 14 days.
+    const dates = ['2024-02-29', '2024-02-01', '2024-01-31'];
+    const kept = snapshotsToKeep(dates, '2024-03-20');
+    expect(kept).toContain('2024-02-29'); // newest of February
+    expect(kept).not.toContain('2024-02-01'); // older February snapshot dropped
+    expect(kept).toContain('2024-01-31');
+  });
+});
+
+describe('automatic snapshots', () => {
+  const march = (day: number) => new Date(2026, 2, day, 9, 0, 0);
+
+  it('writes one snapshot a day and prunes to the keep set', async () => {
+    const { fs } = memFs();
+    // One save on each of three days; the second save of a day writes nothing new.
+    await takeSnapshot(book(1), fs, march(1));
+    await takeSnapshot(book(2), fs, march(1)); // same day — no new file
+    await takeSnapshot(book(3), fs, march(2));
+    const names = await fs.list(BACKUP_DIR);
+    expect(names.sort()).toEqual(['2026-03-01.json', '2026-03-02.json']);
+    // The first file still holds the first save: a day's snapshot isn't overwritten.
+    expect((await readSnapshot('2026-03-01.json', fs))?.entries[0].amount).toBe(1);
+  });
+
+  it('through the saver: the first save of a day leaves a snapshot', async () => {
+    const { fs } = memFs();
+    const saver = createSaver(fs, noMirror, { now: () => march(5), snapshots: true });
+    saver.save(book(500));
+    await saver.flush();
+    const snaps = await listSnapshots(fs);
+    expect(snaps).toHaveLength(1);
+    expect(snaps[0]).toMatchObject({ date: '2026-03-05', ok: true, entries: 1, preRestore: false });
+  });
+
+  it('restore keeps a pre-restore snapshot for undo, then loads the chosen one', async () => {
+    const { fs } = memFs();
+    await takeSnapshot(book(100000), fs, march(1));
+    const current = book(999);
+    const restored = await restoreSnapshot('2026-03-01.json', current, fs, march(3));
+    expect(restored?.entries[0].amount).toBe(100000);
+    // The book as it was before the restore is kept, pinned to the top of the list.
+    const snaps = await listSnapshots(fs);
+    expect(snaps[0].preRestore).toBe(true);
+    expect((await readSnapshot(PRE_RESTORE, fs))?.entries[0].amount).toBe(999);
+  });
+
+  it('shows a torn snapshot as not ok without breaking the list', async () => {
+    const { fs, files } = memFs();
+    await takeSnapshot(book(1), fs, march(1));
+    files.set(`${BACKUP_DIR}/2026-03-02.json`, '{"app":"spartopf","sch');
+    const snaps = await listSnapshots(fs);
+    expect(snaps.find(s => s.name === '2026-03-02.json')?.ok).toBe(false);
+    expect(snaps.find(s => s.name === '2026-03-01.json')?.ok).toBe(true);
+  });
+
+  it('forget() removes the snapshots too', async () => {
+    const { fs, files } = memFs();
+    const saver = createSaver(fs, noMirror, { now: () => march(1), snapshots: true });
+    saver.save(book());
+    await saver.flush();
+    expect((await fs.list(BACKUP_DIR)).length).toBe(1);
+    await saver.forget();
+    expect([...files.keys()]).toEqual([]);
   });
 });

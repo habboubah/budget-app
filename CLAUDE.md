@@ -41,8 +41,17 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     it (and its read in `hydrate()`); until then it is also how an install from
     before plan 02 moves over on its first launch.
   - Web / PWA: localStorage is the store, plus `navigator.storage.persist()`.
+  - **Automatic snapshots (plan 03, iPhone only).** `Library/spartopf/backups/`
+    holds one snapshot a day (`YYYY-MM-DD.json`, the same envelope). The saver
+    writes one on the first save of a day and on resume; `snapshotsToKeep()`
+    (pure, tested) keeps the last 14 days and the newest of each of the last
+    12 months. *Automatische Sicherungen* (pushed under *Sichern und
+    übertragen*, `BackupsView.tsx`) restores one with a preview and an undo,
+    writing `pre-restore.json` first; the crash screen's *Letzte Sicherung
+    wiederherstellen* calls `restoreLatestToData()`. The last-export date
+    (`spartopf-last-export`) drives a dismissable 90-day nudge card.
   - *Alle Daten löschen* calls `saver.forget()` first, so `data.prev.json`
-    keeps no copy of the old book.
+    (and the snapshots) keep no copy of the old book.
   - View preferences (language, theme, accent, folded cards, intro, tips,
     reminders, lock) stay in localStorage in `store.ts`: losing them costs
     nothing, and a failed write of one doesn't raise the banner.

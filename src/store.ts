@@ -21,6 +21,8 @@ const K = {
   collapsed: 'spartopf-collapsed',
   hintsHidden: 'spartopf-hints-hidden',
   reviewsSeen: 'spartopf-reviews-seen',
+  lastExport: 'spartopf-last-export',
+  copyCardDismissed: 'spartopf-copy-card-dismissed',
 } as const;
 
 /** Dismissed hints and seen reviews are kept as their last 200 ids — no amounts in them. */
@@ -95,6 +97,10 @@ export function useAppStore() {
   const [hintsHidden, setHintsHidden] = useState<string[]>(() => readIds(readJson(K.hintsHidden)));
   /** Months (YYYY-MM) and years (YYYY) whose review card was dismissed or opened. */
   const [reviewsSeen, setReviewsSeen] = useState<string[]>(() => readIds(readJson(K.reviewsSeen)));
+  /** When a copy last left the device (YYYY-MM-DD), for plan 03's 90-day nudge; '' if never. */
+  const [lastExport, setLastExport] = useState<string>(() => readString(K.lastExport) ?? '');
+  /** The user hid the "keep a copy off this device" card — stays hidden. */
+  const [copyCardDismissed, setCopyCardDismissed] = useState(() => readString(K.copyCardDismissed) === '1');
 
   // The last write of the book failed (disk full; quota or private mode on the
   // web) — the data is at risk and the banner says so until a write succeeds.
@@ -112,6 +118,8 @@ export function useAppStore() {
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.hintsHidden, JSON.stringify(hintsHidden)); }, [hintsHidden]);
   useEffect(() => { persist(K.reviewsSeen, JSON.stringify(reviewsSeen)); }, [reviewsSeen]);
+  useEffect(() => { if (lastExport) persist(K.lastExport, lastExport); }, [lastExport]);
+  useEffect(() => { persist(K.copyCardDismissed, copyCardDismissed ? '1' : '0'); }, [copyCardDismissed]);
   const remember = (list: string[], id: string) => (list.includes(id) ? list : [...list, id].slice(-KEEP_IDS));
 
   useEffect(() => {
@@ -392,6 +400,13 @@ export function useAppStore() {
     setContracts(fixed.contracts ?? {});
   };
 
+  /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
+  const restoreData = (d: AppData): AppData => {
+    const before = data;
+    importData(d);
+    return before;
+  };
+
   const resetAll = () => {
     // The files and the mirror go first (no copy of the old book stays behind); the fresh book is saved after.
     void saver.forget();
@@ -402,6 +417,9 @@ export function useAppStore() {
     setContracts({});
     setIntroDone(false);
     setTipsDone(false);
+    setLastExport('');
+    setCopyCardDismissed(false);
+    try { localStorage.removeItem(K.lastExport); } catch { /* a preference */ }
   };
 
   /* ------------------------------------------------------------- contracts */
@@ -436,7 +454,9 @@ export function useAppStore() {
     startMonth, pullRecurring, setOpening, removeMonth, restoreMonth, hideCategory, showCategory,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
-    setCategories, importData, resetAll, setContract,
+    setCategories, importData, restoreData, resetAll, setContract,
+    lastExport, markExported: () => setLastExport(new Date().toISOString().slice(0, 10)),
+    copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),
     newId: uid,
   };
 }

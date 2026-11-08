@@ -62,9 +62,17 @@ It works without the user doing anything. There's no new step and no pop-up. The
 
 ## Done when
 
-- [ ] Snapshots are written and pruned automatically.
-- [ ] Restore works with a preview and undo, including from the crash screen.
-- [ ] Deleting all data removes the snapshots.
+- [x] Snapshots are written and pruned automatically.
+- [x] Restore works with a preview and undo, including from the crash screen.
+- [x] Deleting all data removes the snapshots.
+
+## Notes (built)
+
+- `src/storage.ts`: `snapshotsToKeep(dates, today)` (pure, tested: last 14 days + newest of each of the last 12 months), `takeSnapshot`, `listSnapshots`, `readSnapshot`, `restoreSnapshot` (writes a `pre-restore.json` first), `restoreLatestToData` (the crash screen), and `BACKUP_DIR = spartopf/backups`. The `FsLike` interface gained `list(dir)`.
+- The saver (`createSaver`) grew a `snapshots` option (on for the app's instance). The first successful file write of a day leaves a snapshot; a resume (`installFlushTriggers`) snapshots the last-saved book so a day the user only opens still gets one. `forget()` deletes the snapshots.
+- UI: `components/BackupsView.tsx` (pushed under *Optionen › Sichern und übertragen*), the row and the 90-day card in `TransferView.tsx`, the crash-screen button in `main.tsx`. The last-export date and the card's dismissal are view preferences in `store.ts` (`spartopf-last-export`, `spartopf-copy-card-dismissed`); `restoreData()` returns the previous book for the undo toast.
+- Native-only (snapshots need the Capacitor file system), so the list, the card and the crash button show only on the app (`isNative()`); the web keeps its localStorage store.
+- Decision taken here: the 90-day card's second condition (the OS backup is off, plan 06) isn't available yet, so for now the card shows on the 90-day rule alone. Tighten it when plan 06 lands.
 
 ## Not in this plan
 

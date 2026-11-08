@@ -5,7 +5,8 @@ import App from './App.tsx';
 import { applyDynamicType } from './dynamicType.ts';
 import { downloadFile } from './export.ts';
 import { isoDay } from './logic.ts';
-import { KEY_PREFIX, hydrate, installFlushTriggers, rawFiles, setHydrated } from './storage.ts';
+import { KEY_PREFIX, hydrate, installFlushTriggers, rawFiles, restoreLatestToData, setHydrated } from './storage.ts';
+import { isNative } from './platform.ts';
 import translations, { isLanguage, DEFAULT_LANGUAGE } from './translations.ts';
 import './index.css';
 
@@ -37,6 +38,12 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
     void downloadFile(`spartopf-rescue-${isoDay()}.json`, JSON.stringify(dump, null, 2), 'application/json');
   };
 
+  restoreLatest = async () => {
+    try {
+      if (await restoreLatestToData()) window.location.reload();
+    } catch { /* nothing to restore; the other buttons remain */ }
+  };
+
   render() {
     if (!this.state.error) return this.props.children;
     const saved = (() => { try { return localStorage.getItem('spartopf-lang'); } catch { return null; } })();
@@ -51,6 +58,12 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
             className="w-full min-h-control bg-accent-fill text-accent-fill-ink rounded-full display font-bold">
             {t.crashReload}
           </button>
+          {isNative() && (
+            <button type="button" onClick={() => void this.restoreLatest()}
+              className="w-full min-h-control bg-surface-2 text-fg rounded-full display font-bold">
+              {t.restoreLatest}
+            </button>
+          )}
           <button type="button" onClick={() => void this.rescue()}
             className="w-full min-h-control bg-surface-2 text-fg rounded-full display font-bold">
             {t.crashExport}

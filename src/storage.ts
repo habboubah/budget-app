@@ -40,11 +40,17 @@ export interface FsLike {
   rename(from: string, to: string): Promise<void>;
   /** Nothing happens when the file isn't there. */
   remove(path: string): Promise<void>;
+  /** The names in a folder (not paths); empty when the folder isn't there. */
+  list(dir: string): Promise<string[]>;
 }
 
 export const FILE = 'spartopf/data.json';
 export const TMP = 'spartopf/data.json.tmp';
 export const PREV = 'spartopf/data.prev.json';
+/** Automatic snapshots (plan 03) live beside the data file, out of the Files app. */
+export const BACKUP_DIR = 'spartopf/backups';
+/** The name of the snapshot taken of the current book just before a restore, so undo survives a restart. */
+export const PRE_RESTORE = 'pre-restore.json';
 
 /** The file: the data, when and by which schema it was written, and its checksum. */
 interface Envelope {
@@ -152,6 +158,14 @@ export const capacitorFs: FsLike = {
   remove: async path => {
     try { await Filesystem.deleteFile({ path, directory: Directory.Library }); } catch { /* not there */ }
   },
+  list: async dir => {
+    try {
+      const { files } = await Filesystem.readdir({ path: dir, directory: Directory.Library });
+      return files.map(f => (typeof f === 'string' ? f : f.name));
+    } catch {
+      return []; // the folder isn't there yet
+    }
+  },
 };
 
 export type HydrateSource = 'file' | 'tmp' | 'prev' | 'mirror' | 'migrated' | 'local';
@@ -212,6 +226,11 @@ export interface Saver {
    * the new one.
    */
   forget(): Promise<void>;
+  /**
+   * Take today's automatic snapshot of the last-saved book if it isn't there
+   * yet (called on resume, so a day the user only reads still gets one).
+   */
+  snapshot(): Promise<void>;
 }
 
 export const SAVE_DEBOUNCE_MS = 300;
@@ -230,11 +249,14 @@ export function createSaver(
     debounce = SAVE_DEBOUNCE_MS,
     now = () => new Date(),
     clearMirror = () => { for (const key of Object.values(DATA_KEYS)) localStorage.removeItem(key); },
-  }: { debounce?: number; now?: () => Date; clearMirror?: () => void } = {},
+    snapshots = false,
+  }: { debounce?: number; now?: () => Date; clearMirror?: () => void; snapshots?: boolean } = {},
 ): Saver {
   let pending: AppData | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let chain: Promise<void> = Promise.resolve();
+  /** The last book written to disk, so a resume can snapshot it without a change. */
+  let lastWritten: AppData | null = null;
   const listeners = new Set<(ok: boolean) => void>();
   const report = (ok: boolean) => listeners.forEach(l => l(ok));
 
@@ -251,6 +273,9 @@ export function createSaver(
       }
       // The mirror is the way back, not the store: its failure (quota) doesn't count.
       try { writeMirror(data); } catch { /* the file has it */ }
+      // The first save of a day leaves an automatic snapshot (plan 03); a
+      // failure here never fails the save — the book itself is written.
+      if (ok) { lastWritten = data; if (snapshots) { try { await takeSnapshot(data, fs, now()); } catch { /* snapshots are best-effort */ } } }
     } else {
       try { writeMirror(data); } catch { ok = false; }
     }
@@ -284,17 +309,193 @@ export function createSaver(
       if (timer) clearTimeout(timer);
       timer = null;
       pending = null;
+      lastWritten = null;
       chain = chain.then(async () => {
         if (fs) {
           await fs.remove(TMP);
           await fs.remove(PREV);
           await fs.remove(FILE);
+          try { await removeSnapshots(fs); } catch { /* best-effort */ }
         }
         try { clearMirror(); } catch { /* nothing to clear */ }
       });
       return chain;
     },
+    snapshot() {
+      if (!snapshots || !fs || !lastWritten) return Promise.resolve();
+      const data = lastWritten;
+      chain = chain.then(async () => { try { await takeSnapshot(data, fs, now()); } catch { /* best-effort */ } });
+      return chain;
+    },
   };
+}
+
+/* ------------------------------------------------- automatic snapshots (03) */
+
+/** A snapshot in the list: its date (YYYY-MM-DD), the file name, whether it reads back whole, and a short note. */
+export interface Snapshot {
+  /** The day it was written, from the file name (YYYY-MM-DD), or '' for the pre-restore one. */
+  date: string;
+  /** The file name inside BACKUP_DIR. */
+  name: string;
+  /** False when the file doesn't read back (a torn write): the list shows it as "beschädigt" but still works. */
+  ok: boolean;
+  /** How many entries it holds (0 when unreadable). */
+  entries: number;
+  /** The span of months it covers, e.g. "2026-03…2026-10" (empty when unreadable or empty). */
+  span: string;
+  /** The snapshot taken of the current book right before a restore — offered as the undo. */
+  preRestore: boolean;
+}
+
+const DAILY = /^\d{4}-\d{2}-\d{2}\.json$/;
+const dateOf = (name: string) => (DAILY.test(name) ? name.slice(0, 10) : '');
+
+/**
+ * Which snapshot dates to keep: the last 14 days in full, then the newest of
+ * each of the last 12 calendar months. A pure function so it can be tested
+ * across month ends and leap years. `dates` and `today` are YYYY-MM-DD.
+ */
+export function snapshotsToKeep(dates: string[], today: string): string[] {
+  const unique = [...new Set(dates)].sort(); // oldest first
+  const keep = new Set<string>();
+  const dayMs = 86_400_000;
+  const todayMs = Date.parse(`${today}T00:00:00Z`);
+  // The last 14 days, today included.
+  for (const d of unique) {
+    const age = Math.round((todayMs - Date.parse(`${d}T00:00:00Z`)) / dayMs);
+    if (age >= 0 && age < 14) keep.add(d);
+  }
+  // The newest snapshot of each of the last 12 months (this month and the 11 before it).
+  const monthsBack = (d: string) => {
+    const a = parseInt(today.slice(0, 4), 10) * 12 + parseInt(today.slice(5, 7), 10);
+    const b = parseInt(d.slice(0, 4), 10) * 12 + parseInt(d.slice(5, 7), 10);
+    return a - b;
+  };
+  const newestOfMonth = new Map<string, string>();
+  for (const d of unique) {
+    const back = monthsBack(d);
+    if (back < 0 || back > 11) continue;
+    newestOfMonth.set(d.slice(0, 7), d); // unique is sorted, so the last wins
+  }
+  for (const d of newestOfMonth.values()) keep.add(d);
+  return [...keep].sort();
+}
+
+/** The month span of a book, e.g. "2026-03…2026-10"; '' when it has no months. */
+function monthSpan(data: AppData): string {
+  const keys = [...new Set(data.months.map(m => m.key))].sort();
+  if (!keys.length) return '';
+  return keys.length === 1 ? keys[0] : `${keys[0]}…${keys[keys.length - 1]}`;
+}
+
+/**
+ * Reads the snapshots in BACKUP_DIR for the list screen. Each is checked
+ * (readEnvelope): a torn one shows as not ok but doesn't break the list. The
+ * newest first, with the "vor Wiederherstellung" one (if any) at the very top.
+ */
+export async function listSnapshots(fs: FsLike | null = isNative() ? capacitorFs : null): Promise<Snapshot[]> {
+  if (!fs) return [];
+  const names = await fs.list(BACKUP_DIR);
+  const snaps = await Promise.all(names.filter(n => n.endsWith('.json')).map(async (name): Promise<Snapshot> => {
+    const env = await readEnvelope(await fs.read(`${BACKUP_DIR}/${name}`));
+    const preRestore = name === PRE_RESTORE;
+    return {
+      name,
+      date: dateOf(name),
+      preRestore,
+      ok: !!env,
+      entries: env ? env.data.entries.length : 0,
+      span: env ? monthSpan(env.data) : '',
+    };
+  }));
+  return snaps.sort((a, b) => {
+    if (a.preRestore !== b.preRestore) return a.preRestore ? -1 : 1; // pre-restore pinned to the top
+    return a.date < b.date ? 1 : a.date > b.date ? -1 : a.name < b.name ? 1 : -1; // newest first
+  });
+}
+
+/** Loads one snapshot through parseBackup (it validates and migrates). Null when it can't be read. */
+export async function readSnapshot(name: string, fs: FsLike | null = isNative() ? capacitorFs : null): Promise<AppData | null> {
+  if (!fs) return null;
+  const text = await fs.read(`${BACKUP_DIR}/${name}`);
+  if (!text) return null;
+  const env = await readEnvelope(text);
+  if (!env) return null;
+  return upgradeData(normalizeState(env.data), env.schemaVersion);
+}
+
+/** Deletes every snapshot (part of "Alle Daten löschen"). */
+async function removeSnapshots(fs: FsLike): Promise<void> {
+  const names = await fs.list(BACKUP_DIR);
+  await Promise.all(names.map(n => fs.remove(`${BACKUP_DIR}/${n}`)));
+}
+
+/**
+ * The automatic snapshot: on the first save of a day, write today's snapshot
+ * (YYYY-MM-DD.json) if it isn't there yet, then prune to snapshotsToKeep.
+ * Pure of UI; returns whether it wrote one. At most one write per day.
+ */
+export async function takeSnapshot(data: AppData, fs: FsLike | null = isNative() ? capacitorFs : null, now = new Date()): Promise<boolean> {
+  if (!fs) return false;
+  const today = isoDayLocal(now);
+  const name = `${today}.json`;
+  const names = await fs.list(BACKUP_DIR);
+  if (names.includes(name)) return false; // already have today's; at most one a day
+  await fs.write(`${BACKUP_DIR}/${name}`, await makeEnvelope(data, now));
+  await pruneSnapshots(fs, [...names, name], today);
+  return true;
+}
+
+async function pruneSnapshots(fs: FsLike, names: string[], today: string): Promise<void> {
+  const dated = names.filter(n => DAILY.test(n));
+  const keep = new Set(snapshotsToKeep(dated.map(dateOf), today).map(d => `${d}.json`));
+  await Promise.all(dated.filter(n => !keep.has(n)).map(n => fs.remove(`${BACKUP_DIR}/${n}`)));
+}
+
+/**
+ * Restore: first save the current book as the "vor Wiederherstellung"
+ * snapshot (so undo survives a restart), then hand back the chosen snapshot's
+ * data for the store to load. Null when the snapshot can't be read.
+ */
+export async function restoreSnapshot(name: string, current: AppData, fs: FsLike | null = isNative() ? capacitorFs : null, now = new Date()): Promise<AppData | null> {
+  const data = await readSnapshot(name, fs);
+  if (!data) return null;
+  if (fs) {
+    try { await fs.write(`${BACKUP_DIR}/${PRE_RESTORE}`, await makeEnvelope(current, now)); } catch { /* the undo toast still works in-session */ }
+  }
+  return data;
+}
+
+/** Today as YYYY-MM-DD in local time (the snapshot file name). */
+function isoDayLocal(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/**
+ * The crash screen's "Letzte Sicherung wiederherstellen": find the newest
+ * whole snapshot and make it the data file (and the mirror). The app then
+ * reloads and hydrates from it. Returns false when there's nothing to restore.
+ */
+export async function restoreLatestToData(fs: FsLike | null = isNative() ? capacitorFs : null, now = new Date()): Promise<boolean> {
+  if (!fs) {
+    // On the web the book lives in localStorage; without a file there's
+    // nothing a snapshot could restore from, so there's nothing to do.
+    return false;
+  }
+  const snaps = await listSnapshots(fs);
+  const newest = snaps.find(s => s.ok && !s.preRestore) ?? snaps.find(s => s.ok);
+  if (!newest) return false;
+  const data = await readSnapshot(newest.name, fs);
+  if (!data) return false;
+  // Write it the atomic way, so a half-written file can never result.
+  await fs.write(TMP, await makeEnvelope(data, now));
+  await fs.remove(PREV);
+  if ((await fs.read(FILE)) !== null) await fs.rename(FILE, PREV);
+  await fs.rename(TMP, FILE);
+  try { writeLocal(data); } catch { /* the file has it */ }
+  return true;
 }
 
 /* ------------------------------------------------------ the app's instance */
@@ -304,13 +505,19 @@ let hydrated: AppData | null = null;
 export const hydratedData = () => hydrated;
 export const setHydrated = (data: AppData) => { hydrated = data; };
 
-export const saver: Saver = createSaver(isNative() ? capacitorFs : null);
+export const saver: Saver = createSaver(isNative() ? capacitorFs : null, undefined, { snapshots: true });
 
 /** What is waiting goes to disk when the app leaves the screen. */
 export function installFlushTriggers() {
   window.addEventListener('pagehide', () => { void saver.flush(); });
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') void saver.flush(); });
-  if (isNative()) void CapacitorApp.addListener('appStateChange', ({ isActive }) => { if (!isActive) void saver.flush(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') void saver.flush();
+    else void saver.snapshot(); // a day the user only opens still leaves a snapshot (plan 03)
+  });
+  if (isNative()) void CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+    if (isActive) void saver.snapshot();
+    else void saver.flush();
+  });
 }
 
 /**

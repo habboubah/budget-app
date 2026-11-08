@@ -35,6 +35,7 @@ import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
 import { TransferView } from './components/TransferView';
+import { BackupsView } from './components/BackupsView';
 import { RemindersView } from './components/RemindersView';
 import { LockScreen, PrivacyCover } from './components/LockScreen';
 import { reminderPlan } from './reminders';
@@ -55,7 +56,7 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -63,7 +64,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** `localStorage['spartopf-dev-season'] = '1'`: the year review's card out of season (screenshots, ui-review). */
@@ -618,6 +619,19 @@ export default function App() {
             onImport={d => { store.importData(d); setMonth(monthKeyOf()); }}
             onImportExcel={() => excelInput.current?.click()}
             toast={label => show(label)}
+            onExported={store.markExported}
+            onOpenBackups={() => push('backups')}
+            lastExport={store.lastExport}
+            copyCardDismissed={store.copyCardDismissed}
+            onDismissCopyCard={store.dismissCopyCard}
+          />
+        ) : id === 'backups' ? (
+          <BackupsView
+            data={data}
+            t={t}
+            onBack={back}
+            onRestore={d => { const before = store.restoreData(d); setMonth(monthKeyOf()); return before; }}
+            toast={(label, action) => show(label, action)}
           />
         ) : id === 'settings' ? (
           <SettingsView

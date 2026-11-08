@@ -99,6 +99,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** تبدأ الإحصاءات الآن بما يلفت النظر، ولكل فئة صفحتها الخاصة بأشهرها ومستفيديها وبنودها. ويعرض التخطيط كيف يسير الشهر حتى اليوم، وأين قد يكون حسابك بعد اثني عشر شهرًا، وفحصًا ماليًا. جديد: تقرير لكل شهر، ومراجعة العام في ديسمبر. والمال الموضوع في فئات الادخار مثل خطة ETF يُحتسب الآن ادخارًا في كل مكان.
 
+**DE:** Neu: Spartopf sichert deine Daten jeden Tag automatisch auf dem iPhone – die letzten 14 Tage und einen Stand je Monat. Einen Stand stellst du mit einem Tipp wieder her, mit Vorschau und zum Rückgängigmachen.
+
+**EN:** New: Spartopf backs your data up on your iPhone every day – the last 14 days and one version per month. Restore a version with a tap, with a preview and an undo.
+
+**AR:** جديد: ينسخ Spartopf بياناتك احتياطيًا على جهازك كل يوم – آخر 14 يومًا ونسخة لكل شهر. استعد نسخة بلمسة واحدة، مع معاينة وإمكانية التراجع.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

@@ -132,6 +132,12 @@ month, and the two numbers that matter: **what is on the account now** and
 - **Backup.** Export everything as a JSON file (share sheet on iPhone → Files /
   iCloud Drive / AirDrop) and import it again, or export every entry as **CSV for
   Excel**. There is no cloud: back up now and then.
+- **Automatic backups (iPhone).** Spartopf keeps its own history on the device:
+  a version a day, the last 14 days and one per month for a year. *Optionen →
+  Sichern und übertragen → Automatische Sicherungen* lists them; restoring one
+  takes a tap, shows a preview and is undoable, and the crash screen can restore
+  the latest. After 90 days without a copy leaving the phone, a dismissable card
+  reminds you to export one.
 
 ## Run locally
 

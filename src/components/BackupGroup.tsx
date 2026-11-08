@@ -12,7 +12,7 @@ import { Confirm } from '../ui/Sheet';
  * loaded back the same way. → Excel: the old budget spreadsheet in, and
  * every entry out again as a CSV that opens in Excel.
  */
-export function BackupGroup({ data, language, t, onImport, onImportExcel, toast }: {
+export function BackupGroup({ data, language, t, onImport, onImportExcel, toast, onExported }: {
   data: AppData;
   language: string;
   t: Strings;
@@ -20,12 +20,15 @@ export function BackupGroup({ data, language, t, onImport, onImportExcel, toast 
   /** Opens the file picker for an .xlsx (handled in App, so the intro card can use it too). */
   onImportExcel: () => void;
   toast: (label: string) => void;
+  /** A copy just left the device — resets plan 03's 90-day nudge. */
+  onExported?: () => void;
 }) {
   const file = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<AppData | null>(null);
 
   const exportNow = () => {
     void downloadFile(`spartopf-backup-${isoDay()}.json`, JSON.stringify(makeBackup(data), null, 2), 'application/json')
+      .then(() => onExported?.())
       .catch(() => { /* share sheet dismissed */ });
   };
 
@@ -38,7 +41,7 @@ export function BackupGroup({ data, language, t, onImport, onImportExcel, toast 
       open: t.open,
       repeat: { none: t.repeatNone, monthly: t.repeatMonthly, yearly: t.repeatYearly },
     });
-    void downloadFile(`spartopf-${isoDay()}.csv`, csv, 'text/csv').catch(() => {});
+    void downloadFile(`spartopf-${isoDay()}.csv`, csv, 'text/csv').then(() => onExported?.()).catch(() => {});
   };
 
   const onFile = async (f: File | undefined) => {

@@ -210,7 +210,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 00 Finish the redesign — built and checked in the browser; reminders and the lock still to be tried on an iPhone (see the plan's notes)
 - [x] 01 Quality and privacy gates — `npm run check` passes locally; CI not run yet (nothing pushed)
 - [x] 02 Durable storage — built and tested; the iPhone test (wipe WebKit data, relaunch) is still to do
-- [ ] 03 Automatic backups and restore
+- [x] 03 Automatic backups and restore — built and `npm run check` passes; snapshots, pruning and restore are tested. The on-device test (move the clock forward, restore, undo) is still to do on an iPhone, and the 90-day card's "OS backup is off" half waits for plan 06 (it shows on the 90-day rule alone for now)
 - [ ] 04 Encrypted backup files
 - [ ] 05 Security hardening
 - [ ] 06 Data protection at rest
