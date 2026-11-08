@@ -529,13 +529,15 @@ describe('CSV export', () => {
       e('2026-11', 'income', 'Gehalt', 416459, true),
     ], [{ key: '2026-11', startedAt: 0 }]);
     const csv = toCsv(d, 'de', {
-      header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz'],
+      header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
       income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
-      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' },
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung',
     });
     const lines = csv.replace('﻿', '').trim().split('\r\n');
-    expect(lines[1]).toBe('2026-11;Einkommen;Einnahme;Gehalt;4164,59;bezahlt;einmalig;;;');
-    expect(lines[2]).toBe('2026-11;Wohnen;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;;');
+    // A trailing currency column (EUR) is appended after the date (plan 07).
+    expect(lines[0].endsWith(';Währung')).toBe(true);
+    expect(lines[1]).toBe('2026-11;Einkommen;Einnahme;Gehalt;4164,59;bezahlt;einmalig;;;;EUR');
+    expect(lines[2]).toBe('2026-11;Wohnen;Ausgabe;"Miete; warm";-1050,00;offen;monatlich;1;;;EUR');
   });
 
   it('neutralises formula cells so a hostile payee name cannot run in Excel', () => {
@@ -547,7 +549,7 @@ describe('CSV export', () => {
     const csv = toCsv(d, 'de', {
       header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
       income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
-      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' },
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung',
     });
     const lines = csv.replace('', '').trim().split('\r\n');
     // Each dangerous text cell gets a leading apostrophe; the cell is then quoted only if it needs it.

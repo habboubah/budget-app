@@ -215,7 +215,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 05 Security hardening — built, `npm run check` passes (now also `check:security`); CSV injection, zip bomb and import limits tested, CSP ships on builds and OCR works under it, deps pinned + audited (fflate → 0.8.3), `SECURITY.md` added. The iOS on-device CSP/OCR check and "links open in the system browser" are still to confirm
 - [ ] 06 Data protection at rest
 - [x] 06a Statistics and insights — built with plan 13, `npm run check` passes; VoiceOver, the SE's long tasks, the usability test and a native Arabic read are still to do (see the plan's notes)
-- [ ] 07 Currency
+- [x] 07 Currency — built, `npm run check` passes; regional default + a Darstellung setting, formatters/parse/CSV/import all follow it, schema 11 (optional `AppData.currency`), tested. ui-review in CHF/GBP/SAR still to do
 - [ ] 08 Calculator in the amount field
 - [ ] 09 Favourites
 - [ ] 10 Match the bank balance

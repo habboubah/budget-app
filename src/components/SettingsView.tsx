@@ -1,6 +1,7 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { Bell, Check, ChevronRight, Download, Fingerprint, Languages, Lock, Palette, ScanFace, SunMoon, Tags, Trash2 } from 'lucide-react';
+import { Bell, Check, ChevronRight, Coins, Download, Fingerprint, Languages, Lock, Palette, ScanFace, SunMoon, Tags, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
+import { CURRENCIES, Currency, currencyName } from '../currency';
 import translations, { Language, Strings, fmt, languages } from '../translations';
 import { LockKind } from '../lock';
 import { ReminderPrefs } from '../reminders';
@@ -19,6 +20,8 @@ interface Props {
   onLanguage: (l: Language) => void;
   onTheme: (m: ThemeMode) => void;
   onAccent: (a: Accent) => void;
+  currency: Currency;
+  onCurrency: (c: Currency) => void;
   onCategories: () => void;
   /** Pushes "Sichern und übertragen": backup, Excel, CSV. */
   onTransfer: () => void;
@@ -106,6 +109,8 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
 export function SettingsView(p: Props) {
   const { t } = p;
   const [confirmDelete, setConfirmDelete] = useState(false);
+  /** A currency change only relabels, so confirm it once before applying. */
+  const [pendingCurrency, setPendingCurrency] = useState<Currency | null>(null);
   const lockLabel = p.lockKind === 'faceId' ? t.lockFaceId : p.lockKind === 'touchId' ? t.lockTouchId : t.lockCode;
   const LockIcon = p.lockKind === 'faceId' ? ScanFace : p.lockKind === 'touchId' ? Fingerprint : Lock;
 
@@ -154,6 +159,13 @@ export function SettingsView(p: Props) {
           ]}
         />
         <AccentRow value={p.accent} onChange={p.onAccent} t={t} />
+        <MenuRow<Currency>
+          label={t.currency}
+          leading={<IconTile icon={Coins} hue="lemon" />}
+          value={p.currency}
+          onChange={c => { if (c !== p.currency) setPendingCurrency(c); }}
+          options={CURRENCIES.map(c => ({ value: c, label: currencyName(c, t.locale) }))}
+        />
       </Group>
 
       <Group title={t.bookSection} footer={t.transferFooter}>
@@ -182,6 +194,15 @@ export function SettingsView(p: Props) {
         <p className="text-caption text-fg-mute mt-3 tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
       </section>
 
+      <Confirm
+        open={!!pendingCurrency}
+        title={t.currencyChangeTitle}
+        body={t.currencyChangeBody}
+        confirmLabel={t.currencyChange}
+        cancelLabel={t.cancel}
+        onCancel={() => setPendingCurrency(null)}
+        onConfirm={() => { if (pendingCurrency) p.onCurrency(pendingCurrency); setPendingCurrency(null); }}
+      />
       <Confirm
         open={confirmDelete}
         title={t.deleteAllTitle}

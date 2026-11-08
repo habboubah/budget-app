@@ -276,6 +276,15 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   iOS needs `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription`.
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
+- **Currency (plan 07, `src/currency.ts`).** `AppData.currency` (ISO 4217,
+  schema 11, optional, unset = EUR, in backups). Only two-minor-digit currencies
+  are offered (`CURRENCIES`). `logic.ts` holds a module-level active currency
+  (`setActiveCurrency`, set by the store from the book); every money formatter
+  reads it, so there's no call-site churn — tests set it explicitly. A new book
+  picks the currency from the region (`currencyForLocale`); changing it in
+  *Darstellung → Währung* only relabels, never converts. CSV export appends a
+  `Währung` column; a bank CSV row in another currency shows "andere Währung"
+  and starts unticked.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /
   `monthKeyOf()` from `logic.ts`, never `Date` arithmetic in components.
 - **Default categories** live in `src/data/defaults.ts` (names in every

@@ -111,6 +111,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** تُشفَّر نسختك الاحتياطية المُصدَّرة الآن بكلمة مرور افتراضيًا – على جهازك مباشرة. والملف القابل للقراءة على بُعد مفتاح واحد.
 
+**DE:** Neu: andere Währungen. Spartopf wählt sie nach deiner Region (CHF, GBP, SAR und mehr) und du änderst sie in den Einstellungen.
+
+**EN:** New: other currencies. Spartopf picks one from your region (CHF, GBP, SAR and more), and you can change it in Settings.
+
+**AR:** جديد: عملات أخرى. يختار Spartopf عملتك حسب منطقتك (مثل CHF وGBP وSAR)، ويمكنك تغييرها من الإعدادات.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

@@ -115,6 +115,8 @@ export interface AppData {
   months: MonthRecord[];
   /** Contract details by `Entry.seriesId` (schema 10). Unset or missing = none. */
   contracts?: Record<string, Contract>;
+  /** ISO 4217 currency (schema 11). Unset = EUR, so older books stay as they are. */
+  currency?: string;
 }
 
 /** A backup file / stored payload. */

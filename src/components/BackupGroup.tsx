@@ -54,6 +54,7 @@ export function BackupGroup({ data, language, t, onImport, onImportExcel, toast,
       paid: t.paidState,
       open: t.open,
       repeat: { none: t.repeatNone, monthly: t.repeatMonthly, yearly: t.repeatYearly },
+      currency: t.csvCurrency,
     });
     void downloadFile(`spartopf-${isoDay()}.csv`, csv, 'text/csv').then(() => onExported?.()).catch(() => {});
   };

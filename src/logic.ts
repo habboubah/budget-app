@@ -2,11 +2,13 @@ import {
   AppData, Backup, Category, CategoryKind, Contract, Entry, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
+import { isSupportedCurrency } from './currency';
 
 /** Bump when a stored shape changes, and migrate in `normalizeState`.
  *  9: monthly budgets (`Category.limit`) — optional, so nothing to migrate.
- *  10: contract details per recurring series (`AppData.contracts`) — optional too. */
-export const SCHEMA_VERSION = 10;
+ *  10: contract details per recurring series (`AppData.contracts`) — optional too.
+ *  11: book currency (`AppData.currency`, ISO 4217) — optional, unset = EUR. */
+export const SCHEMA_VERSION = 11;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -82,7 +84,15 @@ export function normalizeDigits(text: string): string {
  * decimal point, whichever one the keyboard happened to offer.
  */
 export function parseAmount(text: string, locale = 'de-DE'): number | null {
-  const s = normalizeDigits(text).replace(/[\s €]/g, '').replace(/^\+/, '');
+  const s = normalizeDigits(text)
+    // Drop any currency symbol (€ £ ﷼ ...) and three-letter codes (CHF, SAR).
+    .replace(/\p{Sc}/gu, '')
+    .replace(/\b[A-Za-z]{3}\b/g, '')
+    // de-CH groups thousands with an apostrophe (1'050.50); it is only ever a
+    // grouping mark, so drop it and let the dot be the decimal point.
+    .replace(/['’]/g, '')
+    .replace(/[\s ]/g, '')
+    .replace(/^\+/, '');
   if (!s || !/^(\d[\d.,]*|[.,]\d+)$/.test(s)) return null;
   const group = locale.startsWith('de') ? '.' : ',';
   const lastComma = s.lastIndexOf(',');
@@ -119,12 +129,24 @@ export function parseAmount(text: string, locale = 'de-DE'): number | null {
   return cents;
 }
 
+/**
+ * The book's currency (plan 07). A module-level value so the many formatters
+ * don't each need it threaded through every call site; the store sets it from
+ * `AppData.currency` (EUR when unset). Tests set it explicitly. Changing it
+ * clears the cached Intl formatters.
+ */
+let activeCurrency = 'EUR';
+export function setActiveCurrency(code: string): void {
+  if (code !== activeCurrency) { activeCurrency = code; formatters.clear(); }
+}
+export const getActiveCurrency = (): string => activeCurrency;
+
 const formatters = new Map<string, Intl.NumberFormat>();
 function moneyFormat(locale: string, sign: 'auto' | 'always' | 'exceptZero'): Intl.NumberFormat {
   const key = `${locale}|${sign}`;
   let f = formatters.get(key);
   if (!f) {
-    f = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', signDisplay: sign });
+    f = new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, signDisplay: sign });
     formatters.set(key, f);
   }
   return f;
@@ -382,14 +404,14 @@ export function leftPerDay(net: number, month: MonthKey, today = new Date()): nu
 
 /** Rounded to whole euros — for averages, where the cents are noise: "3.798 €", "+1.241 €". */
 export function formatMoneyWhole(cents: number, locale: string, sign: 'auto' | 'exceptZero' = 'auto'): string {
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
     .format(Math.round(cents / 100)).replace('-', '−');
 }
 
 /** An amount without its cents when it has none — "400 €" for a budget, "212,88 €" otherwise. */
 export function formatMoneyShort(cents: number, locale: string): string {
   if (cents % 100 !== 0) return formatMoney(cents, locale);
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
     .format(cents / 100).replace('-', '−');
 }
 
@@ -400,7 +422,7 @@ export function formatMoneyShort(cents: number, locale: string): string {
 export function formatMoneyApprox(cents: number, locale: string): string {
   if (Math.abs(cents) < 1000) return formatMoney(cents, locale);
   const euros = Math.trunc(cents / 100);
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
     .format(euros).replace('-', '−');
 }
 
@@ -414,7 +436,7 @@ export function formatMoneyEstimate(cents: number, locale: string, sign: 'auto' 
   const step = euros >= 10_000 ? 100 : euros >= 1_000 ? 10 : 1;
   const rounded = Math.round(euros / step) * step;
   const value = cents < 0 && rounded ? -rounded : rounded;
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
     .format(value).replace('-', '−');
 }
 
@@ -992,7 +1014,9 @@ export function normalizeState(raw: unknown): AppData {
   }
   months.sort((a, b) => (a.key < b.key ? -1 : 1));
   const contracts = normalizeContracts(v.contracts);
-  return { categories, entries, months, ...(contracts ? { contracts } : {}) };
+  // Currency (schema 11): keep it only when it is a known two-digit code; anything else falls back to EUR (unset).
+  const currency = isSupportedCurrency(v.currency) ? v.currency : undefined;
+  return { categories, entries, months, ...(contracts ? { contracts } : {}), ...(currency ? { currency } : {}) };
 }
 
 /** One series' contract details: a real day, a notice and a renewal of whole months, a short note. Null when nothing is left. */
@@ -1170,6 +1194,8 @@ export interface CsvLabels {
   paid: string;
   open: string;
   repeat: Record<Repeat, string>;
+  /** The header for the appended currency column ("Währung"). */
+  currency: string;
 }
 
 /**
@@ -1191,7 +1217,7 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
   const rows = [...data.entries].sort((a, b) =>
     a.month < b.month ? -1 : a.month > b.month ? 1
       : (order.get(a.categoryId) ?? 0) - (order.get(b.categoryId) ?? 0) || a.createdAt - b.createdAt);
-  const lines = [labels.header.map(cell).join(';')];
+  const lines = [[...labels.header, labels.currency].map(cell).join(';')];
   for (const e of rows) {
     const c = byId.get(e.categoryId);
     const kind = c?.kind ?? 'expense';
@@ -1201,6 +1227,7 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
       textCell(e.name), cell(value), cell(e.paid ? labels.paid : labels.open), cell(labels.repeat[e.repeat]),
       cell(e.dueDay ? String(e.dueDay) : ''), textCell(e.note ?? ''),
       cell(e.date ? `${e.date.slice(8, 10)}.${e.date.slice(5, 7)}.${e.date.slice(0, 4)}` : ''),
+      cell(activeCurrency), // the book's currency, appended so the old column order is kept
     ].join(';'));
   }
   // BOM, so Excel reads the umlauts as UTF-8.

@@ -120,6 +120,10 @@ month, and the two numbers that matter: **what is on the account now** and
   wiederherstellen*. Deutsch / English / العربية (right to left, with Arabic
   category names; amounts typed with Arabic digits are understood), light /
   dark / automatic.
+- **Currency.** A new install picks the currency from the phone's region (CHF,
+  GBP, USD, SAR and more); *Optionen → Darstellung → Währung* changes it. It
+  only relabels the amounts — nothing is converted — and existing books stay in
+  EUR.
 - **Import from Excel.** *Optionen → Sichern und übertragen → Aus Excel
   importieren* (or the link in the first month's setup card) reads a budget sheet laid out like
   `My_expense.xlsx`: one tab per month ("11.2026"), the categories in row 1,

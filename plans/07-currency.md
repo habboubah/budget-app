@@ -58,8 +58,17 @@ No first-run question; most people never see the setting. Changing the currency 
 
 ## Done when
 
-- [ ] New installs get the regional currency, and existing users keep EUR.
-- [ ] The setting relabels everything: cards, charts, CSV and import.
+- [x] New installs get the regional currency, and existing users keep EUR.
+- [x] The setting relabels everything: cards, charts (axes are unitless), CSV and import.
+
+## Notes (built)
+
+- `src/currency.ts` (tested): `CURRENCIES` (17 two-digit codes), `isSupportedCurrency`, `hasTwoMinorDigits`, `currencyForLocale` (region map → currency, else EUR), `currencyName`, `DEFAULT_CURRENCY`.
+- `logic.ts`: a module-level `activeCurrency` with `setActiveCurrency` / `getActiveCurrency`; every money formatter reads it (no call-site churn). `parseAmount` now strips any `\p{Sc}` symbol and three-letter codes, and reads de-CH apostrophe grouping. Schema bumped to **11**; `normalizeState` keeps `currency` only when supported (else EUR/unset). `toCsv` appends a `Währung` column (old column order kept).
+- `store.ts`: `currency` is data (in backups, only serialised when ≠ EUR). A new book starts from the phone's region; a loaded book keeps its own; import/restore set it; `resetAll` resets to the region default. `setActiveCurrency` kept in sync via an effect.
+- UI: *Optionen › Darstellung › Währung* (`SettingsView`, a `MenuRow`) with a one-time confirm that it only relabels. Bank CSV import: a `Währung`/`Currency` column that differs from the book shows "andere Währung (…)" and the row starts unticked (`statementImport.ts`, `StatementImportSheet.tsx`).
+- Decision taken here: I did **not** add a first-run currency question (ground rule 4); the region default plus the setting cover it.
+- Still to do: ui-review with CHF/GBP/SAR (incl. the Arabic UI) on device.
 
 ## Not in this plan
 

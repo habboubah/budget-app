@@ -32,6 +32,8 @@ export interface Found {
   bankCategory?: string;
   /** A fingerprint, so the same transaction is recognised on a second import. */
   ref?: string;
+  /** The row's currency when it differs from the book's (plan 07); those rows start unticked. */
+  foreignCurrency?: string;
 }
 
 export type RowStatus = 'new' | 'exists' | 'pay';
@@ -163,6 +165,7 @@ const COLUMNS = {
   purpose: ['verwendungszweck', 'purpose', 'paymentreference', 'reference', 'beschreibung', 'description'],
   type: ['buchungstext', 'umsatzart', 'vorgang', 'transactiontype', 'type'],
   category: ['kategorie', 'category'],
+  currency: ['waehrung', 'currency', 'waehrungbetrag', 'currencycode'],
 } as const;
 
 function columnOf(header: string[], names: readonly string[]): number {
@@ -181,7 +184,7 @@ function columnOf(header: string[], names: readonly string[]): number {
  * separate debit / credit columns. Rows without a date or an amount are
  * skipped.
  */
-export function parseBankCsv(text: string): Found[] {
+export function parseBankCsv(text: string, bookCurrency = 'EUR'): Found[] {
   const rows = parseCsv(text.replace(/^﻿/, ''));
   checkCount(rows.length, LIMITS.csvRows);
   const at = rows.findIndex((r, i) => i < 40 && columnOf(r, COLUMNS.date) !== -1
@@ -203,6 +206,8 @@ export function parseBankCsv(text: string): Found[] {
     const raw = cell(r, col.payee);
     const purpose = cell(r, col.purpose);
     const type = cell(r, col.type);
+    const rowCurrency = cell(r, col.currency).trim().toUpperCase();
+    const foreignCurrency = rowCurrency && rowCurrency !== bookCurrency.toUpperCase() ? rowCurrency : undefined;
     out.push({
       date,
       name: cleanPayee(raw, purpose, type),
@@ -211,6 +216,7 @@ export function parseBankCsv(text: string): Found[] {
       income: cents > 0,
       bankCategory: cell(r, col.category) || undefined,
       ref: fingerprint(date, cents, raw || type, purpose),
+      ...(foreignCurrency ? { foreignCurrency } : {}),
     });
   }
   return out;
@@ -362,7 +368,8 @@ export function planStatement(found: Found[], data: AppData, today = new Date())
       if (match) status = match.paid ? 'exists' : 'pay';
     }
     if (match) used.add(match.id);
-    return { key: `${i}-${f.ref ?? f.name}`, found: f, name, categoryId, status, match, include: status !== 'exists' };
+    // A foreign-currency row starts unticked: the amount is in another currency (plan 07).
+    return { key: `${i}-${f.ref ?? f.name}`, found: f, name, categoryId, status, match, include: status !== 'exists' && !f.foreignCurrency };
   });
 }
 

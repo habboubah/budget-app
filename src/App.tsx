@@ -355,7 +355,7 @@ export default function App() {
     setStatement({ phase: 'reading', source, progress: 0 });
     try {
       const found = source === 'csv'
-        ? parseBankCsv(await readTextFile(f))
+        ? parseBankCsv(await readTextFile(f), store.currency)
         : parseStatementText(
           await readImageText(f, p => setStatement(s => (s?.phase === 'reading' ? { ...s, progress: p } : s))),
           allCategoryNames(data.categories, language),
@@ -643,6 +643,8 @@ export default function App() {
             themeMode={themeMode}
             accent={store.accent}
             onAccent={store.setAccent}
+            currency={store.currency}
+            onCurrency={store.setCurrency}
             t={t}
             categoryCount={categories.length}
             onLanguage={store.setLanguage}

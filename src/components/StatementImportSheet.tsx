@@ -136,6 +136,7 @@ export function StatementImportSheet({ state, categories, language, t, onClose, 
                           </label>
                           {r.status === 'exists' && <span>{t.importStatusExists}</span>}
                           {r.status === 'pay' && <span className="text-warn font-medium wrap-prose">{fmt(t.importStatusPay, { name: r.match?.name ?? '' })}</span>}
+                          {r.found.foreignCurrency && <span className="text-warn font-medium wrap-prose">{fmt(t.importForeignCurrency, { currency: r.found.foreignCurrency })}</span>}
                         </div>
                       </div>
                     </li>

@@ -3,8 +3,9 @@ import { ACCENTS, Accent, AppData, Category, Contract, Entry, MonthKey, MonthRec
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
   canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
-  restoreDefaultCategories, standardCategoryIds, uid,
+  restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid,
 } from './logic';
+import { Currency, DEFAULT_CURRENCY, currencyForLocale, isSupportedCurrency } from './currency';
 import { defaultCategories } from './data/defaults';
 import { ReminderPrefs, normalizeReminderPrefs } from './reminders';
 import { hydratedData, loadStored, saver, wipeAll } from './storage';
@@ -67,6 +68,19 @@ export function useAppStore() {
   const [months, setMonths] = useState<MonthRecord[]>(initial.months);
   /** Contract details per recurring series — data, so part of a backup. */
   const [contracts, setContracts] = useState<Record<string, Contract>>(initial.contracts ?? {});
+  /**
+   * The book's currency — data, so part of a backup (plan 07). A loaded book
+   * keeps its currency; a brand-new book (no entries, one fresh month) starts
+   * from the phone's region. `setActiveCurrency` keeps the formatters in sync.
+   */
+  const [currency, setCurrency] = useState<Currency>(() => {
+    const loaded = isSupportedCurrency(initial.currency) ? initial.currency : undefined;
+    const fresh = !initial.entries.length && initial.months.length <= 1;
+    const value = loaded ?? (fresh ? currencyForLocale(navigator.language) : DEFAULT_CURRENCY);
+    setActiveCurrency(value);
+    return value;
+  });
+  useEffect(() => { setActiveCurrency(currency); }, [currency]);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = readString(K.theme);
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
@@ -153,8 +167,12 @@ export function useAppStore() {
   }, [themeMode]);
 
   const data: AppData = useMemo(
-    () => ({ categories, entries, months, ...(Object.keys(contracts).length ? { contracts } : {}) }),
-    [categories, entries, months, contracts],
+    () => ({
+      categories, entries, months,
+      ...(Object.keys(contracts).length ? { contracts } : {}),
+      ...(currency !== DEFAULT_CURRENCY ? { currency } : {}),
+    }),
+    [categories, entries, months, contracts, currency],
   );
   // Every change to the book goes to storage (debounced, written atomically; storage.ts).
   useEffect(() => { saver.save(data); }, [data]);
@@ -399,6 +417,7 @@ export function useAppStore() {
     setEntries(fixed.entries);
     setMonths(fixed.months.length ? fixed.months : [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fixed.categories) }]);
     setContracts(fixed.contracts ?? {});
+    setCurrency(isSupportedCurrency(fixed.currency) ? fixed.currency : DEFAULT_CURRENCY);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -419,6 +438,7 @@ export function useAppStore() {
     setEntries([]);
     setMonths([{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fresh) }]);
     setContracts({});
+    setCurrency(currencyForLocale(navigator.language));
     setIntroDone(false);
     setTipsDone(false);
     setLastExport('');
@@ -454,6 +474,7 @@ export function useAppStore() {
     reviewsSeen,
     seeReview: (id: string) => setReviewsSeen(prev => remember(prev, id)),
     unseeReview: (id: string) => setReviewsSeen(prev => prev.filter(x => x !== id)),
+    currency, setCurrency: (c: Currency) => setCurrency(c),
     data, categories, entries, months, balances,
     startMonth, pullRecurring, setOpening, removeMonth, restoreMonth, hideCategory, showCategory,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,
