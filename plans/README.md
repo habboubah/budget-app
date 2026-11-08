@@ -48,7 +48,7 @@ There is one plan per feature, built strictly in order. The plans draw on three 
   - New screens also get a pass with `--text 2`.
 - **Old data:** `localStorage` data and backups from earlier versions still load (plan 01's fixtures).
 - **Native plans:** tested on a real iPhone, and on Android devices from plan 23 on.
-- **User-visible changes:** update README.md (features), CLAUDE.md (rules) and the What's New text in `store/listing.md`.
+- **User-visible changes:** update docs/features.md (features), CLAUDE.md (rules) and the What's New text in `store/listing.md`.
 - **Simplicity:** run plan 37's checklist after plans 06a, 13, 21 and 32 as well.
 
 ## Decisions already taken
