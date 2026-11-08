@@ -135,6 +135,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: المطابقة مع البنك. أدخِل الرصيد الفعلي ليُسجّل Spartopf الفرق – بشكل واضح وقابل للتراجع.
 
+**DE:** Neu in Planen: eine Rücklage für jährliche Kosten. Spartopf sagt dir, wie viel du im Monat zurücklegen solltest, damit die Kfz-Steuer keinen Monat sprengt.
+
+**EN:** New in Plan: a reserve for yearly bills. Spartopf tells you how much to set aside each month so the car tax doesn't wreck one month.
+
+**AR:** جديد في التخطيط: احتياطي للتكاليف السنوية. يخبرك Spartopf بالمبلغ الذي ينبغي أن تضعه جانبًا شهريًا كي لا تُربك فاتورة سنوية شهرًا بأكمله.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

@@ -479,6 +479,14 @@ const de = {
   outlookYearly: 'jährlich',
   outlookPointAria: '{month}: ≈ {amount}',
   outlookPointRangeAria: '{month}: ≈ {amount}, {lo} bis {hi}',
+
+  // Planen: Rücklage für jährliche Kosten (plan 11)
+  reserveTitle: 'Rücklage für jährliche Kosten',
+  reserveMonthly: 'Leg {amount} im Monat zurück',
+  reserveShortfall: 'Im {month} fehlen {amount}',
+  reserveCovered: 'Deine jährlichen Kosten sind bis dahin gedeckt.',
+  reserveUpcoming: 'Als Nächstes',
+
   contractChangeYear: '{amount} seit {month} ({yearly} im Jahr)',
   contractsNew: 'Neu',
   contractsMissing: 'Fehlt noch',
@@ -1299,6 +1307,13 @@ const en: Strings = {
   outlookYearly: 'yearly',
   outlookPointAria: '{month}: ≈ {amount}',
   outlookPointRangeAria: '{month}: ≈ {amount}, {lo} to {hi}',
+
+  reserveTitle: 'Reserve for yearly bills',
+  reserveMonthly: 'Set aside {amount} a month',
+  reserveShortfall: '{month} is short by {amount}',
+  reserveCovered: 'Your yearly bills are covered until then.',
+  reserveUpcoming: 'Coming up',
+
   contractChangeYear: '{amount} since {month} ({yearly} a year)',
   contractsNew: 'New',
   contractsMissing: 'Still missing',
@@ -2122,6 +2137,13 @@ const ar: Strings = {
   outlookYearly: 'سنوي',
   outlookPointAria: '{month}: ≈ {amount}',
   outlookPointRangeAria: '{month}: ≈ {amount}، من {lo} إلى {hi}',
+
+  reserveTitle: 'احتياطي للتكاليف السنوية',
+  reserveMonthly: 'ضع جانبًا {amount} شهريًا',
+  reserveShortfall: 'في {month} ينقص {amount}',
+  reserveCovered: 'تكاليفك السنوية مُغطّاة حتى ذلك الحين.',
+  reserveUpcoming: 'التالي',
+
   contractChangeYear: '{amount} منذ {month} ({yearly} سنويًا)',
   contractsNew: 'جديد',
   contractsMissing: 'لم يُسجَّل بعد',

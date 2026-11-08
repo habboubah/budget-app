@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Category, MonthKey } from '../types';
 import { monthKeyOf, monthLabel } from '../logic';
-import { Book, Insight, contractHints, financeCheck, finishedKeys, outlook, pace, savings, upToNow } from '../insights';
+import { Book, Insight, contractHints, financeCheck, finishedKeys, outlook, pace, savings, upToNow, yearlyReserve } from '../insights';
 import { ContractItem, contractItems } from '../contracts';
 import { Strings, fmt } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
@@ -9,6 +9,7 @@ import { BudgetsCard } from './BudgetsCard';
 import { ContractsCard } from './ContractsCard';
 import { PaceCard } from './PaceCard';
 import { OutlookCard } from './OutlookCard';
+import { ReserveCard } from './ReserveCard';
 import { FinanceCheckCard } from './FinanceCheckCard';
 import { Explain } from './ExplainSheet';
 
@@ -48,6 +49,7 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
   const current = monthKeyOf(today);
   const p = useMemo(() => pace(book, today), [book]);
   const ahead = useMemo(() => outlook(book, today), [book]);
+  const reserve = useMemo(() => yearlyReserve(book, today, ahead), [book, ahead]);
   const check = useMemo(() => financeCheck(book, today), [book]);
   const latest = [...book.months].reverse().find(k => k <= current) ?? book.months[book.months.length - 1];
   const contracts = useMemo(() => (latest ? contractItems(data, latest, today) : []), [data, latest]);
@@ -77,7 +79,9 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
       <ContractsCard items={contracts} categories={data.categories} averageIncome={averageIncome}
         fresh={hints.fresh} missing={hints.missing} t={t} onOpen={onContract} onAll={onContractsAll} onAdd={onAdd} />
 
-      {/* Slots: Rücklage für jährliche Kosten (plan 11), Spartöpfe (plan 12), Schulden (plan 31). */}
+      {reserve && <ReserveCard reserve={reserve} categories={data.categories} t={t} />}
+
+      {/* Slots: Spartöpfe (plan 12), Schulden (plan 31). */}
 
       {check ? (
         <FinanceCheckCard check={check} points={chart} data={data} language={language} t={t} onReport={onReport} onDue={onDue} onExplain={onExplain} />

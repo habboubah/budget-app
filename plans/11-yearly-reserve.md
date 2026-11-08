@@ -41,5 +41,13 @@ There's no setting. Like the existing hints, the card appears by itself when it 
 
 ## Done when
 
-- [ ] The card shows for books with yearly entries, and only those.
-- [ ] Its figures match the tests.
+- [x] The card shows for books with yearly entries, and only those.
+- [x] Its figures match the tests.
+
+## Notes (built)
+
+- `yearlyReserve(book, today, ahead?)` in `src/insights/reserve.ts` (tested). Built on `commitments()` (the yearly entries → `monthly` = yearly total ÷ 12, rounded **up** to whole euros) and `outlook()`/`bigItems()` (the next yearly bills a year on, and the shortfall), so it never disagrees with *Ausblick*. Returns `{ monthly, upcoming[], shortfall? }`; null without a yearly entry.
+- `ReserveCard.tsx` renders on *Planen* in the plan-11 slot, only when `yearlyReserve` is non-null (the view passes the shared `outlook()` so it's computed once). New strings `reserveTitle`/`reserveMonthly`/`reserveShortfall`/`reserveCovered`/`reserveUpcoming` in de/en/ar.
+- Note: the plan mentioned a `commitments()` returning `yearly` — that function exists in `rules.ts` and is what this uses.
+- **Als Spartopf anlegen** (turn the reserve into a savings goal) and the *Finanz-Check › Vorausgeplant* link wait for plan 12; left out here as that plan notes.
+- Still to do: ui-review on device.
