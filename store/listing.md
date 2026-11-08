@@ -105,6 +105,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: ينسخ Spartopf بياناتك احتياطيًا على جهازك كل يوم – آخر 14 يومًا ونسخة لكل شهر. استعد نسخة بلمسة واحدة، مع معاينة وإمكانية التراجع.
 
+**DE:** Deine exportierte Sicherung wird jetzt standardmäßig mit einem Passwort verschlüsselt – direkt auf dem iPhone. Eine lesbare Datei ist ein Schalter entfernt.
+
+**EN:** Your exported backup is now encrypted with a password by default – right on your iPhone. A readable file is one switch away.
+
+**AR:** تُشفَّر نسختك الاحتياطية المُصدَّرة الآن بكلمة مرور افتراضيًا – على جهازك مباشرة. والملف القابل للقراءة على بُعد مفتاح واحد.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

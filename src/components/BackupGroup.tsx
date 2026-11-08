@@ -3,14 +3,18 @@ import { Download, FileDown, FileUp, Upload } from 'lucide-react';
 import { AppData } from '../types';
 import { Strings } from '../translations';
 import { isoDay, makeBackup, parseBackup, toCsv } from '../logic';
+import { decryptBackup, encryptBackup, isEncryptedBackup } from '../crypto';
 import { downloadFile } from '../export';
 import { Group, Row, IconTile } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
+import { BackupExportSheet } from './BackupExportSheet';
+import { BackupPasswordSheet } from './BackupPasswordSheet';
 
 /**
- * Sichern und übertragen → Datensicherung: everything as one JSON file,
- * loaded back the same way. → Excel: the old budget spreadsheet in, and
- * every entry out again as a CSV that opens in Excel.
+ * Sichern und übertragen → Datensicherung: everything as one file, encrypted
+ * with a password by default (plan 04), loaded back the same way. → Excel: the
+ * old budget spreadsheet in, and every entry out again as a CSV that opens in
+ * Excel (not protected).
  */
 export function BackupGroup({ data, language, t, onImport, onImportExcel, toast, onExported }: {
   data: AppData;
@@ -24,12 +28,21 @@ export function BackupGroup({ data, language, t, onImport, onImportExcel, toast,
   onExported?: () => void;
 }) {
   const file = useRef<HTMLInputElement>(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const [pending, setPending] = useState<AppData | null>(null);
+  /** The text of an encrypted file waiting for its password. */
+  const [locked, setLocked] = useState<string | null>(null);
 
-  const exportNow = () => {
-    void downloadFile(`spartopf-backup-${isoDay()}.json`, JSON.stringify(makeBackup(data), null, 2), 'application/json')
-      .then(() => onExported?.())
-      .catch(() => { /* share sheet dismissed */ });
+  const backupJson = () => JSON.stringify(makeBackup(data), null, 2);
+
+  const doExport = async (password: string | undefined) => {
+    if (password === undefined) {
+      await downloadFile(`spartopf-backup-${isoDay()}.json`, backupJson(), 'application/json');
+    } else {
+      const sealed = await encryptBackup(backupJson(), password);
+      await downloadFile(`spartopf-backup-${isoDay()}.spartopf`, sealed, 'application/octet-stream');
+    }
+    onExported?.();
   };
 
   const exportCsv = () => {
@@ -44,26 +57,44 @@ export function BackupGroup({ data, language, t, onImport, onImportExcel, toast,
     void downloadFile(`spartopf-${isoDay()}.csv`, csv, 'text/csv').then(() => onExported?.()).catch(() => {});
   };
 
+  /** A plain or encrypted backup, loaded from disk. */
   const onFile = async (f: File | undefined) => {
     if (!f) return;
-    const parsed = parseBackup(await f.text());
+    const text = await f.text();
     if (file.current) file.current.value = '';
+    if (isEncryptedBackup(text)) { setLocked(text); return; }
+    const parsed = parseBackup(text);
     if (!parsed.ok) { toast(t[parsed.error]); return; }
     setPending(parsed.data);
+  };
+
+  const unlock = async (password: string): Promise<boolean> => {
+    if (!locked) return false;
+    try {
+      const parsed = parseBackup(await decryptBackup(locked, password));
+      if (!parsed.ok) { toast(t[parsed.error]); setLocked(null); return true; }
+      setLocked(null);
+      setPending(parsed.data);
+      return true;
+    } catch {
+      return false; // wrong password or a tampered file
+    }
   };
 
   return (
     <>
       <Group title={t.backup} footer={t.backupHint}>
-        <Row label={t.exportData} leading={<IconTile icon={Download} hue="blue" />} onClick={exportNow} />
+        <Row label={t.exportData} leading={<IconTile icon={Download} hue="blue" />} onClick={() => setExportOpen(true)} />
         <Row label={t.importData} leading={<IconTile icon={Upload} hue="sky" />} onClick={() => file.current?.click()} />
       </Group>
-      <Group title={t.excelSection} footer={t.excelHint}>
+      <Group title={t.excelSection} footer={`${t.excelHint} ${t.csvNotProtected}`}>
         <Row label={t.importExcel} sub={t.importExcelSub} leading={<IconTile icon={FileUp} hue="leaf" />} onClick={onImportExcel} />
         <Row label={t.exportCsv} leading={<IconTile icon={FileDown} hue="mint" />} onClick={exportCsv} />
       </Group>
-      <input ref={file} type="file" accept="application/json,.json" className="sr-only" tabIndex={-1} aria-hidden="true"
+      <input ref={file} type="file" accept="application/json,.json,.spartopf" className="sr-only" tabIndex={-1} aria-hidden="true"
         onChange={e => void onFile(e.target.files?.[0])} />
+      <BackupExportSheet open={exportOpen} t={t} onClose={() => setExportOpen(false)} onExport={doExport} />
+      <BackupPasswordSheet open={!!locked} t={t} onClose={() => setLocked(null)} onUnlock={unlock} />
       <Confirm
         open={!!pending}
         title={t.importConfirmTitle}

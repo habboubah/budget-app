@@ -131,8 +131,13 @@ try {
     await tab(3);
     await page.locator('main button', { hasText: 'Sichern und übertragen' }).click();
     await page.waitForTimeout(400);
-    const download = page.waitForEvent('download', { timeout: 10000 });
+    // Opens the export sheet (plan 04); export without a password so no key
+    // derivation or password entry is needed in the check.
     await page.locator('main button', { hasText: 'Sicherung exportieren' }).click();
+    await page.waitForSelector('[role="dialog"]');
+    await page.locator('[role="dialog"] [role="switch"][aria-label="Ohne Passwort exportieren"]').click();
+    const download = page.waitForEvent('download', { timeout: 10000 });
+    await page.locator('[role="dialog"] button[type="submit"]').click();
     await download;
   });
   await ctx.close();

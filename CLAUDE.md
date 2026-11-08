@@ -50,6 +50,17 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     writing `pre-restore.json` first; the crash screen's *Letzte Sicherung
     wiederherstellen* calls `restoreLatestToData()`. The last-export date
     (`spartopf-last-export`) drives a dismissable 90-day nudge card.
+  - **Encrypted export (plan 04, `src/crypto.ts`).** A backup leaves the
+    device locked by default. File (UTF-8 JSON, base64 fields):
+    `{ app:'spartopf', format:'spartopf-encrypted', v:1, kdf:{ name:'PBKDF2',
+    hash:'SHA-256', iterations, salt }, cipher:{ name:'AES-GCM', iv }, data }`.
+    AES-GCM-256; the key is PBKDF2-HMAC-SHA-256 (600k iterations, read from the
+    file so a later version can raise it) from a random 16-byte salt; a random
+    12-byte IV; the whole header is GCM additional data. A wrong password and a
+    tampered file both raise `BackupLockedError` (one message). Encrypted files
+    are `.spartopf`; plain is `.json`. Import (`BackupGroup.tsx`) detects the
+    envelope (`isEncryptedBackup`) and asks for the password before
+    `parseBackup()`; old plain backups still import. All WebCrypto, no library.
   - *Alle Daten löschen* calls `saver.forget()` first, so `data.prev.json`
     (and the snapshots) keep no copy of the old book.
   - View preferences (language, theme, accent, folded cards, intro, tips,

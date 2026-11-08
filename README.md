@@ -129,9 +129,11 @@ month, and the two numbers that matter: **what is on the account now** and
   is kept), a day in brackets like `Vodafone(18)` becomes the due day, what comes
   back every month is marked *monatlich*, and a tab with a year typo ("08.2025"
   between July and September 2026) lands in the right month. Undoable.
-- **Backup.** Export everything as a JSON file (share sheet on iPhone → Files /
+- **Backup.** Export everything as one file (share sheet on iPhone → Files /
   iCloud Drive / AirDrop) and import it again, or export every entry as **CSV for
-  Excel**. There is no cloud: back up now and then.
+  Excel**. The backup is **encrypted with a password by default** (AES-GCM, done
+  on the device); one switch makes a readable `.json` instead, and old plain
+  backups still import. There is no cloud: back up now and then.
 - **Automatic backups (iPhone).** Spartopf keeps its own history on the device:
   a version a day, the last 14 days and one per month for a year. *Optionen →
   Sichern und übertragen → Automatische Sicherungen* lists them; restoring one

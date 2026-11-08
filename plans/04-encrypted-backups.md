@@ -61,9 +61,17 @@ One password field. No key files, no account. If the password is lost, the file 
 
 ## Done when
 
-- [ ] Encrypted export is the default, and plain export is one switch away.
-- [ ] Import handles both encrypted and old plain files.
-- [ ] CLAUDE.md documents the file format.
+- [x] Encrypted export is the default, and plain export is one switch away.
+- [x] Import handles both encrypted and old plain files.
+- [x] CLAUDE.md documents the file format.
+
+## Notes (built)
+
+- `src/crypto.ts` (tested, `crypto.test.ts`): `encryptBackup`, `decryptBackup`, `isEncryptedBackup`, `BackupLockedError`, `PBKDF2_ITERATIONS = 600_000`. AES-GCM-256, PBKDF2-HMAC-SHA-256 from a random 16-byte salt, random 12-byte IV, all from WebCrypto. The whole header is GCM additional data; a wrong password and a tampered file fail the same way. Iterations travel in the file.
+- `components/BackupExportSheet.tsx` (password twice, show/hide, "Ohne Passwort exportieren" switch, busy state) and `BackupPasswordSheet.tsx` (unlock on import). `BackupGroup.tsx` detects the envelope on import and asks for the password before `parseBackup()`. Encrypted files are `.spartopf` (`application/octet-stream`); plain stays `.json`. Old plain `.json` backups still import.
+- `scripts/privacy-check.mjs` updated: the export step now opens the sheet and exports without a password.
+- Export records `spartopf-last-export` for plan 03's 90-day card (via `onExported`).
+- Still to do on a device: export to Files, AirDrop to a second iPhone, import there; and confirm key derivation stays under 1.5 s on an SE-class device (keep 600k iterations and show the busy state if slower — the sheet already does).
 
 ## Not in this plan
 
