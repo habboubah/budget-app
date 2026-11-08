@@ -162,6 +162,58 @@ export function suggestBudgets(book: Book, months: MonthKey[]): { category: Cate
   return out.sort((a, b) => b.amount - a.amount).slice(0, 6);
 }
 
+/* ------------------------------------------- periods and comparison (29) */
+
+/** The years the book has started months in, newest first — the year picker's options. */
+export function bookYears(book: Book): string[] {
+  const years = new Set<string>();
+  for (const k of book.months) years.add(k.slice(0, 4));
+  return [...years].sort().reverse();
+}
+
+/**
+ * The points for a period of Statistik's Verlauf (plan 29): a year ("2025"),
+ * the last 6 or 12 months, or all — up to the running month. Finished-only is
+ * left to the caller (averages), as elsewhere.
+ */
+export function periodSeries(points: MonthPoint[], range: string, today = new Date()): MonthPoint[] {
+  const now = monthKeyOf(today);
+  const upto = points.filter(p => p.key <= now);
+  if (/^\d{4}$/.test(range)) return upto.filter(p => p.key.startsWith(`${range}-`));
+  if (range === 'all') return upto;
+  const n = Number(range);
+  return Number.isFinite(n) && n > 0 ? upto.slice(-n) : upto;
+}
+
+export interface YearCompare {
+  year: string;
+  prev: string;
+  /** This year and last, over the months both have in common up to today (finished months only). */
+  income: { now: number; last: number };
+  spending: { now: number; last: number };
+  saved: { now: number; last: number };
+  /** Spending change in %, or null without last-year spending. */
+  spendingChange: number | null;
+}
+
+/**
+ * This year against the one before (plan 29), over finished months only.
+ * Null when the book has no month in the previous year. The percentage is
+ * spending now vs last year.
+ */
+export function compareYears(book: Book, year: string, today = new Date()): YearCompare | null {
+  const prev = String(Number(year) - 1);
+  if (!book.months.some(k => k.startsWith(`${prev}-`))) return null;
+  const now = monthKeyOf(today);
+  const sum = (y: string, pick: (p: MonthPoint) => number) =>
+    book.points.filter(p => p.key.startsWith(`${y}-`) && p.key < now).reduce((s, p) => s + pick(p), 0);
+  const income = { now: sum(year, p => p.income), last: sum(prev, p => p.income) };
+  const spending = { now: sum(year, p => p.spending), last: sum(prev, p => p.spending) };
+  const saved = { now: income.now - spending.now, last: income.last - spending.last };
+  const spendingChange = spending.last > 0 ? Math.round(((spending.now - spending.last) / spending.last) * 100) : null;
+  return { year, prev, income, spending, saved, spendingChange };
+}
+
 export function yearReview(book: Book, year: string, today = new Date()): YearReview {
   const now = monthKeyOf(today);
   const months = book.months.filter(k => k.startsWith(`${year}-`) && k <= now);

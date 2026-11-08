@@ -237,7 +237,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 26 Tags — built, `npm run check` passes; schema 14 (`Entry.tags`), `normalizeTags`/`tagTotals` tested, `#tag` search, entry-sheet "# Tag", Statistik Tags breakdown, CSV tags column (injection-guarded). ui-review on device still to do
 - [ ] 27 Receipts and documents
 - [ ] 28 PDF report
-- [ ] 29 Periods and year comparison
+- [x] 29 Periods and year comparison — core built, `npm run check` passes; `periodSeries`/`compareYears`/`bookYears` tested, a year picker + a "Mit Vorjahr vergleichen" line in Statistik. The faint last-year chart outlines and the Wofür change-vs-last-year chips are a noted follow-up (Charts.tsx surgery); ui-review on device still to do
 - [ ] 30 Cash and savings accounts
 - [ ] 31 Debts and loans
 - [ ] 32 Month from payday

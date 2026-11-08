@@ -153,6 +153,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: الوسوم. ضع وسومًا مثل ‎#إجازة على البنود، وابحث عنها، وشاهد في الإحصاءات كم بلغ وسمٌ مجتمعًا.
 
+**DE:** Neu in Statistik: Zeig ein ganzes Jahr und vergleich die Ausgaben mit dem Vorjahr.
+
+**EN:** New in Statistics: show a whole year and compare your spending with last year.
+
+**AR:** جديد في الإحصاءات: اعرض سنة كاملة وقارن مصاريفك بالعام السابق.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

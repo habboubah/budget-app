@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildBook } from './book';
-import { monthReview, reviewCardMonth, reviewSeason, suggestBudgets, yearReview } from './review';
+import { bookYears, compareYears, monthReview, periodSeries, reviewCardMonth, reviewSeason, suggestBudgets, yearReview } from './review';
+import { upToNow } from './series';
 import { categoryDetail } from './detail';
 import { monthTotals } from '../logic';
 import { defaultCategories } from '../data/defaults';
@@ -89,5 +90,41 @@ describe('Jahresrückblick', () => {
     const k = ['2026-09', '2026-10'];
     const book = buildBook(data([...k.flatMap(m => month(m)), e('2026-10', 'leisure', 'Kino', 15)], k));
     expect(suggestBudgets(book, k).map(b => b.category.id)).toEqual(['groceries']);
+  });
+});
+
+describe('periods and year comparison (plan 29)', () => {
+  // 2025 (Nov, Dec) and 2026 (Jan..Mar); today is mid-April 2026 so every month is finished.
+  const y2025 = ['2025-11', '2025-12'];
+  const y2026 = ['2026-01', '2026-02', '2026-03'];
+  const all = [...y2025, ...y2026];
+  // 2025: 400 € groceries; 2026: 600 € groceries — spending rises.
+  const entries = [...y2025.flatMap(m => month(m, 400)), ...y2026.flatMap(m => month(m, 600))];
+  const book = buildBook(data(entries, all));
+  const today = new Date(2026, 3, 15);
+
+  it('lists the years in the book, newest first', () => {
+    expect(bookYears(book)).toEqual(['2026', '2025']);
+  });
+
+  it('periodSeries picks a year, a count, or all — up to today', () => {
+    const points = upToNow(book.points);
+    expect(periodSeries(points, '2025', today).map(p => p.key)).toEqual(y2025);
+    expect(periodSeries(points, '2026', today).map(p => p.key)).toEqual(y2026);
+    expect(periodSeries(points, '12', today).length).toBe(5);
+    expect(periodSeries(points, 'all', today).length).toBe(5);
+  });
+
+  it('compareYears compares spending with the year before, finished months only', () => {
+    const c = compareYears(book, '2026', today)!;
+    expect(c.prev).toBe('2025');
+    // Rent + groceries + ETF per month; 2026 groceries are 200 €/mo higher.
+    expect(c.spending.now).toBeGreaterThan(c.spending.last);
+    expect(c.spendingChange).toBeGreaterThan(0);
+  });
+
+  it('no comparison without a previous year', () => {
+    const only2026 = buildBook(data(y2026.flatMap(m => month(m)), y2026));
+    expect(compareYears(only2026, '2026', today)).toBeNull();
   });
 });

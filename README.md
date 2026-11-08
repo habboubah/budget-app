@@ -125,6 +125,9 @@ month, and the two numbers that matter: **what is on the account now** and
   than out (the savings rate and 50/30/20), bills on time, and the reserve in
   months of basic needs (3–6 is a rule of thumb). Every key figure has an ⓘ
   that shows how it is worked out, with your own numbers.
+- **Periods.** Statistik's *Verlauf* can show a whole **year** (pick it next to
+  6 / 12 months and *Alle*); from 13 months on, a **Mit Vorjahr vergleichen**
+  switch adds the spending change against the year before.
 - **Monatsbericht** for any month — from the month's "⋯", Planen or the table:
   what it saved against a usual month, budgets kept, what changed, where the
   money went, what is still open, and the month after. At the start of a

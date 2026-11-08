@@ -34,5 +34,12 @@
 
 ## Done when
 
-- [ ] Years and comparisons are correct.
-- [ ] They're readable in DE and AR.
+- [x] Years and comparisons are correct (tested; finished months only; golden data unchanged).
+- [x] They're readable in DE and AR (a year picker + a compare line, both in all three languages).
+
+## Notes (built)
+
+- `periodSeries(points, range, today)`, `compareYears(book, year, today)` and `bookYears(book)` in `src/insights/review.ts` (tested). `periodSeries` accepts a year ("2025"), a count ("6"/"12") or "all"; `compareYears` compares spending/income/saved against the previous year over finished months, with a `spendingChange` %.
+- `StatsRange` widened to allow a `YYYY` value; `StatsView` gains a year `MenuPicker` (shown with ≥ 2 years) beside 6/12/all, and — once the book has ≥ 13 months and a year is picked — a **Mit Vorjahr vergleichen** switch (off by default) that shows "+8 % Ausgaben ggü. 2025". `App.statsMonths` now routes through `periodSeries` so the category screen follows the chosen period too.
+- Decision / partial: the plan's two chart embellishments — last year drawn as faint outlines in the in/out chart, and the *Wofür das Geld geht* change chips comparing with last year — are **not** built. They need surgery inside `Charts.tsx`/`whereRows`; the year picker and the KPI comparison line already deliver U7 ("compare periods"). Left as a follow-up so this change stays reviewable.
+- Still to do: the chart overlay above, and ui-review on device.

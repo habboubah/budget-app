@@ -7,7 +7,7 @@ import { useAppStore } from './store';
 import translations, { fmt } from './translations';
 import { Category, Contract, Entry, EntryDraft, Favorite, MonthKey } from './types';
 import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, isoDay, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
-import { Insight, buildBook, highlights, monthReview, reviewCardMonth, reviewSeason, upToNow } from './insights';
+import { Insight, buildBook, highlights, monthReview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
 import { CategoryView } from './components/CategoryView';
@@ -489,10 +489,7 @@ export default function App() {
 
   // ---- Statistik and Planen: hints, reports, the drill-down (STATISTICS_AND_INSIGHTS.md).
   const now = monthKeyOf();
-  const statsMonths = useMemo(() => {
-    const all = upToNow(book.points).map(p => p.key);
-    return statsRange === 'all' ? all : all.slice(-Number(statsRange));
-  }, [book, statsRange]);
+  const statsMonths = useMemo(() => periodSeries(upToNow(book.points), statsRange).map(p => p.key), [book, statsRange]);
   const hints = useMemo(() => highlights(book, new Date(), store.hintsHidden), [book, store.hintsHidden]);
   const reviewFor = useMemo(() => reviewCardMonth(book, new Date(), store.reviewsSeen), [book, store.reviewsSeen]);
   const review = useMemo(() => (reviewFor ? monthReview(book, reviewFor, new Date()) : null), [book, reviewFor]);

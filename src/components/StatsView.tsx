@@ -5,17 +5,19 @@ import {
   NameTotal, displayName, formatMoney, formatMoneyApprox, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding,
   normalizeName, topNames,
 } from '../logic';
-import { Book, Fraction, Insight, MonthPoint, TagTotal, WhereRow, balanceChange, nearFraction, savings, tagTotals, upToNow, whereRows } from '../insights';
+import { Book, Fraction, Insight, MonthPoint, TagTotal, WhereRow, balanceChange, bookYears, compareYears, nearFraction, periodSeries, savings, tagTotals, upToNow, whereRows } from '../insights';
 import { Strings, fmt } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
 import { Segmented } from '../ui/Field';
+import { Switch } from '../ui/Switch';
 import { Card, MenuPicker } from '../ui/Card';
 import { BalanceChart, IncomeExpenseChart } from './Charts';
 import { Explain, ExplainButton } from './ExplainSheet';
 import { HighlightsCard } from './HintRows';
 import { tapLight } from '../ui/haptics';
 
-export type StatsRange = '6' | '12' | 'all';
+/** 6 or 12 months, all, or a year ("2025") — plan 29. */
+export type StatsRange = '6' | '12' | 'all' | (string & {});
 
 interface Props {
   book: Book;
@@ -78,8 +80,16 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
   const money = (c: number) => formatMoney(c, t.locale);
   const now = monthKeyOf();
   const all = useMemo(() => upToNow(book.points), [book]);
-  const points = useMemo(() => (range === 'all' ? all : all.slice(-Number(range))), [all, range]);
+  const points = useMemo(() => periodSeries(all, range), [all, range]);
   const keys = useMemo(() => points.map(p => p.key), [points]);
+  const years = useMemo(() => bookYears(book), [book]);
+  // The comparison (plan 29): only offered once the book has 13+ months, off by default.
+  const canCompare = book.months.length >= 13;
+  const [compare, setCompare] = useState(false);
+  const comparison = useMemo(
+    () => (compare && /^\d{4}$/.test(range) ? compareYears(book, range) : null),
+    [compare, range, book],
+  );
   // Averages over the finished months in view: the running month is half entered and would pull them down.
   const done = useMemo(() => points.filter(p => p.key < now), [points, now]);
   const doneKeys = useMemo(() => done.map(p => p.key), [done]);
@@ -105,11 +115,34 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
           <p className="eyebrow text-fg-mute">{monthSpanLabel(keys, t.locale)}</p>
           <h2 id="history-title" className="display text-title2 font-bold text-fg wrap-compound">{t.historySection}</h2>
         </div>
-        <Segmented<StatsRange> label={t.wherePeriod} value={range} onChange={onRange} options={[
-          { value: '6', label: fmt(t.averageSpanN, { n: 6 }) },
-          { value: '12', label: fmt(t.averageSpanN, { n: 12 }) },
-          { value: 'all', label: t.rangeAllShort },
-        ]} />
+        <div className="flex items-center gap-2">
+          <Segmented<StatsRange> label={t.wherePeriod} value={/^\d{4}$/.test(range) ? 'all' : range} onChange={onRange} options={[
+            { value: '6', label: fmt(t.averageSpanN, { n: 6 }) },
+            { value: '12', label: fmt(t.averageSpanN, { n: 12 }) },
+            { value: 'all', label: t.rangeAllShort },
+          ]} />
+          {years.length >= 2 && (
+            <MenuPicker
+              label={t.rangeYear}
+              value={/^\d{4}$/.test(range) ? range : ''}
+              onChange={y => onRange(y || '12')}
+              options={[{ value: '', label: t.rangeYearPick }, ...years.map(y => ({ value: y, label: y }))]}
+            />
+          )}
+        </div>
+        {canCompare && /^\d{4}$/.test(range) && (
+          <div className="flex items-center gap-3 rounded-md bg-surface card-edge ps-4 pe-1 min-h-control">
+            <span className="flex-1 min-w-0 text-body text-fg wrap-compound">{t.compareLastYear}</span>
+            <Switch checked={compare} onChange={setCompare} label={t.compareLastYear} />
+          </div>
+        )}
+        {comparison && comparison.spendingChange !== null && (
+          <p className="px-1 text-label text-fg-mute tabular-nums wrap-prose">
+            {fmt(comparison.spendingChange >= 0 ? t.compareSpendingUp : t.compareSpendingDown, {
+              pct: Math.abs(comparison.spendingChange), year: comparison.prev,
+            })}
+          </p>
+        )}
 
         {done.length > 0 && <Averages done={done} running={keys.includes(now) ? now : null} t={t} onExplain={onExplain} />}
 
