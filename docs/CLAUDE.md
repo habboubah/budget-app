@@ -562,7 +562,49 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     at launch, and a debug build logs each file's class — the device check.
     The saver flushes on background, before the phone locks; a write that
     still fails is retried on resume. App Group files for widgets (plan 14)
-    will need `completeUntilFirstUserAuthentication`, written by our own Swift.
+    use `completeUntilFirstUserAuthentication`, written by our own Swift.
+  - **The native bridge (plan 14).** `SceneDelegate` makes
+    `MainViewController` (a `CAPBridgeViewController`, in
+    `ios/App/App/SpartopfShared.swift`) the root; its `capacitorDidLoad()`
+    registers our own plugin `SpartopfShared` — our code, not a third party's,
+    as it handles financial data. It shares the App Group
+    `group.com.habboubah.spartopf` (`App.entitlements`; every extension gets
+    it too) with widgets, intents and the Watch: `snapshot.json` (written
+    atomically, then `WidgetCenter.reloadAllTimelines()`) and `inbox/<id>.json`
+    (one file per item, so writers never race), both
+    `completeUntilFirstUserAuthentication`, size-capped, JSON passed through as
+    text. Methods: `writeSnapshot`, `readSnapshot` (debug), `readInbox` →
+    `{ id, json }[]`, `removeInbox`, `clear` (registered with `onWipe`).
+    Later plans add theirs (`requestReview` 15, `makePdf` 28).
+    The web side is `src/native/`: `bridge.ts` (typed calls, no-ops on the web,
+    failures let go) and three pure, tested functions (`native.test.ts`):
+    - `buildSnapshot(data, prefs, today)` — month, the paid ring's counts, the
+      next three open bills, favourites (`hasAmount`), categories named in the
+      app's language, currency, locale, accent, `locked`. With
+      `showAmounts` off it has **no amount field at all** (`balance`,
+      `amount` left out — not zeros). App passes `false` until plan 17's
+      switch exists, and must keep passing `false` while *Beträge verbergen*
+      is on.
+    - `inboxToEntries(raw, data)` — checks every field (`readInboxItem`:
+      source list, integer cents ≤ `MAX_CENTS`, ids `[A-Za-z0-9_-]{1,64}`, ISO
+      dates), then books through `planStatement`/`applyStatement` (the
+      user's names, rules, an open entry ticked off instead of doubled); a
+      chosen category wins; `favoriteId` takes the favourite's name, category
+      and amount (so the snapshot needn't carry amounts); `paid: false` stays
+      open; at most `INBOX_MAX` per read. Each entry gets `ref: "inbox:<id>"`,
+      so an item read twice is "already there". Text-only items (a
+      notification) wait in the inbox for plan 19's parser.
+    - `parseDeepLink(url)` — `spartopf://add?category=&amount=&name=`,
+      `spartopf://month/YYYY-MM`, `spartopf://entry/<id>`; anything else is
+      null, unknown parameters are ignored. Any app can open these, so none
+      saves anything: "add" only fills the entry sheet.
+    App writes the snapshot after every change (debounced like the save), on
+    resume and at midnight; reads the inbox at launch and on resume once
+    unlocked (one undo toast; items leave the inbox after `saver.flush()`);
+    handles `appUrlOpen` (a cold start's link is kept by the App plugin until
+    the listener is there), holding a link while locked. URL scheme in
+    `Info.plist` (`CFBundleURLTypes`). Debug: *Widget-Daten testen* in
+    *Sichern und übertragen* round-trips the snapshot.
   - `localStorage['spartopf-dev-native'] = '1'` shows these settings in a dev
     build on the web (for screenshots); nothing is scheduled or locked there.
 

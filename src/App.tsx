@@ -4,7 +4,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { motion, useTransform } from 'motion/react';
 import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'lucide-react';
 import { useAppStore } from './store';
-import { fmt, stringsFor } from './translations';
+import { fmt, plural, stringsFor } from './translations';
 import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, setAmountsHidden, uid } from './logic';
 import { Insight, buildBook, highlights, monthReview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
@@ -49,7 +49,11 @@ import { reminderPlan } from './reminders';
 import { onReminderTap, remindersAvailable, syncReminders } from './notify';
 import { LockKind, authenticate, lockKind as findLockKind } from './lock';
 import { devNative, isNative } from './platform';
-import { inDeviceBackup, setInDeviceBackup } from './storage';
+import { SAVE_DEBOUNCE_MS, inDeviceBackup, saver, setInDeviceBackup } from './storage';
+import { buildSnapshot } from './native/snapshot';
+import { inboxToEntries } from './native/inbox';
+import { DeepLink, parseDeepLink } from './native/deepLink';
+import { readInbox, readSnapshot, removeInbox, writeSnapshot } from './native/bridge';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
 import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
@@ -552,6 +556,98 @@ export default function App() {
   const quickAddCategory = (lastCategory && categories.some(c => c.id === lastCategory) ? lastCategory : null)
     ?? categories.find(c => c.kind === 'expense')?.id ?? categories[0]?.id;
 
+  // ---- The native bridge (plan 14): what widgets, Siri, Shortcuts and the
+  // Watch read and hand over (src/native/). Nothing runs on the web.
+  const storeRef = useRef(store);
+  storeRef.current = store;
+  /** The summary in the App Group: after every change (as debounced as the save), on resume and at midnight (*pro Tag*). */
+  const [midnight, setMidnight] = useState(0);
+  useEffect(() => {
+    if (!native) return;
+    const d = new Date();
+    const id = window.setTimeout(() => setMidnight(n => n + 1), new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 0, 0, 5).getTime() - d.getTime());
+    return () => window.clearTimeout(id);
+  }, [native, midnight]);
+  // No amounts leave the app until plan 17's switch exists — and never while Beträge verbergen is on.
+  const snapshotFor = () => buildSnapshot(data, { language, locale: t.locale, accent: store.accent, locked: store.lockOn, showAmounts: false });
+  useEffect(() => {
+    if (!native) return;
+    const id = window.setTimeout(() => { void writeSnapshot(snapshotFor()); }, SAVE_DEBOUNCE_MS);
+    return () => window.clearTimeout(id);
+  }, [native, data, language, store.accent, store.lockOn, midnight, resumed]);
+  /** Debug (Sichern und übertragen): write the snapshot and read it back. */
+  const testBridge = async () => {
+    const snapshot = snapshotFor();
+    const ok = (await writeSnapshot(snapshot)) && JSON.stringify(await readSnapshot()) === JSON.stringify(snapshot);
+    show(ok ? t.debugBridgeOk : t.debugBridgeFailed);
+  };
+  /**
+   * The inbox, at launch and on resume once unlocked: booked as paid through
+   * the bank import's path, one toast to undo them all. The items leave the
+   * inbox once the book with them is on disk; read twice, their refs keep them
+   * single.
+   */
+  const inboxBusy = useRef(false);
+  const takeInbox = async () => {
+    if (inboxBusy.current) return;
+    inboxBusy.current = true;
+    try {
+      const raw = await readInbox();
+      if (!raw.length) return;
+      const s = storeRef.current;
+      const r = inboxToEntries(raw, s.data, { language: s.language });
+      const count = r.add.length + r.pay.length;
+      if (count) {
+        const done = s.importEntries(r.add, r.pay);
+        notifySuccess();
+        show(plural(count, t.inboxTakenOne, t.inboxTakenMany), { label: t.undo, run: () => storeRef.current.undoImport(done) });
+      }
+      if (r.done.length) {
+        await new Promise(resolve => window.setTimeout(resolve, SAVE_DEBOUNCE_MS + 50));
+        await saver.flush();
+        await removeInbox(r.done);
+      }
+    } finally {
+      inboxBusy.current = false;
+    }
+  };
+  useEffect(() => { if (native && !locked) void takeInbox(); }, [native, locked, resumed]);
+  /**
+   * spartopf:// links (a cold start's too: the App plugin keeps it until this
+   * listens). Checked by parseDeepLink, held while locked, and none saves
+   * anything — "add" only fills the entry sheet.
+   */
+  const pendingLink = useRef<DeepLink | null>(null);
+  const [linkArrived, setLinkArrived] = useState(0);
+  useEffect(() => {
+    if (!native) return;
+    const handle = CapacitorApp.addListener('appUrlOpen', ({ url }) => {
+      const link = parseDeepLink(url);
+      if (!link) return;
+      pendingLink.current = link;
+      setLinkArrived(n => n + 1);
+    });
+    return () => { void handle.then(h => h.remove()); };
+  }, [native]);
+  useEffect(() => {
+    const link = pendingLink.current;
+    if (!link || locked) return;
+    pendingLink.current = null;
+    const s = storeRef.current;
+    const toMonth = (key: MonthKey) => { setMonth(key); setTab('month'); setStack(st => ({ ...st, month: undefined })); };
+    if (link.kind === 'month') { toMonth(link.month); return; }
+    if (link.kind === 'entry') {
+      const e = s.entries.find(x => x.id === link.id);
+      if (e) { toMonth(e.month); setEntrySheet({ kind: 'edit', entry: e }); }
+      return;
+    }
+    const categoryId = link.categoryId && s.categories.some(c => c.id === link.categoryId) ? link.categoryId : quickAddCategory;
+    if (!categoryId) return;
+    const running = monthKeyOf();
+    toMonth(running);
+    setEntrySheet({ kind: 'new', month: running, categoryId, preset: { name: link.name, amount: link.amount } });
+  }, [linkArrived, locked]);
+
   // ---- Statistik and Planen: hints, reports, the drill-down (STATISTICS_AND_INSIGHTS.md).
   const now = monthKeyOf();
   const statsMonths = useMemo(() => periodSeries(upToNow(book.points), statsRange).map(p => p.key), [book, statsRange]);
@@ -713,6 +809,7 @@ export default function App() {
             inDeviceBackup={deviceBackup}
             copyCardDismissed={store.copyCardDismissed}
             onDismissCopyCard={store.dismissCopyCard}
+            onTestBridge={native ? () => void testBridge() : undefined}
           />
         ) : id === 'backups' ? (
           <BackupsView

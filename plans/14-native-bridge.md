@@ -83,5 +83,28 @@ Nothing visible yet.
 
 ## Done when
 
-- [ ] Snapshot, inbox and deep links work on a device, with amounts hidden by default.
-- [ ] `scripts/release.js` still passes its UIScene check and archives the app.
+- [ ] Snapshot, inbox and deep links work on a device, with amounts hidden by default. (Built and unit-tested; the device steps above are still to do.)
+- [ ] `scripts/release.js` still passes its UIScene check and archives the app. (The UIScene check reads `Info.plist` and `SceneDelegate.swift`, both kept; the archive needs the App Group on the App ID — see the notes.)
+
+## Notes (built)
+
+- **Native:** `ios/App/App/SpartopfShared.swift` holds `MainViewController` and the plugin, one new file in the Xcode project (checked with a pbxproj parser; not compiled — there is no Swift toolchain where it was written).
+  - `SceneDelegate` sets `MainViewController()` as the root instead of `CAPBridgeViewController()`. The storyboard isn't used for the root here, so it stays as it was.
+  - `App.entitlements` gains the App Group. `Info.plist` gains `CFBundleURLTypes` (`spartopf`).
+- **Plugin methods:** `writeSnapshot`, `readSnapshot` (for the debug round trip), `readInbox` and `removeInbox`. Also `clear`, added for `onWipe`, which the plan only implied.
+  - `readInbox` returns `{ id, json }` per file, so the app can drop a broken item by its file name.
+  - Caps: snapshot 256 KB, item 64 KB, 500 items per read; ids `[A-Za-z0-9_-]`, no paths.
+- **Decided while building:**
+  - The inbox item gains `favoriteId` and `paid`. A widget's favourite button (plan 17) sends only the favourite's id and the app looks up name, category and amount, so the snapshot needn't carry amounts for the buttons to work; the snapshot says `hasAmount` instead. `paid: false` books an open entry (Siri's `paid` parameter, plan 18).
+  - An item without a date is dated by its creation time only when that is within the past year; otherwise today. The tests caught a 1970 date.
+  - `showAmounts` is `false` until plan 17's switch exists, and must stay `false` while *Beträge verbergen* (plan 06) is on.
+  - Only the `appUrlOpen` listener, not `getLaunchUrl()`: the App plugin keeps a cold start's link until a listener is there (`retainUntilConsumed`), and `getLaunchUrl` would also return the last link on every later call.
+  - The inbox is read only once the app is unlocked, and a link is held while locked.
+  - Items leave the inbox 350 ms after booking, once `saver.flush()` has put the book on disk. If the app stops before that, the refs mark them as already there on the next read.
+- **Bundle:** the baseline is raised to 310 kB, with the note in `scripts/perf-check.mjs`.
+- **Month switch:** the 150 ms budget is tight on the machine this was built on. About one run in four went over, with plan 14's code and without it (plan 14 adds no work to a month switch on the web). Measure on the Mac.
+- **Still to do on an iPhone:**
+  - **Signing:** the App Group must exist on the App ID. Automatic signing with `-allowProvisioningUpdates` should register it; if the archive fails, tick *App Groups → group.com.habboubah.spartopf* once in Xcode's Signing & Capabilities. Data Protection (plan 06) the same way.
+  - *Optionen › Sichern und übertragen* with `spartopf-debug`: *Widget-Daten testen* says written and read back.
+  - **Inbox test:** put a test item into `inbox/` while the app is closed (from a debug extension, or by hand in the App Group container via Xcode's *Devices*), e.g. `{"source":"siri","createdAt":<now>,"amount":1240,"name":"Test"}`. Open the app: one toast, and undo removes the entry.
+  - **Links:** `spartopf://month/2026-10` and `spartopf://add?amount=12.50&name=Test`, from Notes or Safari, with the app closed, open and locked.

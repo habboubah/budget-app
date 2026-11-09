@@ -7,5 +7,11 @@
 	     AppDelegate brings files written before this up to the same class. -->
 	<key>com.apple.developer.default-data-protection</key>
 	<string>NSFileProtectionComplete</string>
+	<!-- Plan 14: the folder the app shares with its widgets, intents and the
+	     Watch (SpartopfShared.swift) — a summary and an inbox, never the book. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.habboubah.spartopf</string>
+	</array>
 </dict>
 </plist>

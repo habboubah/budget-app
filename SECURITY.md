@@ -24,6 +24,9 @@ notes, dates, budgets and contracts. It lives only on the user's device.
 | A compromised dependency | Exact pinned versions, `npm audit --omit=dev` in `npm run check`, and no third-party crypto — WebCrypto only. New dependencies are vetted (see CLAUDE.md). | 05 |
 | Injected or exfiltrating code at runtime | A Content-Security-Policy on production builds (`default-src 'self'`, no remote origins); the privacy check fails on any request that leaves the app's own origin. | 05, 01 |
 | User data leaking into logs | No `console.*` in app source (`npm run check:security`). | 05 |
+| A link from another app or a web page (`spartopf://…`) | `parseDeepLink` checks every part and ignores the rest; no link saves anything — "add" only fills the entry sheet; links wait while the app is locked. | 14 |
+| What widgets, Siri and the Watch can see | Only the summary in the App Group (`snapshot.json`) — never the book — and no amounts in it unless the user allows them (plan 17), never while *Beträge verbergen* is on. Shared files are `completeUntilFirstUserAuthentication`, size-capped, written by our own Swift. | 14, 17 |
+| A forged or broken item in the inbox | `readInboxItem` checks every field (known source, whole cents within the cap, safe ids, real dates); bad items are dropped unbooked; each booked item carries a ref, so one read twice isn't booked twice. | 14 |
 | Data lost on a broken or replaced phone | Atomic, checksummed data file with the OS backup on by default; automatic on-device snapshots with one-tap restore; encrypted export to move to a new phone. | 02, 03, 04 |
 
 ## Encryption at rest
@@ -43,7 +46,8 @@ exports remain the protection. **Not run yet** — until then, it is the latter.
 
 *Optionen → Alle Daten löschen* calls `wipeAll()` (`src/storage.ts`): the data
 file, its previous version, and all automatic snapshots — in both folders, in
-and out of the backup — plus pending reminders. Later features with their own files or secrets register a cleaner
+and out of the backup — plus pending reminders and the App Group's snapshot
+and inbox (plan 14). Later features with their own files or secrets register a cleaner
 with `onWipe()`, so one button erases everything.
 
 ## Out of scope

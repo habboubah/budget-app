@@ -68,7 +68,7 @@ export function isoDay(d = new Date()): string {
 /* ------------------------------------------------------------------- money */
 
 /** Largest amount accepted: 100 million euros. Anything above is a typo. */
-const MAX_CENTS = 10_000_000_000;
+export const MAX_CENTS = 10_000_000_000;
 
 /**
  * What an Arabic keyboard types, as ASCII: Arabic-Indic digits (٠–٩ and the

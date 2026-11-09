@@ -16,6 +16,7 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		A1B2C3D51FED7965001685AA /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D41FED7965001685AA /* SceneDelegate.swift */; };
+		B14A0C021FED7965001685AA /* SpartopfShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14A0C011FED7965001685AA /* SpartopfShared.swift */; };
 		5F16A0B00000000000000002 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5F16A0B00000000000000001 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A1B2C3D41FED7965001685AA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		B14A0C011FED7965001685AA /* SpartopfShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpartopfShared.swift; sourceTree = "<group>"; };
 		5F16A0B00000000000000003 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		5F16A0B00000000000000004 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		5F16A0B00000000000000005 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				A1B2C3D41FED7965001685AA /* SceneDelegate.swift */,
+				B14A0C011FED7965001685AA /* SpartopfShared.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -189,6 +192,7 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				A1B2C3D51FED7965001685AA /* SceneDelegate.swift in Sources */,
+				B14A0C021FED7965001685AA /* SpartopfShared.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

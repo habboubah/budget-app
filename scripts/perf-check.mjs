@@ -31,8 +31,13 @@ const origin = `http://127.0.0.1:${PORT}`;
  *     bank-match, the yearly reserve, savings pots, import rules, split payments,
  *     tags and the year comparison — each with its screens, sheets and three-language
  *     strings); month switch 28–68 ms, Statistik 21–52 ms, Planen 24–32 ms, no long task.
+ *   - plans 06 + 14, November 2026: 310 kB (+30 kB: smarter entering, the test data
+ *     and the language loader had brought it to 305 kB; plan 06 added 2 kB — hidden
+ *     amounts, the backup switch — and plan 14 3 kB — the widget snapshot, the inbox,
+ *     deep links and their strings); month switch 51–121 ms, Statistik 32–50 ms,
+ *     Planen 42–59 ms, no long task.
  */
-const BUNDLE_GZIP_BASELINE = 280_000;
+const BUNDLE_GZIP_BASELINE = 310_000;
 const BUNDLE_GROWTH = 1.10;
 const MONTH_SWITCH_MS = 150;
 const LONG_TASK_MS = 50;

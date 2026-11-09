@@ -222,7 +222,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 11 Reserve for yearly bills — built, `npm run check` passes; `yearlyReserve()` tested, card on Planen shown only with a yearly entry. "Als Spartopf anlegen" waits for plan 12. ui-review on device still to do
 - [x] 12 Savings goals — built, `npm run check` passes; schema 13 (`goals`, `Entry.goalId`), `goalProgress` tested, Planen card + pushed Spartöpfe screen (create/edit/withdraw/close/delete, all undoable), goal pill on Sparen entries, plan 11's "Als Spartopf anlegen". Skipped the first-goal "pick a Sparen category" prompt (Geldanlage already ships as save); ui-review/VoiceOver on device still to do
 - [x] 13 Month report and year review — built with 06a (before 07–12; the goal line waits for plan 12)
-- [ ] 14 Native bridge
+- [x] 14 Native bridge — built, `npm run check` passes. `MainViewController` + our own plugin `SpartopfShared` (App Group snapshot and inbox, `completeUntilFirstUserAuthentication`), the `spartopf://` scheme, and `src/native/` with `buildSnapshot` (no amount fields unless allowed), `inboxToEntries` (checked, booked through the import path, refs against doubles) and `parseDeepLink`, all tested. Swift not compiled yet. Still to do on an iPhone: the App Group on the App ID, the debug round trip, an inbox item with the app closed, and the links
 - [ ] 15 Ratings and feedback
 - [ ] 16 Store listing, accessibility labels, permission texts — listing (DE/EN/AR), review note, privacy policy and permission prompts (14 languages) done; accessibility labels (device check) and the Arabic € placement still open
 - [ ] 17 Widgets and controls

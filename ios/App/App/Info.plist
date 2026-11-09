@@ -33,6 +33,17 @@
 	<string>Spartopf saves the picture of your year in review to your photos when you choose Save Image.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Spartopf uses Face ID to unlock your budget book, so only you can open it.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.habboubah.spartopf</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>spartopf</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleDisplayName</key>
         <string>Spartopf</string>
 	<key>CFBundleExecutable</key>

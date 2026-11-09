@@ -14,9 +14,10 @@ const NUDGE_AFTER_DAYS = 90;
  * and the versions Spartopf keeps automatically on the device (plan 03).
  * Nothing leaves the device unless the user sends a file somewhere.
  * With the debug flag (storage.ts `debugTools`), a test of plan 02: wipe the
- * web view's data, then relaunch — everything must come back from the file.
+ * web view's data, then relaunch — everything must come back from the file;
+ * and plan 14's: write the widget snapshot to the App Group and read it back.
  */
-export function TransferView({ onBack, onOpenBackups, lastExport, inDeviceBackup, copyCardDismissed, onDismissCopyCard, ...backup }:
+export function TransferView({ onBack, onOpenBackups, lastExport, inDeviceBackup, copyCardDismissed, onDismissCopyCard, onTestBridge, ...backup }:
   ComponentProps<typeof BackupGroup> & {
     onBack: () => void;
     onOpenBackups: () => void;
@@ -26,6 +27,8 @@ export function TransferView({ onBack, onOpenBackups, lastExport, inDeviceBackup
     inDeviceBackup: boolean | null;
     copyCardDismissed: boolean;
     onDismissCopyCard: () => void;
+    /** Debug, iPhone app: write the widget snapshot and read it back (plan 14). */
+    onTestBridge?: () => void;
   }) {
   const { t, toast } = backup;
 
@@ -75,6 +78,9 @@ export function TransferView({ onBack, onOpenBackups, lastExport, inDeviceBackup
             leading={<IconTile icon={Bug} hue="stone" />}
             onClick={() => { void debugWipeWebData().then(() => toast(t.debugWiped)); }}
           />
+          {onTestBridge && (
+            <Row label={t.debugBridge} leading={<IconTile icon={Bug} hue="stone" />} onClick={onTestBridge} />
+          )}
         </Group>
       )}
     </Screen>
