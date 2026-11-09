@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import {
-  setAmountsHidden, areAmountsHidden, withAmounts, spoken, MASK, setActiveCurrency, formatMoneyShort,
+  setAmountsHidden, areAmountsHidden, withAmounts, spoken, MASK, setActiveCurrency, formatMoneyShort, shouldAskForReview, ReviewState,
   addMonths, amountToInput, averageByCategory, balanceFor, canRemoveFromMonth, carryCandidates, carryOver, categoryBreakdown,
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
@@ -11,6 +11,8 @@ import {
 } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
+import { APP_STORE_ID, FEEDBACK_TO, REVIEW_URL, feedbackMail, privacyUrl, systemFromAgent } from './links';
+import translations from './translations';
 
 const cats = defaultCategories();
 let n = 0;
@@ -1111,5 +1113,52 @@ describe('split payments (plan 21)', () => {
     ], months: [{ key: '2026-11', startedAt: 0 }] };
     const back = parseBackup(JSON.stringify(makeBackup(d)));
     expect(back.ok && back.data.entries[0].splitId).toBe('sx');
+  });
+});
+
+describe('when to ask for a rating (plan 15)', () => {
+  const today = new Date(2026, 10, 9, 12);
+  const base: ReviewState = { firstUse: '2026-10-26', entries: 30, lastAsked: '', trouble: false, moment: 'monthSaved' };
+
+  it('asks after something good, from 14 days and 30 entries on, in a session without trouble', () => {
+    expect(shouldAskForReview(base, today)).toBe(true);
+    for (const moment of ['monthSaved', 'goalReached', 'bigImport'] as const) expect(shouldAskForReview({ ...base, moment }, today)).toBe(true);
+  });
+
+  it('never without a good moment, with trouble, or before the install is known', () => {
+    expect(shouldAskForReview({ ...base, moment: null }, today)).toBe(false);
+    expect(shouldAskForReview({ ...base, trouble: true }, today)).toBe(false);
+    expect(shouldAskForReview({ ...base, firstUse: '' }, today)).toBe(false);
+  });
+
+  it('holds at its boundaries: 14 days, 30 entries, 120 days since the last ask', () => {
+    expect(shouldAskForReview({ ...base, firstUse: '2026-10-27' }, today)).toBe(false); // 13 days
+    expect(shouldAskForReview({ ...base, entries: 29 }, today)).toBe(false);
+    expect(shouldAskForReview({ ...base, lastAsked: '2026-07-13' }, today)).toBe(false); // 119 days
+    expect(shouldAskForReview({ ...base, lastAsked: '2026-07-12' }, today)).toBe(true); // 120 days
+  });
+});
+
+describe('Über Spartopf links (plan 15)', () => {
+  it('the review page carries the app’s id; the policy is German or English', () => {
+    expect(REVIEW_URL).toContain(`id${APP_STORE_ID}`);
+    expect(privacyUrl('de')).toBe('https://habboubah.github.io/privacy-policy/spartopf/de/');
+    expect(privacyUrl('ar')).toBe('https://habboubah.github.io/privacy-policy/spartopf/');
+  });
+
+  it('the feedback mail has a subject, room to write and the two versions — nothing else', () => {
+    const mail = feedbackMail(translations.de, '1.2.4', 'iOS 18.1');
+    expect(mail.startsWith(`mailto:${FEEDBACK_TO}?subject=`)).toBe(true);
+    const body = decodeURIComponent(mail.split('&body=')[1]);
+    expect(body).toBe('\n\n\n— Spartopf 1.2.4 · iOS 18.1');
+    expect(decodeURIComponent(mail.split('subject=')[1].split('&')[0])).toBe('Feedback zu Spartopf');
+  });
+
+  it('reads the system from a user agent on the web', () => {
+    expect(systemFromAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15')).toBe('iOS 18.1');
+    expect(systemFromAgent('Mozilla/5.0 (iPad; CPU OS 17_4_1 like Mac OS X)')).toBe('iOS 17.4.1');
+    expect(systemFromAgent('Mozilla/5.0 (Linux; Android 14; Pixel 8)')).toBe('Android 14');
+    expect(systemFromAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)')).toBe('macOS');
+    expect(systemFromAgent('')).toBe('Web');
   });
 });

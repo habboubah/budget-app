@@ -575,7 +575,23 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     `completeUntilFirstUserAuthentication`, size-capped, JSON passed through as
     text. Methods: `writeSnapshot`, `readSnapshot` (debug), `readInbox` →
     `{ id, json }[]`, `removeInbox`, `clear` (registered with `onWipe`).
-    Later plans add theirs (`requestReview` 15, `makePdf` 28).
+    Plan 15 added `requestReview` (StoreKit's `AppStore.requestReview(in:)`,
+    `SKStoreReviewController` before iOS 16), `open` (hands a link to iOS —
+    https to `apps.apple.com` / `habboubah.github.io` and mailto: only) and
+    `system` (the iOS version for the feedback mail); plan 28 adds `makePdf`.
+  - **Ratings and feedback (plan 15).** *Optionen › Über Spartopf*: *Spartopf
+    bewerten* (iPhone app only; `REVIEW_URL` with `APP_STORE_ID`),
+    *Feedback senden* (Mail with the app's and the system's version, nothing
+    else — `feedbackMail`), *Datenschutz* (`privacyUrl`: German, else
+    English) — all in `src/links.ts`, written out whole because the privacy
+    check reads the bundle's URLs as text (and allows these two). Apple's own
+    prompt follows a local rule, `shouldAskForReview` (logic.ts, tested):
+    14 days since `spartopf-first-use`, 30 entries of one's own (test data
+    left out), a good moment (`monthSaved`: the report of the month just
+    closed, which saved money; `goalReached`: a savings pot reaching its
+    target; `bigImport`: 10 or more entries imported), no trouble this session
+    (an error, a failed import, or any *Rückgängig* — App's `show` marks it),
+    and 120 days since `spartopf-review-asked`. No dialog of our own.
     The web side is `src/native/`: `bridge.ts` (typed calls, no-ops on the web,
     failures let go) and three pure, tested functions (`native.test.ts`):
     - `buildSnapshot(data, prefs, today)` — month, the paid ring's counts, the

@@ -30,6 +30,10 @@ const ALLOWED_URLS = [
   [/^https:\/\/bit\.ly\/wb-precache/, "a Workbox console warning's text"],
   [/^https:\/\/cdn\.jsdelivr\.net\/npm\/(tesseract\.js|tesseract\.js-core|@tesseract\.js-data)\b/,
     "tesseract.js's default download paths; src/ocr.ts passes local ones (ocr/) — the OCR step below proves none is used"],
+  [/^https:\/\/apps\.apple\.com\/app\/id\d+\?action=write-review$/,
+    'Optionen › Spartopf bewerten (src/links.ts): handed to the App Store when tapped, never fetched'],
+  [/^https:\/\/habboubah\.github\.io\/privacy-policy\/spartopf\/(de\/)?$/,
+    'Optionen › Datenschutz (src/links.ts): opened in Safari when tapped, never fetched'],
 ];
 
 const failures = [];

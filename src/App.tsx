@@ -6,8 +6,8 @@ import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'luc
 import { useAppStore } from './store';
 import { fmt, plural, stringsFor } from './translations';
 import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
-import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, setAmountsHidden, uid } from './logic';
-import { Insight, buildBook, highlights, monthReview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
+import { REVIEW_RULE, ReviewMoment, addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, setAmountsHidden, shouldAskForReview, uid } from './logic';
+import { Insight, buildBook, goalProgress, highlights, monthReview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
 import { CategoryView } from './components/CategoryView';
@@ -53,7 +53,9 @@ import { SAVE_DEBOUNCE_MS, inDeviceBackup, saver, setInDeviceBackup } from './st
 import { buildSnapshot } from './native/snapshot';
 import { inboxToEntries } from './native/inbox';
 import { DeepLink, parseDeepLink } from './native/deepLink';
-import { readInbox, readSnapshot, removeInbox, writeSnapshot } from './native/bridge';
+import { openExternal, readInbox, readSnapshot, removeInbox, requestReview, systemVersion, writeSnapshot } from './native/bridge';
+import { REVIEW_URL, feedbackMail, privacyUrl } from './links';
+import { isDemoEntry } from './demo';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
 import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
@@ -90,7 +92,15 @@ export default function App() {
   const store = useAppStore();
   const { data, categories, entries, balances, language, themeMode } = store;
   const t = stringsFor(language);
-  const { toast, show, hide } = useToast();
+  const { toast, show: showToast, hide } = useToast();
+  /**
+   * Plan 15: this session had trouble — an error, a failed import, an undo —
+   * so it is no moment to ask for a rating. Every undo goes through `show`.
+   */
+  const trouble = useRef(false);
+  const show: typeof showToast = (label, action) => showToast(label, action && action.label === t.undo
+    ? { ...action, run: () => { trouble.current = true; action.run(); } }
+    : action);
 
   const [tab, setTab] = useState<TabId>('month');
   /** Per tab, the screen pushed over its root — each tab keeps its place, as on iOS. */
@@ -421,6 +431,7 @@ export default function App() {
       if (!plan.months.length) { show(t.excelNoMonths); return; }
       setExcel({ plan, fileName: f.name });
     } catch (e) {
+      trouble.current = true;
       show(e instanceof FileTooLargeError ? t[e.key] : t.excelInvalid);
     }
   };
@@ -453,6 +464,7 @@ export default function App() {
       setStatement({ phase: 'review', source, rows: planStatement(found, data) });
     } catch (e) {
       setStatement(null);
+      trouble.current = true;
       show(e instanceof FileTooLargeError ? t[e.key] : t.importFailed);
     }
   };
@@ -467,13 +479,15 @@ export default function App() {
     if (months.length && !months.includes(month)) setMonth(months.reduce((a, b) => (a > b ? a : b)));
     setTab('month');
     show(fmt(t.statementDone, { added: done.added.length, paid: done.paid.length }), { label: t.undo, run: () => store.undoImport(done) });
+    if (done.added.length >= REVIEW_RULE.bigImport) goodMoment('bigImport');
   };
 
   const importExcel = () => {
     if (!excel) return;
     const before = data;
     const introWasDone = store.introDone;
-    store.importData(applyExcelImport(data, excel.plan));
+    const after = applyExcelImport(data, excel.plan);
+    store.importData(after);
     store.dismissIntro();
     const n = excel.plan.months.length;
     setMonth(lastMonth(excel.plan) ?? monthKeyOf());
@@ -485,6 +499,7 @@ export default function App() {
       label: t.undo,
       run: () => { store.importData(before); if (!introWasDone) store.restoreIntro(); setMonth(monthKeyOf()); },
     });
+    if (after.entries.length - before.entries.length >= REVIEW_RULE.bigImport) goodMoment('bigImport');
   };
 
   /**
@@ -648,6 +663,33 @@ export default function App() {
     setEntrySheet({ kind: 'new', month: running, categoryId, preset: { name: link.name, amount: link.amount } });
   }, [linkArrived, locked]);
 
+  // ---- Ratings (plan 15): Apple's own prompt, right after something good, by
+  // a local rule (shouldAskForReview) — no analytics, no dialog of our own.
+  const goodMoment = (moment: ReviewMoment) => {
+    if (!native) return;
+    const s = storeRef.current;
+    const ask = shouldAskForReview({
+      firstUse: s.firstUse, entries: s.entries.filter(e => !isDemoEntry(e)).length,
+      lastAsked: s.reviewAsked, trouble: trouble.current, moment,
+    });
+    if (!ask) return;
+    s.markReviewAsked();
+    // A moment later, so the prompt doesn't cover what just happened.
+    window.setTimeout(() => { void requestReview(); }, 1500);
+  };
+  useEffect(() => { if (store.storageError) trouble.current = true; }, [store.storageError]);
+  /** A savings pot that reaches its target (plan 12) is a good moment; one reached before isn't. */
+  const reachedGoals = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const today = new Date();
+    const reached = new Set(store.goals.filter(g => !g.closedAt && goalProgress(data, g, today).reached).map(g => g.id));
+    const before = reachedGoals.current;
+    reachedGoals.current = reached;
+    if (before && [...reached].some(id => !before.has(id))) goodMoment('goalReached');
+  }, [data]);
+  /** Optionen › Über Spartopf. */
+  const sendFeedback = async () => { void openExternal(feedbackMail(t, __APP_VERSION__, await systemVersion())); };
+
   // ---- Statistik and Planen: hints, reports, the drill-down (STATISTICS_AND_INSIGHTS.md).
   const now = monthKeyOf();
   const statsMonths = useMemo(() => periodSeries(upToNow(book.points), statsRange).map(p => p.key), [book, statsRange]);
@@ -659,7 +701,13 @@ export default function App() {
 
   const openCategory = (id: string) => { setShownCategory(id); push('category'); };
   /** Opening a month's report counts as having seen its review card. */
-  const openReport = (m: MonthKey) => { setReportMonth(m); store.seeReview(m); push('monthReport'); };
+  const openReport = (m: MonthKey) => {
+    setReportMonth(m);
+    store.seeReview(m);
+    push('monthReport');
+    // The month just closed, and it saved money: a good moment (plan 15).
+    if (m === addMonths(monthKeyOf(), -1) && (book.points.find(p => p.key === m)?.saved ?? 0) > 0) goodMoment('monthSaved');
+  };
   const openYear = (y: string) => { setReviewYear(y); store.seeReview(y); push('yearReview'); };
   const openMonthPage = (m: MonthKey) => { setMonth(m); setTab('month'); setStack(s => ({ ...s, month: undefined })); };
   /** A regular payment still missing: the entry sheet with its name, usual amount and category, open. */
@@ -890,6 +938,9 @@ export default function App() {
             deviceBackupBusy={backupMoving}
             reminders={remindersAvailable() ? store.reminders : null}
             onReminders={() => push('reminders')}
+            onRate={native || devNative() ? () => void openExternal(REVIEW_URL) : undefined}
+            onFeedback={() => void sendFeedback()}
+            onPrivacy={() => void openExternal(privacyUrl(language))}
           />
         ) : id === 'stats' ? (
           <StatsView

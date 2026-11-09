@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Palette, ScanFace, Star, SunMoon, Tags, Trash2 } from 'lucide-react';
+import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -51,6 +51,15 @@ interface Props {
   /** The reminder settings; null where there are no notifications (the web). */
   reminders: ReminderPrefs | null;
   onReminders: () => void;
+  /** Über Spartopf (plan 15): the App Store's review page — iPhone app only; Mail with the versions; the privacy policy. */
+  onRate?: () => void;
+  onFeedback: () => void;
+  onPrivacy: () => void;
+}
+
+/** A row's end when it opens something outside the app (the App Store, Mail, Safari): ↗. */
+function Away() {
+  return <ArrowUpRight className="shrink-0 w-5 h-5 text-fg-faint rtl:-scale-x-100" aria-hidden="true" />;
 }
 
 /** A row's end when it pushes a screen: a value (the count), then ›. */
@@ -123,7 +132,8 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
  * backup and reminders in the iPhone app only), Darstellung (language, light
  * or dark, the colour), Haushaltsbuch (categories and budgets; backup and
  * transfer on a screen of their own), Ausprobieren (test data in, test data
- * out), then deleting everything and what the app is. Later features join
+ * out), Über Spartopf (rate it, send feedback, the privacy policy — plan 15),
+ * then deleting everything and what the app is. Later features join
  * their group (REDESIGN.md §4, plans/00).
  */
 export function SettingsView(p: Props) {
@@ -253,6 +263,12 @@ export function SettingsView(p: Props) {
             onClick={p.onAddDemo}
           />
         )}
+      </Group>
+
+      <Group title={t.aboutSection}>
+        {p.onRate && <Row label={t.rateApp} leading={<IconTile icon={Star} hue="lemon" />} trailing={<Away />} onClick={p.onRate} />}
+        <Row label={t.sendFeedback} sub={t.sendFeedbackSub} leading={<IconTile icon={Mail} hue="blue" />} trailing={<Away />} onClick={p.onFeedback} />
+        <Row label={t.privacyPolicy} leading={<IconTile icon={ShieldCheck} hue="leaf" />} trailing={<Away />} onClick={p.onPrivacy} />
       </Group>
 
       <Group>

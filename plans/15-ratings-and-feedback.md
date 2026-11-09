@@ -45,5 +45,24 @@ No custom "Gefällt dir Spartopf?" dialog, no stars of our own, no nagging.
 
 ## Done when
 
-- [ ] The prompt only appears when the rule allows it.
-- [ ] The three rows under *Über Spartopf* work.
+- [x] The prompt only appears when the rule allows it. (`shouldAskForReview` is tested at every boundary; the prompt itself is still to see on a device.)
+- [ ] The three rows under *Über Spartopf* work. (Built; opening the App Store, Mail and Safari is still to try on an iPhone.)
+
+## Notes (built)
+
+- **The rule:** `shouldAskForReview` and `REVIEW_RULE` live in `src/logic.ts`, as planned. The state comes from two device settings in `store.ts`: `spartopf-first-use` (set on the first launch with this version, so existing users wait 14 days too) and `spartopf-review-asked`. Entries are counted without the test data, which adds a whole year.
+- **"Something good":**
+  - **A month closed with money saved:** the user opens the report of the month just closed, and it saved money (income − spending > 0).
+  - **A goal reached:** a savings pot crossing its target. One reached before the app started doesn't count.
+  - **A big import:** a bank import or an Excel import of 10 or more entries. The widget/Siri inbox doesn't count.
+  - The prompt is asked for 1.5 s later, so it doesn't cover the toast.
+- **Trouble:** App's `show` marks any *Rückgängig* as trouble, which covers an undone delete and an undone import. So does the storage-error banner, and the two import failure paths.
+- **The rows:** in `src/links.ts`, written out in full. The privacy check reads the bundle's URLs as text and allows exactly the review page and the two policy pages.
+  - *Spartopf bewerten* shows only in the iPhone app (and with the dev flag). It uses the app's Apple ID, `6829541731`, from App Store Connect; the page works once the app is live.
+  - *Feedback senden* goes to the address the privacy policy already gives, with the iOS version from iOS itself (`SpartopfShared.system`). WebKit's user agent may freeze its OS version, so it is only the web's fallback.
+- **Native:** `requestReview`, `open` and `system` are in `SpartopfShared.swift`, on the main actor. `open` only takes https links to `apps.apple.com` and `habboubah.github.io`, and mailto: links. `AppStore.requestReview(in:)` from iOS 16, `SKStoreReviewController` before.
+- **Bundle:** 311.5 kB gzip, within the 310 kB baseline + 10 %.
+- **Still to do on an iPhone:**
+  - with a development build from Xcode (TestFlight never shows the prompt), meet the rule and see the prompt;
+  - the three rows open the App Store, Mail and Safari;
+  - once the app is live, check that the review link opens its page.

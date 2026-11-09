@@ -2,6 +2,7 @@ import { registerPlugin } from '@capacitor/core';
 import { isNative } from '../platform';
 import { onWipe } from '../storage';
 import { Snapshot } from './snapshot';
+import { systemFromAgent } from '../links';
 
 /*
  * The app's side of SpartopfShared.swift (plan 14): typed calls, no-ops on
@@ -14,6 +15,9 @@ interface SharedPlugin {
   readInbox(): Promise<{ items: { id: string; json: string }[] }>;
   removeInbox(options: { ids: string[] }): Promise<void>;
   clear(): Promise<void>;
+  requestReview(): Promise<void>;
+  open(options: { url: string }): Promise<void>;
+  system(): Promise<{ name: string; version: string }>;
 }
 
 const Shared = registerPlugin<SharedPlugin>('SpartopfShared');
@@ -48,6 +52,33 @@ export async function readInbox(): Promise<{ id: string; item: unknown }[]> {
 export async function removeInbox(ids: string[]): Promise<void> {
   if (!isNative() || !ids.length) return;
   try { await Shared.removeInbox({ ids }); } catch { /* read again next time; their refs keep them single */ }
+}
+
+/** Plan 15: asks iOS for its rating prompt; iOS decides whether it shows. */
+export async function requestReview(): Promise<void> {
+  if (!isNative()) return;
+  try { await Shared.requestReview(); } catch { /* no prompt, no harm */ }
+}
+
+/**
+ * Plan 15: opens a link outside the app — the App Store, Safari or Mail. In
+ * the iPhone app iOS opens it (SpartopfShared.open only takes our hosts and
+ * mailto:); on the web, a new tab or the mail app.
+ */
+export async function openExternal(url: string): Promise<void> {
+  if (isNative()) {
+    try { await Shared.open({ url }); return; } catch { /* the web's way below */ }
+  }
+  if (url.startsWith('mailto:')) window.location.href = url;
+  else window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+/** Plan 15: "iOS 18.1" for the feedback mail — from iOS in the app, from the user agent on the web. */
+export async function systemVersion(): Promise<string> {
+  if (isNative()) {
+    try { const { name, version } = await Shared.system(); return `${name} ${version}`; } catch { /* the user agent below */ }
+  }
+  return systemFromAgent(navigator.userAgent);
 }
 
 // "Alle Daten löschen" erases the snapshot and the inbox too (plan 05's wipeAll).

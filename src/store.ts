@@ -3,7 +3,7 @@ import { ACCENTS, Accent, AppData, Category, Contract, DemoInfo, Entry, Favorite
 import { Language, isLanguage, DEFAULT_LANGUAGE, languageForTag, loadLanguage, stringsFor } from './translations';
 import {
   MAX_FAVORITES, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
-  restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid,
+  restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid, isIsoDay, isoDay,
 } from './logic';
 import { Currency, DEFAULT_CURRENCY, currencyForLocale, isSupportedCurrency } from './currency';
 import { defaultCategories } from './data/defaults';
@@ -22,6 +22,8 @@ const K = {
   reminders: 'spartopf-reminders',
   lock: 'spartopf-lock',
   hideAmounts: 'spartopf-hide-amounts',
+  firstUse: 'spartopf-first-use',
+  reviewAsked: 'spartopf-review-asked',
   collapsed: 'spartopf-collapsed',
   hintsHidden: 'spartopf-hints-hidden',
   reviewsSeen: 'spartopf-reviews-seen',
@@ -124,6 +126,9 @@ export function useAppStore() {
   const [lockOn, setLockOn] = useState(() => readString(K.lock) === '1');
   /** *Beträge verbergen* (plan 06): a setting of this device like the lock — not in a backup, kept by "delete all". */
   const [hideAmounts, setHideAmounts] = useState(() => readString(K.hideAmounts) === '1');
+  /** Plan 15's rule: the first day this install was used, and when the rating prompt was last asked for (YYYY-MM-DD). Settings of this device, kept by "delete all". */
+  const [firstUse] = useState(() => { const v = readString(K.firstUse); return isIsoDay(v) ? v : isoDay(); });
+  const [reviewAsked, setReviewAsked] = useState(() => { const v = readString(K.reviewAsked); return isIsoDay(v) ? v : ''; });
   /** The entry sheet picks the category the typed name points to (plan 32) — on unless switched off. A view preference. */
   const [autoCategory, setAutoCategory] = useState(() => readString(K.autoCategory) !== '0');
   /** Categories folded down on the month page — a view preference, not data, so not in a backup. */
@@ -154,6 +159,8 @@ export function useAppStore() {
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
   useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
   useEffect(() => { persist(K.hideAmounts, hideAmounts ? '1' : '0'); }, [hideAmounts]);
+  useEffect(() => { persist(K.firstUse, firstUse); }, [firstUse]);
+  useEffect(() => { if (reviewAsked) persist(K.reviewAsked, reviewAsked); }, [reviewAsked]);
   useEffect(() => { persist(K.autoCategory, autoCategory ? '1' : '0'); }, [autoCategory]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.hintsHidden, JSON.stringify(hintsHidden)); }, [hintsHidden]);
@@ -668,6 +675,7 @@ export function useAppStore() {
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),
     lockOn, setLockOn,
     hideAmounts, setHideAmounts,
+    firstUse, reviewAsked, markReviewAsked: () => setReviewAsked(isoDay()),
     autoCategory, setAutoCategory,
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),

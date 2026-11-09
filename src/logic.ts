@@ -1595,3 +1595,39 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
   // BOM, so Excel reads the umlauts as UTF-8.
   return '﻿' + lines.join('\r\n') + '\r\n';
 }
+
+/* ------------------------------------------------------------- ratings (15) */
+
+/** Something good that just happened: the only moments the rating prompt may follow (plan 15). */
+export type ReviewMoment = 'monthSaved' | 'goalReached' | 'bigImport';
+
+export interface ReviewState {
+  /** The first day this install was used (YYYY-MM-DD); '' when not known. */
+  firstUse: string;
+  /** The user's own entries (test data left out). */
+  entries: number;
+  /** When the prompt was last asked for (YYYY-MM-DD); '' if never. */
+  lastAsked: string;
+  /** This session had an error, a failed import or an undo. */
+  trouble: boolean;
+  moment: ReviewMoment | null;
+}
+
+/** The local rule's numbers: no analytics decide when Spartopf asks. */
+export const REVIEW_RULE = { daysUsed: 14, entries: 30, daysBetween: 120, bigImport: 10 } as const;
+
+const daysFrom = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000);
+
+/**
+ * Whether to ask iOS for its rating prompt now (plan 15): used for at least
+ * 14 days with 30 entries of one's own, right after something good (a month
+ * that saved money, a goal reached, an import of 10 or more), in a session
+ * without trouble, and not within 120 days of the last ask. iOS itself shows
+ * the prompt at most three times a year.
+ */
+export function shouldAskForReview(s: ReviewState, today = new Date()): boolean {
+  if (!s.moment || s.trouble || !isIsoDay(s.firstUse) || s.entries < REVIEW_RULE.entries) return false;
+  const day = isoDay(today);
+  if (daysFrom(s.firstUse, day) < REVIEW_RULE.daysUsed) return false;
+  return !isIsoDay(s.lastAsked) || daysFrom(s.lastAsked, day) >= REVIEW_RULE.daysBetween;
+}

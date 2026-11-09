@@ -107,6 +107,11 @@ Everything the app can do. Build and release steps are in the
 - **Reminders and a lock** (iPhone app): a notification before an open bill is
   due and a week before a contract's last day to cancel — without amounts
   unless you want them; Face ID (or the passcode) when opening Spartopf.
+- **Über Spartopf** (*Optionen*): rate the app in the App Store, send
+  feedback by mail (with the app's and iOS's version, nothing else), and the
+  privacy policy. Now and then, right after something good — a month that
+  saved money, a savings pot reached, a big import — Spartopf asks iOS for
+  Apple's own rating prompt (at most every 120 days, never after trouble).
 - **Hide amounts** (*Optionen › Sicherheit und Mitteilungen*): every amount
   shows as "•••• €" — for using the app in public. The eye beside *Kontostand
   jetzt* shows them for 30 seconds or until you leave the app; what you type

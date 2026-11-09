@@ -1,5 +1,6 @@
 import Foundation
 import Capacitor
+import StoreKit
 import WidgetKit
 
 /// Plan 14: the app's own bridge view controller, so it can register our own
@@ -32,7 +33,10 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "readSnapshot", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readInbox", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "removeInbox", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "clear", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "clear", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestReview", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "open", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "system", returnType: CAPPluginReturnPromise)
     ]
 
     static let appGroup = "group.com.habboubah.spartopf"
@@ -115,6 +119,49 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
             try? FileManager.default.removeItem(at: dir.appendingPathComponent("\(id).json"))
         }
         call.resolve()
+    }
+
+    /// Plan 15: Apple's own rating prompt, on the active window scene. iOS decides whether it shows
+    /// (at most three times a year; never in TestFlight builds). The app's rule for when to ask is
+    /// `shouldAskForReview` in src/logic.ts.
+    @objc func requestReview(_ call: CAPPluginCall) {
+        Task { @MainActor in
+            let scene = UIApplication.shared.connectedScenes
+                .first { $0.activationState == .foregroundActive } as? UIWindowScene
+            if let scene {
+                if #available(iOS 16.0, *) {
+                    AppStore.requestReview(in: scene)
+                } else {
+                    SKStoreReviewController.requestReview(in: scene)
+                }
+            }
+            call.resolve()
+        }
+    }
+
+    /// Hosts `open` may hand to iOS (Optionen › Über Spartopf, src/links.ts); mail goes to Mail.
+    static let openHosts: Set<String> = ["apps.apple.com", "habboubah.github.io"]
+
+    /// Plan 15: opens a link outside the app — the App Store, Safari or Mail. Only https links to
+    /// the hosts above and mailto: links; anything else is refused.
+    @objc func open(_ call: CAPPluginCall) {
+        guard let text = call.getString("url"), let url = URL(string: text), let scheme = url.scheme?.lowercased(),
+              scheme == "mailto" || (scheme == "https" && Self.openHosts.contains(url.host?.lowercased() ?? "")) else {
+            call.reject("This link isn't opened")
+            return
+        }
+        Task { @MainActor in
+            UIApplication.shared.open(url) { opened in
+                if opened { call.resolve() } else { call.reject("Nothing opened the link") }
+            }
+        }
+    }
+
+    /// Plan 15: the system's name and version for the feedback mail ("iOS", "18.1").
+    @objc func system(_ call: CAPPluginCall) {
+        Task { @MainActor in
+            call.resolve(["name": UIDevice.current.systemName, "version": UIDevice.current.systemVersion])
+        }
     }
 
     /// "Alle Daten löschen": the snapshot and the inbox go too (storage.ts `onWipe`).
