@@ -6,7 +6,7 @@ import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'luc
 import { useAppStore } from './store';
 import { fmt, stringsFor } from './translations';
 import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
-import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
+import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, setAmountsHidden, uid } from './logic';
 import { Insight, buildBook, highlights, monthReview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
@@ -48,7 +48,8 @@ import { LockScreen, PrivacyCover } from './components/LockScreen';
 import { reminderPlan } from './reminders';
 import { onReminderTap, remindersAvailable, syncReminders } from './notify';
 import { LockKind, authenticate, lockKind as findLockKind } from './lock';
-import { isNative } from './platform';
+import { devNative, isNative } from './platform';
+import { inDeviceBackup, setInDeviceBackup } from './storage';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
 import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
@@ -76,6 +77,8 @@ type ScreenId = TabId | PushedId;
 const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
+/** How long the eye on the balance card shows hidden amounts (plan 06). */
+const PEEK_MS = 30_000;
 /** `localStorage['spartopf-dev-season'] = '1'`: the year review's card out of season (screenshots, ui-review). */
 const devSeason = (() => { try { return localStorage.getItem('spartopf-dev-season') === '1'; } catch { return false; } })();
 
@@ -176,6 +179,38 @@ export default function App() {
     authBusy.current = false;
     if (ok) store.setLockOn(true);
   };
+  // ---- Beträge verbergen (plan 06). Every money formatter reads one switch
+  // (logic.ts), set here before any screen renders. The eye on the balance
+  // card shows them for PEEK_MS, or until the app leaves the screen.
+  const [peek, setPeek] = useState(false);
+  setAmountsHidden(store.hideAmounts && !peek);
+  useEffect(() => {
+    if (!peek) return;
+    const end = window.setTimeout(() => setPeek(false), PEEK_MS);
+    const away = () => { if (document.visibilityState === 'hidden') setPeek(false); };
+    document.addEventListener('visibilitychange', away);
+    return () => { window.clearTimeout(end); document.removeEventListener('visibilitychange', away); };
+  }, [peek]);
+  const hiding = useRef(store.hideAmounts);
+  hiding.current = store.hideAmounts;
+
+  // ---- Im iPhone-Backup sichern (plan 06): where the book's folder is, so
+  // not a preference that could get lost. The switch follows the move.
+  // (The dev flag shows the row on the web, for screenshots; nothing moves there.)
+  const [deviceBackup, setDeviceBackup] = useState(() => inDeviceBackup() ?? (devNative() ? true : null));
+  const [backupMoving, setBackupMoving] = useState(false);
+  const switchDeviceBackup = async (on: boolean) => {
+    setBackupMoving(true);
+    try {
+      await setInDeviceBackup(on);
+      setDeviceBackup(on);
+    } catch {
+      show(t.deviceBackupFailed);
+      notifyWarning();
+    }
+    setBackupMoving(false);
+  };
+
   /** Bumped on every return to the app: the reminders' "now" moves on. */
   const [resumed, setResumed] = useState(0);
   const awaySince = useRef<number | null>(null);
@@ -184,7 +219,10 @@ export default function App() {
     const handle = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
       if (!isActive) {
         awaySince.current ??= Date.now();
-        if (lockOn.current) setCovered(true);
+        // The app switcher's snapshot shows nothing to read: with the lock on,
+        // and with amounts hidden (a peek ends here).
+        if (lockOn.current || hiding.current) setCovered(true);
+        setPeek(false);
         return;
       }
       const away = awaySince.current === null ? 0 : Date.now() - awaySince.current;
@@ -672,6 +710,7 @@ export default function App() {
             onExported={store.markExported}
             onOpenBackups={() => push('backups')}
             lastExport={store.lastExport}
+            inDeviceBackup={deviceBackup}
             copyCardDismissed={store.copyCardDismissed}
             onDismissCopyCard={store.dismissCopyCard}
           />
@@ -747,6 +786,11 @@ export default function App() {
             lockKind={lockKind}
             lockOn={store.lockOn}
             onLock={on => void setLock(on)}
+            hideAmounts={store.hideAmounts}
+            onHideAmounts={on => { store.setHideAmounts(on); setPeek(false); }}
+            deviceBackup={deviceBackup}
+            onDeviceBackup={on => void switchDeviceBackup(on)}
+            deviceBackupBusy={backupMoving}
             reminders={remindersAvailable() ? store.reminders : null}
             onReminders={() => push('reminders')}
           />
@@ -815,6 +859,7 @@ export default function App() {
             onPickMonth={() => setMonthPickerOpen(true)}
             onOpening={() => setOpeningOpen(true)}
             reconciledAt={store.months.find(m => m.key === month)?.reconciledAt}
+            peek={store.hideAmounts ? { shown: peek, onToggle: () => setPeek(v => !v) } : undefined}
             onCategories={() => push('categories')}
             collapsed={store.collapsed}
             onCollapse={store.toggleCollapsed}

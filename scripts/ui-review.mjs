@@ -174,6 +174,9 @@ const openDetails = async page => {
   return id;
 };
 
+/** With Beträge verbergen on (plan 06). */
+const HIDDEN = { 'spartopf-hide-amounts': '1' };
+
 // Every screen starts from a fresh load of "/" with the same seed.
 // audit: 'page' checks the whole document, 'dialog' only the open sheet.
 const SCREENS = [
@@ -268,8 +271,14 @@ const SCREENS = [
   }, audit: 'page' },
   { name: 'settings', run: tab(3), audit: 'page' },
   { name: 'settings-full', run: tab(3), full: true },
-  // The iPhone app's Optionen: the lock and reminders (dev flag: shown on the web, nothing scheduled).
+  // The iPhone app's Optionen: the lock, the iPhone backup and reminders (dev flag: shown on the web, nothing scheduled).
   { name: 'settings-native', storage: { 'spartopf-dev-native': '1' }, run: tab(3), audit: 'page' },
+  // Beträge verbergen (plan 06): every amount "•••• €", the eye on the balance card, and a peek.
+  { name: 'month-hidden', storage: HIDDEN, audit: 'page' },
+  { name: 'month-hidden-details', storage: HIDDEN, run: openDetails, audit: 'page' },
+  { name: 'month-peek', storage: HIDDEN, run: async page => { await page.locator('section.hero button').first().click(); await page.waitForTimeout(700); } },
+  { name: 'stats-hidden', storage: HIDDEN, run: tab(1), full: true },
+  { name: 'insights-hidden', storage: HIDDEN, run: tab(2), full: true },
   // Optionen → An offene Posten erinnern, switched on.
   { name: 'reminders', storage: { 'spartopf-dev-native': '1', 'spartopf-reminders': JSON.stringify({ on: true, time: '09:00', lead: 1, amounts: false }) }, run: async (page, l) => {
     await tab(3)(page);

@@ -107,6 +107,16 @@ Everything the app can do. Build and release steps are in the
 - **Reminders and a lock** (iPhone app): a notification before an open bill is
   due and a week before a contract's last day to cancel — without amounts
   unless you want them; Face ID (or the passcode) when opening Spartopf.
+- **Hide amounts** (*Optionen › Sicherheit und Mitteilungen*): every amount
+  shows as "•••• €" — for using the app in public. The eye beside *Kontostand
+  jetzt* shows them for 30 seconds or until you leave the app; what you type
+  stays visible, and VoiceOver says "Betrag verborgen". The app switcher then
+  shows nothing to read either.
+- **Your data, locked away** (iPhone app): unreadable while the phone is
+  locked (iOS Data Protection). *Im iPhone-Backup sichern* (on by default)
+  decides whether the book is part of the phone's iCloud or computer backup;
+  switched off, it stays on this iPhone only, and after 90 days without an
+  export *Sichern und übertragen* suggests keeping a copy.
 - **Statistics** — *how did it go?* First **Das fällt auf**: at most three
   ranked hints, each with a next step (a category above its usual, a trend, a
   better or weaker month, a record, a month with items still open or a week

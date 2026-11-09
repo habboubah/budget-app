@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { AppData, Category, Entry } from '../types';
-import { dayLabel, displayName, formatMoney, monthLabel } from '../logic';
+import { dayLabel, displayName, formatMoney, monthLabel, spoken } from '../logic';
 import { DueGroup, DueItem, dueGroups, dueSoon, dueTotals, nextMonthDue } from '../due';
 import { Strings, fmt } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
@@ -146,7 +146,7 @@ function DueRow({ item, category, language, t, onEdit, onTick }: {
       <button
         type="button"
         onClick={() => { tapLight(); onEdit(); }}
-        aria-label={`${fmt(t.editNamed, { name: e.name })}, ${formatMoney(e.amount, t.locale)}, ${when}, ${status}`}
+        aria-label={`${fmt(t.editNamed, { name: e.name })}, ${spoken(formatMoney(e.amount, t.locale), t.amountHidden)}, ${when}, ${status}`}
         className="flex-1 min-w-0 pe-4 py-2.5 flex items-center gap-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         {body}

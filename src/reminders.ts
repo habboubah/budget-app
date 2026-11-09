@@ -1,5 +1,5 @@
 import { AppData, Entry, MonthKey } from './types';
-import { dayLabel, formatMoney, isoDay, monthKeyOf } from './logic';
+import { dayLabel, formatMoney, isoDay, monthKeyOf, withAmounts } from './logic';
 import { dueDay, nextMonthDue } from './due';
 import { contractItems } from './contracts';
 import { Strings, fmt } from './translations';
@@ -94,7 +94,8 @@ export const billSource: ReminderSource = {
     const title = days === 0 ? fmt(t.remindDueToday, { names: list })
       : days === 1 ? fmt(t.remindDueTomorrow, { names: list }) : fmt(t.remindDueIn, { n: days, names: list });
     const sum = items.reduce((s, i) => s + (i.amount ?? 0), 0);
-    return { title: prefs.amounts && sum ? `${title} · ${formatMoney(sum, t.locale)}` : title, body: t.remindBody };
+    // Reminders keep their own switch for amounts, whatever the screen hides (plan 06).
+    return { title: prefs.amounts && sum ? `${title} · ${withAmounts(() => formatMoney(sum, t.locale))}` : title, body: t.remindBody };
   },
 };
 

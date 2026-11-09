@@ -2,7 +2,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, ChevronsDownUp, ChevronsUpDown, Circle, CircleMinus, Gauge, ListFilter, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
-import { dayLabel, displayName, formatMoney, formatMoneyShort, isOverdue } from '../logic';
+import { dayLabel, displayName, formatMoney, formatMoneyShort, isOverdue, spoken } from '../logic';
 import { BudgetStatus } from '../budgets';
 import { BudgetBar } from './BudgetBar';
 import { Strings, fmt, plural } from '../translations';
@@ -406,7 +406,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
           onMoveBy(ev.key === 'ArrowUp' ? -1 : 1);
         }}
         aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
-        aria-label={`${fmt(t.editNamed, { name: e.name })}, ${formatMoney(e.amount, t.locale)}, ${
+        aria-label={`${fmt(t.editNamed, { name: e.name })}, ${spoken(formatMoney(e.amount, t.locale), t.amountHidden)}, ${
           e.paid ? (income ? t.receivedState : t.paidState) : overdue ? t.overdue : income ? t.expected : t.open}`}
         className="flex-1 min-w-0 py-2.5 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >

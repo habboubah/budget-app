@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Category } from '../types';
-import { dayLabel, formatMoney, formatMoneyWhole, monthLabel } from '../logic';
+import { dayLabel, formatMoney, formatMoneyWhole, monthLabel, spoken } from '../logic';
 import { ContractItem, contractTotals, daysUntil } from '../contracts';
 import { Insight } from '../insights';
 import { insightText } from '../insightText';
@@ -49,7 +49,7 @@ export function ContractRow({ item, category, t, onOpen }: {
     <button
       type="button"
       onClick={() => { tapLight(); onOpen(item); }}
-      aria-label={[item.name, `${formatMoney(item.amount, t.locale)} ${per}`, when, change].filter(Boolean).join(', ')}
+      aria-label={[item.name, `${spoken(formatMoney(item.amount, t.locale), t.amountHidden)} ${per}`, when, change].filter(Boolean).join(', ')}
       className="w-full min-h-tap px-4 py-3 flex items-center gap-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
     >
       <Picture emoji={category?.emoji} name={item.name} hue={category?.hue} size="sm" />

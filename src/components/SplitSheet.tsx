@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
-import { amountToInput, cleanText, displayName, formatMoney, normalizeDigits, parseAmount } from '../logic';
+import { amountToInput, cleanText, displayName, formatMoney, normalizeDigits, parseAmount, withAmounts } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
@@ -90,8 +90,9 @@ export function SplitSheet({ entry, categories, language, t, onClose, onSplit }:
           })}
         </div>
         <Button variant="ghost" full icon={Plus} onClick={addPart}>{t.splitPayAdd}</Button>
+        {/* What is left to split follows the parts being typed: shown even while amounts are hidden (plan 06). */}
         <p className={`text-label font-medium tabular-nums wrap-prose ${remaining === 0 ? 'text-pos' : 'text-warn'}`}>
-          {remaining === 0 ? t.splitPayBalanced : fmt(remaining > 0 ? t.splitPayRemaining : t.splitPayOver, { amount: formatMoney(Math.abs(remaining), t.locale) })}
+          {remaining === 0 ? t.splitPayBalanced : fmt(remaining > 0 ? t.splitPayRemaining : t.splitPayOver, { amount: withAmounts(() => formatMoney(Math.abs(remaining), t.locale)) })}
         </p>
         <Button type="submit" full size="lg" disabled={!valid}>{t.save}</Button>
       </form>

@@ -1,8 +1,8 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { MonthBalance } from '../logic';
-import { formatMoney, formatMoneyApprox, leftPerDay, monthKeyOf, monthLabel, monthLeft, monthSettled } from '../logic';
+import { formatMoney, formatMoneyApprox, leftPerDay, monthKeyOf, monthLabel, monthLeft, monthSettled, spoken } from '../logic';
 import { Strings, fmt, plural } from '../translations';
 import { tapLight } from '../ui/haptics';
 import { useCountUp } from '../ui/useCountUp';
@@ -17,6 +17,11 @@ interface Props {
   onSwipe?: (delta: 1 | -1) => void;
   /** When this month was last matched against the bank (ms epoch, plan 10). */
   reconciledAt?: number;
+  /**
+   * While amounts are hidden (plan 06): the eye beside "Kontostand jetzt",
+   * which shows them for a while (`shown`) and hides them again.
+   */
+  peek?: { shown: boolean; onToggle: () => void };
 }
 
 /** How far (px) or how fast (px/s) a swipe has to go to turn the month. */
@@ -42,13 +47,18 @@ type Note = { text: string; tone: string };
  * A month not started yet shows the balance it would open with and where
  * that comes from.
  *
+ * With *Beträge verbergen* on, every amount reads "•••• €" (logic.ts) and an
+ * eye beside the first caption shows them for a while.
+ *
  * Swiping the card sideways turns the month, as in Calendar: it follows the
  * finger, slides out, and the next month's comes in from the other side (the
  * figures run to their new values). The ‹ › in the bar do the same for
  * everyone else; the list below keeps its own swipes (paid, delete).
  */
-export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt }: Props) {
+export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, peek }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
+  /** What VoiceOver reads for an amount: the amount, or "Betrag verborgen". */
+  const say = (text: string) => spoken(text, t.amountHidden);
   const [details, setDetails] = useState(false);
   const detailsId = useId();
   const swipe = useMonthSwipe(t.dir === 'rtl', onSwipe);
@@ -79,8 +89,23 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt }:
             beside it (the basis is in rem), it moves under the balance. */}
         <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
           <div className="min-w-0 flex-1 basis-[10rem]">
-            <p className="eyebrow text-on-hero-mute">{t.balanceNow}</p>
-            <BigMoney cents={b.now} money={money} />
+            <div className="flex items-center gap-0.5">
+              <p className="eyebrow text-on-hero-mute">{t.balanceNow}</p>
+              {peek && (
+                <button
+                  type="button"
+                  onClick={() => { tapLight(); peek.onToggle(); }}
+                  aria-label={peek.shown ? t.hideAmounts : t.showAmounts}
+                  // Out of the line's height: the caption keeps its place.
+                  className="shrink-0 -my-3 -ms-1.5 h-tap w-tap inline-flex items-center justify-center rounded-full text-on-hero-mute active:opacity-60 transition-opacity focus-visible:ring-focus"
+                >
+                  {peek.shown
+                    ? <EyeOff className="w-[18px] h-[18px]" strokeWidth={2.25} aria-hidden="true" />
+                    : <Eye className="w-[18px] h-[18px]" strokeWidth={2.25} aria-hidden="true" />}
+                </button>
+              )}
+            </div>
+            <BigMoney cents={b.now} money={money} say={say} />
           </div>
           {b.expenseCount > 0 && (
             <PaidRing paid={b.expensePaidCount} total={b.expenseCount} label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })} />
@@ -94,7 +119,7 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt }:
               large text stacks them (the basis is in rem). */}
           <dl className="mx-2 flex flex-wrap gap-2">
             <Panel label={t.balanceEnd} tone={b.end < 0 ? 'text-on-hero-neg' : 'text-on-hero'} note={endNote}>
-              <span className="sr-only">{money(b.end)}</span>
+              <span className="sr-only">{say(money(b.end))}</span>
               <span aria-hidden="true"><CountingMoney cents={b.end} money={money} /></span>
             </Panel>
             <Panel
@@ -102,7 +127,7 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt }:
               tone={net > 0 ? 'text-on-hero-pos' : net < 0 ? 'text-on-hero-neg' : 'text-on-hero-soft'}
               note={leftNote}
             >
-              <span className="sr-only">{money(net, 'exceptZero')}</span>
+              <span className="sr-only">{say(money(net, 'exceptZero'))}</span>
               <span aria-hidden="true"><CountingMoney cents={net} money={c => money(c, 'exceptZero')} /></span>
             </Panel>
           </dl>
@@ -414,14 +439,15 @@ function WorkingsTable({ columns, rows, className, probe }: { columns: string[];
  * sign smaller and quieter beside it ("35.773,20 €", "€35,773.20"). It runs
  * to a new value rather than jumping; VoiceOver reads only the final one.
  */
-function BigMoney({ cents, money }: { cents: number; money: (c: number) => string }) {
+function BigMoney({ cents, money, say }: { cents: number; money: (c: number) => string; say: (text: string) => string }) {
   const text = money(useCountUp(cents));
-  const m = /^([^\d−-]*?)\s*([−-]?[\d.,\u00a0\u202f]*\d)\s*([^\d]*)$/.exec(text);
+  // The figure — or the "••••" that stands for it while amounts are hidden (plan 06).
+  const m = /^([^\d−•-]*?)\s*([−-]?[\d.,\u00a0\u202f]*\d|•+)\s*([^\d•]*)$/.exec(text);
   const [before, figure, after] = m ? [m[1], m[2], m[3]] : ['', text, ''];
   const sign = 'text-[0.6em] font-semibold text-on-hero-mute';
   return (
     <p className="rounded-num font-bold mt-1 text-[clamp(32px,10vw,44px)] leading-[1.1] wrap-prose text-on-hero">
-      <span className="sr-only">{money(cents)}</span>
+      <span className="sr-only">{say(money(cents))}</span>
       <span aria-hidden="true">
         {before && <span className={`${sign} me-1`}>{before}</span>}
         {figure}

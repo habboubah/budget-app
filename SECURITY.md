@@ -14,22 +14,36 @@ notes, dates, budgets and contracts. It lives only on the user's device.
 
 | Threat | Mitigation | Plan |
 |---|---|---|
-| A lost or stolen phone | The data file sits in the app sandbox with iOS file protection; the app can lock with Face ID / passcode and hide amounts from the lock screen, notifications and the app switcher. | 06, 00 |
+| A lost or stolen phone | The data file and its snapshots carry iOS Data Protection class Complete (`App.entitlements`): unreadable while the phone is locked. The app can lock with Face ID / passcode. | 06, 00 |
 | A shared family phone | Face ID / passcode lock; while locked no amount is in the DOM; a plain cover hides the app in the app switcher. | 00, 06 |
+| Copies in places the user didn't choose | *Im iPhone-Backup sichern* (on by default) keeps the book in or out of iCloud and computer backups: off, it lives in `Library/NoCloud` (excluded from backup) and the localStorage mirror isn't written. | 06 |
 | A malicious import file (zip bomb, oversized file) | Every importer has a byte limit and a row/entry cap (`src/limits.ts`); `.xlsx` is unzipped with a per-entry and total-size cap so a zip bomb is rejected quickly (`src/xlsx.ts`). | 05 |
 | A hostile payee name (CSV injection) | `toCsv()` prefixes any text cell that starts with `=`, `+`, `-`, `@`, tab or carriage return with an apostrophe, so Excel treats it as text, never a formula. | 05 |
 | A backup read by someone who gets the file | Exports are encrypted by default (AES-GCM-256, PBKDF2-HMAC-SHA-256 at 600k iterations, all WebCrypto; `src/crypto.ts`). A readable file is one switch away, clearly labelled. | 04 |
-| Shoulder-surfing | Amounts are hidden from the lock screen, notifications and widgets unless the user turns them on. | 00, 06, 13, 17 |
+| Shoulder-surfing | *Beträge verbergen* shows every amount as "•••• €" until the eye is tapped (30 s); the app switcher then shows a plain cover. Notifications, the year picture and (later) widgets carry no amounts unless the user turns them on. | 00, 06, 13, 17 |
 | A compromised dependency | Exact pinned versions, `npm audit --omit=dev` in `npm run check`, and no third-party crypto — WebCrypto only. New dependencies are vetted (see CLAUDE.md). | 05 |
 | Injected or exfiltrating code at runtime | A Content-Security-Policy on production builds (`default-src 'self'`, no remote origins); the privacy check fails on any request that leaves the app's own origin. | 05, 01 |
 | User data leaking into logs | No `console.*` in app source (`npm run check:security`). | 05 |
 | Data lost on a broken or replaced phone | Atomic, checksummed data file with the OS backup on by default; automatic on-device snapshots with one-tap restore; encrypted export to move to a new phone. | 02, 03, 04 |
 
+## Encryption at rest
+
+Today the book is protected by iOS Data Protection (class Complete) on the
+device and by encryption when it leaves it (plan 04). Encrypting `data.json`
+itself with a key from the Keychain would also cover an unencrypted computer
+backup — but a restore to a new phone without that key would lose the book,
+the very failure plans 02–04 exist to prevent. So plan 06 decides with a
+spike on two iPhones (key stored `kSecAttrAccessibleAfterFirstUnlock`), each
+restored from an iCloud backup, an encrypted Finder backup and an unencrypted
+one: if every supported path keeps the book readable, app-level encryption
+ships; if not, the reason is written here and Data Protection plus encrypted
+exports remain the protection. **Not run yet** — until then, it is the latter.
+
 ## Deleting everything
 
 *Optionen → Alle Daten löschen* calls `wipeAll()` (`src/storage.ts`): the data
-file, its previous version, and all automatic snapshots, plus pending
-reminders. Later features with their own files or secrets register a cleaner
+file, its previous version, and all automatic snapshots — in both folders, in
+and out of the backup — plus pending reminders. Later features with their own files or secrets register a cleaner
 with `onWipe()`, so one button erases everything.
 
 ## Out of scope

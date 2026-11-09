@@ -21,6 +21,7 @@ const K = {
   tips: 'spartopf-tips-done',
   reminders: 'spartopf-reminders',
   lock: 'spartopf-lock',
+  hideAmounts: 'spartopf-hide-amounts',
   collapsed: 'spartopf-collapsed',
   hintsHidden: 'spartopf-hints-hidden',
   reviewsSeen: 'spartopf-reviews-seen',
@@ -121,6 +122,8 @@ export function useAppStore() {
   /** Reminders and the lock: settings of this device, not data — not in a backup, kept by "delete all". */
   const [reminders, setReminders] = useState<ReminderPrefs>(() => normalizeReminderPrefs(readJson(K.reminders)));
   const [lockOn, setLockOn] = useState(() => readString(K.lock) === '1');
+  /** *Beträge verbergen* (plan 06): a setting of this device like the lock — not in a backup, kept by "delete all". */
+  const [hideAmounts, setHideAmounts] = useState(() => readString(K.hideAmounts) === '1');
   /** The entry sheet picks the category the typed name points to (plan 32) — on unless switched off. A view preference. */
   const [autoCategory, setAutoCategory] = useState(() => readString(K.autoCategory) !== '0');
   /** Categories folded down on the month page — a view preference, not data, so not in a backup. */
@@ -150,6 +153,7 @@ export function useAppStore() {
   useEffect(() => { persist(K.tips, tipsDone ? '1' : '0'); }, [tipsDone]);
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
   useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
+  useEffect(() => { persist(K.hideAmounts, hideAmounts ? '1' : '0'); }, [hideAmounts]);
   useEffect(() => { persist(K.autoCategory, autoCategory ? '1' : '0'); }, [autoCategory]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.hintsHidden, JSON.stringify(hintsHidden)); }, [hintsHidden]);
@@ -663,6 +667,7 @@ export function useAppStore() {
     tipsDone, dismissTips: () => setTipsDone(true),
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),
     lockOn, setLockOn,
+    hideAmounts, setHideAmounts,
     autoCategory, setAutoCategory,
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),

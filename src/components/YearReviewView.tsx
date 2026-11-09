@@ -1,7 +1,7 @@
 import { CSSProperties, useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, Share2 } from 'lucide-react';
 import { Category } from '../types';
-import { displayName, formatMoney, formatMoneyApprox, formatMoneyEstimate, formatMoneyShort, formatPercent, monthLabel } from '../logic';
+import { displayName, formatMoney, formatMoneyApprox, formatMoneyEstimate, formatMoneyShort, formatPercent, monthLabel, withAmounts } from '../logic';
 import { Book, Fraction, nearFraction, yearReview } from '../insights';
 import { Strings, fmt } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
@@ -48,23 +48,25 @@ export function YearReviewView({ book, year, language, t, onBack, onApplyBudgets
   }
   const fraction = y.rate !== null && y.rate > 0 ? nearFraction(y.rate) : null;
   const share = fraction ? t[FRACTION[fraction]] : y.rate !== null ? formatPercent(Math.round(y.rate * 100), t.locale) : '';
-  const headline = y.saved < 0 ? fmt(t.yearHeadlineOver, { year, amount: est(y.saved) }) : fmt(t.yearHeadline, { year, amount: est(y.saved), share });
+  const headlineText = () => (y.saved < 0 ? fmt(t.yearHeadlineOver, { year, amount: est(y.saved) }) : fmt(t.yearHeadline, { year, amount: est(y.saved), share }));
+  const headline = headlineText();
   const tiles = [
     { label: t.yearIn, value: approx(y.income) },
     { label: t.yearOut, value: approx(y.spending) },
     { label: t.saved, value: approx(y.saved), tone: y.saved < 0 ? 'text-neg' : 'text-fg' },
   ];
   const name = (c: Category) => displayName(c.names, language);
-  const image = (): ShareImage => {
+  // A picture shared with amounts carries them even while the screen hides them (plan 06).
+  const image = (): ShareImage => withAmounts(() => {
     const rate = y.rate === null ? null : formatPercent(Math.round(y.rate * 100), t.locale);
     const lines = [
-      amounts ? headline : rate ? fmt(t.yearImageRate, { p: rate }) : fmt(t.yearImageTitle, { year }),
+      amounts ? headlineText() : rate ? fmt(t.yearImageRate, { p: rate }) : fmt(t.yearImageTitle, { year }),
       ...(amounts ? [`${t.yearIn} ${approx(y.income)} · ${t.yearOut} ${approx(y.spending)}`] : []),
       y.top.length ? fmt(t.yearImageTop, { names: y.top.slice(0, 3).map(x => (amounts ? `${name(x.category)} ${approx(x.amount)}` : name(x.category))).join(', ') }) : '',
       y.best ? fmt(t.yearImageBest, { month: monthLabel(y.best.key, t.locale, 'name') }) : '',
     ].filter(Boolean);
     return { title: fmt(t.yearImageTitle, { year }), lines, footer: t.yearImageFooter };
-  };
+  });
 
   return (
     <Screen title={t.yearTitle} eyebrow={year} onBack={onBack} backLabel={t.back} tabbed>

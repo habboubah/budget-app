@@ -43,6 +43,8 @@ interface Props {
   hideBalance?: boolean;
   /** When this month was last matched against the bank (plan 10). */
   reconciledAt?: number;
+  /** The balance card's eye, while amounts are hidden (plan 06). */
+  peek?: { shown: boolean; onToggle: () => void };
   language: string;
   t: Strings;
   onMonth: (m: MonthKey) => void;
@@ -259,7 +261,7 @@ export function MonthView(p: Props) {
           onOpenMonth={m => { setQuery(''); p.onMonth(m); }}
         />
       ) : (<>
-      {!p.hideBalance && <BalanceCard balance={balance} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} />}
+      {!p.hideBalance && <BalanceCard balance={balance} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} />}
 
       {/* Keyed by month: stepping to another one brings its cards in afresh
           (the balance card above stays, and its numbers run to the new values). */}

@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Category, Entry } from '../types';
-import { dayLabel, displayName, formatMoney, isoDay } from '../logic';
+import { dayLabel, displayName, formatMoney, isoDay, spoken } from '../logic';
 import { DueItem } from '../due';
 import { Strings, fmt } from '../translations';
 import { Picture } from '../ui/Picture';
@@ -89,7 +89,7 @@ function DueCard({ item, category, language, t, onEdit, onTick }: {
       <button
         type="button"
         onClick={() => { tapLight(); onEdit(); }}
-        aria-label={`${fmt(t.editNamed, { name: e.name })}, ${formatMoney(e.amount, t.locale)}, ${when}, ${status}`}
+        aria-label={`${fmt(t.editNamed, { name: e.name })}, ${spoken(formatMoney(e.amount, t.locale), t.amountHidden)}, ${when}, ${status}`}
         className="w-full min-w-0 ps-3 pe-3 pt-3 pb-2.5 flex flex-col gap-2 text-start rounded-md active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         <span className={`pe-9 text-caption font-semibold tabular-nums ${item.overdue ? 'text-neg' : 'text-fg'}`}>

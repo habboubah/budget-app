@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { EntryDraft, MonthKey } from '../types';
-import { amountToInput, formatMoney, isoDay, monthLabel, normalizeDigits, parseAmount, reconcile } from '../logic';
+import { amountToInput, formatMoney, isoDay, monthLabel, normalizeDigits, parseAmount, reconcile, withAmounts } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
@@ -53,7 +53,8 @@ export function ReconcileSheet({ open, month, now, currentOpening, extraId, inco
     const less = result.diff < 0;
     return (
       <p className="text-label text-fg wrap-prose">
-        {fmt(less ? t.reconcileLess : t.reconcileMore, { amount: formatMoney(Math.abs(result.diff), t.locale) })}
+        {/* The answer to the bank balance just typed: shown even while amounts are hidden (plan 06). */}
+        {fmt(less ? t.reconcileLess : t.reconcileMore, { amount: withAmounts(() => formatMoney(Math.abs(result.diff), t.locale)) })}
       </p>
     );
   };

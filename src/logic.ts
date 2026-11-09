@@ -229,8 +229,50 @@ function moneyFormat(locale: string, sign: 'auto' | 'always' | 'exceptZero'): In
   return f;
 }
 
+/**
+ * *Beträge verbergen* (plan 06). While on, every money formatter here writes
+ * "•••• €" instead — the currency where the locale puts it, no figure and no
+ * sign — so every screen, sentence and chart label hides its amounts without
+ * a change at the call site, the way the currency works (plan 07). App sets it
+ * on each render, before its screens render. `withAmounts` shows them anyway
+ * for what the user asked to see in full: a reminder whose amounts are
+ * switched on, a picture shared with amounts, what the calculator makes of
+ * the amount being typed. Fields being typed into never go through here.
+ */
+let amountsHidden = false;
+export function setAmountsHidden(on: boolean): void { amountsHidden = on; }
+export const areAmountsHidden = (): boolean => amountsHidden;
+/** Runs `fn` with amounts shown, whatever the switch says. */
+export function withAmounts<T>(fn: () => T): T {
+  const was = amountsHidden;
+  amountsHidden = false;
+  try { return fn(); } finally { amountsHidden = was; }
+}
+/** What a hidden figure shows instead. */
+export const MASK = '••••';
+/** For VoiceOver: a formatted amount, or `hiddenLabel` ("Betrag verborgen") while amounts are hidden. */
+export const spoken = (money: string, hiddenLabel: string): string => (amountsHidden ? hiddenLabel : money);
+const masks = new Map<string, string>();
+/** "•••• €", "€••••", "CHF ••••": the locale's layout of an amount, with the figure taken out. */
+function maskedMoney(locale: string): string {
+  const key = `${locale}|${activeCurrency}`;
+  let mask = masks.get(key);
+  if (mask === undefined) {
+    let figure = false;
+    mask = moneyFormat(locale, 'auto').formatToParts(1).map(p => {
+      if (p.type === 'currency' || p.type === 'literal') return p.value;
+      if (figure) return '';
+      figure = true;
+      return MASK;
+    }).join('');
+    masks.set(key, mask);
+  }
+  return mask;
+}
+
 /** Cents → "1.050,00 €" (or "+1.050,00 €" / "−…" with `sign`). */
 export function formatMoney(cents: number, locale: string, sign: 'auto' | 'always' | 'exceptZero' = 'auto'): string {
+  if (amountsHidden) return maskedMoney(locale);
   // A true minus sign: the hyphen Intl uses is too short next to big digits.
   return moneyFormat(locale, sign).format(cents / 100).replace('-', '−');
 }
@@ -522,13 +564,14 @@ export function leftPerDay(net: number, month: MonthKey, today = new Date()): nu
 
 /** Rounded to whole euros — for averages, where the cents are noise: "3.798 €", "+1.241 €". */
 export function formatMoneyWhole(cents: number, locale: string, sign: 'auto' | 'exceptZero' = 'auto'): string {
+  if (amountsHidden) return maskedMoney(locale);
   return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
     .format(Math.round(cents / 100)).replace('-', '−');
 }
 
 /** An amount without its cents when it has none — "400 €" for a budget, "212,88 €" otherwise. */
 export function formatMoneyShort(cents: number, locale: string): string {
-  if (cents % 100 !== 0) return formatMoney(cents, locale);
+  if (amountsHidden || cents % 100 !== 0) return formatMoney(cents, locale);
   return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
     .format(cents / 100).replace('-', '−');
 }
@@ -538,7 +581,7 @@ export function formatMoneyShort(cents: number, locale: string): string {
  * from 10 € up, cents below, where the cents still matter.
  */
 export function formatMoneyApprox(cents: number, locale: string): string {
-  if (Math.abs(cents) < 1000) return formatMoney(cents, locale);
+  if (amountsHidden || Math.abs(cents) < 1000) return formatMoney(cents, locale);
   const euros = Math.trunc(cents / 100);
   return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
     .format(euros).replace('-', '−');
@@ -550,6 +593,7 @@ export function formatMoneyApprox(cents: number, locale: string): string {
  * from 1.000 €, whole euros below. A forecast with cents reads as a promise.
  */
 export function formatMoneyEstimate(cents: number, locale: string, sign: 'auto' | 'exceptZero' = 'auto'): string {
+  if (amountsHidden) return maskedMoney(locale);
   const euros = Math.abs(cents) / 100;
   const step = euros >= 10_000 ? 100 : euros >= 1_000 ? 10 : 1;
   const rounded = Math.round(euros / step) * step;
@@ -563,9 +607,11 @@ export function formatMoneyEstimate(cents: number, locale: string, sign: 'auto' 
  * "4.000", "20.000", "1,5 Mio." in German, "4K" in English, "4 آلاف" in
  * Arabic. German compact notation leaves four-digit numbers ungrouped
  * ("4000" beside "20.000"); where the engine doesn't group them on request,
- * amounts under a million go in standard notation instead.
+ * amounts under a million go in standard notation instead. Hidden amounts
+ * (plan 06) leave the bare "••••": an axis has no room for the currency.
  */
 export function compactMoney(cents: number, locale: string): string {
+  if (amountsHidden) return MASK;
   const v = cents / 100;
   const opts = { notation: 'compact', maximumFractionDigits: 1, useGrouping: 'always' } as Intl.NumberFormatOptions;
   let out = new Intl.NumberFormat(locale, opts).format(v);

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Plan 06: every file the app writes (the book, its snapshots) gets iOS
+	     Data Protection class Complete — unreadable while the phone is locked.
+	     AppDelegate brings files written before this up to the same class. -->
+	<key>com.apple.developer.default-data-protection</key>
+	<string>NSFileProtectionComplete</string>
+</dict>
+</plist>

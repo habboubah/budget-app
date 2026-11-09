@@ -49,12 +49,31 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     the three whose SHA-256 matches wins; else the localStorage mirror; else
     (files broken, no mirror) the crash screen with *Daten retten*, whose
     dump includes the raw files.
+  - **Two folders (plan 06).** The book (data, `data.prev.json`, snapshots)
+    lives in `Library/spartopf/` — part of the phone's backup — or, with
+    *Im iPhone-Backup sichern* off, in `Library/NoCloud/spartopf/`
+    (`capacitorFsNoBackup`; the file system plugin marks NoCloud as excluded
+    from backup). Where the files are *is* the setting: no preference to lose.
+    `hydrate()` picks the folder with the newest copy (a tie, which only a move
+    cut short leaves, counts as the backed-up one), tells the saver
+    (`adoptLocation`) before anything can fail, and `tidyAfterMove()` clears the
+    other folder. The switch calls `setInDeviceBackup()` → `saver.relocate()`:
+    what is waiting is written first, then `moveBook()` copies every file and
+    reads it back, and only then removes `data.json` from the old folder (the
+    moment the move counts); a failure before that undoes the copies and
+    rejects. `storage.test.ts` stops a move at every step, both ways, and the
+    next launch must find the whole book. Snapshot, restore and rescue
+    functions default to the book's folder (`appFs()`); *Alle Daten löschen*
+    empties both. A write that fails (Data Protection, phone locked) is kept
+    and written again on resume (`saver.retry()`).
   - **The localStorage mirror** (`DATA_KEYS`: one key per part of `AppData` —
     since schema 17 also currency, favourites, goals, rules and the test
     data's record, which the web lost on a reload before) is written with
     every save for two releases as the way back: the release after 1.4 removes
     it (and its read in `hydrate()`); until then it is also how an install from
-    before plan 02 moves over on its first launch.
+    before plan 02 moves over on its first launch. Not while the book is kept
+    out of the backup (plan 06): the web view's storage is part of the phone's
+    backup, so `relocate` clears the mirror and the saver stops writing it.
   - Web / PWA: localStorage is the store, plus `navigator.storage.persist()`.
   - **Automatic snapshots (plan 03, iPhone only).** `Library/spartopf/backups/`
     holds one snapshot a day (`YYYY-MM-DD.json`, the same envelope). The saver
@@ -64,7 +83,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     übertragen*, `BackupsView.tsx`) restores one with a preview and an undo,
     writing `pre-restore.json` first; the crash screen's *Letzte Sicherung
     wiederherstellen* calls `restoreLatestToData()`. The last-export date
-    (`spartopf-last-export`) drives a dismissable 90-day nudge card.
+    (`spartopf-last-export`) drives a dismissable 90-day nudge card, shown
+    only while the book is kept out of the phone's backup (plan 06).
   - **Encrypted export (plan 04, `src/crypto.ts`).** A backup leaves the
     device locked by default. File (UTF-8 JSON, base64 fields):
     `{ app:'spartopf', format:'spartopf-encrypted', v:1, kdf:{ name:'PBKDF2',
@@ -79,8 +99,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   - *Alle Daten löschen* calls `saver.forget()` first, so `data.prev.json`
     (and the snapshots) keep no copy of the old book.
   - View preferences (language, theme, accent, folded cards, intro, tips,
-    reminders, lock) stay in localStorage in `store.ts`: losing them costs
-    nothing, and a failed write of one doesn't raise the banner.
+    reminders, lock, hidden amounts) stay in localStorage in `store.ts`: losing
+    them costs nothing, and a failed write of one doesn't raise the banner.
   - Debug: `localStorage['spartopf-debug'] = '1'` (Safari Web Inspector on a
     device) shows *WebKit-Daten löschen* in *Sichern und übertragen* — what
     iOS does when it reclaims web storage; after a relaunch the file has it all.
@@ -332,6 +352,22 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   *Darstellung → Währung* only relabels, never converts. CSV export appends a
   `Währung` column; a bank CSV row in another currency shows "andere Währung"
   and starts unticked.
+- **Hidden amounts (plan 06).** *Beträge verbergen* (view preference
+  `spartopf-hide-amounts`, kept by *Alle Daten löschen*) works like the
+  currency: one module-level switch in `logic.ts` (`setAmountsHidden`, set by
+  App on every render before its screens) makes every money formatter —
+  `formatMoney*`, `compactMoney`, the charts' `savedLabel` — write the locale's
+  layout with "••••" for the figure and no sign ("•••• €", "€••••"). So a new
+  screen hides its amounts by itself, as long as money goes through those
+  formatters: never format cents with a bare `Intl.NumberFormat`. Shown anyway,
+  through `withAmounts(() => …)`: what is being typed (the calculator's "=",
+  a split's remainder, a reconcile difference), reminders with their own
+  amounts switch on, the year picture shared with amounts. Fields being typed
+  into, CSV and backups never go through the formatters. VoiceOver labels and
+  `sr-only` twins wrap the amount in `spoken(text, t.amountHidden)` ("Betrag
+  verborgen"). The eye on the balance card shows them for 30 s (`PEEK_MS`) or
+  until the app leaves the screen; with hiding on, the app-switcher cover
+  shows too. Percentages, counts and a "+" set by hand stay.
 - **Months are `YYYY-MM` strings** (`MonthKey`); use `addMonths()` /
   `monthKeyOf()` from `logic.ts`, never `Date` arithmetic in components.
 - **Default categories** live in `src/data/defaults.ts` (names in every
@@ -516,13 +552,25 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     wraps it; `Info.plist` has `NSFaceIDUsageDescription`.
   - While locked, `App` renders only `LockScreen` — no amount in the DOM.
     Away more than a minute locks again; while inactive, a plain cover hides
-    the app from the app-switcher snapshot.
+    the app from the app-switcher snapshot (also with *Beträge verbergen* on,
+    plan 06 — a cover rather than a blur).
+  - **Data Protection (plan 06):** `ios/App/App/App.entitlements`
+    (`CODE_SIGN_ENTITLEMENTS`, both configurations) sets
+    `com.apple.developer.default-data-protection` to `NSFileProtectionComplete`:
+    the book can't be read while the phone is locked. `AppDelegate`'s
+    `protectBookFiles()` brings files written before that up to the same class
+    at launch, and a debug build logs each file's class — the device check.
+    The saver flushes on background, before the phone locks; a write that
+    still fails is retried on resume. App Group files for widgets (plan 14)
+    will need `completeUntilFirstUserAuthentication`, written by our own Swift.
   - `localStorage['spartopf-dev-native'] = '1'` shows these settings in a dev
     build on the web (for screenshots); nothing is scheduled or locked there.
 
 ## Accessibility
 - Text 4.5:1, icons 3:1. `text-fg-faint` only for placeholders.
 - Every icon button has a label naming its row: `${t.markPaid} — ${name}`.
+- An amount in a label or `sr-only` text goes through `spoken()`, so it is read
+  as "Betrag verborgen" while amounts are hidden (plan 06).
 - The paid toggle is a real checkbox for VoiceOver (`role="checkbox"`,
   `aria-checked`), never colour alone: open entries also say *offen*.
 - Pinch-zoom stays enabled. Motion respects reduced motion (`MotionConfig`).

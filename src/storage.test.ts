@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
   BACKUP_DIR, FILE, FsLike, PRE_RESTORE, PREV, StorageCorruptError, TMP,
-  createSaver, hydrate, listSnapshots, readEnvelope, readSnapshot, restoreSnapshot, snapshotsToKeep, takeSnapshot, writeLocal,
+  createSaver, hydrate, listSnapshots, moveBook, readEnvelope, readSnapshot, restoreSnapshot, snapshotsToKeep, takeSnapshot, writeLocal,
 } from './storage';
 import { computeBalances } from './logic';
 import { defaultCategories } from './data/defaults';
@@ -327,5 +327,196 @@ describe('automatic snapshots', () => {
     expect((await fs.list(BACKUP_DIR)).length).toBe(1);
     await saver.forget();
     expect([...files.keys()]).toEqual([]);
+  });
+});
+
+describe('the backup switch (plan 06)', () => {
+  const march = (day: number) => new Date(2026, 2, day, 9, 0, 0);
+  const amountOf = (h: { data: AppData }) => h.data.entries[0].amount;
+
+  /** A folder with a book saved twice (data.json + data.prev.json) and snapshots of two days. */
+  async function bookIn(fs: FsLike) {
+    let minute = 0; // each save a minute later, as in life: data.json newer than data.prev.json
+    const saver = createSaver(fs, noMirror, { now: () => new Date(2026, 2, 1, 9, minute++), snapshots: true });
+    saver.save(book(100000));
+    await saver.flush();
+    await takeSnapshot(book(100000), fs, march(2));
+    saver.save(book(105000));
+    await saver.flush();
+  }
+  /**
+   * A folder that works for `budget` more calls and then fails every one — the
+   * app stopped half-way. Nothing after that point happens, cleanup included.
+   */
+  function dying(fs: FsLike, left: { n: number }): FsLike {
+    const gate = <A extends unknown[], R>(f: (...a: A) => Promise<R>) => async (...a: A): Promise<R> => {
+      if (left.n-- <= 0) throw new Error('stopped');
+      return f(...a);
+    };
+    return { read: gate(fs.read), write: gate(fs.write), rename: gate(fs.rename), remove: gate(fs.remove), list: gate(fs.list) };
+  }
+
+  it('moves the book, its previous version and its snapshots out of the backup and back', async () => {
+    const lib = memFs();
+    const noCloud = memFs();
+    await bookIn(lib.fs);
+    const before = [...lib.files.keys()].sort();
+    await moveBook(lib.fs, noCloud.fs);
+    expect([...lib.files.keys()]).toEqual([]);
+    expect([...noCloud.files.keys()].sort()).toEqual(before);
+    let found = await hydrate(lib.fs, nothing, noCloud.fs, () => {});
+    expect(found).toMatchObject({ source: 'file', inBackup: false });
+    expect(amountOf(found)).toBe(105000);
+
+    await moveBook(noCloud.fs, lib.fs);
+    expect([...noCloud.files.keys()]).toEqual([]);
+    expect([...lib.files.keys()].sort()).toEqual(before);
+    found = await hydrate(lib.fs, nothing, noCloud.fs, () => {});
+    expect(found).toMatchObject({ source: 'file', inBackup: true });
+    expect(amountOf(found)).toBe(105000);
+  });
+
+  it('a copy that fails, or doesn’t read back, leaves the book where it was and no copy behind', async () => {
+    for (const broken of [
+      (fs: FsLike): FsLike => ({ ...fs, write: async (p, t) => { if (p === PREV) throw new Error('disk full'); return fs.write(p, t); } }),
+      (fs: FsLike): FsLike => ({ ...fs, read: async p => (p === FILE ? 'torn' : fs.read(p)) }),
+    ]) {
+      const lib = memFs();
+      const noCloud = memFs();
+      await bookIn(lib.fs);
+      const before = new Map(lib.files);
+      await expect(moveBook(lib.fs, broken(noCloud.fs))).rejects.toThrow();
+      expect(lib.files).toEqual(before);
+      expect([...noCloud.files.keys()]).toEqual([]);
+    }
+  });
+
+  it('when data.json can’t leave the old folder, the move doesn’t count', async () => {
+    const lib = memFs();
+    const noCloud = memFs();
+    await bookIn(lib.fs);
+    const stuck: FsLike = { ...lib.fs, remove: async p => { if (p !== FILE) await lib.fs.remove(p); } };
+    await expect(moveBook(stuck, noCloud.fs)).rejects.toThrow();
+    expect([...noCloud.files.keys()]).toEqual([]);
+    expect(amountOf(await hydrate(lib.fs, nothing, noCloud.fs, () => {}))).toBe(105000);
+  });
+
+  it('stopped at any step of a move, either way, the next launch finds the whole book in one folder', async () => {
+    for (const outOfBackup of [true, false]) {
+      for (let n = 0; ; n++) {
+        const lib = memFs();
+        const noCloud = memFs();
+        const [from, to] = outOfBackup ? [lib, noCloud] : [noCloud, lib];
+        await bookIn(from.fs);
+        const snapshots = (await from.fs.list(BACKUP_DIR)).sort();
+        const left = { n };
+        const finished = await moveBook(dying(from.fs, left), dying(to.fs, left)).then(() => true, () => false);
+        let at: boolean | undefined;
+        const found = await hydrate(lib.fs, nothing, noCloud.fs, inBackup => { at = inBackup; });
+        expect(amountOf(found), `step ${n}`).toBe(105000);
+        expect(found.inBackup).toBe(at);
+        // Tidied: everything in the book's folder, nothing left in the other one.
+        const [book_, stale] = found.inBackup ? [lib, noCloud] : [noCloud, lib];
+        expect([...stale.files.keys()], `step ${n}`).toEqual([]);
+        expect((await book_.fs.list(BACKUP_DIR)).sort(), `step ${n}`).toEqual(snapshots);
+        expect(book_.files.has(PREV), `step ${n}`).toBe(true);
+        if (finished) { expect(found.inBackup).toBe(!outOfBackup); break; }
+      }
+    }
+  });
+
+  it('the newest copy decides the folder; a tie stays in the backup', async () => {
+    const lib = memFs();
+    const noCloud = memFs();
+    const saveAt = async (fs: FsLike, amount: number, day: number) => {
+      const s = createSaver(fs, noMirror, { now: () => march(day) });
+      s.save(book(amount));
+      await s.flush();
+    };
+    await saveAt(lib.fs, 1, 1);
+    await saveAt(noCloud.fs, 2, 2);
+    expect(await hydrate(lib.fs, nothing, noCloud.fs, () => {})).toMatchObject({ inBackup: false });
+    const tieLib = memFs();
+    const tieNoCloud = memFs();
+    await saveAt(tieLib.fs, 3, 4);
+    await saveAt(tieNoCloud.fs, 3, 4);
+    const tie = await hydrate(tieLib.fs, nothing, tieNoCloud.fs, () => {});
+    expect(tie.inBackup).toBe(true);
+    expect([...tieNoCloud.files.keys()]).toEqual([]);
+  });
+
+  it('broken files outside the backup: the crash screen, told where to restore from', async () => {
+    const lib = memFs();
+    const noCloud = memFs({ [FILE]: 'torn' });
+    let at: boolean | undefined;
+    await expect(hydrate(lib.fs, nothing, noCloud.fs, inBackup => { at = inBackup; })).rejects.toBeInstanceOf(StorageCorruptError);
+    expect(at).toBe(false);
+  });
+
+  it('through the saver: what is waiting goes first, later saves land in the new folder, the mirror stops and starts again', async () => {
+    vi.useFakeTimers();
+    const lib = memFs();
+    const noCloud = memFs();
+    const mirror: number[] = [];
+    let cleared = 0;
+    const saver = createSaver(lib.fs, d => { mirror.push(d.entries[0]?.amount ?? 0); }, { clearMirror: () => { cleared++; } });
+    saver.save(book(1));
+    await saver.flush();
+    saver.save(book(2)); // waiting when the switch is turned off
+    await saver.relocate(noCloud.fs, { mirror: false });
+    expect(saver.location()).toBe(noCloud.fs);
+    expect([...lib.files.keys()]).toEqual([]);
+    expect((await readEnvelope(noCloud.files.get(FILE)!))?.data.entries[0].amount).toBe(2);
+    expect(cleared).toBe(1);
+    saver.save(book(3));
+    await saver.flush();
+    expect((await readEnvelope(noCloud.files.get(FILE)!))?.data.entries[0].amount).toBe(3);
+    expect(mirror).toEqual([1, 2]); // not written out of the backup
+    await saver.relocate(lib.fs, { mirror: true });
+    expect(mirror).toEqual([1, 2, 3]); // the way back again, at once
+    expect([...noCloud.files.keys()]).toEqual([]);
+    expect((await readEnvelope(lib.files.get(FILE)!))?.data.entries[0].amount).toBe(3);
+  });
+
+  it('a move that fails rejects, and the saver keeps writing where the book is', async () => {
+    const lib = memFs();
+    const broken: FsLike = { ...memFs().fs, write: async () => { throw new Error('disk full'); } };
+    const saver = createSaver(lib.fs, noMirror);
+    saver.save(book(1));
+    await saver.flush();
+    await expect(saver.relocate(broken, { mirror: false })).rejects.toThrow();
+    expect(saver.location()).toBe(lib.fs);
+    saver.save(book(2));
+    await saver.flush();
+    expect((await readEnvelope(lib.files.get(FILE)!))?.data.entries[0].amount).toBe(2);
+  });
+
+  it('"Alle Daten löschen" empties both folders', async () => {
+    const lib = memFs();
+    const noCloud = memFs();
+    await bookIn(lib.fs);
+    await bookIn(noCloud.fs);
+    const saver = createSaver(lib.fs, noMirror, { folders: [lib.fs, noCloud.fs] });
+    await saver.forget();
+    expect([...lib.files.keys()]).toEqual([]);
+    expect([...noCloud.files.keys()]).toEqual([]);
+  });
+
+  it('a write that failed (the phone locked) is written again on resume', async () => {
+    const { fs, files } = memFs();
+    let locked = true;
+    const protectedFs: FsLike = { ...fs, write: async (p, t) => { if (locked) throw new Error('locked'); return fs.write(p, t); } };
+    const status: boolean[] = [];
+    const saver = createSaver(protectedFs, noMirror);
+    saver.onStatus(ok => status.push(ok));
+    saver.save(book(7));
+    await saver.flush();
+    expect(files.has(FILE)).toBe(false);
+    locked = false;
+    await saver.retry();
+    expect((await readEnvelope(files.get(FILE)!))?.data.entries[0].amount).toBe(7);
+    expect(status).toEqual([false, true]);
+    await saver.retry(); // nothing left to write
+    expect(status).toEqual([false, true]);
   });
 });

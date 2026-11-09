@@ -244,6 +244,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: بيانات تجريبية للتجربة. لمسة واحدة في الإعدادات تملأ Spartopf بسنة كاملة من ميزانية المنزل – الإيجار والكهرباء والبقالة والإجازات والميزانيات وأوعية الادخار – ولمسة أخرى تزيلها دون المساس ببنودك الخاصة.
 
+**DE:** Neu: Beträge verbergen – für unterwegs. Ein Tipp aufs Auge zeigt sie kurz. Deine Daten sind gesperrt, solange das iPhone gesperrt ist, und auf Wunsch bleiben sie ganz aus dem iPhone-Backup heraus.
+
+**EN:** New: hide amounts – for when you're out and about. Tap the eye to see them briefly. Your data is locked while your iPhone is, and if you like it stays out of the iPhone backup altogether.
+
+**AR:** جديد: إخفاء المبالغ – عند استخدام التطبيق خارج المنزل. اضغط على العين لرؤيتها لحظات. بياناتك مقفلة ما دام جهازك مقفلًا، وإن شئت تبقى خارج نسخة الـ iPhone الاحتياطية تمامًا.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

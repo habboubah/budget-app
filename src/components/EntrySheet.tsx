@@ -4,7 +4,7 @@ import { CalendarDays, Check, ChevronDown, ChevronUp, Hash, Plus, Repeat as Repe
 import { Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
 import { budgetOf } from '../data/defaults';
 import {
-  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
+  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
   normalizeDigits, topCategories,
 } from '../logic';
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
@@ -393,10 +393,11 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             />
             <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">€</span>
           </div>
-          {/* The running sum, announced politely — "= 17,30 €" (plan 08). */}
+          {/* The running sum, announced politely — "= 17,30 €" (plan 08). What is
+              being typed, so shown even while amounts are hidden (plan 06). */}
           {isExpression && amount !== null && (
             <p dir="ltr" aria-live="polite" className="text-label text-accent font-semibold mt-1 rounded-num">
-              = {formatMoney(amount, t.locale)}
+              = {withAmounts(() => formatMoney(amount, t.locale))}
             </p>
           )}
           {showError && amount === null && (

@@ -7,8 +7,33 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        protectBookFiles()
         return true
+    }
+
+    /// Plan 06: App.entitlements gives every new file iOS Data Protection class
+    /// Complete — unreadable while the phone is locked. Files written before
+    /// that keep the class they were made with, so the book's two folders
+    /// (Library/spartopf, and Library/NoCloud/spartopf when it is kept out of
+    /// backups) are brought up to it at launch, when the phone is unlocked. A
+    /// debug build logs each file's class: plan 06's check on a device.
+    private func protectBookFiles() {
+        let fm = FileManager.default
+        guard let library = fm.urls(for: .libraryDirectory, in: .userDomainMask).first else { return }
+        for folder in [library.appendingPathComponent("spartopf"), library.appendingPathComponent("NoCloud/spartopf")] {
+            guard fm.fileExists(atPath: folder.path) else { continue }
+            var urls = [folder]
+            if let inside = fm.enumerator(at: folder, includingPropertiesForKeys: nil) {
+                for case let url as URL in inside { urls.append(url) }
+            }
+            for url in urls {
+                try? fm.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
+                #if DEBUG
+                let protection = (try? fm.attributesOfItem(atPath: url.path))?[.protectionKey] as? FileProtectionType
+                print("[Spartopf] \(url.path.replacingOccurrences(of: library.path, with: "Library")): \(protection?.rawValue ?? "unknown")")
+                #endif
+            }
+        }
     }
 
     // UIScene lifecycle (required from the iOS 27 SDK): every window scene is

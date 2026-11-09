@@ -16,24 +16,26 @@ const NUDGE_AFTER_DAYS = 90;
  * With the debug flag (storage.ts `debugTools`), a test of plan 02: wipe the
  * web view's data, then relaunch — everything must come back from the file.
  */
-export function TransferView({ onBack, onOpenBackups, lastExport, copyCardDismissed, onDismissCopyCard, ...backup }:
+export function TransferView({ onBack, onOpenBackups, lastExport, inDeviceBackup, copyCardDismissed, onDismissCopyCard, ...backup }:
   ComponentProps<typeof BackupGroup> & {
     onBack: () => void;
     onOpenBackups: () => void;
     /** When a copy last left the device (YYYY-MM-DD), or '' if never. */
     lastExport: string;
+    /** Whether the book is in the phone's own backup (plan 06); null on the web. */
+    inDeviceBackup: boolean | null;
     copyCardDismissed: boolean;
     onDismissCopyCard: () => void;
   }) {
   const { t, toast } = backup;
 
-  // The gentle nudge: no copy has left the device for 90 days (or ever), and
-  // the card hasn't been dismissed. Only on the native app, where an automatic
-  // on-device backup exists; the web has no file to lose this way.
+  // The gentle nudge: the book is kept out of the phone's backup (plan 06), no
+  // copy has left the device for 90 days (or ever), and the card hasn't been
+  // dismissed. Only in the iPhone app; the web has no file to lose this way.
   const daysSinceExport = lastExport
     ? Math.floor((Date.now() - new Date(`${lastExport}T00:00:00`).getTime()) / 86_400_000)
     : Infinity;
-  const showNudge = isNative() && !copyCardDismissed && daysSinceExport >= NUDGE_AFTER_DAYS;
+  const showNudge = isNative() && inDeviceBackup === false && !copyCardDismissed && daysSinceExport >= NUDGE_AFTER_DAYS;
 
   return (
     <Screen title={t.transferTitle} onBack={onBack} backLabel={t.back} tabbed>

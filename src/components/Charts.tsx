@@ -2,7 +2,7 @@ import { CSSProperties, ReactNode, useId, useLayoutEffect, useRef, useState } fr
 import { Category, Hue, MonthKey } from '../types';
 import { MonthPoint, BudgetSplit, Outlook, OutlookItem, Pace, RulePart } from '../insights';
 import {
-  compactMoney, dayLabel, displayName, formatMoney, formatMoneyApprox, formatMoneyEstimate, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, parseMonthKey,
+  MASK, areAmountsHidden, compactMoney, dayLabel, displayName, formatMoney, formatMoneyApprox, formatMoneyEstimate, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, parseMonthKey,
 } from '../logic';
 import { Strings, fmt } from '../translations';
 import { useWidth } from '../ui/useWidth';
@@ -323,8 +323,9 @@ function rectPath(x: number, w: number, top: number, base: number): string {
   return base - top <= 0.5 ? '' : `M${x},${base}V${top}H${x + w}V${base}Z`;
 }
 
-/** What a month kept, in whole units with its sign ("+1.283", "−320"): the label over a month's columns. */
+/** What a month kept, in whole units with its sign ("+1.283", "−320"): the label over a month's columns. "••••" while amounts are hidden (plan 06). */
 export function savedLabel(cents: number, locale: string): string {
+  if (areAmountsHidden()) return MASK;
   return new Intl.NumberFormat(locale, { maximumFractionDigits: 0, signDisplay: 'exceptZero' })
     .format(Math.round(cents / 100)).replace('-', '−');
 }

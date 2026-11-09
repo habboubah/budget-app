@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { Bell, Check, ChevronRight, Coins, Download, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Palette, ScanFace, Star, SunMoon, Tags, Trash2 } from 'lucide-react';
+import { Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Palette, ScanFace, Star, SunMoon, Tags, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -39,6 +39,15 @@ interface Props {
   lockKind: LockKind | null;
   lockOn: boolean;
   onLock: (on: boolean) => void;
+  /** *Beträge verbergen* (plan 06): every amount shows as "•••• €" until the eye on the balance card is tapped. */
+  hideAmounts: boolean;
+  onHideAmounts: (on: boolean) => void;
+  /** Whether the book is part of the phone's own backup (plan 06); null where there is no file (the web). */
+  deviceBackup: boolean | null;
+  /** Moves the book in or out of the backed-up folder; the switch waits for it. */
+  onDeviceBackup: (on: boolean) => void;
+  /** A move is running: the switch can't be tapped again until it's done. */
+  deviceBackupBusy?: boolean;
   /** The reminder settings; null where there are no notifications (the web). */
   reminders: ReminderPrefs | null;
   onReminders: () => void;
@@ -110,7 +119,8 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
 
 /**
  * Optionen, grouped as iOS Settings is: Sicherheit und Mitteilungen (the
- * Face ID lock, reminders — iPhone app only), Darstellung (language, light
+ * Face ID lock, hiding amounts, the iPhone backup, reminders — the lock, the
+ * backup and reminders in the iPhone app only), Darstellung (language, light
  * or dark, the colour), Haushaltsbuch (categories and budgets; backup and
  * transfer on a screen of their own), Ausprobieren (test data in, test data
  * out), then deleting everything and what the app is. Later features join
@@ -127,28 +137,47 @@ export function SettingsView(p: Props) {
 
   return (
     <Screen title={t.tabSettings} tabbed>
-      {(p.lockKind || p.reminders) && (
-        <Group title={t.securitySection}>
-          {p.lockKind && (
-            <Row
-              label={lockLabel}
-              sub={t.lockSub}
-              leading={<IconTile icon={LockIcon} hue="leaf" />}
-              trailing={<Switch checked={p.lockOn} onChange={p.onLock} label={lockLabel} className="-me-2" />}
-            />
-          )}
-          {p.reminders && (
-            <Row
-              label={t.remindersRow}
-              // The setting as a line under it: long in German, and text in Arabic (no `num`).
-              sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}` : t.remindersOff}
-              leading={<IconTile icon={Bell} hue="tomato" />}
-              trailing={<Next />}
-              onClick={p.onReminders}
-            />
-          )}
-        </Group>
-      )}
+      <Group title={t.securitySection}>
+        {p.lockKind && (
+          <Row
+            label={lockLabel}
+            sub={t.lockSub}
+            leading={<IconTile icon={LockIcon} hue="leaf" />}
+            trailing={<Switch checked={p.lockOn} onChange={p.onLock} label={lockLabel} className="-me-2" />}
+          />
+        )}
+        <Row
+          label={t.hideAmounts}
+          sub={t.hideAmountsSub}
+          leading={<IconTile icon={EyeOff} hue="berry" />}
+          trailing={<Switch checked={p.hideAmounts} onChange={p.onHideAmounts} label={t.hideAmounts} className="-me-2" />}
+        />
+        {p.deviceBackup !== null && (
+          <Row
+            label={t.deviceBackup}
+            sub={p.deviceBackup ? t.deviceBackupOn : t.deviceBackupOff}
+            leading={<IconTile icon={CloudUpload} hue="sky" />}
+            trailing={
+              <Switch
+                checked={p.deviceBackup}
+                onChange={on => { if (!p.deviceBackupBusy) p.onDeviceBackup(on); }}
+                label={t.deviceBackup}
+                className={`-me-2 ${p.deviceBackupBusy ? 'opacity-60' : ''}`}
+              />
+            }
+          />
+        )}
+        {p.reminders && (
+          <Row
+            label={t.remindersRow}
+            // The setting as a line under it: long in German, and text in Arabic (no `num`).
+            sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}` : t.remindersOff}
+            leading={<IconTile icon={Bell} hue="tomato" />}
+            trailing={<Next />}
+            onClick={p.onReminders}
+          />
+        )}
+      </Group>
 
       <Group title={t.displaySection}>
         <MenuRow<Language>

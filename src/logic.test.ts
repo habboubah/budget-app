@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
+  setAmountsHidden, areAmountsHidden, withAmounts, spoken, MASK, setActiveCurrency, formatMoneyShort,
   addMonths, amountToInput, averageByCategory, balanceFor, canRemoveFromMonth, carryCandidates, carryOver, categoryBreakdown,
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
@@ -58,6 +59,55 @@ describe('formatting', () => {
   it('writes the edit value without grouping', () => {
     expect(amountToInput(105050, 'de-DE')).toBe('1050,50');
     expect(amountToInput(105050, 'en-GB')).toBe('1050.50');
+  });
+});
+
+describe('hidden amounts (plan 06)', () => {
+  afterEach(() => { setAmountsHidden(false); setActiveCurrency('EUR'); });
+  const all = (cents: number, locale: string) => [
+    formatMoney(cents, locale), formatMoney(cents, locale, 'always'), formatMoneyWhole(cents, locale, 'exceptZero'),
+    formatMoneyShort(cents, locale), formatMoneyApprox(cents, locale), formatMoneyEstimate(cents, locale),
+  ];
+
+  it('every formatter writes the mask: no digit and no sign, the currency where the locale puts it', () => {
+    setAmountsHidden(true);
+    for (const cents of [105050, -1250, 40000, 0, 5]) {
+      for (const text of all(cents, 'de-DE')) expect(text).toBe('••••\u00a0€');
+      for (const text of all(cents, 'en-GB')) expect(text).toBe('€••••');
+    }
+    setActiveCurrency('CHF');
+    expect(formatMoney(-105050, 'de-CH')).not.toMatch(/[\d−+-]/);
+    expect(formatMoney(-105050, 'de-CH')).toContain('CHF');
+    expect(formatMoney(105050, 'ar-u-nu-latn')).not.toMatch(/\d/);
+    expect(compactMoney(2_000_000, 'de-DE')).toBe(MASK);
+  });
+
+  it('withAmounts shows them for one call, then hides them again — also when it throws', () => {
+    setAmountsHidden(true);
+    expect(withAmounts(() => formatMoney(105000, 'de-DE'))).toBe('1.050,00\u00a0€');
+    expect(() => withAmounts(() => { throw new Error('x'); })).toThrow('x');
+    expect(formatMoney(105000, 'de-DE')).toBe('••••\u00a0€');
+    expect(areAmountsHidden()).toBe(true);
+  });
+
+  it('VoiceOver hears the label instead of the mask', () => {
+    expect(spoken(formatMoney(105000, 'de-DE'), 'Betrag verborgen')).toBe('1.050,00\u00a0€');
+    setAmountsHidden(true);
+    expect(spoken(formatMoney(105000, 'de-DE'), 'Betrag verborgen')).toBe('Betrag verborgen');
+  });
+
+  it('leaves the amount field, the CSV and backups alone', () => {
+    setAmountsHidden(true);
+    expect(amountToInput(105050, 'de-DE')).toBe('1050,50');
+    const book = data([e('2026-11', 'fixed', 'Miete', 105000, true)], [{ key: '2026-11', startedAt: 1 }]);
+    const csv = toCsv(book, 'de', {
+      header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
+      income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags',
+    });
+    expect(csv).toContain('-1050,00');
+    expect(csv).not.toContain(MASK);
+    expect(JSON.stringify(makeBackup(book))).toContain('105000');
   });
 });
 
