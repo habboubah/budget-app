@@ -119,8 +119,11 @@ try {
       return c.toDataURL('image/png').split(',')[1];
     });
     await page.locator('input[accept="image/*"]').setInputFiles({ name: 'screenshot.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
-    // Reading takes a while in headless Chromium; either the review sheet or a "nothing found" toast ends it.
-    await page.waitForFunction(() => document.querySelector('[role="dialog"] button[type="submit"], [role="dialog"] button.hero') || document.querySelector('[role="status"]'), null, { timeout: 120000 });
+    // Reading takes a while in headless Chromium. Wait for the sheet's "reading…" panel to come and go:
+    // the review sheet or a "nothing found" toast follows. (Any status counted before — and the CSV step's
+    // toast is one — let the sheet be closed mid-read, and its review then opened over the next step.)
+    await page.waitForSelector('[role="dialog"] [role="status"]', { timeout: 10000 });
+    await page.waitForFunction(() => !document.querySelector('[role="dialog"] [role="status"]'), null, { timeout: 120000 });
     await page.waitForTimeout(500);
     // Close the review sheet without importing, and wait until it has gone.
     // Headless OCR is flaky: retry Escape / the ✕ until no dialog is left, so
