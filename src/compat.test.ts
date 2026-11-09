@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { SCHEMA_VERSION, computeBalances, makeBackup, parseBackup } from './logic';
-import { loadStored } from './storage';
+import { loadStored, writeLocal } from './storage';
 import { AppData } from './types';
 
 /*
@@ -64,6 +64,23 @@ describe('what each version stored still loads', () => {
     expect(data.contracts ?? {}).toEqual({});
     expect(data.entries.find(e => e.id === 'd4')?.ref).toBe('2026-10-11|-38.90|pizzeria');
     expect(balances(data)).toEqual([['2026-10', 289860, 289860]]);
+  });
+
+  it('version 17: currency, favourites, goals, rules and the test data’s record come back from localStorage', () => {
+    const { data } = stored('storage-v17.json');
+    expect(data.currency).toBe('CHF');
+    expect(data.favorites).toEqual([{ id: 'f1', name: 'Bäckerei', categoryId: 'groceries', amount: 480 }]);
+    expect(data.goals?.map(g => g.id)).toEqual(['g1']);
+    expect(data.rules?.map(r => r.id)).toEqual(['r1']);
+    expect(data.demo).toEqual({ addedAt: 1791000000000, months: [], limits: { groceries: 65000 }, categories: ['investment'] });
+    expect(balances(data)).toEqual([['2026-10', 365257, 365257]]);
+  });
+
+  it('a book written to localStorage reads back whole', () => {
+    const { data } = stored('storage-v17.json');
+    const store: Record<string, unknown> = {};
+    writeLocal(data, (k, v) => { store[k] = JSON.parse(v); });
+    expect(loadStored(key => store[key])).toEqual(data);
   });
 
   it('a payload no version could have written loads as an empty book, not a crash', () => {

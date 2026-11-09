@@ -138,6 +138,25 @@ export interface AppData {
   goals?: Goal[];
   /** Import rules, applied to bank/other-app imports (schema 15, plan 20). Unset = none. */
   rules?: Rule[];
+  /** What the test data (Optionen → Testdaten) added, so removing it leaves the rest as it was (schema 17). Unset = none. */
+  demo?: DemoInfo;
+}
+
+/**
+ * The test data's own record (schema 17, `src/demo.ts`). Its entries,
+ * favourites, goals and contracts carry the `demo-` prefix (entries by their
+ * series, so a carried-over copy goes too); this notes what else it touched.
+ */
+export interface DemoInfo {
+  addedAt: number;
+  /** Months it started (they go again unless the user put entries of their own in them). */
+  months: MonthKey[];
+  /** The opening balance it gave its first month, when it set one. */
+  opening?: { month: MonthKey; amount: number };
+  /** Budgets it set on categories that had none: category id → cents. Cleared again only while unchanged. */
+  limits: Record<string, number>;
+  /** Built-in categories it brought back because the book did not have them. */
+  categories: string[];
 }
 
 /** An import rule (plan 20): when a field contains text, set a category/name or skip the row. */

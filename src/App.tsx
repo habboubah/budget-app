@@ -343,6 +343,24 @@ export default function App() {
     if (n) show(fmt(t.monthStartedCarried, { month: monthLabel(month, t.locale), n }));
   }, [month, balance.started]);
 
+  /** Optionen → Testdaten: a year of test data beside the user's own, shown on the running month. Undoable. */
+  const addDemo = () => {
+    const before = store.addDemo();
+    notifySuccess();
+    setMonth(monthKeyOf());
+    setTab('month');
+    setStack({});
+    show(t.demoAdded, { label: t.undo, run: () => store.restoreData(before) });
+  };
+
+  /** Take the test data out again (confirmed in Optionen); the user's own data stays. Undoable. */
+  const removeDemo = () => {
+    const before = store.removeDemo();
+    notifyWarning();
+    setMonth(monthKeyOf());
+    show(t.demoRemoved, { label: t.undo, run: () => store.restoreData(before) });
+  };
+
   const deleteMonth = () => {
     const removed = store.removeMonth(month);
     if (!removed) return;
@@ -722,6 +740,9 @@ export default function App() {
             ruleCount={store.rules.length}
             onRules={() => push('rules')}
             onTransfer={() => push('transfer')}
+            hasDemo={store.hasDemo}
+            onAddDemo={addDemo}
+            onRemoveDemo={removeDemo}
             onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); }}
             lockKind={lockKind}
             lockOn={store.lockOn}

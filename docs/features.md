@@ -159,6 +159,16 @@ Everything the app can do. Build and release steps are in the
   wiederherstellen*. Deutsch / English / العربية (right to left, with Arabic
   category names; amounts typed with Arabic digits are understood), light /
   dark / automatic.
+- **Test data.** *Optionen → Ausprobieren → Testdaten hinzufügen* fills the
+  book with a year of a family's household money — salary, child benefit,
+  rent, electricity, groceries, the pharmacy, the car, a weekend away and a
+  summer holiday; monthly and yearly bills (two with a price change), one-off
+  spending, a split receipt, tags, a budget for every category (some months
+  over, most under), favourites, two savings pots and contracts with notice
+  deadlines. Most months leave something over, a few cost more than came in.
+  It goes in beside your own entries; *Testdaten entfernen* takes out only the
+  test data and leaves everything you entered yourself. Both undoable. The
+  test data is in German when the app is in German, in English otherwise.
 - **Currency.** A new install picks the currency from the phone's region (CHF,
   GBP, USD, SAR and more); *Optionen → Darstellung → Währung* changes it. It
   only relabels the amounts — nothing is converted — and existing books stay in

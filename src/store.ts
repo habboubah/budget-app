@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ACCENTS, Accent, AppData, Category, Contract, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
+import { ACCENTS, Accent, AppData, Category, Contract, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
 import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
 import {
   MAX_FAVORITES, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
@@ -10,6 +10,7 @@ import { defaultCategories } from './data/defaults';
 import { ReminderPrefs, normalizeReminderPrefs } from './reminders';
 import { hydratedData, loadStored, saver, wipeAll } from './storage';
 import { cancelAllReminders } from './notify';
+import { addDemoData, hasDemoData, removeDemoData } from './demo';
 
 /** View preferences: localStorage, here. The data itself goes through storage.ts. */
 const K = {
@@ -88,6 +89,8 @@ export function useAppStore() {
   const [goals, setGoals] = useState<Goal[]>(initial.goals ?? []);
   /** Import rules — data, so part of a backup (plan 20). */
   const [rules, setRules] = useState<Rule[]>(initial.rules ?? []);
+  /** What the test data added (schema 17, src/demo.ts) — data, so part of a backup. */
+  const [demo, setDemo] = useState<DemoInfo | undefined>(initial.demo);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = readString(K.theme);
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
@@ -184,9 +187,12 @@ export function useAppStore() {
       ...(favorites.length ? { favorites } : {}),
       ...(goals.length ? { goals } : {}),
       ...(rules.length ? { rules } : {}),
+      ...(demo ? { demo } : {}),
     }),
-    [categories, entries, months, contracts, currency, favorites, goals, rules],
+    [categories, entries, months, contracts, currency, favorites, goals, rules, demo],
   );
+  /** Whether the book holds test data: Optionen offers to remove it instead of adding it. */
+  const hasDemo = useMemo(() => hasDemoData(data), [data]);
   // Every change to the book goes to storage (debounced, written atomically; storage.ts).
   useEffect(() => { saver.save(data); }, [data]);
   // Contracts don't move money: the balances don't follow them.
@@ -479,6 +485,7 @@ export function useAppStore() {
     setFavorites(fixed.favorites ?? []);
     setGoals(fixed.goals ?? []);
     setRules(fixed.rules ?? []);
+    setDemo(fixed.demo);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -487,6 +494,15 @@ export function useAppStore() {
     importData(d);
     return before;
   };
+
+  /**
+   * Optionen → Testdaten: a year of test data beside the user's own (src/demo.ts),
+   * named in German when the app is in German, else in English. Returns the book as it was, for undo.
+   */
+  const addDemo = (): AppData => restoreData(addDemoData(data, { today: new Date(), language }));
+
+  /** Take the test data out again; the user's own data stays. Returns the book as it was, for undo. */
+  const removeDemo = (): AppData => restoreData(removeDemoData(data));
 
   const resetAll = () => {
     // Everything goes first (no copy of the old book stays behind): the data
@@ -502,6 +518,7 @@ export function useAppStore() {
     setFavorites([]);
     setGoals([]);
     setRules([]);
+    setDemo(undefined);
     setCurrency(currencyForLocale(navigator.language));
     setIntroDone(false);
     setTipsDone(false);
@@ -650,6 +667,7 @@ export function useAppStore() {
     splitEntry, unsplit,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
     setCategories, importData, restoreData, resetAll, setContract,
+    hasDemo, addDemo, removeDemo,
     favorites, addFavorite, removeFavorite, restoreFavorite, reorderFavorites,
     goals, addGoal, updateGoal, closeGoal, withdrawGoal, removeGoal, restoreGoal,
     rules, addRule, updateRule, removeRule, restoreRule,

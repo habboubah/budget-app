@@ -1,5 +1,5 @@
 import {
-  AppData, Backup, Category, CategoryKind, Contract, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
+  AppData, Backup, Category, CategoryKind, Contract, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -13,6 +13,7 @@ import { isSupportedCurrency } from './currency';
  *  14: entry tags (`Entry.tags`) — optional, unset = none.
  *  15: import rules (`AppData.rules`) — optional, unset = none.
  *  16: split payments (`Entry.splitId`) — optional, unset = none.
+ *  17: the test data's record (`AppData.demo`) — optional, unset = none.
  *  18: category keywords (`Category.keywords`) — optional, unset = what a built-in ships with. */
 export const SCHEMA_VERSION = 18;
 
@@ -1177,6 +1178,7 @@ export function normalizeState(raw: unknown): AppData {
   const favorites = normalizeFavorites(v.favorites, categories);
   const goals = normalizeGoals(v.goals);
   const rules = normalizeRules(v.rules);
+  const demo = normalizeDemo(v.demo);
   return {
     categories, entries, months,
     ...(contracts ? { contracts } : {}),
@@ -1184,7 +1186,31 @@ export function normalizeState(raw: unknown): AppData {
     ...(favorites ? { favorites } : {}),
     ...(goals ? { goals } : {}),
     ...(rules ? { rules } : {}),
+    ...(demo ? { demo } : {}),
   };
+}
+
+/** The test data's record (schema 17): months, an opening, budgets and categories it added. */
+function normalizeDemo(v: unknown): DemoInfo | undefined {
+  if (!isObj(v)) return undefined;
+  const ids = (x: unknown) => (Array.isArray(x) ? [...new Set(x.filter((s): s is string => typeof s === 'string' && s.length > 0 && s.length <= 80))] : []);
+  const limits: Record<string, number> = {};
+  if (isObj(v.limits)) {
+    for (const [id, cents] of Object.entries(v.limits)) {
+      if (id && id.length <= 80 && typeof cents === 'number' && Number.isFinite(cents) && cents >= 1) limits[id] = Math.min(Math.round(cents), MAX_CENTS);
+    }
+  }
+  const demo: DemoInfo = {
+    addedAt: typeof v.addedAt === 'number' && Number.isFinite(v.addedAt) ? v.addedAt : 0,
+    months: ids(v.months).filter(isMonthKey),
+    limits,
+    categories: ids(v.categories),
+  };
+  const o = v.opening;
+  if (isObj(o) && isMonthKey(o.month) && typeof o.amount === 'number' && Number.isFinite(o.amount)) {
+    demo.opening = { month: o.month, amount: Math.round(Math.max(-MAX_CENTS, Math.min(MAX_CENTS, o.amount))) };
+  }
+  return demo;
 }
 
 /** One series' contract details: a real day, a notice and a renewal of whole months, a short note. Null when nothing is left. */

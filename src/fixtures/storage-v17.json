@@ -1,0 +1,29 @@
+{
+  "_about": "What version 17 keeps in localStorage (synthetic): every part of the book has its key now — currency, favourites, goals, rules — and the test data's record (`spartopf-demo`) with one test entry beside one of the user's own.",
+  "spartopf-meta": { "seeded": true, "schemaVersion": 17 },
+  "spartopf-categories": [
+    { "id": "income", "names": { "de": "Einkommen", "en": "Income", "ar": "الدخل" }, "emoji": "💰", "hue": "leaf", "kind": "income", "repeat": "monthly", "builtin": true },
+    { "id": "fixed", "names": { "de": "Wohnen", "en": "Home", "ar": "المنزل" }, "emoji": "🏠", "hue": "sky", "kind": "expense", "repeat": "monthly", "budget": "need", "builtin": true },
+    { "id": "groceries", "names": { "de": "Lebensmittel und Drogerie", "en": "Groceries & drugstore", "ar": "البقالة والعناية الشخصية" }, "emoji": "🛒", "hue": "lime", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true, "limit": 65000 },
+    { "id": "investment", "names": { "de": "Geldanlage", "en": "Investments", "ar": "الاستثمار" }, "emoji": "🐷", "hue": "sand", "kind": "expense", "repeat": "monthly", "budget": "save", "standard": false, "builtin": true }
+  ],
+  "spartopf-entries": [
+    { "id": "e1", "month": "2026-10", "categoryId": "income", "name": "Gehalt", "amount": 254000, "paid": true, "repeat": "monthly", "seriesId": "e1", "createdAt": 1790812800000, "paidAt": 1793145600000, "date": "2026-10-30" },
+    { "id": "demo-2026-10-1", "month": "2026-10", "categoryId": "groceries", "name": "REWE", "amount": 8743, "paid": true, "repeat": "none", "seriesId": "demo-x1", "createdAt": 1791000000000, "paidAt": 1791000000000, "date": "2026-10-10" }
+  ],
+  "spartopf-months": [
+    { "key": "2026-10", "startedAt": 1790812800000, "opening": 120000, "categories": ["income", "fixed", "groceries"] }
+  ],
+  "spartopf-contracts": {},
+  "spartopf-currency": "CHF",
+  "spartopf-favorites": [
+    { "id": "f1", "name": "Bäckerei", "categoryId": "groceries", "amount": 480 }
+  ],
+  "spartopf-goals": [
+    { "id": "g1", "name": "Urlaub", "emoji": "🏖️", "hue": "sky", "target": 180000, "createdAt": 1790812800000 }
+  ],
+  "spartopf-rules": [
+    { "id": "r1", "match": { "field": "payee", "contains": "rewe" }, "set": { "categoryId": "groceries" }, "createdAt": 1790812800000 }
+  ],
+  "spartopf-demo": { "addedAt": 1791000000000, "months": [], "limits": { "groceries": 65000 }, "categories": ["investment"] }
+}

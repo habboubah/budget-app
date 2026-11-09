@@ -21,12 +21,21 @@ import { isNative } from './platform';
 
 /** Every key this app writes starts with this, so a rescue export can find them. */
 export const KEY_PREFIX = 'spartopf-';
-/** The data's localStorage keys: the web's store, and the iPhone app's mirror. */
+/**
+ * The data's localStorage keys: the web's store, and the iPhone app's mirror.
+ * Everything in `AppData` has one — until schema 17 the currency, favourites,
+ * goals and rules had none, so the web lost them on a reload.
+ */
 export const DATA_KEYS = {
   categories: 'spartopf-categories',
   entries: 'spartopf-entries',
   months: 'spartopf-months',
   contracts: 'spartopf-contracts',
+  currency: 'spartopf-currency',
+  favorites: 'spartopf-favorites',
+  goals: 'spartopf-goals',
+  rules: 'spartopf-rules',
+  demo: 'spartopf-demo',
   meta: 'spartopf-meta',
 } as const;
 
@@ -114,6 +123,11 @@ export function loadStored(read: (key: string) => unknown): AppData {
     entries: read(DATA_KEYS.entries),
     months: read(DATA_KEYS.months),
     contracts: read(DATA_KEYS.contracts),
+    currency: read(DATA_KEYS.currency),
+    favorites: read(DATA_KEYS.favorites),
+    goals: read(DATA_KEYS.goals),
+    rules: read(DATA_KEYS.rules),
+    demo: read(DATA_KEYS.demo),
   });
   // Saved by an older version: new and renamed built-in categories, merges.
   const data = missing ? loaded : upgradeData(loaded, meta?.schemaVersion ?? 1);
@@ -134,6 +148,12 @@ export function writeLocal(data: AppData, write: (key: string, value: string) =>
   write(DATA_KEYS.entries, JSON.stringify(data.entries));
   write(DATA_KEYS.months, JSON.stringify(data.months));
   write(DATA_KEYS.contracts, JSON.stringify(data.contracts ?? {}));
+  // Unset is written as null (JSON), which reads back as unset.
+  write(DATA_KEYS.currency, JSON.stringify(data.currency ?? null));
+  write(DATA_KEYS.favorites, JSON.stringify(data.favorites ?? []));
+  write(DATA_KEYS.goals, JSON.stringify(data.goals ?? []));
+  write(DATA_KEYS.rules, JSON.stringify(data.rules ?? []));
+  write(DATA_KEYS.demo, JSON.stringify(data.demo ?? null));
   write(DATA_KEYS.meta, JSON.stringify({ schemaVersion: SCHEMA_VERSION, seeded: true }));
 }
 

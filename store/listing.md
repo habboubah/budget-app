@@ -171,6 +171,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: تقسيم الدفعة. فاتورة واحدة لمواد غذائية ومنزلية تصبح بندين في فئتيهما.
 
+**DE:** Neu: Testdaten zum Ausprobieren. Ein Tipp in den Optionen füllt Spartopf mit einem Jahr Haushalt – Miete, Strom, Einkäufe, Urlaub, Budgets und Spartöpfe –, ein zweiter nimmt sie wieder heraus, ohne deine eigenen Einträge anzufassen.
+
+**EN:** New: test data to try things out. One tap in Settings fills Spartopf with a year of household money – rent, electricity, groceries, holidays, budgets and savings pots – and another takes it out again without touching your own entries.
+
+**AR:** جديد: بيانات تجريبية للتجربة. لمسة واحدة في الإعدادات تملأ Spartopf بسنة كاملة من ميزانية المنزل – الإيجار والكهرباء والبقالة والإجازات والميزانيات وأوعية الادخار – ولمسة أخرى تزيلها دون المساس ببنودك الخاصة.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

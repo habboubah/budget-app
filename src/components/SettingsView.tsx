@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { Bell, Check, ChevronRight, Coins, Download, Filter, Fingerprint, Languages, Lock, Palette, ScanFace, Star, SunMoon, Tags, Trash2 } from 'lucide-react';
+import { Bell, Check, ChevronRight, Coins, Download, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Palette, ScanFace, Star, SunMoon, Tags, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import translations, { Language, Strings, fmt, languages } from '../translations';
@@ -29,6 +29,11 @@ interface Props {
   onRules: () => void;
   /** Pushes "Sichern und übertragen": backup, Excel, CSV. */
   onTransfer: () => void;
+  /** The book holds test data (src/demo.ts): the row offers to remove it instead of adding it. */
+  hasDemo: boolean;
+  onAddDemo: () => void;
+  /** Called once the user has confirmed. */
+  onRemoveDemo: () => void;
   onDeleteAll: () => void;
   /** What can lock the app on this device; null: no lock row (the web, no passcode). */
   lockKind: LockKind | null;
@@ -107,12 +112,14 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
  * Optionen, grouped as iOS Settings is: Sicherheit und Mitteilungen (the
  * Face ID lock, reminders — iPhone app only), Darstellung (language, light
  * or dark, the colour), Haushaltsbuch (categories and budgets; backup and
- * transfer on a screen of their own), then deleting everything and what the
- * app is. Later features join their group (REDESIGN.md §4, plans/00).
+ * transfer on a screen of their own), Ausprobieren (test data in, test data
+ * out), then deleting everything and what the app is. Later features join
+ * their group (REDESIGN.md §4, plans/00).
  */
 export function SettingsView(p: Props) {
   const { t } = p;
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDemo, setConfirmDemo] = useState(false);
   /** A currency change only relabels, so confirm it once before applying. */
   const [pendingCurrency, setPendingCurrency] = useState<Currency | null>(null);
   const lockLabel = p.lockKind === 'faceId' ? t.lockFaceId : p.lockKind === 'touchId' ? t.lockTouchId : t.lockCode;
@@ -201,6 +208,24 @@ export function SettingsView(p: Props) {
         />
       </Group>
 
+      <Group title={t.demoSection} footer={t.demoFooter}>
+        {p.hasDemo ? (
+          <Row
+            label={t.demoRemove}
+            sub={t.demoRemoveSub}
+            leading={<IconTile icon={FlaskConicalOff} hue="stone" />}
+            onClick={() => setConfirmDemo(true)}
+          />
+        ) : (
+          <Row
+            label={t.demoAdd}
+            sub={t.demoAddSub}
+            leading={<IconTile icon={FlaskConical} hue="mint" />}
+            onClick={p.onAddDemo}
+          />
+        )}
+      </Group>
+
       <Group>
         <Row label={t.deleteAll} danger leading={<IconTile icon={Trash2} hue="tomato" />} onClick={() => setConfirmDelete(true)} />
       </Group>
@@ -220,6 +245,15 @@ export function SettingsView(p: Props) {
         cancelLabel={t.cancel}
         onCancel={() => setPendingCurrency(null)}
         onConfirm={() => { if (pendingCurrency) p.onCurrency(pendingCurrency); setPendingCurrency(null); }}
+      />
+      <Confirm
+        open={confirmDemo}
+        title={t.demoRemoveTitle}
+        body={t.demoRemoveBody}
+        confirmLabel={t.demoRemove}
+        cancelLabel={t.cancel}
+        onCancel={() => setConfirmDemo(false)}
+        onConfirm={() => { setConfirmDemo(false); p.onRemoveDemo(); }}
       />
       <Confirm
         open={confirmDelete}

@@ -49,7 +49,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     the three whose SHA-256 matches wins; else the localStorage mirror; else
     (files broken, no mirror) the crash screen with *Daten retten*, whose
     dump includes the raw files.
-  - **The localStorage mirror** (`spartopf-categories` etc.) is written with
+  - **The localStorage mirror** (`DATA_KEYS`: one key per part of `AppData` —
+    since schema 17 also currency, favourites, goals, rules and the test
+    data's record, which the web lost on a reload before) is written with
     every save for two releases as the way back: the release after 1.4 removes
     it (and its read in `hydrate()`); until then it is also how an install from
     before plan 02 moves over on its first launch.
@@ -206,7 +208,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `ruleFor` applied in `planStatement` before the learned payee and bank
   category; `set` reclassifies/renames, `skip` drops a transfer); **schema 16**
   `Entry.splitId` (plan 21: a split payment's parts are normal entries sharing
-  it; `splitParts`) — all optional, nothing to migrate, all in backups. What
+  it; `splitParts`); **schema 17** `AppData.demo` (the test data's record,
+  `src/demo.ts`) — all optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
   `backup-schema-*.json`; `compat.test.ts`: they load, keep what they held,
@@ -338,6 +341,19 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   fields as optional; bump `SCHEMA_VERSION` and migrate in `normalizeState`
   when a shape changes.
 - IDs are generated with `uid()` from `logic.ts` by callers, never by the store.
+- **Test data** (*Optionen → Ausprobieren*, `src/demo.ts`, tested in
+  `demo.test.ts`): `addDemoData(data, { today, language })` puts a realistic
+  year — twelve finished months and the running one, paid up to today, the
+  rest open, one bill overdue — beside the user's own data, never instead of
+  it; `removeDemoData` takes exactly it out again. Everything it adds carries
+  the `demo-` prefix (entries by `seriesId`, so copies carried into a later
+  month go too; favourites, goals and contract keys by id), and `AppData.demo`
+  (schema 17) records the rest: the months it started (they go unless the user
+  put entries in one), the first month's opening, the budgets it set on
+  categories without one (cleared only while unchanged) and the built-ins it
+  brought back. Seeded per month, so the same day gives the same data. Adding
+  is undoable; removing asks first and is undoable. Its names are German
+  when the app is in German and English in every other language.
 - Destructive actions are **undoable** (toast with *Rückgängig*); a `Confirm`
   dialog only where undo is impossible (delete all data, import a backup) or
   where a lot goes at once (a category with entries).
