@@ -111,7 +111,7 @@ Everything the app can do. Build and release steps are in the
   ranked hints, each with a next step (a category above its usual, a trend, a
   better or weaker month, a record, a month with items still open or a week
   without entries, one big expense) — "⋯" hides one, *Wie berechnet?* explains
-  it. Then **Verlauf**, over 6 or 12 months or all: the average income,
+  it. Then **Verlauf**, over 3, 6, 9 or 12 months or all: the average income,
   spending and savings of the finished months, one chart of income and
   spending with what each month kept (still open or expected is hatched), the
   balance at each month's end, where the money goes by category (Ø, share,
@@ -142,7 +142,7 @@ Everything the app can do. Build and release steps are in the
   months of basic needs (3–6 is a rule of thumb). Every key figure has an ⓘ
   that shows how it is worked out, with your own numbers.
 - **Periods.** Statistik's *Verlauf* can show a whole **year** (pick it next to
-  6 / 12 months and *Alle*); from 13 months on, a **Mit Vorjahr vergleichen**
+  3 / 6 / 9 / 12 months and *Alle*); from 13 months on, a **Mit Vorjahr vergleichen**
   switch adds the spending change against the year before.
 - **Monatsbericht** for any month — from the month's "⋯", Planen or the table:
   what it saved against a usual month, budgets kept, what changed, where the

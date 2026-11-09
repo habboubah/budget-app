@@ -112,6 +112,8 @@ describe('periods and year comparison (plan 29)', () => {
     expect(periodSeries(points, '2025', today).map(p => p.key)).toEqual(y2025);
     expect(periodSeries(points, '2026', today).map(p => p.key)).toEqual(y2026);
     expect(periodSeries(points, '12', today).length).toBe(5);
+    expect(periodSeries(points, '3', today).map(p => p.key)).toEqual(points.slice(-3).map(p => p.key));
+    expect(periodSeries(points, '9', today).length).toBe(5);
     expect(periodSeries(points, 'all', today).length).toBe(5);
   });
 

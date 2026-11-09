@@ -123,7 +123,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     language). Every function takes `today`.
   - **`StatsView`**: the year card (15 Dec – 31 Jan, ≥ 6 months),
     *Das fällt auf* (`HintRows.tsx`; "⋯" → *Wie berechnet?* / *Ausblenden*,
-    undoable), then *Verlauf* with 6 / 12 / Alle (the range lives in App:
+    undoable), then *Verlauf* with 3 / 6 / 9 / 12 / Alle ("3 M", read out as
+    "3 Monate"; the range lives in App:
     the category screen follows it): the averages with ⓘ and "davon Ø …
     angelegt", income vs. spending (Angelegt in the tooltip), balance,
     *Wofür* (rows → `CategoryView`, payees → `PayeeSheet`), the table (an

@@ -16,8 +16,11 @@ import { Explain, ExplainButton } from './ExplainSheet';
 import { HighlightsCard } from './HintRows';
 import { tapLight } from '../ui/haptics';
 
-/** 6 or 12 months, all, or a year ("2025") — plan 29. */
-export type StatsRange = '6' | '12' | 'all' | (string & {});
+/** 3, 6, 9 or 12 months, all, or a year ("2025") — plan 29. */
+export type StatsRange = '3' | '6' | '9' | '12' | 'all' | (string & {});
+
+/** The month counts Verlauf offers, beside "Alle" and a year. */
+const SPANS = [3, 6, 9, 12];
 
 interface Props {
   book: Book;
@@ -116,11 +119,13 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
           <h2 id="history-title" className="display text-title2 font-bold text-fg wrap-compound">{t.historySection}</h2>
         </div>
         <div className="flex items-center gap-2">
-          <Segmented<StatsRange> label={t.wherePeriod} value={/^\d{4}$/.test(range) ? 'all' : range} onChange={onRange} options={[
-            { value: '6', label: fmt(t.averageSpanN, { n: 6 }) },
-            { value: '12', label: fmt(t.averageSpanN, { n: 12 }) },
-            { value: 'all', label: t.rangeAllShort },
-          ]} />
+          {/* Five segments beside the year: short labels ("3 M"), read out in full. */}
+          <div className="flex-1 min-w-0">
+            <Segmented<StatsRange> label={t.wherePeriod} value={/^\d{4}$/.test(range) ? 'all' : range} onChange={onRange} options={[
+              ...SPANS.map(n => ({ value: String(n), label: fmt(t.rangeMonthsShort, { n }), spoken: fmt(t.averageSpanN, { n }) })),
+              { value: 'all', label: t.rangeAllShort },
+            ]} />
+          </div>
           {years.length >= 2 && (
             <MenuPicker
               label={t.rangeYear}

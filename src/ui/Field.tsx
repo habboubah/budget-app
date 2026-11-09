@@ -43,7 +43,8 @@ export function Field({ label, value, onChange, hideLabel, trailing, autoFocus, 
 export function Segmented<T extends string>({ label, value, options, onChange }: {
   label: string;
   value: T;
-  options: { value: T; label: string }[];
+  /** `spoken`: what VoiceOver reads when the label is short ("3 M" → "3 Monate"). */
+  options: { value: T; label: string; spoken?: string }[];
   onChange: (v: T) => void;
 }) {
   return (
@@ -56,6 +57,7 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
             type="button"
             role="radio"
             aria-checked={on}
+            aria-label={o.spoken}
             onClick={() => { tapLight(); onChange(o.value); }}
             className={`hit-44 flex-1 min-h-[40px] px-2 rounded-full text-label transition-colors focus-visible:ring-focus wrap-compound ${
               on ? 'bg-raised text-fg font-semibold shadow-e1' : 'text-fg font-medium active:bg-raised/60'}`}
