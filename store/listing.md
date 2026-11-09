@@ -2,81 +2,148 @@
 
 Copy these into App Store Connect. Limits are Apple's; every text below fits.
 
-| Field | Limit | Deutsch (primary) | English (U.K.) |
-|---|---|---|---|
-| Name | 30 | `Spartopf – Haushaltsbuch` | `Spartopf – Budget Book` |
-| Subtitle | 30 | `Haushaltsbuch ohne Konto` | `Private budget, no account` |
-| Category | — | Primary: **Finance** · Secondary: **Productivity** | (same) |
-| Age rating | — | 4+ (answer "None" everywhere) | (same) |
-| Price | — | Free | (same) |
-| Privacy policy URL | — | https://habboubah.github.io/privacy-policy/spartopf/de/ | https://habboubah.github.io/privacy-policy/spartopf/ |
-| Support URL | — | https://habboubah.github.io/privacy-policy/spartopf/de/ | https://habboubah.github.io/privacy-policy/spartopf/ |
-| Copyright | — | `2026 Ahmad Habboubah` | (same) |
+The texts and the review note describe the app as of the next build: 14
+languages, test data, translated permission prompts. Build 5 (1.2.1), the one
+Apple rejected, has none of these, so submit a new build with them.
+
+| Field | Limit | Deutsch (primary) | English (U.K.) | العربية (Arabic) |
+|---|---|---|---|---|
+| Name | 30 | `Spartopf – Haushaltsbuch` | `Spartopf – Budget Book` | `Spartopf – دفتر الميزانية` |
+| Subtitle | 30 | `Haushaltsbuch ohne Konto` | `Private budget, no account` | `ميزانية خاصة دون تسجيل` |
+| Category | — | Primary: **Finance** · Secondary: **Productivity** | (same) | (same) |
+| Age rating | — | 4+ (answer "None" everywhere) | (same) | (same) |
+| Price | — | Free | (same) | (same) |
+| Privacy policy URL | — | https://habboubah.github.io/privacy-policy/spartopf/de/ | https://habboubah.github.io/privacy-policy/spartopf/ | https://habboubah.github.io/privacy-policy/spartopf/ |
+| Support URL | — | https://habboubah.github.io/privacy-policy/spartopf/de/ | https://habboubah.github.io/privacy-policy/spartopf/ | https://habboubah.github.io/privacy-policy/spartopf/ |
+| Copyright | — | `2026 Ahmad Habboubah` | (same) | (same) |
 
 If the name "Spartopf – Haushaltsbuch" is already taken, try
 `Spartopf: Haushaltsbuch` or `Spartopf – Budget & Sparen`. The name on the
 home screen stays "Spartopf".
 
+Arabic is a separate localization in App Store Connect (**App Information →
+Localizable Information → +** → Arabic, then the version page in Arabic). The
+privacy policy has no Arabic page yet, so the Arabic listing points to the
+English one.
+
 ## Promotional text (170)
 
-**DE:** Gehalt, Miete, Einkauf: Trag ein, was reinkommt und rausgeht, hak ab, was bezahlt ist – und sieh, was am Monatsende bleibt. Ohne Konto, alles bleibt auf deinem iPhone.
+**DE:** Kostenlos, ohne Werbung und ohne Abo: Hak ab, was bezahlt ist, und sieh, was am Monatsende bleibt. Ohne Anmeldung – alles bleibt auf deinem iPhone.
 
-**EN:** Salary, rent, groceries: note what comes in and goes out, tick off what is paid – and see what is left at the end of the month. No account, all on your iPhone.
+**EN:** Free, no ads, no subscription: tick off what's paid and see what's left at the end of the month. No sign-up – everything stays on your iPhone.
+
+**AR:** مجاني، بلا إعلانات ولا اشتراك: حدّد ما دُفع، وشاهد ما سيتبقى في نهاية الشهر. بلا تسجيل – وتبقى كل بياناتك على جهازك.
 
 ## Keywords (100, comma-separated, no spaces)
 
-**DE:** `haushaltsbuch,budget,ausgaben,finanzen,sparen,geld,kosten,monat,miete,gehalt,fixkosten,offline`
+No bank or competitor brand names (Guideline 2.3.7). Words already in the
+name or subtitle count anyway, so they aren't repeated here.
 
-**EN:** `budget,expenses,money,finance,savings,spending,bills,salary,rent,household,monthly,offline,private`
+**DE:** `budget,ausgaben,einnahmen,finanzen,sparen,geld,fixkosten,miete,gehalt,abos,kontoauszug,offline`
+
+**EN:** `expenses,money,finance,savings,spending,bills,salary,rent,household,monthly,subscriptions,offline`
+
+**AR:** `مصاريف,مصروفات,ادخار,دخل,فواتير,راتب,إيجار,اشتراكات`
+
+The Arabic list stays under 100 *bytes* (an Arabic letter takes two), in case
+App Store Connect counts bytes rather than characters for it.
 
 ## Description
 
 **DE:**
 
 ```
-Spartopf ist dein Haushaltsbuch für jeden Monat – so einfach wie eine Tabelle, nur mit einem Daumen bedienbar.
+Spartopf ist dein Haushaltsbuch für jeden Monat – kostenlos, ohne Werbung, ohne Abo und ohne Anmeldung. Alles bleibt auf deinem iPhone.
 
 ZWEI ZAHLEN, DIE ZÄHLEN
 Oben steht, was jetzt auf deinem Konto ist – und was am Monatsende übrig bleibt, wenn alles Offene bezahlt ist.
 
-DER MONAT IN DER RICHTIGEN REIHENFOLGE
-Erst das Gehalt, dann Wohnen mit Miete, Strom und Handy, dann Auto, Sonstiges, Lebensmittel und Familie. Jeder Eintrag ist entweder bezahlt oder noch offen – ein Tipp auf den Kreis hakt ihn ab. Mit Fälligkeitstag siehst du sofort, was überfällig ist.
+BEZAHLT ODER OFFEN
+Jeder Eintrag ist entweder bezahlt oder noch offen – ein Tipp auf den Kreis hakt ihn ab. Mit Fälligkeitstag siehst du sofort, was überfällig ist. Markierst du Miete, Gehalt oder Versicherungen als „monatlich“ oder „jährlich“, kommen sie von selbst in den nächsten Monat, und der Kontostand wird übertragen.
 
-WIEDERKEHRENDES KOMMT VON SELBST
-Markiere Miete, Gehalt oder Versicherungen als „monatlich“ oder „jährlich“. Startest du den nächsten Monat, sind sie schon da – als offen, bis du sie abhakst. Der Kontostand wird automatisch übertragen.
+UMSÄTZE ÜBERNEHMEN, OHNE BANK-LOGIN
+Importiere die CSV-Datei aus deinem Online-Banking, oder fotografiere die Umsatzliste deiner Banking-App – der Text wird auf dem iPhone selbst gelesen. Du prüfst jeden Umsatz, bevor er übernommen wird, und offene Rechnungen, die er bezahlt, werden abgehakt. Dein bisheriges Haushaltsbuch aus Excel holst du mit einem Import herein.
+
+SCHNELL EINGETRAGEN
+Rechne direkt im Betragsfeld (12,50+4,80), merk dir Favoriten wie Bäcker oder Tanken, teil einen Kassenbon auf mehrere Kategorien auf und versieh Einträge mit #Tags. Beim Tippen schlägt Spartopf Namen und Kategorie vor.
+
+PLANEN
+Monatsbudgets mit dem, was pro Tag übrig ist, ein Ausblick auf die nächsten zwölf Monate, Spartöpfe für Ziele wie den Urlaub, deine Abos und Verträge mit Kündigungsfristen und eine Rücklage für jährliche Kosten.
 
 WOHIN GEHT DEIN GELD?
-Die Statistik zeigt, was du gespart hast, wofür das Geld ausgegeben wurde – nach Kategorie oder Laden – und wie sich dein Kontostand über die letzten zwölf Monate entwickelt.
+Die Statistik zeigt zuerst, was auffällt, dann Einnahmen, Ausgaben und Erspartes über die Monate – nach Kategorie oder Empfänger, mit einem Bericht für jeden Monat und dem Jahresrückblick.
 
-DEINE KATEGORIEN
-Einkommen, Wohnen, Auto, Sonstiges, Lebensmittel und Familie sind schon da – dazu die üblichen Kategorien wie Bekleidung, Mobilität, Reisen, Gesundheit oder Geldanlage, die du nach Bedarf einschaltest. Leg eigene an, gib ihnen Farbe und Emoji, sortiere oder lösche sie.
+PRIVAT UND SICHER
+Kein Konto, keine Anmeldung, keine Werbung, kein Tracking, kein Internet nötig. Auf Wunsch sperrt sich Spartopf mit Face ID und erinnert dich an offene Rechnungen. Exportierte Sicherungen sind mit einem Passwort verschlüsselt, Spartopf sichert sich zusätzlich jeden Tag auf dem iPhone, und alles lässt sich als CSV für Excel exportieren.
 
-PRIVAT
-Kein Konto, keine Anmeldung, keine Werbung, kein Tracking. Alles bleibt auf deinem iPhone. Sicherung als Datei, Export als CSV für Excel.
+IN DEINER SPRACHE
+Deutsch, Englisch, Arabisch (von rechts nach links), Französisch, Spanisch, Italienisch, Portugiesisch, Niederländisch, Polnisch, Tschechisch, Schwedisch, Norwegisch, Dänisch und Türkisch.
+
+Zum Ausprobieren füllen Testdaten Spartopf mit einem Jahr Haushalt – ein Tipp nimmt sie wieder heraus.
 ```
 
 **EN:**
 
 ```
-Spartopf is your household budget book, month by month – as simple as a spreadsheet, but made for one thumb.
+Spartopf is your household budget book, month by month – free, with no ads, no subscription and no sign-up. Everything stays on your iPhone.
 
 THE TWO NUMBERS THAT MATTER
-At the top: what is on your account right now – and what will be left at the end of the month once everything open is paid.
+At the top: what is in your account right now – and what will be left at the end of the month once everything open is paid.
 
-THE MONTH IN THE RIGHT ORDER
-Salary first, then home with rent, electricity and phone, then car, others, groceries and family. Every entry is either paid or still open – one tap on the circle ticks it off. Give it a due day and you see at once what is overdue.
+PAID OR OPEN
+Every entry is either paid or still open – one tap on the circle ticks it off. Give it a due day and you see at once what is overdue. Mark rent, salary or insurance as "monthly" or "yearly" and they come back in the next month by themselves, with the balance carried over.
 
-RECURRING ITEMS COME BACK ON THEIR OWN
-Mark rent, salary or insurance as "monthly" or "yearly". When you start the next month, they are already there – open until you tick them off. The balance carries over automatically.
+TRANSACTIONS IN, WITHOUT A BANK LOGIN
+Import the CSV file from your online banking, or take a photo or screenshot of the transaction list in your banking app – the text is read on the iPhone itself. You check every transaction before it goes in, and open bills it pays are ticked off. Bring your old budget spreadsheet over from Excel in one import.
+
+QUICK TO ENTER
+Do the maths in the amount field (12.50+4.80), pin favourites like the bakery or fuel, split one receipt across categories and add #tags. Spartopf suggests the name and category as you type.
+
+PLAN AHEAD
+Monthly budgets with what's left per day, an outlook for the next twelve months, savings pots for goals like a holiday, your subscriptions and contracts with their notice deadlines, and a reserve for yearly bills.
 
 WHERE DOES YOUR MONEY GO?
-The statistics show what you saved, what the money was spent on – by category or by shop – and how your balance developed over the last twelve months.
+Statistics open with what's worth a look, then income, spending and savings over the months – by category or by payee, with a report for every month and a year in review.
 
-YOUR CATEGORIES
-Income, home, car, others, groceries and family are ready to go – plus the usual categories like clothing, transport, travel, health or investments, switched on when you need them. Add your own, give them a colour and an emoji, reorder or delete them.
+PRIVATE AND SAFE
+No account, no sign-up, no ads, no tracking, no internet needed. If you like, Spartopf locks with Face ID and reminds you of open bills. Exported backups are encrypted with a password, Spartopf also backs itself up on your iPhone every day, and everything exports as CSV for Excel.
 
-PRIVATE
-No account, no sign-up, no ads, no tracking. Everything stays on your iPhone. Back up to a file, export as CSV for Excel.
+IN YOUR LANGUAGE
+English, German, Arabic (right to left), French, Spanish, Italian, Portuguese, Dutch, Polish, Czech, Swedish, Norwegian, Danish and Turkish.
+
+To try it out, test data fills Spartopf with a year of household money – one tap takes it out again.
+```
+
+**AR:**
+
+```
+Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إعلانات ولا اشتراك ولا تسجيل. وتبقى كل بياناتك على جهازك.
+
+رقمان يهمّانك
+في الأعلى ترى ما في حسابك الآن، وما سيتبقى في نهاية الشهر بعد دفع كل البنود المعلّقة.
+
+مدفوع أو معلّق
+كل بند إما مدفوع أو ما زال معلّقًا – لمسة على الدائرة تحدّده كمدفوع. ومع يوم الاستحقاق ترى فورًا ما تأخّر. اجعل الإيجار أو الراتب أو التأمين «شهريًا» أو «سنويًا» لينتقل وحده إلى الشهر التالي، ويُرحَّل الرصيد تلقائيًا.
+
+حركات حسابك دون تسجيل الدخول إلى البنك
+استورد ملف CSV من خدمتك المصرفية عبر الإنترنت، أو التقط صورة أو لقطة شاشة لقائمة الحركات في تطبيق البنك – ويُقرأ النص على جهازك نفسه. تراجع كل حركة قبل إضافتها، وتُحدَّد الفواتير المعلّقة التي تسدّدها كمدفوعة. ويمكنك نقل دفتر ميزانيتك القديم من Excel باستيراد واحد.
+
+إدخال سريع
+احسب مباشرةً في حقل المبلغ، مثل 12.50+4.80، واحفظ مفضّلاتك مثل المخبز أو الوقود، وقسّم فاتورة واحدة على عدة فئات، وأضِف وسومًا مثل ‎#إجازة. وأثناء الكتابة يقترح Spartopf الاسم والفئة.
+
+التخطيط
+ميزانيات شهرية مع ما يتبقى لك يوميًا، ونظرة إلى الأشهر الاثني عشر القادمة، وأوعية ادخار لأهداف مثل الإجازة، واشتراكاتك وعقودك مع مواعيد إلغائها، واحتياطي للتكاليف السنوية.
+
+إلى أين يذهب مالك؟
+تبدأ الإحصاءات بما يلفت النظر، ثم الدخل والمصاريف والادخار على مدى الأشهر – حسب الفئة أو المستفيد، مع تقرير لكل شهر ومراجعة للعام.
+
+خاص وآمن
+لا حساب ولا تسجيل ولا إعلانات ولا تتبّع، ولا حاجة إلى الإنترنت. وإن شئت، يُقفَل Spartopf بـ Face ID ويذكّرك بالفواتير المعلّقة. النسخ الاحتياطية المُصدَّرة مشفّرة بكلمة مرور، ويحفظ Spartopf نسخة احتياطية على جهازك كل يوم، ويمكنك تصدير كل شيء بصيغة CSV لـ Excel.
+
+بلغتك
+العربية (من اليمين إلى اليسار)، والألمانية، والإنجليزية، والفرنسية، والإسبانية، والإيطالية، والبرتغالية، والهولندية، والبولندية، والتشيكية، والسويدية، والنرويجية، والدنماركية، والتركية.
+
+وللتجربة، تملأ البيانات التجريبية Spartopf بسنة كاملة من ميزانية المنزل – ولمسة واحدة تزيلها.
 ```
 
 ## What's New (later versions)
@@ -197,10 +264,47 @@ Write 1–3 short lines per release, e.g.
 
 - Sign-in required: **No**
 - Contact: Ahmad Habboubah, ahmad.habboubah@gmail.com, your phone number
-- Notes:
-  `Spartopf is a fully offline household budget book. No account, no server, no network use, no bank connection – the user types in income and expenses by hand. All data stays on the device.`
+- Attachment: the screen recording (see `spartopf-recording-steps.md` in the
+  project). Record it on the build you submit.
+- Notes (answers Apple's 2.1 "Information Needed" questions; fill in the two
+  brackets; Apple allows 4,000 characters):
+
+```
+1) Screen recording
+Attached: a screen recording from an iPhone [model] on iOS [version]. It starts with launching the app and shows every feature: setting up the first month, adding, splitting and ticking off entries, the Excel import, the bank CSV import, reading transactions from a photo, statistics, planning, settings, backup and restore, reminders and the Face ID lock. All names and amounts in it are invented.
+
+2) Purpose and target audience
+Spartopf is a household budget book for private individuals and families who keep track of their monthly income and expenses, as a replacement for a monthly spreadsheet. Every entry is either paid or still open, and the app shows two balances: what is in the account now, and what will be left at the end of the month once everything open is paid.
+
+3) How to use the app
+No login, account or sample files are needed. To see every screen filled in: Settings > Try it out > Add test data (a year of invented household data; Remove test data takes it out again).
+- Month tab: + adds an entry (amount, name, category, optional due day and monthly/yearly repeat). Tap the circle in front of an entry to mark it as paid; both balances update. Recurring entries come along into the next month as open.
+- Transactions without typing, all read on the device and shown for checking before anything is saved: Month > ... > Import bank transactions (CSV) takes the file from online banking; Month > ... > Take transactions from a photo reads a photo or screenshot of a banking app; Settings > Back up and transfer > Import from Excel reads a monthly budget spreadsheet. The recording shows all three with demo files.
+- Statistics tab: what stands out, income and spending over time, spending by category or payee.
+- Plan tab: the month so far, budgets, a twelve-month outlook, savings pots, subscriptions and contracts, a money check.
+- Settings: language, appearance, currency, categories and budgets, backup export (encrypted with a password by default) and import, automatic backups on the device, Face ID lock, reminders, delete all data.
+
+Permissions, each asked only when the user turns the feature on:
+- Camera and photo library: only to read a transaction list from a picture the user takes or picks.
+- Save to photos: only if the user saves the year-in-review picture from the share sheet.
+- Face ID: optional app lock (Apple's LocalAuthentication, with the device passcode as fallback).
+- Notifications: optional local reminders of open bills and contract notice dates.
+
+4) External services
+None. The app makes no network requests: no server, no account or authentication service, no analytics, no ads, no payment processor, no AI service, no bank connection or data provider. Text in pictures is read on the device by tesseract.js, an open-source text recognition library bundled with the app together with its language data; the picture is not saved or sent anywhere. Reminders are local notifications scheduled on the device. All data stays on the device; an exported backup goes only where the user saves it through the iOS share sheet.
+
+5) Regional differences
+None. The app works the same in all regions. The interface is available in 14 languages (German, English, Arabic, French, Spanish, Italian, Portuguese, Dutch, Polish, Czech, Swedish, Norwegian, Danish, Turkish) and follows the device language. The currency is suggested from the device region and only changes the symbol shown; nothing is converted.
+
+6) Regulated industry / third-party material
+Not applicable. Spartopf is a personal record-keeping tool. It does not connect to banks, move or hold money, offer financial products or give personal financial advice; the money check shows general rules of thumb and explains how each figure is worked out. It contains no protected third-party material.
+
+Thank you for your time.
+```
 
 ## App Privacy ("nutrition label")
 
-Choose **Data Not Collected**. The app has no server, no analytics, no ads; no
-entry ever leaves the device.
+Choose **Data Not Collected**. Apple counts data as collected only when it
+leaves the device, and nothing does: no server, no analytics, no ads. Camera
+and photo text reading, Face ID, reminders and the automatic backups all
+happen on the iPhone, so the answer stays the same with them.

@@ -62,6 +62,5 @@ On first launch the app follows the device language, as it does today.
   *Valg*, da *Opsætning*, nl *Opties*, it *Opzioni*); the hint action button
   got `min-w-tap` (three-letter labels were under 44 px); month titles are
   capitalised.
-- Not done: iOS permission prompts (`InfoPlist.strings` per language — needs
-  the Xcode project to add localized resources), App Store listing texts,
-  per-language keywords.
+- Not done: App Store listing texts and keywords beyond DE/EN/AR. (The iOS
+  permission prompts are in all 14 languages since plan 16.)

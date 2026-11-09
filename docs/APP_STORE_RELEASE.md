@@ -212,6 +212,13 @@ App Store Connect → Spartopf → left: **iOS App 1.0 – Prepare for Submissio
 Language menu at the top right (*German*) → add **English (U.K.)** → fill the same
 fields with the English texts and the images from `screenshots/store/iphone-6.3/en/`.
 
+### 8c-2. Add Arabic
+
+Same language menu → **Arabic** → the AR texts from `store/listing.md` (name,
+subtitle, promotional text, description, keywords). The privacy policy and
+support URL can stay on the English page. Arabic screenshots are optional;
+without them the store shows the German ones.
+
 ### 8d. App Information (left menu) [App-Informationen]
 
 - [ ] **Subtitle** [Untertitel]: `Haushaltsbuch ohne Konto`
@@ -224,6 +231,24 @@ fields with the English texts and the images from `screenshots/store/iphone-6.3/
 *Get Started* → "Do you or your third-party partners collect data from this app?"
 → **No, we do not collect data from this app** → *Publish*.
 (True: Spartopf has no server and no tracking; every entry stays on the device.)
+
+### 8e-2. Accessibility (left menu) [Barrierefreiheit]
+
+Declare only what passes on the iPhone, with the common tasks: set up the
+first month, add an entry, tick it off, open Statistics and Plan, export a
+backup.
+
+| Feature | How to check | Result |
+|---|---|---|
+| VoiceOver | Settings → Accessibility → VoiceOver: every button and amount is read with a name; you can do every task without seeing the screen | |
+| Voice Control | "Show names", then do the tasks by voice | |
+| Larger Text | Text size to the largest (Accessibility → Display & Text Size → Larger Text): nothing cut off or overlapping | |
+| Dark Interface | Dark mode on: every screen dark, nothing unreadable | |
+| Differentiate Without Color Alone | Turn it on: paid/open, over/under budget and income/expense still clear without colour | |
+| Sufficient Contrast | `npm run audit:contrast` passes; also check with Increase Contrast on | |
+| Reduced Motion | Reduce Motion on: no count-up or sliding animations left | |
+
+Write the results here, then tick the passing ones in App Store Connect.
 
 ### 8f. Pricing and Availability [Preise und Verfügbarkeit]
 

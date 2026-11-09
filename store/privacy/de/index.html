@@ -22,28 +22,40 @@
 <p>Diese Seite erklärt, wie Spartopf mit Informationen umgeht, denn deine Privatsphäre ist wichtig.</p>
 
 <h2>Zusammenfassung</h2>
-<p>Spartopf erhebt, überträgt oder speichert keine deiner Daten auf einem Server. Es gibt kein Backend und kein Benutzerkonto. Alles, was du eingibst – Monate, Einnahmen und Ausgaben mit Beträgen, Notizen und Fälligkeiten, Kategorien sowie Einstellungen – wird ausschließlich im lokalen App-Speicher deines Geräts gespeichert und verlässt dein Gerät nie.</p>
+<p>Spartopf erhebt, überträgt oder speichert keine deiner Daten auf einem Server. Es gibt kein Backend und kein Benutzerkonto. Alles, was du eingibst – Monate, Einnahmen und Ausgaben mit Beträgen, Notizen und Fälligkeiten, Kategorien, Budgets, Sparziele sowie Einstellungen – wird ausschließlich auf deinem Gerät gespeichert und verlässt es nie, außer du exportierst es selbst.</p>
 
 <h2>Erhebung und Nutzung von Informationen</h2>
 <p>Die App fragt keine personenbezogenen Daten ab und erhebt oder überträgt keine. Ich (der Entwickler) habe keinen Zugriff auf deine Daten, es gibt keinen Server, an den sie gesendet werden, und keine Möglichkeit, sie für dich einzusehen, wiederherzustellen oder zu löschen – sie existieren nur auf deinem Gerät.</p>
 
+<h2>Was die App auf deinem Gerät nutzt</h2>
+<p>Einige Funktionen nutzen Teile deines iPhones. Jede wird nur verwendet, wenn du die Funktion startest, und keine davon sendet etwas von deinem Gerät weg.</p>
+<ul>
+<li><strong>Kamera und Fotos.</strong> Wählst du „Umsätze aus Foto übernehmen“, kannst du ein Foto aufnehmen oder eines aus deiner Mediathek auswählen. Spartopf liest den Text darin auf deinem Gerät, mit einer in die App eingebauten Texterkennung, und zeigt dir die gefundenen Umsätze zum Prüfen. Spartopf behält das Bild nicht und lädt es nie hoch.</li>
+<li><strong>In deinen Fotos sichern.</strong> Teilst du das Bild deines Jahresrückblicks und wählst „Bild sichern“, fragt iOS, ob Spartopf es zu deiner Mediathek hinzufügen darf. Spartopf fügt nur dieses Bild hinzu und liest deine Mediathek nicht.</li>
+<li><strong>Dateien, die du importierst.</strong> Eine CSV-Datei deiner Bank, eine Excel-Datei oder eine Spartopf-Sicherung, die du auswählst, wird auf deinem Gerät gelesen. Nichts wird hochgeladen.</li>
+<li><strong>Face ID oder Code.</strong> Schaltest du die Sperre ein, bittet Spartopf iOS zu bestätigen, dass du es bist. iOS teilt der App nur mit, ob das geklappt hat; deine Gesichtsdaten und dein Code erreichen die App nie.</li>
+<li><strong>Mitteilungen.</strong> Schaltest du Erinnerungen ein, plant Spartopf lokale Mitteilungen auf deinem Gerät – bevor offene Rechnungen fällig sind und vor dem letzten Kündigungstag eines Vertrags. Es gibt keinen Mitteilungs-Server. Beträge erscheinen nur, wenn du das einschaltest, und Mitteilungen können auf dem Sperrbildschirm zu sehen sein.</li>
+</ul>
+
+<h2>Wo deine Daten gespeichert sind</h2>
+<p>Deine Daten liegen im privaten Speicher von Spartopf auf deinem Gerät, den andere Apps nicht lesen können. Dort hält Spartopf auch automatische Sicherungen – eine pro Tag für die letzten 14 Tage und eine pro Monat für ein Jahr –, damit du zu einem früheren Stand zurückkehren kannst. Ist die Gerätesicherung (z. B. iCloud-Backup) eingeschaltet, kann iOS diesen Speicher nach der Datenschutzrichtlinie von Apple darin einschließen.</p>
 
 <h2>Dienste von Drittanbietern</h2>
-<p>Spartopf enthält keine Analyse-, Werbe- oder Tracking-SDKs von Drittanbietern, stellt keine Netzwerkanfragen und verwendet keine Cookies. Das Betriebssystem deines Geräts (iOS) und der App Store können nach ihren eigenen Datenschutzrichtlinien übliche Installations- und Diagnosedaten erheben, auf die diese App keinen Einfluss hat:</p>
+<p>Spartopf enthält keine Analyse-, Werbe- oder Tracking-SDKs von Drittanbietern, stellt keine Netzwerkanfragen und verwendet keine Cookies. Die Texterkennung nutzt tesseract.js, eine Open-Source-Bibliothek, die Teil der App ist und vollständig auf deinem Gerät läuft. Das Betriebssystem deines Geräts (iOS) und der App Store können nach ihren eigenen Datenschutzrichtlinien übliche Installations- und Diagnosedaten erheben, auf die diese App keinen Einfluss hat:</p>
 <ul><li><a href="https://www.apple.com/de/legal/privacy/" target="_blank" rel="noopener">Datenschutzrichtlinie von Apple</a></li></ul>
 
-<h2>Sicherungen</h2>
-<p>Wenn du „Sicherung exportieren“ oder „Als CSV für Excel exportieren“ nutzt, landet die Datei dort, wo du sie speicherst oder hinschickst (zum Beispiel iCloud Drive oder AirDrop). Ist die Gerätesicherung (z. B. iCloud-Backup) aktiviert, können deine lokal gespeicherten App-Daten darin enthalten sein. Beides liegt vollständig in deiner Hand – an den Entwickler werden nie Daten gesendet, weil es keinen Server gibt.</p>
+<h2>Exporte</h2>
+<p>Wenn du „Sicherung exportieren“ oder „Als CSV für Excel exportieren“ nutzt, landet die Datei dort, wo du sie speicherst oder hinschickst (zum Beispiel iCloud Drive oder AirDrop). Eine exportierte Sicherung ist mit einem Passwort verschlüsselt, das du wählst, außer du schaltest das aus; ein vergessenes Passwort kann niemand wiederherstellen, auch ich nicht. Eine CSV-Datei ist nicht verschlüsselt. An den Entwickler werden nie Daten gesendet, weil es keinen Server gibt.</p>
 
 <h2>Löschen von Daten</h2>
-<p>Du kannst alle Daten jederzeit in der App löschen (Einstellungen → Alle Daten löschen) oder die App deinstallieren. Anderswo ist nichts gespeichert, das gelöscht werden müsste.</p>
+<p>Du kannst alle Daten jederzeit in der App löschen (Optionen → Alle Daten löschen). Das entfernt deine Einträge, die automatischen Sicherungen auf dem Gerät und geplante Erinnerungen. Die App zu deinstallieren bewirkt dasselbe. Dateien, die du selbst exportiert hast, bleiben, wo du sie gespeichert hast. Anderswo ist nichts gespeichert, das gelöscht werden müsste.</p>
 
 <h2>Datenschutz von Kindern</h2>
 <p>Diese App erhebt wissentlich keine Informationen von irgendjemandem, auch nicht von Kindern unter 13 Jahren, da sie überhaupt keine Informationen erhebt.</p>
 
 <h2>Änderungen dieser Datenschutzerklärung</h2>
 <p>Ich kann diese Datenschutzerklärung von Zeit zu Zeit aktualisieren, zum Beispiel wenn sich der Umgang der App mit Daten ändert. Änderungen werden auf dieser Seite veröffentlicht.</p>
-<p>Diese Erklärung gilt ab dem 01.11.2026.</p>
+<p>Diese Erklärung gilt ab dem 09.11.2026. Sie wurde zuletzt ergänzt um das Lesen von Fotos, Datei-Importe, Face ID, Erinnerungen und die automatischen Sicherungen.</p>
 
 <h2>Kontakt</h2>
 <p>Bei Fragen zu dieser Datenschutzerklärung oder für Hilfe zu Spartopf erreichst du mich unter <a href="mailto:ahmad.habboubah@gmail.com">ahmad.habboubah@gmail.com</a>.</p>

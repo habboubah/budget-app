@@ -1,0 +1,6 @@
+/* Permission prompts. The English base text is in Info.plist; keep both in sync. */
+
+"NSCameraUsageDescription" = "O Spartopf lê os movimentos bancários de uma foto que tiras. A foto é lida neste iPhone e nunca sai dele.";
+"NSPhotoLibraryUsageDescription" = "O Spartopf lê os movimentos bancários de uma captura de ecrã que escolhes. É lida neste iPhone e nunca sai dele.";
+"NSPhotoLibraryAddUsageDescription" = "O Spartopf guarda a imagem do teu resumo do ano em Fotografias quando escolhes Guardar imagem.";
+"NSFaceIDUsageDescription" = "O Spartopf usa o Face ID para desbloquear o teu orçamento, para que só tu o possas abrir.";

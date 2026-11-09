@@ -1,0 +1,6 @@
+/* Permission prompts. The English base text is in Info.plist; keep both in sync. */
+
+"NSCameraUsageDescription" = "Spartopf legge i movimenti bancari da una foto che scatti. La foto viene letta su questo iPhone e non lo lascia mai.";
+"NSPhotoLibraryUsageDescription" = "Spartopf legge i movimenti bancari da uno screenshot che scegli. Viene letto su questo iPhone e non lo lascia mai.";
+"NSPhotoLibraryAddUsageDescription" = "Spartopf salva l’immagine del tuo riepilogo dell’anno in Foto quando scegli Salva immagine.";
+"NSFaceIDUsageDescription" = "Spartopf usa Face ID per sbloccare il tuo bilancio, così solo tu puoi aprirlo.";

@@ -1,0 +1,6 @@
+/* Permission prompts. The English base text is in Info.plist; keep both in sync. */
+
+"NSCameraUsageDescription" = "Spartopf, çektiğin bir fotoğraftaki banka hareketlerini okur. Fotoğraf bu iPhone'da okunur ve onu asla terk etmez.";
+"NSPhotoLibraryUsageDescription" = "Spartopf, seçtiğin bir ekran görüntüsündeki banka hareketlerini okur. Bu iPhone'da okunur ve onu asla terk etmez.";
+"NSPhotoLibraryAddUsageDescription" = "Spartopf, Görüntüyü Kaydet'i seçtiğinde yıl özetinin resmini Fotoğraflar'a kaydeder.";
+"NSFaceIDUsageDescription" = "Spartopf, bütçe defterinin kilidini açmak için Face ID'yi kullanır; böylece onu yalnızca sen açabilirsin.";

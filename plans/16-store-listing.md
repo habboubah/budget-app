@@ -42,6 +42,32 @@ A store page that shows what the app does, in their language and with accessibil
 
 ## Done when
 
-- [ ] The listing, the review note and the privacy policy match the app.
+- [x] The listing, the review note and the privacy policy match the app.
 - [ ] Accessibility labels are declared after the check.
-- [ ] Permission prompts appear in the device's language.
+- [ ] Permission prompts appear in the device's language (built; to see on a device).
+
+## Notes (built, 9 November 2026)
+
+- **Listing** (`store/listing.md`): DE, EN and a new AR column and texts.
+  Promotional text and description lead with "free, no ads, no subscription,
+  no sign-up", then the two balances, bank CSV and photo import without a
+  bank login, quick entry, Planen, statistics, privacy (Face ID, reminders,
+  encrypted and automatic backups) and the 14 languages. DE/EN name and
+  subtitle unchanged. Keywords without brand names and without words from
+  the name or subtitle; the Arabic list fits 100 *bytes* in case App Store
+  Connect counts bytes.
+- **Review note**: rewritten as Apple's six 2.1 answers (recording, purpose,
+  how to use incl. *Try it out → Add test data*, external services, regional
+  differences, regulated industry), with every permission and why. 3,844 of
+  4,000 characters. It describes the build after 1.2.4 (test data, 14
+  languages), not the rejected build 5.
+- **Privacy policy** (`store/privacy/`, copied to `~/repos/privacy-policy/spartopf/`):
+  camera and photos, saving to photos, file imports, Face ID, local
+  notifications, where the data lives, the automatic backups, encrypted
+  exports, what *Alle Daten löschen* removes. Still "Data Not Collected".
+- **Permission prompts**: `InfoPlist.strings` in 14 `.lproj` folders, one
+  variant group in the Xcode project. Added `NSPhotoLibraryAddUsageDescription`:
+  the year review's picture goes to the share sheet, whose *Save Image* needs
+  it (without the key iOS ends the app). Translations drafted, like plan 25's.
+- **Not done:** step 5 (accessibility labels — on a device) and step 7 (the
+  Arabic € placement — an Arabic reader decides).

@@ -22,28 +22,40 @@
 <p>This page explains how Spartopf handles information, since your privacy matters.</p>
 
 <h2>Summary</h2>
-<p>Spartopf does not collect, transmit, or store any of your data on any server. There is no backend and no account system. Everything you enter — months, income and expenses with their amounts, notes and due days, categories, and settings — is saved only in your device's local app storage and never leaves your device.</p>
+<p>Spartopf does not collect, transmit, or store any of your data on any server. There is no backend and no account system. Everything you enter — months, income and expenses with their amounts, notes and due days, categories, budgets, savings goals, and settings — is saved only on your device and never leaves it, unless you export it yourself.</p>
 
 <h2>Information Collection and Use</h2>
 <p>The app does not request, collect, or transmit any personally identifiable information. I (the developer) have no access to your data, no server it is sent to, and no way to view, recover, or delete it on your behalf — it exists only on your device.</p>
 
+<h2>What the App Uses on Your Device</h2>
+<p>Some features use parts of your iPhone. Each one is used only when you start that feature, and none of them sends anything off your device.</p>
+<ul>
+<li><strong>Camera and photos.</strong> When you choose "Take transactions from a photo", you can take a picture or pick one from your photo library. Spartopf reads the text in it on your device, with a text recognition library built into the app, and shows you the transactions it found so you can check them. Spartopf does not keep the picture and never uploads it.</li>
+<li><strong>Saving to your photos.</strong> If you share the picture of your year in review and choose "Save Image", iOS asks whether Spartopf may add it to your photo library. Spartopf only adds that picture; it does not read your library.</li>
+<li><strong>Files you import.</strong> A bank CSV file, an Excel workbook or a Spartopf backup that you pick is read on your device. Nothing is uploaded.</li>
+<li><strong>Face ID or passcode.</strong> If you turn on the lock, Spartopf asks iOS to confirm that it's you. iOS only tells the app whether that worked; your face data and your passcode never reach the app.</li>
+<li><strong>Notifications.</strong> If you turn on reminders, Spartopf schedules local notifications on your device before open bills are due and before a contract's last day to cancel. There is no notification server. Notifications show no amounts unless you turn that on, and they can appear on your lock screen.</li>
+</ul>
+
+<h2>Where Your Data Is Stored</h2>
+<p>Your data is kept in Spartopf's private storage on your device, which other apps cannot read. Spartopf also keeps automatic backups there — one a day for the last 14 days and one a month for a year — so you can go back to an earlier version. If your device's own backup (for example iCloud Backup) is turned on, iOS may include this storage in it, under Apple's privacy policy.</p>
 
 <h2>Third-Party Services</h2>
-<p>Spartopf does not integrate any third-party analytics, advertising, or tracking SDKs, makes no network requests, and does not use cookies. Your device's operating system (iOS) and the App Store may collect standard installation and diagnostic information under their own privacy policies, which are outside this app's control:</p>
+<p>Spartopf does not integrate any third-party analytics, advertising, or tracking SDKs, makes no network requests, and does not use cookies. Text recognition uses tesseract.js, an open-source library that is part of the app and runs entirely on your device. Your device's operating system (iOS) and the App Store may collect standard installation and diagnostic information under their own privacy policies, which are outside this app's control:</p>
 <ul><li><a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple Privacy Policy</a></li></ul>
 
-<h2>Backups</h2>
-<p>If you use "Export backup" or "Export as CSV for Excel", the file goes wherever you choose to save or send it (for example iCloud Drive or AirDrop). If your device's own backup (e.g. iCloud Backup) is enabled, your locally stored app data may be included in it. Both are controlled entirely by you — no data is ever sent to the developer, because there is no server.</p>
+<h2>Exports</h2>
+<p>If you use "Export backup" or "Export as CSV for Excel", the file goes wherever you choose to save or send it (for example iCloud Drive or AirDrop). An exported backup is encrypted with a password you choose, unless you switch that off; nobody, including me, can recover a forgotten password. A CSV file is not encrypted. No data is ever sent to the developer, because there is no server.</p>
 
 <h2>Data Deletion</h2>
-<p>You can delete all data at any time in the app (Settings → Delete all data) or by uninstalling the app. There is nothing stored elsewhere to delete.</p>
+<p>You can delete all data at any time in the app (Settings → Delete all data). This removes your entries, the automatic backups on the device and any scheduled reminders. Uninstalling the app does the same. Files you exported yourself stay where you saved them. There is nothing stored elsewhere to delete.</p>
 
 <h2>Children's Privacy</h2>
 <p>This app does not knowingly collect any information from anyone, including children under 13, because it does not collect information from anyone at all.</p>
 
 <h2>Changes to This Privacy Policy</h2>
 <p>I may update this Privacy Policy from time to time, for example if the app's data practices change. Any changes will be posted on this page.</p>
-<p>This policy is effective as of 2026-11-01.</p>
+<p>This policy is effective as of 2026-11-09. It was last updated to describe photo text reading, file imports, Face ID, reminders and the automatic backups.</p>
 
 <h2>Contact</h2>
 <p>If you have any questions about this Privacy Policy or need support with Spartopf, contact me at <a href="mailto:ahmad.habboubah@gmail.com">ahmad.habboubah@gmail.com</a>.</p>

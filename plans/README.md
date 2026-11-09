@@ -224,7 +224,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 13 Month report and year review — built with 06a (before 07–12; the goal line waits for plan 12)
 - [ ] 14 Native bridge
 - [ ] 15 Ratings and feedback
-- [ ] 16 Store listing, accessibility labels, permission texts
+- [ ] 16 Store listing, accessibility labels, permission texts — listing (DE/EN/AR), review note, privacy policy and permission prompts (14 languages) done; accessibility labels (device check) and the Arabic € placement still open
 - [ ] 17 Widgets and controls
 - [ ] 18 Siri and Shortcuts
 - [ ] 19 Apple Pay, bank notifications, "Teilen an Spartopf"

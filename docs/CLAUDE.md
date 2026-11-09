@@ -370,6 +370,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   Default `de`; first run follows the device's preferred languages
   (`languageForTag`: nb/no/nn → `nb`, pt-BR → `pt`). The iOS Info.plist lists
   them all in `CFBundleLocalizations` (App Store languages, per-app language).
+- **Permission prompts** (plan 16). The English text is in `Info.plist`; every
+  language, English included, has it in `ios/App/App/<lang>.lproj/InfoPlist.strings`.
+  A new `NS…UsageDescription` key goes into Info.plist and all fourteen files,
+  and the review note and privacy policy (`store/`) say what it is for.
 - **Adding a language** (`src/translations.test.ts` checks most of it):
   1. `src/i18n/xx.ts`: every key (the `Strings` type enforces it), the same
      placeholders as German, `locale`, `dir`, a 10-column `csvHeader`, and
@@ -378,6 +382,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
      it is the row the Excel import reads.
   2. A loader in `translations.ts`, the code in `languages` and
      `LANGUAGE_NAMES`, and in Info.plist's `CFBundleLocalizations`.
+     The permission prompts: `ios/App/App/xx.lproj/InfoPlist.strings` with
+     every `NS…UsageDescription` key, added to the `InfoPlist.strings`
+     variant group and to `knownRegions` in `project.pbxproj`.
   3. Category names in `src/data/names.ts`, plus a schema bump so built-ins
      still named as shipped get them (`upgradeCategories`, as schema 19 did) —
      no category's name may equal another's in any language (keyword index).
