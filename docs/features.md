@@ -73,10 +73,10 @@ Everything the app can do. Build and release steps are in the
   gains a **Tags** view ("Urlaub · 1.840 € · 23 Einträge"); the CSV export has a
   tags column. Nothing changes if you never use them.
 - **Favourites.** Pin the small daily entries (Bäcker, Tanken, Kantine) with
-  *Als Favorit merken*; they appear as chips at the top of a new entry. One tap
-  adds the entry (dated today, paid, undoable); a long press opens it to change
-  something first. Reorder and remove them in *Optionen → Haushaltsbuch →
-  Favoriten*. Up to eight.
+  *Als Favorit merken*; they appear as chips at the top of a new entry. A tap
+  fills the sheet in — name, category, amount, repeat — with the amount
+  selected, so typing replaces it; nothing is saved before *Sichern*. Reorder
+  and remove them in *Optionen → Haushaltsbuch → Favoriten*. Up to eight.
 - **Smarter entering.** While you type the name, Spartopf completes it (your
   earlier names first, then known shops and words), offers *Meintest du
   „Lidl“?* for a typo, and moves the categories the name points to to the

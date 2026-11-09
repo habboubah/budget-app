@@ -5,8 +5,8 @@ import { motion, useTransform } from 'motion/react';
 import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import translations, { fmt } from './translations';
-import { Category, Contract, Entry, EntryDraft, Favorite, MonthKey } from './types';
-import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, isoDay, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
+import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
+import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { Insight, buildBook, highlights, monthReview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
@@ -298,15 +298,6 @@ export default function App() {
    * away (today, paid) with the undo toast; without one it opens the sheet
    * pre-filled, amount focused. `pin` always opens the sheet to change first.
    */
-  const addFromFavorite = (fav: Favorite, pin = false) => {
-    const categoryId = categories.some(c => c.id === fav.categoryId) ? fav.categoryId : 'extra';
-    if (pin || fav.amount === undefined) {
-      setEntrySheet({ kind: 'new', month, categoryId, preset: { name: fav.name, amount: fav.amount, repeat: fav.repeat } });
-      return;
-    }
-    createEntry(month, { categoryId, name: fav.name, amount: fav.amount, paid: true, repeat: fav.repeat ?? 'none', date: isoDay() });
-  };
-
   const deleteEntry = (id: string) => {
     const removed = store.removeEntry(id);
     if (!removed) return;
@@ -910,7 +901,6 @@ export default function App() {
         onSave={(id, d) => { store.updateEntry(id, d); setLastCategory(d.categoryId); }}
         onDelete={deleteEntry}
         favorites={store.favorites}
-        onUseFavorite={addFromFavorite}
         onPinFavorite={fav => {
           const created = store.addFavorite(fav);
           show(created ? t.favoriteSaved : t.favoritesFull);

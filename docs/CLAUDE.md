@@ -285,6 +285,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   by `keywordKey`, caps at 40 characters and 120 words. Keep a shipped keyword
   in one category unless it really is both, and mind what it starts or ends
   ("Super" would catch "Supermarkt").
+- **Favourites in the entry sheet** fill it in (name, category, amount,
+  repeat; the amount focused and selected) — nothing is saved before *Sichern*.
 - **Search** (month page): `SearchField` sits in `Screen`'s `accessory` slot
   under the title. `searchEntries()` (logic.ts) keeps this month's entries
   whose name, note or category name contains every word, or whose amount

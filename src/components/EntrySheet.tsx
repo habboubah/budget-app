@@ -34,10 +34,8 @@ interface Props {
   onCreate: (month: MonthKey, draft: EntryDraft) => void;
   onSave: (id: string, draft: EntryDraft) => void;
   onDelete: (id: string) => void;
-  /** Pinned favourites, shown as chips at the top of a new entry (plan 09). */
+  /** Pinned favourites, shown as chips at the top of a new entry (plan 09): a tap fills the sheet in, nothing is saved yet. */
   favorites?: Favorite[];
-  /** Tap a favourite chip (one-tap add); `pin` from a long press opens it pre-filled. */
-  onUseFavorite?: (fav: Favorite, pin?: boolean) => void;
   /** Pin the current entry as a favourite; returns false when the limit is reached. */
   onPinFavorite?: (fav: Omit<Favorite, 'id'>) => boolean;
   /** Open savings goals, for the "Für: …" pill on a Sparen category (plan 12). */
@@ -74,7 +72,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * taps a category, and only with `autoCategory`; emptying the name goes back
  * to the category the sheet opened with.
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onUseFavorite, onPinFavorite, goals = [], onSplit, autoCategory = true }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -274,6 +272,30 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setCategoryChosen(true);
   };
 
+  /**
+   * A favourite fills the sheet in — name, category, amount, repeat — and
+   * nothing is saved before *Sichern*: the amount is focused with all of it
+   * selected, as it is what usually changes (a deleted category falls to
+   * Sonstiges).
+   */
+  const fillFrom = (f: Favorite) => {
+    tapLight();
+    const c = categories.find(x => x.id === f.categoryId) ?? categories.find(x => x.id === 'extra') ?? categories[0];
+    if (c) setCategoryId(c.id);
+    setCategoryChosen(true);
+    setName(f.name);
+    setNameTyped(false);
+    setAllSuggestions(false);
+    setRepeat(f.repeat ?? 'none');
+    setAmountText(f.amount !== undefined ? amountToInput(f.amount, t.locale) : '');
+    setShowError(false);
+    requestAnimationFrame(() => {
+      const el = amountRef.current;
+      if (!el) return;
+      el.focus({ preventScroll: true });
+      el.select();
+    });
+  };
 
   const draft = (): EntryDraft | null => {
     if (!valid || amount === null || !category) return null;
@@ -322,9 +344,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     <Sheet open={!!mode} title={title} closeLabel={t.cancel} onClose={onClose}
       action={{ label: t.save, onClick: () => save(), disabled: !valid }}>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-4">
-        {/* Favourites (plan 09): one tap adds; a long press opens pre-filled. New entries only. */}
-        {!editing && favorites.length > 0 && onUseFavorite && (
-          <div className="-mt-1 flex flex-wrap gap-2" aria-label={t.favorites}>
+        {/* Favourites (plan 09): a tap fills the sheet in, to check or change before saving. New entries only. */}
+        {!editing && favorites.length > 0 && (
+          <div className="-mt-1 flex flex-wrap gap-2" role="group" aria-label={t.favorites}>
             {favorites.map(f => {
               const c = categories.find(x => x.id === f.categoryId);
               return (
@@ -333,8 +355,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
                   emoji={c?.emoji}
                   name={f.name}
                   amount={f.amount !== undefined ? formatMoneyShort(f.amount, t.locale) : undefined}
-                  onTap={() => { onUseFavorite(f); onClose(); }}
-                  onHold={() => onUseFavorite(f, true)}
+                  on={name === f.name && categoryId === (c?.id ?? 'extra')}
+                  onTap={() => fillFrom(f)}
                 />
               );
             })}
@@ -731,37 +753,26 @@ function OperatorKeys({ show, t, onInsert }: { show: boolean; t: Strings; onInse
   );
 }
 
-/**
- * A favourite as a chip (plan 09): a short tap uses it, a long press (500 ms)
- * opens it pre-filled. The long press cancels the tap so it never does both.
- */
-function FavoriteChip({ emoji, name, amount, onTap, onHold }: {
+/** A favourite as a chip (plan 09): a tap fills the sheet in; pressed while the sheet holds it. */
+function FavoriteChip({ emoji, name, amount, on, onTap }: {
   emoji?: string;
   name: string;
   amount?: string;
+  on: boolean;
   onTap: () => void;
-  onHold: () => void;
 }) {
-  const held = useRef(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const start = () => {
-    held.current = false;
-    timer.current = setTimeout(() => { held.current = true; tapLight(); onHold(); }, 500);
-  };
-  const end = () => { if (timer.current) clearTimeout(timer.current); };
   return (
     <button
       type="button"
-      onPointerDown={start}
-      onPointerUp={end}
-      onPointerLeave={end}
-      onPointerCancel={end}
-      onClick={() => { if (!held.current) { tapLight(); onTap(); } }}
-      className="hit-44 min-h-[40px] max-w-full ps-2 pe-3 rounded-full bg-surface-2 text-fg inline-flex items-center gap-1.5 text-label font-medium active:scale-[0.97] transition-transform focus-visible:ring-focus wrap-compound text-start"
+      aria-pressed={on}
+      onMouseDown={e => e.preventDefault()}
+      onClick={onTap}
+      className={`hit-44 min-h-[40px] max-w-full ps-2 pe-3 rounded-full inline-flex items-center gap-1.5 text-label font-medium active:scale-[0.97] transition-transform focus-visible:ring-focus wrap-compound text-start ${
+        on ? 'bg-accent-dim text-accent' : 'bg-surface-2 text-fg'}`}
     >
       {emoji && <span className="emoji text-[15px]" aria-hidden="true">{emoji}</span>}
       <span className="wrap-compound">{name}</span>
-      {amount && <span className="text-fg-mute num" dir="ltr">{amount}</span>}
+      {amount && <span className={`num ${on ? '' : 'text-fg-mute'}`} dir="ltr">{amount}</span>}
     </button>
   );
 }
