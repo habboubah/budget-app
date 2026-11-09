@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { AppData, Budget, Category, CategoryKind, Hue, Repeat } from '../types';
 import { amountToInput, cleanText, displayName, normalizeDigits, parseAmount, uid } from '../logic';
@@ -12,14 +12,18 @@ import { Picture } from '../ui/Picture';
 import { EmojiPicker, HuePicker } from '../ui/PicturePicker';
 import { Switch } from '../ui/Switch';
 import { BudgetSuggestion } from './BudgetSheet';
+import { KeywordEditor } from './KeywordEditor';
+import { isShippedList, keywordIdeas, keywordOwners, keywordsForName, keywordsOf } from '../keywords';
+import { shippedKeywords } from '../data/keywords';
 
 export type CategorySheetMode = { kind: 'new' } | { kind: 'edit'; category: Category } | null;
 
 /**
  * Create a category, or rename / retype / repaint one: its name, whether it
- * is money in or out, a spending category's monthly budget (with what it cost
- * on average as a suggestion), whether every new month starts with it, how
- * it counts for 50/30/20, its picture and colour.
+ * is money in or out, its keywords (plan 32: what typed as an entry's name
+ * points here), a spending category's monthly budget (with what it cost on
+ * average as a suggestion), whether every new month starts with it, how it
+ * counts for 50/30/20, its picture and colour.
  */
 export function CategorySheet({ mode, data, language, t, onClose, onCreate, onSave, onDelete }: {
   mode: CategorySheetMode;
@@ -42,6 +46,9 @@ export function CategorySheet({ mode, data, language, t, onClose, onCreate, onSa
   const [standard, setStandard] = useState(true);
   /** The monthly budget as typed; empty: none. */
   const [limit, setLimit] = useState('');
+  /** Its keywords as they stand in the editor; stored only once changed (else a built-in keeps following what ships). */
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [keywordsChanged, setKeywordsChanged] = useState(false);
 
   useEffect(() => {
     if (!mode) return;
@@ -49,9 +56,12 @@ export function CategorySheet({ mode, data, language, t, onClose, onCreate, onSa
       const c = mode.category;
       setName(displayName(c.names, language)); setEmoji(c.emoji); setHue(c.hue); setKind(c.kind); setRepeat(c.repeat); setBudget(budgetOf(c)); setStandard(c.standard !== false);
       setLimit(c.limit ? amountToInput(c.limit, t.locale) : '');
+      setKeywords(keywordsOf(c, language));
     } else {
       setName(''); setEmoji('📦'); setHue('sky'); setKind('expense'); setRepeat('none'); setBudget('want'); setStandard(true); setLimit('');
+      setKeywords([]);
     }
+    setKeywordsChanged(false);
   }, [mode]);
 
   const clean = cleanText(name, 40);
@@ -59,6 +69,13 @@ export function CategorySheet({ mode, data, language, t, onClose, onCreate, onSa
   const limitInvalid = kind === 'expense' && limit.trim() !== '' && !(limitValue !== null && limitValue > 0);
   const suggestion = editing && kind === 'expense' ? suggestLimit(data, editing.id) : null;
   const canSave = !!clean && !limitInvalid;
+  const changeKeywords = (next: string[]) => { setKeywords(next); setKeywordsChanged(true); };
+  // Ideas: names often entered here that no keyword catches; for a new one, the closest built-in's keywords ("Fitness" → Gym …).
+  const ideas = useMemo(
+    () => (editing ? keywordIdeas({ category: editing, keywords, entries: data.entries, lang: language }) : keywordsForName(clean, language)),
+    [editing, keywords, data.entries, language, clean],
+  );
+  const canReset = !!editing && shippedKeywords(editing.id, language).length > 0 && !isShippedList(editing, keywords, language);
 
   const save = () => {
     if (!canSave) return;
@@ -68,10 +85,12 @@ export function CategorySheet({ mode, data, language, t, onClose, onCreate, onSa
       // Renaming in one language replaces the built-in translations: the
       // user's name is the name now, whatever the app language.
       const names = clean === displayName(editing.names, language) ? editing.names : { [language]: clean };
-      onSave(editing.id, { names, ...next });
+      // Keywords only once touched; a list that says what ships goes back to following it.
+      const words = keywordsChanged ? { keywords: isShippedList(editing, keywords, language) ? undefined : keywords } : {};
+      onSave(editing.id, { names, ...next, ...words });
     } else {
       const { limit: l, ...rest } = next;
-      onCreate({ id: uid(), names: { [language]: clean }, ...rest, ...(l ? { limit: l } : {}) });
+      onCreate({ id: uid(), names: { [language]: clean }, ...rest, ...(l ? { limit: l } : {}), ...(keywords.length ? { keywords } : {}) });
     }
     onClose();
   };
@@ -96,6 +115,15 @@ export function CategorySheet({ mode, data, language, t, onClose, onCreate, onSa
             options={[{ value: 'expense', label: t.kindExpense }, { value: 'income', label: t.kindIncome }]}
           />
         </div>
+        <KeywordEditor
+          keywords={keywords}
+          onChange={changeKeywords}
+          ideas={ideas}
+          ideasLabel={editing ? t.keywordIdeas : t.suggestions}
+          alsoIn={word => keywordOwners(data.categories, word, language, editing?.id)}
+          onReset={canReset ? () => changeKeywords(shippedKeywords(editing!.id, language)) : undefined}
+          t={t}
+        />
         {kind === 'expense' && (
           <div>
             <Field

@@ -254,7 +254,36 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 - **Name suggestions** (`suggestNames`) come from every entry of every month:
   this category's names, then other categories' names of the same kind (pass
   `categories`), and only then its built-in ideas; each remembers its
-  category, and picking one from elsewhere moves the entry there.
+  category, and picking one from elsewhere moves the entry there. That is the
+  list before anything is typed; once a name is typed, see the next point.
+- **Smarter entering (plan 32, `src/keywords.ts`, pure and tested).**
+  `buildKeywordIndex()` (once per change of categories or entries — the sheet
+  memoises it on what matters, as App passes fresh arrays) reads every
+  category's keywords (`keywordsOf`: `Category.keywords`, else what a built-in
+  ships with in `src/data/keywords.ts`, the app language's words first), each
+  category's names in every language, and the earlier entries' names.
+  `guessCategories()` ranks the categories a typed name points to — an earlier
+  entry of that name (130) beats a keyword phrase (100 + length; "Aldi Talk"
+  beats "Aldi"), a category name (90), a compound (80: a keyword of ≥ 4
+  letters at a word's start, ≥ 5 at its end, the rest ≥ 3 letters), a typo
+  (`editDistance`, OSA: 1 edit up to 7 letters, 2 from 8; a four-letter word
+  only by a swap or a missing/extra letter — "Aldi" is not "Audi") and the
+  start of what is still typed; ties go to the month's categories, then the
+  most used. Sure matches only, within 15 points of the best, when any; else
+  the likely ones from three letters. `completeNames()` and `correctTypo()`
+  feed the sheet's chips and *Meintest du …?*. The entry sheet takes a sure
+  guess for a new entry until a category or a name chip is tapped (and only
+  with the view preference `spartopf-auto-category`, switched in
+  *Kategorien und Budgets*; off: only marked), and goes back to the category
+  it opened with when the name is emptied; an edited entry is never moved.
+  Guessed chips lead the row with a ✦ and `suggest-pop` (index.css).
+  **Schema 18** adds `Category.keywords` — unset = what ships (so new shipped
+  words reach the user), set once edited in the category sheet
+  (`KeywordEditor`), even to `[]`; `isShippedList` turns a list equal to the
+  shipped one back into unset; `normalizeKeywords` (logic.ts) trims, dedupes
+  by `keywordKey`, caps at 40 characters and 120 words. Keep a shipped keyword
+  in one category unless it really is both, and mind what it starts or ends
+  ("Super" would catch "Supermarkt").
 - **Search** (month page): `SearchField` sits in `Screen`'s `accessory` slot
   under the title. `searchEntries()` (logic.ts) keeps this month's entries
   whose name, note or category name contains every word, or whose amount

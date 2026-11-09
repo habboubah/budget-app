@@ -39,6 +39,13 @@ export interface Category {
   standard?: boolean;
   /** Ships with the app (can be edited, deleted and restored). */
   builtin?: boolean;
+  /**
+   * Words that point to this category when typed as an entry's name ("Lidl",
+   * "Strom", "Gym") — for the category guess and the name's completion
+   * (schema 18, src/keywords.ts). Unset = what a built-in ships with
+   * (src/data/keywords.ts); set once edited in Settings, even to none.
+   */
+  keywords?: string[];
 }
 
 /**

@@ -1,12 +1,13 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, Check, ChevronDown, ChevronUp, Hash, Plus, Repeat as RepeatIcon, Split, Star, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, ChevronUp, Hash, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, Star, Trash2 } from 'lucide-react';
 import { Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
 import { budgetOf } from '../data/defaults';
 import {
   amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
   normalizeDigits, topCategories,
 } from '../logic';
+import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
@@ -43,6 +44,8 @@ interface Props {
   goals?: Goal[];
   /** Split this (existing) payment into parts (plan 21). */
   onSplit?: (entry: Entry) => void;
+  /** Take the category the typed name points to, until one is tapped (plan 32; Kategorien → switch). Off: only point it out. */
+  autoCategory?: boolean;
 }
 
 /** A compact control in the entry sheet's last row (date, status, repeat, note). */
@@ -63,8 +66,15 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * empty. A new entry — income or expense — is paid / received and happens
  * once unless changed, so most entries are amount + name + save. (A due day
  * is no longer asked for; one already on an entry is kept.)
+ *
+ * While the name is typed (plan 32, src/keywords.ts) the suggestions complete
+ * it from earlier names and every category's keywords, a typo gets "Meintest
+ * du …?", and the categories it points to move to the front with a ✦ and a
+ * short pop. A sure match is also chosen — for a new entry, until the user
+ * taps a category, and only with `autoCategory`; emptying the name goes back
+ * to the category the sheet opened with.
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onUseFavorite, onPinFavorite, goals = [], onSplit }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onUseFavorite, onPinFavorite, goals = [], onSplit, autoCategory = true }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -89,6 +99,12 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [pinned, setPinned] = useState(false);
   /** The savings goal this entry fills, on a Sparen category (plan 12). */
   const [goalId, setGoalId] = useState<string | undefined>(undefined);
+  /** The name was typed in this sheet: only then are categories guessed (not for a preset or an entry being opened). */
+  const [nameTyped, setNameTyped] = useState(false);
+  /** A category (or a name suggestion) was tapped: no more automatic picking. */
+  const [categoryChosen, setCategoryChosen] = useState(false);
+  /** The category the sheet opened with, for when the name is emptied again. */
+  const [baseCategory, setBaseCategory] = useState('');
   const [goalMenuAt, setGoalMenuAt] = useState<HTMLElement | null>(null);
   const [repeatAt, setRepeatAt] = useState<HTMLElement | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
@@ -124,6 +140,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const reset = (keepCategory?: string) => {
     const c = categories.find(x => x.id === (keepCategory ?? (mode?.kind === 'new' ? mode.categoryId : ''))) ?? categories[0];
     setCategoryId(c?.id ?? '');
+    setBaseCategory(c?.id ?? '');
+    setNameTyped(false);
+    setCategoryChosen(false);
     setAmountText('');
     setName('');
     // A new entry: paid, once — the way most receipts are.
@@ -160,6 +179,10 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setAllCategories(false);
       setShowError(false);
       setGoalId(e.goalId);
+      // An entry being edited keeps its category: guesses are only pointed out.
+      setNameTyped(false);
+      setCategoryChosen(true);
+      setBaseCategory(e.categoryId);
     } else {
       reset();
       if (mode.preset?.name) setName(mode.preset.name);
@@ -184,11 +207,38 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const dateValid = dateText === '' || (isIsoDay(dateText) && dateText >= firstDay && dateText <= lastDay);
   const valid = amount !== null && !!category && dueValid && dateValid;
 
-  const suggestions = useMemo(
-    // From every month and category, narrowed with each letter typed.
-    () => (editing || !categoryId ? [] : suggestNames({ entries, categoryId, categories, query: name, lang: language, limit: 60 })),
-    [editing, entries, categoryId, categories, name, language],
+  // Earlier names and every category's keywords, read once per change of them (plan 32). App
+  // passes fresh arrays on each render, so the categories are compared by what matters here.
+  const categoriesKey = JSON.stringify(categories.map(c => [c.id, c.names, c.keywords ?? null]));
+  const featuredKey = featured.join(',');
+  const keywordIndex = useMemo(() => buildKeywordIndex({ categories, entries, lang: language }), [categoriesKey, entries, language]);
+  /** The categories the typed name points to, best first — the sure ones only, when there are. */
+  const guesses = useMemo(
+    () => (nameTyped ? guessCategories(keywordIndex, name, { featured }) : []),
+    [nameTyped, keywordIndex, name, featuredKey],
   );
+  /** "Lidel" → "Lidl". */
+  const correction = useMemo(() => (nameTyped ? correctTypo(keywordIndex, name) : null), [nameTyped, keywordIndex, name]);
+
+  /** The name as typed: it may also pick the category (see above). */
+  const typeName = (v: string) => {
+    setName(v);
+    setAllSuggestions(false);
+    setNameTyped(true);
+    if (!autoCategory || categoryChosen) return;
+    const best = guessCategories(keywordIndex, v, { featured })[0];
+    if (best?.sure) setCategoryId(best.categoryId);
+    else if (!cleanText(v)) setCategoryId(baseCategory);
+  };
+
+  const suggestions = useMemo(() => {
+    if ((editing && !nameTyped) || !categoryId) return [];
+    // Nothing typed: this category's names first, from every month (and its built-in ideas).
+    if (!cleanText(name)) return suggestNames({ entries, categoryId, categories, query: '', lang: language, limit: 60 });
+    // Typed: what completes it — earlier names, then keywords, then what a typo probably meant.
+    const all = completeNames(keywordIndex, name, { categoryId });
+    return correction ? all.filter(s => s.name !== correction) : all;
+  }, [editing, nameTyped, entries, categoryId, categories, name, language, keywordIndex, correction]);
   // Three at a glance; the rest behind "All".
   const shownSuggestions = allSuggestions ? suggestions : suggestions.slice(0, 3);
   // Tag suggestions: tags already in use, minus those already typed (plan 26).
@@ -204,13 +254,26 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     () => topCategories({ categories, entries, selectedId: categoryId, featured }),
     [categories, entries, categoryId, featured],
   );
-  const shownCategories = allCategories ? categories : inView;
-  const hiddenCount = categories.length - inView.length;
+  // What the name points to comes first ("filtered"), then the chosen one, then the usual three.
+  const guessed = new Set(guesses.map(g => g.categoryId));
+  const atGlance = useMemo(() => {
+    if (!guesses.length) return inView;
+    const first = [...guesses.map(g => g.categoryId), categoryId, ...inView.map(c => c.id)];
+    const ids = [...new Set(first)].filter(id => categories.some(c => c.id === id));
+    const size = Math.max(3, guesses.length + (guesses.some(g => g.categoryId === categoryId) ? 0 : 1));
+    return ids.slice(0, size).map(id => categories.find(c => c.id === id)!);
+  }, [guesses, inView, categoryId, categories]);
+  const shownCategories = allCategories ? categories : atGlance;
+  const hiddenCount = categories.length - atGlance.length;
+  /** Changes when other categories are pointed to: their chips pop again. */
+  const guessKey = guesses.map(g => g.categoryId).join(',');
 
   const pickCategory = (c: Category) => {
     tapLight();
     setCategoryId(c.id);
+    setCategoryChosen(true);
   };
+
 
   const draft = (): EntryDraft | null => {
     if (!valid || amount === null || !category) return null;
@@ -344,7 +407,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             label={income ? t.fromWhom : t.whatFor}
             hideLabel
             value={name}
-            onChange={v => { setName(v); setAllSuggestions(false); }}
+            onChange={typeName}
             placeholder={income ? t.fromWhomPlaceholder : t.whatForPlaceholder}
             maxLength={80}
             enterKeyHint="done"
@@ -358,10 +421,24 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               else nameRef.current?.blur();
             }}
           />
+          {/* A typo: one tap fixes it (and may pick the category, as typing would). */}
+          {correction && (
+            <button
+              type="button"
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => { tapLight(); typeName(correction); }}
+              className="mt-2 min-h-tap max-w-full px-1 inline-flex items-center gap-1.5 text-label font-medium text-accent text-start wrap-compound active:opacity-60 focus-visible:ring-focus rounded-sm"
+            >
+              <SpellCheck className="w-4 h-4 shrink-0" strokeWidth={2.2} aria-hidden="true" />
+              {fmt(t.didYouMean, { word: correction })}
+            </button>
+          )}
           {suggestions.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t.suggestions}>
               {shownSuggestions.map(s => {
                 const on = s.name === name;
+                // A name from another category shows where picking it takes the entry.
+                const elsewhere = s.categoryId !== categoryId ? categories.find(c => c.id === s.categoryId) : undefined;
                 return (
                   <button
                     key={s.name}
@@ -372,6 +449,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
                       tapLight();
                       setName(s.name);
                       setAllSuggestions(false);
+                      setNameTyped(false);
+                      setCategoryChosen(true);
                       // A name that belongs to another category takes the entry there ("Lidl" → Lebensmittel).
                       const home = s.categoryId !== categoryId ? categories.find(c => c.id === s.categoryId) : undefined;
                       if (home) pickCategory(home);
@@ -386,7 +465,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
                       on ? 'bg-accent-dim text-accent' : 'bg-surface-2 text-fg'}`}
                   >
                     {on && <Check className="w-4 h-4 shrink-0" strokeWidth={2.8} aria-hidden="true" />}
+                    {!on && elsewhere && <span className="emoji text-[15px]" aria-hidden="true">{elsewhere.emoji}</span>}
                     {s.name}
+                    {!on && elsewhere && <span className="sr-only">, {displayName(elsewhere.names, language)}</span>}
                   </button>
                 );
               })}
@@ -408,14 +489,22 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           )}
         </div>
 
-        {/* The category: all at a glance, wrapping — no sideways sliding. */}
+        {/* The category: all at a glance, wrapping — no sideways sliding. What the name points to leads, with a ✦. */}
+        <div>
+        {guesses.length > 0 && (
+          <p className="mb-2 px-1 flex items-center gap-1.5 text-caption text-fg-mute wrap-compound" aria-live="polite">
+            <Sparkles className="w-3.5 h-3.5 shrink-0 text-accent" strokeWidth={2.2} aria-hidden="true" />
+            {fmt(t.categoryMatch, { word: guesses[0].word })}
+          </p>
+        )}
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.category}>
           {shownCategories.map(c => {
             const on = c.id === categoryId;
             const cname = displayName(c.names, language);
+            const hint = guessed.has(c.id);
             return (
               <button
-                key={c.id}
+                key={hint ? `${c.id}:${guessKey}` : c.id}
                 type="button"
                 role="radio"
                 aria-checked={on}
@@ -423,10 +512,12 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
                 onMouseDown={e => e.preventDefault()}
                 onClick={() => pickCategory(c)}
                 className={`hit-44 min-h-[40px] max-w-full ps-1.5 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label border-2 transition-colors focus-visible:ring-focus ${
-                  on ? 'bg-hue-bg text-hue-ink border-current font-semibold' : 'bg-surface-2 text-fg border-transparent font-medium'}`}
+                  on ? 'bg-hue-bg text-hue-ink border-current font-semibold' : 'bg-surface-2 text-fg border-transparent font-medium'} ${hint ? 'suggest-pop' : ''}`}
               >
                 <span className="emoji text-[18px] w-7 text-center" aria-hidden="true">{c.emoji}</span>
                 <span className="min-w-0 wrap-compound text-start">{cname}</span>
+                {hint && <Sparkles className={`w-3.5 h-3.5 shrink-0 ${on ? '' : 'text-accent'}`} strokeWidth={2.2} aria-hidden="true" />}
+                {hint && <span className="sr-only">, {t.suggestedCategory}</span>}
               </button>
             );
           })}
@@ -444,6 +535,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
                 : <ChevronDown className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
             </button>
           )}
+        </div>
         </div>
 
         {/* The rest in one row: when, paid or open, how it repeats, a note. */}

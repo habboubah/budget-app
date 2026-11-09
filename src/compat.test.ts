@@ -70,6 +70,19 @@ describe('what each version stored still loads', () => {
     const junk: Record<string, unknown> = { 'spartopf-meta': { seeded: true, schemaVersion: 4 }, 'spartopf-entries': 'nonsense', 'spartopf-months': [{ key: 'no' }] };
     expect(loadStored(key => junk[key]).entries).toEqual([]);
   });
+
+  it('version 18: category keywords — edited, emptied, untouched and the user’s own — stay as they were', () => {
+    const { data } = stored('storage-v18.json');
+    const cat = (id: string) => data.categories.find(c => c.id === id)!;
+    expect(cat('groceries').keywords).toEqual(['Habibi Markt', 'Lidl', 'Rewe']);
+    expect(cat('leisure').keywords).toEqual([]);
+    expect(cat('fixed')).not.toHaveProperty('keywords');
+    expect(cat('u-pets').keywords).toEqual(['Fressnapf', 'Tierarzt', 'Netflix']);
+    // …and a backup carries them.
+    const again = parseBackup(JSON.stringify(makeBackup(data)));
+    expect(again.ok && again.data.categories.map(c => c.keywords)).toEqual(data.categories.map(c => c.keywords));
+    expect(balances(data)).toEqual([['2026-11', 460710, 458311]]);
+  });
 });
 
 describe('a backup from schema 8 (before budgets)', () => {

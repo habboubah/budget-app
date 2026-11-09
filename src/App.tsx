@@ -646,6 +646,8 @@ export default function App() {
             onDelete={askDeleteCategory}
             onReorder={store.setCategoryOrder}
             onRestoreDefaults={restoreDefaults}
+            autoCategory={store.autoCategory}
+            onAutoCategory={store.setAutoCategory}
           />
         ) : id === 'reminders' ? (
           <RemindersView data={data} prefs={store.reminders} t={t} onBack={back} onChange={store.setReminders} />
@@ -916,6 +918,7 @@ export default function App() {
         }}
         goals={store.goals}
         onSplit={e => setSplitEntry(e)}
+        autoCategory={store.autoCategory}
       />
 
       <SplitSheet

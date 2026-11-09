@@ -12,8 +12,9 @@ import { isSupportedCurrency } from './currency';
  *  13: savings goals (`AppData.goals`, `Entry.goalId`) — optional, unset = none.
  *  14: entry tags (`Entry.tags`) — optional, unset = none.
  *  15: import rules (`AppData.rules`) — optional, unset = none.
- *  16: split payments (`Entry.splitId`) — optional, unset = none. */
-export const SCHEMA_VERSION = 16;
+ *  16: split payments (`Entry.splitId`) — optional, unset = none.
+ *  18: category keywords (`Category.keywords`) — optional, unset = what a built-in ships with. */
+export const SCHEMA_VERSION = 18;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -825,6 +826,50 @@ export function searchTerms(query: string): string[] {
   return foldForSearch(query).split(/\s+/).filter(w => w && !/^[€$£]+$/.test(w));
 }
 
+/* ---------------------------------------------------------------- keywords */
+
+/** A category keyword's longest form, and how many one category keeps (schema 18). */
+export const MAX_KEYWORD_LENGTH = 40;
+export const MAX_KEYWORDS = 120;
+
+/**
+ * The words of a name as keywords compare them (src/keywords.ts): folded like
+ * search, apostrophes dropped ("McDonald's" = "mcdonalds"), "&" and "+" kept
+ * inside a word ("H&M", "1&1") but not at its edge ("Disney+" = "disney"), and
+ * an Arabic article taken off ("الكهرباء" = "كهرباء").
+ */
+export function keywordTokens(text: string): string[] {
+  return foldForSearch(text)
+    .replace(/['’‘`´]/g, '')
+    .split(/[^\p{L}\p{N}&+]+/u)
+    .map(w => w.replace(/^[&+]+|[&+]+$/g, '').replace(/^ال(?=\p{Script=Arabic}{2})/u, ''))
+    .filter(w => /[\p{L}\p{N}]/u.test(w));
+}
+
+/** A name as one comparable key: its keyword tokens joined by spaces ("" when nothing is left). */
+export const keywordKey = (text: string) => keywordTokens(text).join(' ');
+
+/**
+ * A category's keyword list as stored: trimmed, each at most 40 characters,
+ * no two alike (case, accents and Arabic letter forms aside), at most 120.
+ * Not a list: undefined — the category follows what the app ships.
+ */
+export function normalizeKeywords(v: unknown): string[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const x of v) {
+    if (typeof x !== 'string') continue;
+    const word = cleanText(x, MAX_KEYWORD_LENGTH);
+    const key = keywordKey(word);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(word);
+    if (out.length >= MAX_KEYWORDS) break;
+  }
+  return out;
+}
+
 /**
  * Is a typed number part of an amount, however it is written? "39", "39,8",
  * "80" and "3980" all find 39,80 €; "1050", "1.050" and "1050,00" find
@@ -1052,6 +1097,8 @@ function normalizeCategory(v: unknown): Category | null {
       ? { limit: Math.min(Math.round(v.limit), MAX_CENTS) } : {}),
     ...(v.standard === false ? { standard: false } : {}),
     ...(v.builtin === true ? { builtin: true } : {}),
+    // Edited in Settings: the user's own list (empty is a choice too). Unset: what the app ships.
+    ...(Array.isArray(v.keywords) ? { keywords: normalizeKeywords(v.keywords) } : {}),
   };
 }
 

@@ -77,6 +77,16 @@ Everything the app can do. Build and release steps are in the
   adds the entry (dated today, paid, undoable); a long press opens it to change
   something first. Reorder and remove them in *Optionen → Haushaltsbuch →
   Favoriten*. Up to eight.
+- **Smarter entering.** While you type the name, Spartopf completes it (your
+  earlier names first, then known shops and words), offers *Meintest du
+  „Lidl“?* for a typo, and moves the categories the name points to to the
+  front with a ✦ — "Lidl" → Lebensmittel, "Strom"/"Electricity"/"كهرباء" →
+  Wohnen, "gym" → Sport. A sure match is chosen for you until you tap a
+  category yourself (switch it off in *Kategorien und Budgets*: then it is only
+  marked). Your own entries teach it: what you filed "Lidl" under before wins.
+  Each category has **keywords** — the built-ins come with the usual German
+  shops, brands and words in German, English and Arabic — to see, change,
+  delete or add in its sheet, with ideas from what you often enter there.
 - **Carry-over.** Mark entries **monatlich** or **jährlich**. Starting the next
   month shows exactly which ones come along and copies them in as *open*. The
   balance is carried over automatically — set it by hand for the first month or

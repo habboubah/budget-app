@@ -9,6 +9,7 @@ import { Button } from '../ui/Button';
 import { Confirm } from '../ui/Sheet';
 import { Picture } from '../ui/Picture';
 import { SwipeRow } from '../ui/SwipeRow';
+import { Switch } from '../ui/Switch';
 import { tapLight } from '../ui/haptics';
 
 interface Props {
@@ -23,6 +24,9 @@ interface Props {
   onDelete: (c: Category) => void;
   onReorder: (ids: string[]) => void;
   onRestoreDefaults: () => void;
+  /** The entry sheet picks the category the typed name points to (plan 32). */
+  autoCategory: boolean;
+  onAutoCategory: (on: boolean) => void;
 }
 
 /**
@@ -31,9 +35,11 @@ interface Props {
  * not, its budget, how many entries). A tap opens its sheet — name, budget,
  * every-month, picture — and a swipe deletes it, as rows do on the month
  * page. *Bearbeiten* in the bar shows the grips (drag, or the arrow keys on
- * one) and a delete button on every row; *Fertig* hides them again.
+ * one) and a delete button on every row; *Fertig* hides them again. Below,
+ * whether the entry sheet picks the category from the name typed — from each
+ * category's keywords, edited in its sheet (plan 32).
  */
-export function CategoriesView({ categories, entries, language, t, onBack, onEdit, onNew, onDelete, onReorder, onRestoreDefaults }: Props) {
+export function CategoriesView({ categories, entries, language, t, onBack, onEdit, onNew, onDelete, onReorder, onRestoreDefaults, autoCategory, onAutoCategory }: Props) {
   const [editing, setEditing] = useState(false);
   const [confirmRestore, setConfirmRestore] = useState(false);
   const counts = new Map<string, number>();
@@ -98,6 +104,16 @@ export function CategoriesView({ categories, entries, language, t, onBack, onEdi
           <Button icon={RotateCcw} full variant="ghost" onClick={() => setConfirmRestore(true)}>{t.restoreDefaults}</Button>
         )}
       </div>
+
+      {categories.length > 0 && (
+        <div>
+          <div className="flex items-center gap-3 rounded-md bg-surface card-edge ps-4 pe-1">
+            <span className="flex-1 min-w-0 py-3 text-body text-fg wrap-compound">{t.autoCategory}</span>
+            <Switch checked={autoCategory} onChange={onAutoCategory} label={t.autoCategory} />
+          </div>
+          <p className="text-caption text-fg-mute mt-1.5 px-4 wrap-prose">{t.autoCategoryHint}</p>
+        </div>
+      )}
 
       <Confirm
         open={confirmRestore}

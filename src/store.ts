@@ -25,6 +25,7 @@ const K = {
   reviewsSeen: 'spartopf-reviews-seen',
   lastExport: 'spartopf-last-export',
   copyCardDismissed: 'spartopf-copy-card-dismissed',
+  autoCategory: 'spartopf-auto-category',
 } as const;
 
 /** Dismissed hints and seen reviews are kept as their last 200 ids — no amounts in them. */
@@ -109,6 +110,8 @@ export function useAppStore() {
   /** Reminders and the lock: settings of this device, not data — not in a backup, kept by "delete all". */
   const [reminders, setReminders] = useState<ReminderPrefs>(() => normalizeReminderPrefs(readJson(K.reminders)));
   const [lockOn, setLockOn] = useState(() => readString(K.lock) === '1');
+  /** The entry sheet picks the category the typed name points to (plan 32) — on unless switched off. A view preference. */
+  const [autoCategory, setAutoCategory] = useState(() => readString(K.autoCategory) !== '0');
   /** Categories folded down on the month page — a view preference, not data, so not in a backup. */
   const [collapsed, setCollapsed] = useState<string[]>(() => {
     const saved = readJson(K.collapsed);
@@ -136,6 +139,7 @@ export function useAppStore() {
   useEffect(() => { persist(K.tips, tipsDone ? '1' : '0'); }, [tipsDone]);
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
   useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
+  useEffect(() => { persist(K.autoCategory, autoCategory ? '1' : '0'); }, [autoCategory]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.hintsHidden, JSON.stringify(hintsHidden)); }, [hintsHidden]);
   useEffect(() => { persist(K.reviewsSeen, JSON.stringify(reviewsSeen)); }, [reviewsSeen]);
@@ -628,6 +632,7 @@ export function useAppStore() {
     tipsDone, dismissTips: () => setTipsDone(true),
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),
     lockOn, setLockOn,
+    autoCategory, setAutoCategory,
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),
     expand: (id: string) => setCollapsed(prev => prev.filter(x => x !== id)),

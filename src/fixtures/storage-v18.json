@@ -1,0 +1,19 @@
+{
+  "_about": "What version 18 keeps in localStorage (synthetic): category keywords — a built-in edited (Lebensmittel), one emptied (Freizeit), one untouched (Wohnen, follows what ships) and the user's own category with its list.",
+  "spartopf-meta": { "seeded": true, "schemaVersion": 18 },
+  "spartopf-categories": [
+    { "id": "income", "names": { "de": "Einkommen", "en": "Income", "ar": "الدخل" }, "emoji": "💰", "hue": "leaf", "kind": "income", "repeat": "monthly", "builtin": true },
+    { "id": "fixed", "names": { "de": "Wohnen", "en": "Home", "ar": "المنزل" }, "emoji": "🏠", "hue": "sky", "kind": "expense", "repeat": "monthly", "budget": "need", "builtin": true },
+    { "id": "groceries", "names": { "de": "Lebensmittel und Drogerie", "en": "Groceries & drugstore", "ar": "البقالة والعناية الشخصية" }, "emoji": "🛒", "hue": "lime", "kind": "expense", "repeat": "none", "budget": "need", "builtin": true, "keywords": ["Habibi Markt", "Lidl", "Rewe"] },
+    { "id": "leisure", "names": { "de": "Freizeit und Unterhaltung", "en": "Leisure & entertainment", "ar": "الترفيه والتسلية" }, "emoji": "🎭", "hue": "tomato", "kind": "expense", "repeat": "none", "budget": "want", "standard": false, "builtin": true, "keywords": [] },
+    { "id": "u-pets", "names": { "de": "Hund" }, "emoji": "🐾", "hue": "sand", "kind": "expense", "repeat": "none", "budget": "want", "keywords": ["Fressnapf", "Tierarzt", "Netflix"] }
+  ],
+  "spartopf-months": [{ "key": "2026-11", "startedAt": 1793000000000, "opening": 250000, "categories": ["income", "fixed", "groceries", "u-pets"] }],
+  "spartopf-entries": [
+    { "id": "k1", "month": "2026-11", "categoryId": "income", "name": "Gehalt", "amount": 320000, "paid": true, "repeat": "monthly", "date": "2026-11-01", "seriesId": "k1", "createdAt": 1793000000001 },
+    { "id": "k2", "month": "2026-11", "categoryId": "fixed", "name": "Miete", "amount": 105000, "paid": true, "repeat": "monthly", "date": "2026-11-01", "seriesId": "k2", "createdAt": 1793000000002 },
+    { "id": "k3", "month": "2026-11", "categoryId": "groceries", "name": "Habibi Markt", "amount": 4290, "paid": true, "repeat": "none", "date": "2026-11-04", "seriesId": "k3", "createdAt": 1793000000003 },
+    { "id": "k4", "month": "2026-11", "categoryId": "u-pets", "name": "Fressnapf", "amount": 2399, "paid": false, "repeat": "none", "date": "2026-11-20", "seriesId": "k4", "createdAt": 1793000000004 }
+  ],
+  "spartopf-contracts": {}
+}
