@@ -77,7 +77,7 @@ export function HintRow({ insight: i, category, language, t, onAction, onHide, o
           <button
             type="button"
             onClick={() => { tapLight(); onAction(i); }}
-            className="mt-1 -ms-2 h-tap px-2 rounded-sm text-label font-semibold text-accent active:opacity-60 focus-visible:ring-focus"
+            className="mt-1 -ms-2 h-tap min-w-tap px-2 text-start rounded-sm text-label font-semibold text-accent active:opacity-60 focus-visible:ring-focus"
           >
             {words.action}
           </button>

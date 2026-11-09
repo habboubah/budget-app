@@ -4,10 +4,14 @@
  * missing key fails `npm run lint`. Placeholders are `{name}` and are filled
  * with `fmt()`.
  *
- * To add a language: add a block (and `names` for it in data/defaults.ts if
- * the built-in categories should be translated too). `ar` is right to left
- * (`dir: 'rtl'`); see CLAUDE.md for what that asks of the layout.
+ * German, English and Arabic live here and ship in the main bundle; every
+ * other language is its own file in `src/i18n/` and is loaded when it is
+ * picked (`loadLanguage`), so eleven more languages don't weigh on the first
+ * launch. To add one, see the checklist in docs/CLAUDE.md (i18n). `ar` is
+ * right to left (`dir: 'rtl'`); see CLAUDE.md for what that asks of the layout.
  */
+import { addSuggestionNames } from './data/defaults';
+
 const de = {
   languageName: 'Deutsch',
   locale: 'de-DE',
@@ -58,7 +62,7 @@ const de = {
   close: 'Schließen',
   more: 'Mehr',
 
-  // Tabs
+  // Tabs — about 11 letters fit under an icon on an iPhone SE; keep every language's that short.
   tabMonth: 'Monat',
   tabStats: 'Statistik',
   tabInsights: 'Planen',
@@ -2816,18 +2820,94 @@ const ar: Strings = {
   crashExport: 'تصدير البيانات',
 };
 
-const translations = { de, en, ar } satisfies Record<string, Strings>;
+/**
+ * Every language the app speaks, in the order the picker lists them: by their
+ * own name, as iOS does, Arabic last.
+ */
+export const languages = ['cs', 'da', 'de', 'en', 'es', 'fr', 'it', 'nl', 'nb', 'pl', 'pt', 'sv', 'tr', 'ar'] as const;
+export type Language = (typeof languages)[number];
+export const isLanguage = (v: unknown): v is Language =>
+  typeof v === 'string' && (languages as readonly string[]).includes(v);
+export const DEFAULT_LANGUAGE: Language = 'de';
+
+/** Each language's name in itself — for the picker, before its strings are loaded. */
+export const LANGUAGE_NAMES: Record<Language, string> = {
+  cs: 'Čeština', da: 'Dansk', de: 'Deutsch', en: 'English', es: 'Español', fr: 'Français', it: 'Italiano',
+  nl: 'Nederlands', nb: 'Norsk bokmål', pl: 'Polski', pt: 'Português', sv: 'Svenska', tr: 'Türkçe', ar: 'العربية',
+};
+
+type Bundled = 'de' | 'en' | 'ar';
+
+/** The languages in their own files, one chunk each, fetched only when picked. */
+type LanguageModule = { default: Strings; suggestionNames?: Record<string, string> };
+const loaders: Record<Exclude<Language, Bundled>, () => Promise<LanguageModule>> = {
+  cs: () => import('./i18n/cs'),
+  da: () => import('./i18n/da'),
+  es: () => import('./i18n/es'),
+  fr: () => import('./i18n/fr'),
+  it: () => import('./i18n/it'),
+  nl: () => import('./i18n/nl'),
+  nb: () => import('./i18n/nb'),
+  pl: () => import('./i18n/pl'),
+  pt: () => import('./i18n/pt'),
+  sv: () => import('./i18n/sv'),
+  tr: () => import('./i18n/tr'),
+};
+
+/**
+ * The strings of every language loaded so far: German, English and Arabic
+ * always, the others once `loadLanguage` has fetched them. Read through
+ * `stringsFor` where a language may not be loaded yet.
+ */
+const translations = { de, en, ar } as Record<Language, Strings>;
 export default translations;
 
-export type Language = keyof typeof translations;
-export const languages = Object.keys(translations) as Language[];
-export const isLanguage = (v: unknown): v is Language =>
-  typeof v === 'string' && (languages as string[]).includes(v);
-export const DEFAULT_LANGUAGE: Language = 'de';
+/** Whether a language's strings are here (German, English, Arabic always are). */
+export const isLoaded = (lang: Language): boolean => lang in translations;
+
+/** Fetch a language's strings once; resolves at once for one already loaded. */
+export async function loadLanguage(lang: Language): Promise<Strings> {
+  if (!isLoaded(lang)) {
+    const mod = await loaders[lang as Exclude<Language, Bundled>]();
+    // Its name suggestions first, so the entry sheet has them on the first render in it.
+    if (mod.suggestionNames) addSuggestionNames(lang, mod.suggestionNames);
+    translations[lang] = mod.default;
+  }
+  return translations[lang];
+}
+
+/** Every language at once (tests, the screenshot and review scripts). */
+export async function loadAllLanguages(): Promise<void> {
+  await Promise.all(languages.map(loadLanguage));
+}
+
+/** A language's strings, or English while it is still loading (or failed to). */
+export function stringsFor(lang: Language): Strings {
+  return isLoaded(lang) ? translations[lang] : en;
+}
+
+/**
+ * The language we speak for a BCP 47 tag ("tr-TR", "pt-BR"), else null.
+ * Norwegian comes as nb, no or nn; all three get Bokmål.
+ */
+export function languageForTag(tag: string | undefined | null): Language | null {
+  if (!tag) return null;
+  const base = tag.toLowerCase().split(/[-_]/)[0];
+  const lang = base === 'no' || base === 'nn' ? 'nb' : base;
+  return isLanguage(lang) ? lang : null;
+}
 
 /** Fill `{name}` placeholders. */
 export function fmt(s: string, vars: Record<string, string | number>): string {
-  return s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+  const out = s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+  // Most languages write month names in lower case ("listopad 2026"); a line
+  // that opens with a month or a period still starts with a capital.
+  return /^\{(month|since|span|from)\}/.test(s) ? capitalize(out) : out;
+}
+
+/** The first letter in upper case: a month name as a title ("Listopad"). */
+export function capitalize(s: string, locale?: string): string {
+  return s ? s.charAt(0).toLocaleUpperCase(locale) + s.slice(1) : s;
 }
 
 /** Pick the singular or plural string and fill in `{n}`. */

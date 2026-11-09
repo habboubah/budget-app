@@ -2,7 +2,7 @@ import { CSSProperties } from 'react';
 import { Check } from 'lucide-react';
 import { MonthKey } from '../types';
 import { MonthBalance, addMonths, formatMoney, monthKeyOf, monthLeft, parseMonthKey } from '../logic';
-import { Strings, fmt } from '../translations';
+import { Strings, capitalize, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { tapLight } from '../ui/haptics';
 
@@ -35,7 +35,7 @@ export function MonthPickerSheet({ open, selected, balances, t, onPick, onClose 
   const years = [...new Set(sorted.map(k => parseMonthKey(k).year))];
   const monthName = (k: MonthKey) => {
     const { year, month } = parseMonthKey(k);
-    return new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(year, month - 1, 1));
+    return capitalize(new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(year, month - 1, 1)), t.locale);
   };
 
   return (

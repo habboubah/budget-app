@@ -4,7 +4,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { motion, useTransform } from 'motion/react';
 import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'lucide-react';
 import { useAppStore } from './store';
-import translations, { fmt } from './translations';
+import { fmt, stringsFor } from './translations';
 import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import { addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, uid } from './logic';
 import { Insight, buildBook, highlights, monthReview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
@@ -82,7 +82,7 @@ const devSeason = (() => { try { return localStorage.getItem('spartopf-dev-seaso
 export default function App() {
   const store = useAppStore();
   const { data, categories, entries, balances, language, themeMode } = store;
-  const t = translations[language];
+  const t = stringsFor(language);
   const { toast, show, hide } = useToast();
 
   const [tab, setTab] = useState<TabId>('month');

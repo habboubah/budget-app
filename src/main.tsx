@@ -7,7 +7,8 @@ import { downloadFile } from './export.ts';
 import { isoDay } from './logic.ts';
 import { KEY_PREFIX, hydrate, installFlushTriggers, rawFiles, restoreLatestToData, setHydrated } from './storage.ts';
 import { isNative } from './platform.ts';
-import translations, { isLanguage, DEFAULT_LANGUAGE } from './translations.ts';
+import { isLanguage, DEFAULT_LANGUAGE, loadLanguage, stringsFor } from './translations.ts';
+import { initialLanguage } from './store.ts';
 import './index.css';
 
 // Before the first render: the root font size is what the whole rem-based scale
@@ -47,7 +48,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
   render() {
     if (!this.state.error) return this.props.children;
     const saved = (() => { try { return localStorage.getItem('spartopf-lang'); } catch { return null; } })();
-    const t = translations[isLanguage(saved) ? saved : DEFAULT_LANGUAGE];
+    const t = stringsFor(isLanguage(saved) ? saved : DEFAULT_LANGUAGE);
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-6">
         <div className="max-w-sm w-full bg-surface rounded-lg card-edge p-6 text-center space-y-4">
@@ -91,8 +92,10 @@ const render = (child: ReactNode) => root.render(
 
 // The book first (the file in the app, localStorage on the web); until it is
 // read the page shows its plain background, as it always did while loading.
-hydrate()
-  .then(({ data }) => {
+// The language's strings alongside: those not bundled come in a file of their
+// own (a failed fetch falls back to English rather than holding the launch).
+Promise.all([hydrate(), loadLanguage(initialLanguage()).catch(() => undefined)])
+  .then(([{ data }]) => {
     setHydrated(data);
     installFlushTriggers();
     render(<App />);

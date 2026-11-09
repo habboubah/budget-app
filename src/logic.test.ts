@@ -631,8 +631,8 @@ describe('upgrading categories saved before schema 2', () => {
   it('adds the new built-ins, not in new months, and updates what the user left as shipped', () => {
     const up = upgradeData({ categories: v1(), entries: [], months: [] }).categories;
     expect(up.slice(0, 4).map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries']);
-    expect(up.find(c => c.id === 'groceries')!.names).toEqual({ de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore', ar: 'البقالة والعناية الشخصية' });
-    expect(up.find(c => c.id === 'fixed')!.names).toEqual({ de: 'Wohnen', en: 'Home', ar: 'المنزل' });
+    expect(up.find(c => c.id === 'groceries')!.names).toMatchObject({ de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore', ar: 'البقالة والعناية الشخصية' });
+    expect(up.find(c => c.id === 'fixed')!.names).toMatchObject({ de: 'Wohnen', en: 'Home', ar: 'المنزل' });
     expect(up.find(c => c.id === 'extra')!.names.de).toBe('Sonstiges');
     expect(up.find(c => c.id === 'extra')!.emoji).toBe('📦');
     expect(up.find(c => c.id === 'insurance')!.names.en).toBe('Insurance');

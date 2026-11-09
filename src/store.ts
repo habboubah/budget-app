@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ACCENTS, Accent, AppData, Category, Contract, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
-import translations, { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';
+import { Language, isLanguage, DEFAULT_LANGUAGE, languageForTag, loadLanguage, stringsFor } from './translations';
 import {
   MAX_FAVORITES, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid,
@@ -47,12 +47,20 @@ function readString(key: string): string | null {
   try { return localStorage.getItem(key); } catch { return null; }
 }
 
-function initialLanguage(): Language {
+/**
+ * The language to start with: the one picked before, else the device's if we
+ * speak it (any of the user's preferred ones, in order), else German.
+ * main.tsx loads its strings before the first render.
+ */
+export function initialLanguage(): Language {
   const saved = readString(K.lang);
   if (isLanguage(saved)) return saved;
-  // First run: follow the device language if we ship it, else German.
-  const device = navigator.language.split('-')[0];
-  return isLanguage(device) ? device : DEFAULT_LANGUAGE;
+  const preferred = navigator.languages?.length ? navigator.languages : [navigator.language];
+  for (const tag of preferred) {
+    const lang = languageForTag(tag);
+    if (lang) return lang;
+  }
+  return DEFAULT_LANGUAGE;
 }
 
 /** The book as main.tsx's `hydrate()` found it (the file in the app); localStorage when rendered without it. */
@@ -155,7 +163,7 @@ export function useAppStore() {
     // Screen readers pick their voice from `lang`; `dir` flips the layout for
     // right-to-left languages once one ships.
     document.documentElement.lang = language;
-    document.documentElement.dir = translations[language].dir;
+    document.documentElement.dir = stringsFor(language).dir;
   }, [language]);
 
   useEffect(() => {
@@ -643,8 +651,14 @@ export function useAppStore() {
     return before;
   };
 
+  // A language in a file of its own is fetched first, so the switch never
+  // shows English in between; if it can't be fetched, nothing changes.
+  const chooseLanguage = (lang: Language) => {
+    loadLanguage(lang).then(() => setLanguage(lang), () => undefined);
+  };
+
   return {
-    language, setLanguage, themeMode, setThemeMode, accent, setAccent, storageError: saveFailed,
+    language, setLanguage: chooseLanguage, themeMode, setThemeMode, accent, setAccent, storageError: saveFailed,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
     tipsDone, dismissTips: () => setTipsDone(true),
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),

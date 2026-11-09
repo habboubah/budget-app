@@ -1,4 +1,5 @@
 import { Category, Names } from '../types';
+import { CATEGORY_NAMES, withLanguages } from './names';
 
 /**
  * The categories a first launch starts with, in the order the month page
@@ -22,8 +23,11 @@ import { Category, Names } from '../types';
  *
  * Everything here can be renamed, recoloured, reordered or deleted in
  * Settings, and brought back with "Standard wiederherstellen".
+ *
+ * Names in German, English and Arabic here; the other eleven languages come
+ * from data/names.ts (schema 19 gives them to built-ins still named as shipped).
  */
-const CATEGORIES: Category[] = [
+const SHIPPED: Category[] = [
   { id: 'income', names: { de: 'Einkommen', en: 'Income', ar: 'الدخل' }, emoji: '💰', hue: 'leaf', kind: 'income', repeat: 'monthly', builtin: true },
   { id: 'fixed', names: { de: 'Wohnen', en: 'Home', ar: 'المنزل' }, emoji: '🏠', hue: 'sky', kind: 'expense', repeat: 'monthly', budget: 'need', builtin: true },
   { id: 'car', names: { de: 'Auto', en: 'Car', ar: 'السيارة' }, emoji: '🚗', hue: 'carrot', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
@@ -47,6 +51,8 @@ const CATEGORIES: Category[] = [
   { id: 'cash', names: { de: 'Bargeld', en: 'Cash', ar: 'النقد' }, emoji: '🪙', hue: 'lemon', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
   { id: 'taxes', names: { de: 'Steuern und Gebühren', en: 'Taxes & fees', ar: 'الضرائب والرسوم' }, emoji: '🏛️', hue: 'blue', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
 ];
+
+const CATEGORIES: Category[] = SHIPPED.map(c => ({ ...c, names: withLanguages(c.names, CATEGORY_NAMES, c.id) }));
 
 /** A fresh copy of the built-in categories. */
 export function defaultCategories(): Category[] {
@@ -111,9 +117,11 @@ export const budgetOf = (c: Category) => c.budget ?? (NEED_IDS.includes(c.id) ? 
 
 /**
  * Names offered in the entry sheet before the user has a history of their
- * own. A brand is the same in every language, so it carries one name.
+ * own. A brand is the same in every language, so it carries one name; the
+ * eleven languages beyond German, English and Arabic add theirs when they load
+ * (`addSuggestionNames`).
  */
-export const NAME_SUGGESTIONS: Record<string, Names[]> = {
+const SUGGESTIONS: Record<string, Names[]> = {
   income: [
     { de: 'Gehalt', en: 'Salary', ar: 'راتب' }, { de: 'Kindergeld', en: 'Child benefit', ar: 'إعانة الأطفال' }, { de: 'Elterngeld', en: 'Parental allowance', ar: 'إعانة الوالدين' },
     { de: 'Nebenjob', en: 'Side job', ar: 'عمل جانبي' }, { de: 'Erstattung', en: 'Refund', ar: 'استرداد' }, { de: 'Zinsen', en: 'Interest', ar: 'فوائد' },
@@ -204,6 +212,21 @@ export const NAME_SUGGESTIONS: Record<string, Names[]> = {
     { de: 'Kontogebühren', en: 'Bank fees', ar: 'رسوم البنك' }, { de: 'Steuernachzahlung', en: 'Tax payment', ar: 'دفعة ضريبية' }, { de: 'Gebühren', en: 'Fees', ar: 'رسوم' },
   ],
 };
+
+export const NAME_SUGGESTIONS: Record<string, Names[]> = SUGGESTIONS;
+
+/**
+ * A language loaded on demand brings its suggestions (src/i18n/xx.ts
+ * `suggestionNames`, keyed by the German one); `loadLanguage` hands them here.
+ */
+export function addSuggestionNames(lang: string, words: Record<string, string>): void {
+  for (const list of Object.values(SUGGESTIONS)) {
+    for (const n of list) {
+      const word = n.de && words[n.de];
+      if (word && !(lang in n)) n[lang] = word;
+    }
+  }
+}
 
 /** Emoji offered when creating or editing a category. */
 export const CATEGORY_EMOJIS = [

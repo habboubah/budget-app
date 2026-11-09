@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Insight, InsightKind } from './insights';
 import { insightText } from './insightText';
-import translations, { Strings } from './translations';
+import translations, { Strings, loadAllLanguages } from './translations';
+
+// Every language, the ones in files of their own too.
+await loadAllLanguages();
 
 /** Every kind and variant the rules can produce, with values for every placeholder. */
 const VARIANTS: [InsightKind, string][] = [

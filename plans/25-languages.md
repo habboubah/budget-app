@@ -39,4 +39,29 @@ On first launch the app follows the device language, as it does today.
 ## Done when
 
 - [ ] Turkish ships complete, with no German fallbacks, after a native speaker's review.
-- [ ] The checklist above is in CLAUDE.md for the next language.
+- [x] The checklist above is in CLAUDE.md for the next language.
+
+## Notes (built, November 2026)
+
+- Scope grew to one language per supported currency's main language: Turkish,
+  Polish, Czech, Swedish, Norwegian (Bokmål), Danish, French, Italian,
+  Spanish, Dutch and Portuguese (European) — fourteen with de/en/ar. All
+  strings, category names and name suggestions are machine-drafted and still
+  need a native speaker's review per language (step 7) before they ship as
+  final; shipped keywords (`data/keywords.ts`) stay de/en/ar for now.
+- Each new language is its own chunk (`src/i18n/xx.ts`, ~15 kB gzip), loaded
+  when picked, so the main bundle grew by only ~2 kB (the registry and the
+  built-in category names in `data/names.ts`): 304.7 kB gzip against the
+  280 kB baseline (+10 % = 308 kB). The suggestion words live in the chunks.
+- Schema 19: no new field; built-ins still named as shipped get the eleven
+  languages' names (`upgradeCategories`).
+- Search folds Turkish ı/İ, ø, æ, œ, ł, đ; `parseAmount` takes the grouping
+  mark from the locale's decimal mark instead of `locale.startsWith('de')`.
+- ui-review (se and 17promax, all languages): tab labels shortened where they
+  truncated (fr *Stats*, es *Análisis*, pt *Análise*, sv *Alternativ*, nb
+  *Valg*, da *Opsætning*, nl *Opties*, it *Opzioni*); the hint action button
+  got `min-w-tap` (three-letter labels were under 44 px); month titles are
+  capitalised.
+- Not done: iOS permission prompts (`InfoPlist.strings` per language — needs
+  the Xcode project to add localized resources), App Store listing texts,
+  per-language keywords.

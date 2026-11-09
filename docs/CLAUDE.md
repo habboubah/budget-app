@@ -359,9 +359,41 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   where a lot goes at once (a category with entries).
 
 ## i18n
-- `src/translations.ts`: one flat object per language (`de`, `en`, `ar`).
-  Default `de`; first run follows the device language. Add every key to every
-  block.
+- **Fourteen languages** (plan 25): `de`, `en`, `ar` in `src/translations.ts`
+  (main bundle; `en` is the fallback), and `tr`, `pl`, `cs`, `sv`, `nb`, `da`,
+  `fr`, `it`, `es`, `nl`, `pt` each in `src/i18n/xx.ts`, loaded on demand
+  (`loadLanguage`, one ~15 kB chunk each) — the main bundle carries none of
+  them. `languages` is the picker's order (by own name, Arabic last) and
+  `LANGUAGE_NAMES` its labels. main.tsx loads the first language before the
+  first render; `store.setLanguage` loads before it switches. Read strings
+  with `stringsFor(lang)` where a language may not be loaded (English then).
+  Default `de`; first run follows the device's preferred languages
+  (`languageForTag`: nb/no/nn → `nb`, pt-BR → `pt`). The iOS Info.plist lists
+  them all in `CFBundleLocalizations` (App Store languages, per-app language).
+- **Adding a language** (`src/translations.test.ts` checks most of it):
+  1. `src/i18n/xx.ts`: every key (the `Strings` type enforces it), the same
+     placeholders as German, `locale`, `dir`, a 10-column `csvHeader`, and
+     `suggestionNames` (the entry sheet's suggestions, keyed by the German
+     one in `NAME_SUGGESTIONS`). Keep “Before” in `excelHint`/`excelOpening`:
+     it is the row the Excel import reads.
+  2. A loader in `translations.ts`, the code in `languages` and
+     `LANGUAGE_NAMES`, and in Info.plist's `CFBundleLocalizations`.
+  3. Category names in `src/data/names.ts`, plus a schema bump so built-ins
+     still named as shipped get them (`upgradeCategories`, as schema 19 did) —
+     no category's name may equal another's in any language (keyword index).
+  4. Tab labels at most ~11 letters (they truncate on an iPhone SE). Run
+     ui-review on `se` in the language; a native speaker reviews before release.
+- **Plurals:** `plural()` picks between two forms. Where a language has more
+  (Polish, Czech: 1 / 2–4 / 5+), the count goes after a colon or beside an
+  abbreviation ("Pozycje: 5", "3 mies."), as in Arabic. A `…One` string may
+  still use `{n}`.
+- **Month names** are lower case in most languages ("listopad 2026");
+  `fmt()` capitalises a string that opens with `{month}`/`{since}`/`{span}`/
+  `{from}`, and titles go through `capitalize()`.
+- **Search** folds ı→i, ø→o, æ→ae, œ→oe, ł→l, đ→d besides accents
+  (`foldChar`); **amounts** read with the locale's decimal mark
+  (`decimalMark`: a lone dot groups thousands in tr/it/es/nl/pt/da, as in
+  German; fr/pl/cs/sv/nb group with spaces).
 - **Arabic is right to left.** `store.ts` sets `<html dir lang>`; write layout
   with logical classes only (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`,
   `text-start`/`text-end`, `rtl:rotate-180` on chevrons) — never `left`/`right`.
@@ -372,7 +404,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (`ar-u-nu-latn`); input goes through `normalizeDigits()` so ٤٥٫١٢ from an
   Arabic keyboard reads as 45.12. Arabic strings avoid count-dependent plurals
   ("البنود: {n}"). No letter-spacing on Arabic (index.css resets it).
-- Access via `const t = translations[language]`. Never inline
+- Access via `const t = stringsFor(language)`. Never inline
   `language === 'de' ? …`.
 - Built-in categories carry a name per language (`names`); user-created ones
   carry only the name typed, and `displayName()` falls back sensibly.

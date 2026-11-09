@@ -8,6 +8,23 @@
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>de</string>
+		<string>en</string>
+		<string>ar</string>
+		<string>cs</string>
+		<string>da</string>
+		<string>es</string>
+		<string>fr</string>
+		<string>it</string>
+		<string>nb</string>
+		<string>nl</string>
+		<string>pl</string>
+		<string>pt</string>
+		<string>sv</string>
+		<string>tr</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Spartopf reads bank transactions from a photo you take. The photo is read on this iPhone and never leaves it.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

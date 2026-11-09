@@ -156,7 +156,8 @@ Everything the app can do. Build and release steps are in the
   with its own name suggestions. Create your own
   (income or expense, default repeat, emoji, colour), edit, drag to reorder,
   delete (undoable; asks first if entries go with it), *Standard
-  wiederherstellen*. Deutsch / English / العربية (right to left, with Arabic
+  wiederherstellen*. Deutsch, English, Türkçe, Polski, Čeština, Svenska, Norsk, Dansk, Français,
+  Italiano, Español, Nederlands, Português and العربية (right to left, with Arabic
   category names; amounts typed with Arabic digits are understood), light /
   dark / automatic.
 - **Test data.** *Optionen → Ausprobieren → Testdaten hinzufügen* fills the

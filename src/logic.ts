@@ -14,8 +14,10 @@ import { isSupportedCurrency } from './currency';
  *  15: import rules (`AppData.rules`) — optional, unset = none.
  *  16: split payments (`Entry.splitId`) — optional, unset = none.
  *  17: the test data's record (`AppData.demo`) — optional, unset = none.
- *  18: category keywords (`Category.keywords`) — optional, unset = what a built-in ships with. */
-export const SCHEMA_VERSION = 18;
+ *  18: category keywords (`Category.keywords`) — optional, unset = what a built-in ships with.
+ *  19: no new field — built-ins still named as shipped get their names in the
+ *      eleven languages added then (tr, pl, cs, sv, nb, da, fr, it, es, nl, pt). */
+export const SCHEMA_VERSION = 19;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -82,12 +84,27 @@ export function normalizeDigits(text: string): string {
     .replace(/[‎‏؜]/g, '');
 }
 
+const decimalMarks = new Map<string, string>();
+/** The decimal mark a locale writes: "," for de-DE, tr-TR, fr-FR …; "." for en-GB and Arabic. */
+function decimalMark(locale: string): string {
+  let mark = decimalMarks.get(locale);
+  if (mark === undefined) {
+    try {
+      mark = new Intl.NumberFormat(locale).formatToParts(1.5).find(p => p.type === 'decimal')?.value ?? '.';
+    } catch {
+      mark = '.';
+    }
+    decimalMarks.set(locale, mark);
+  }
+  return mark;
+}
+
 /**
  * What the user typed → integer cents, or null if it isn't an amount.
  * Reads both German and English writing: "1.050,50", "1050,5", "1050.50",
  * "1,050.50", "12", "€ 9,99" — and Arabic-Indic digits ("١٢٫٥٠"). With a
  * single separator, three digits after the locale's grouping mark mean
- * thousands ("1.050" in German is 1050 €); any other single separator is the
+ * thousands ("1.050" in German or Turkish is 1050 €); any other single separator is the
  * decimal point, whichever one the keyboard happened to offer.
  */
 export function parseAmount(text: string, locale = 'de-DE'): number | null {
@@ -101,7 +118,9 @@ export function parseAmount(text: string, locale = 'de-DE'): number | null {
     .replace(/[\s ]/g, '')
     .replace(/^\+/, '');
   if (!s || !/^(\d[\d.,]*|[.,]\d+)$/.test(s)) return null;
-  const group = locale.startsWith('de') ? '.' : ',';
+  // Where the language writes a decimal comma (de, tr, fr, pl …), a lone dot
+  // before three digits groups thousands; where it writes a decimal point, a comma does.
+  const group = decimalMark(locale) === ',' ? '.' : ',';
   const lastComma = s.lastIndexOf(',');
   const lastDot = s.lastIndexOf('.');
   let whole = s;
@@ -792,6 +811,10 @@ function foldChar(ch: string): string {
   return normalizeDigits(ch)
     .toLocaleLowerCase('de')
     .replace(/ß/g, 'ss')
+    // Letters NFKD leaves whole: Turkish dotless ı, Danish/Norwegian ø æ,
+    // French œ, Polish ł, Croatian đ ("istanbul" finds "İstanbul" and "Isparta"
+    // finds "ısparta"; "smor" finds "smør").
+    .replace(/ı/g, 'i').replace(/ø/g, 'o').replace(/æ/g, 'ae').replace(/œ/g, 'oe').replace(/ł/g, 'l').replace(/đ/g, 'd')
     .normalize('NFKD')
     .replace(/[̀-ͯؐ-ًؚ-ٰٟۖ-ۭـ]/g, '')
     .replace(/ة/g, 'ه')
@@ -1345,7 +1368,7 @@ const sameNames = (a: Names, b: Names) =>
  *            there, else at the end; not in any month), and built-ins whose
  *            name or emoji changed get the new one;
  *   below 3: built-ins still named as shipped get the names in every language
- *            the app now speaks (Arabic).
+ *            the app now speaks (Arabic) — and again below 19 (eleven more).
  */
 export function upgradeCategories(categories: Category[], from = 1): Category[] {
   if (!categories.length || from >= SCHEMA_VERSION) return categories;

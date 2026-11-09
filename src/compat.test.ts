@@ -100,6 +100,13 @@ describe('what each version stored still loads', () => {
     expect(again.ok && again.data.categories.map(c => c.keywords)).toEqual(data.categories.map(c => c.keywords));
     expect(balances(data)).toEqual([['2026-11', 460710, 458311]]);
   });
+  it('version 18 → 19: built-ins still named as shipped get the eleven new languages; the user’s own category stays', () => {
+    const { data } = stored('storage-v18.json');
+    const cat = (id: string) => data.categories.find(c => c.id === id)!;
+    expect(cat('fixed').names).toMatchObject({ de: 'Wohnen', en: 'Home', ar: 'المنزل', tr: 'Ev', pl: 'Dom', fr: 'Logement', pt: 'Casa' });
+    expect(Object.keys(cat('income').names)).toHaveLength(14);
+    expect(cat('u-pets').names).toEqual({ de: 'Hund' });
+  });
 });
 
 describe('a backup from schema 8 (before budgets)', () => {

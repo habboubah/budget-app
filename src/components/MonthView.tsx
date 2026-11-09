@@ -7,7 +7,7 @@ import {
   MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, parseMonthKey, searchByMonth, searchEntries, searchTerms,
   sortEntries,
 } from '../logic';
-import { Strings, fmt, plural } from '../translations';
+import { Strings, capitalize, fmt, plural } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
@@ -186,7 +186,7 @@ export function MonthView(p: Props) {
             // The year wraps under the month's name rather than squeezing it (large text).
             className="-mx-1 px-1 min-h-tap rounded-sm flex flex-wrap items-baseline gap-x-2 text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
           >
-            <span className="display text-title font-bold text-fg tracking-[-0.025em] wrap-prose">{monthName}</span>
+            <span className="display text-title font-bold text-fg tracking-[-0.025em] wrap-prose">{capitalize(monthName, t.locale)}</span>
             <span className="display text-title font-bold text-fg-faint tracking-[-0.025em] num">{year}</span>
             <ChevronDown className="w-5 h-5 text-accent self-center mt-1 shrink-0" strokeWidth={2.6} aria-hidden="true" />
           </button>

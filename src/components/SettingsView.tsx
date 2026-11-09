@@ -2,7 +2,7 @@ import { CSSProperties, ReactNode, useId, useState } from 'react';
 import { Bell, Check, ChevronRight, Coins, Download, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Palette, ScanFace, Star, SunMoon, Tags, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
-import translations, { Language, Strings, fmt, languages } from '../translations';
+import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
 import { LockKind } from '../lock';
 import { ReminderPrefs } from '../reminders';
 import { Screen, Group, IconTile, MenuRow, Row } from '../ui/Screen';
@@ -156,7 +156,7 @@ export function SettingsView(p: Props) {
           leading={<IconTile icon={Languages} hue="blue" />}
           value={p.language}
           onChange={p.onLanguage}
-          options={languages.map(l => ({ value: l, label: translations[l].languageName }))}
+          options={languages.map(l => ({ value: l, label: LANGUAGE_NAMES[l] }))}
         />
         <MenuRow<ThemeMode>
           label={t.appearance}
