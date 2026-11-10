@@ -36,8 +36,14 @@ const origin = `http://127.0.0.1:${PORT}`;
  *     amounts, the backup switch — and plan 14 3 kB — the widget snapshot, the inbox,
  *     deep links and their strings); month switch 51–121 ms, Statistik 32–50 ms,
  *     Planen 42–59 ms, no long task.
+ *   - plans 18–37, November 2026: 342 kB (+32 kB over nine plans: Siri's amounts,
+ *     receipts, accounts and transfers, debts, the month from payday, two columns
+ *     and shortcuts, automatic capture with its guide, and the tips — each with
+ *     its screens, sheets and three-language strings; the other eleven languages
+ *     stay in their own chunks); month switch 42–123 ms, Statistik 36–50 ms,
+ *     Planen 35–65 ms, no long task.
  */
-const BUNDLE_GZIP_BASELINE = 310_000;
+const BUNDLE_GZIP_BASELINE = 342_000;
 const BUNDLE_GROWTH = 1.10;
 const MONTH_SWITCH_MS = 150;
 const LONG_TASK_MS = 50;

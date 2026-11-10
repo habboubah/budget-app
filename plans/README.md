@@ -245,5 +245,5 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 34 Nearby sync and household sharing
 - [ ] 35 Apple Watch
 - [ ] 36 On-device bank connection (FinTS)
-- [ ] 37 Simplicity review
+- [ ] 37 Simplicity review — checkpoint after plan 32 done, `npm run check` passes: the feature table, the first-viewport counts, *Optionen › Haushaltsbuch* reordered, and the tip system (`src/tips.ts`, five tips, one a week, tested). Open: the three-people test, VoiceOver / large text, speed on old phones (TODO.md)
 - [ ] 38 Screenshots, story and release

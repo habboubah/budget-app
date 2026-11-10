@@ -65,6 +65,8 @@ import { SAVE_DEBOUNCE_MS, inDeviceBackup, saver, setInDeviceBackup } from './st
 import { buildAmounts, buildSnapshot } from './native/snapshot';
 import { inboxReview, inboxToEntries } from './native/inbox';
 import { CaptureView } from './components/CaptureView';
+import { HintCard } from './components/HintCard';
+import { nextTip } from './tips';
 import { DeepLink, parseDeepLink } from './native/deepLink';
 import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
 import { PrintReport, PrintSpec, ReportPdfSheet, reportFileName } from './components/PrintReport';
@@ -935,6 +937,12 @@ export default function App() {
   const fixedCategory = categories.find(c => c.id === 'fixed' && c.kind === 'expense')
     ?? categories.find(c => c.kind === 'expense' && c.repeat === 'monthly') ?? categories.find(c => c.kind === 'expense');
   const finishSetup = () => { store.dismissIntro(); setSetupNow(null); };
+  /** Plan 37: at most one tip, on the running month, once the setup and the gestures card are gone. */
+  const tip = useMemo(() => nextTip(data, store.tipState, {
+    native: native || devNative(),
+    inDeviceBackup: deviceBackup,
+    daysSinceExport: store.lastExport ? Math.floor((Date.now() - new Date(`${store.lastExport}T00:00:00`).getTime()) / 86_400_000) : null,
+  }), [data, store.tipState, deviceBackup, store.lastExport]);
   const setup = showSetup ? (
     <SetupCard
       t={t}
@@ -952,6 +960,24 @@ export default function App() {
     />
   ) : store.introDone && !store.tipsDone && balance.started && monthEntries.length > 0 && month === monthKeyOf() ? (
     <TipsCard t={t} onDismiss={store.dismissTips} />
+  ) : tip && store.introDone && store.tipsDone && balance.started && month === monthKeyOf() ? (
+    <HintCard
+      text={tip.id === 'capture' ? t.hintCapture : tip.id === 'favorite' ? fmt(t.hintFavorite, { name: tip.name })
+        : tip.id === 'reserve' ? t.hintReserve : tip.id === 'backup' ? t.hintBackup
+        : fmt(t.hintBudget, { category: displayName(tip.category.names, language), month: monthLabel(tip.month, t.locale, 'name') })}
+      action={tip.id === 'capture' ? t.hintCaptureAction : tip.id === 'favorite' ? t.hintFavoriteAction
+        : tip.id === 'reserve' ? t.hintReserveAction : tip.id === 'backup' ? t.hintBackupAction : t.hintBudgetAction}
+      hideLabel={t.hintClose}
+      onHide={() => store.closeTip(tip.id)}
+      onAction={() => {
+        store.closeTip(tip.id);
+        if (tip.id === 'capture') push('capture');
+        else if (tip.id === 'favorite') { if (store.addFavorite({ name: tip.name, categoryId: tip.categoryId, ...(tip.amount ? { amount: tip.amount } : {}) })) show(t.favoriteSaved); }
+        else if (tip.id === 'reserve') setTab('insights');
+        else if (tip.id === 'backup') push('transfer');
+        else setBudgetFor(tip.category);
+      }}
+    />
   ) : null;
 
   /** Every screen, by name — the tab roots and what can be pushed over them. */

@@ -246,6 +246,13 @@ export function SettingsView(p: Props) {
           onClick={p.onCategories}
         />
         <Row
+          label={t.favorites}
+          sub={t.favoritesSub}
+          leading={<IconTile icon={Star} hue="lemon" />}
+          trailing={<Next value={p.favoriteCount || undefined} />}
+          onClick={p.onFavorites}
+        />
+        <Row
           label={t.accountsTitle}
           sub={t.accountsRowSub}
           leading={<IconTile icon={Wallet} hue="leaf" />}
@@ -260,25 +267,18 @@ export function SettingsView(p: Props) {
           onClick={p.onDebts}
         />
         <Row
-          label={t.monthStartRow}
-          sub={t.monthStartRowSub}
-          leading={<IconTile icon={CalendarRange} hue="sky" />}
-          trailing={<Next value={fmt(t.monthStartValue, { day: p.monthStart })} />}
-          onClick={p.onMonthStart}
-        />
-        <Row
-          label={t.favorites}
-          sub={t.favoritesSub}
-          leading={<IconTile icon={Star} hue="lemon" />}
-          trailing={<Next value={p.favoriteCount || undefined} />}
-          onClick={p.onFavorites}
-        />
-        <Row
           label={t.rulesRow}
           sub={t.rulesRowSub}
           leading={<IconTile icon={Filter} hue="sand" />}
           trailing={<Next value={p.ruleCount || undefined} />}
           onClick={p.onRules}
+        />
+        <Row
+          label={t.monthStartRow}
+          sub={t.monthStartRowSub}
+          leading={<IconTile icon={CalendarRange} hue="sky" />}
+          trailing={<Next value={fmt(t.monthStartValue, { day: p.monthStart })} />}
+          onClick={p.onMonthStart}
         />
         <Row
           label={t.transferTitle}

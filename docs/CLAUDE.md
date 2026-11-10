@@ -400,6 +400,14 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (`backupFiles`, `keepAttachments`). Daily snapshots hold the list, not the
   files. Carry-over doesn't copy receipts. `privacy-check.mjs` attaches a
   photo with EXIF and fails if any of it is stored.
+- **Tips (plan 37, `src/tips.ts`, pure and tested).** `nextTip(data, state,
+  ctx)` gives at most one tip — capture, favourite, reserve, budget, backup,
+  in that order — shown as `HintCard` in the month page's setup slot, only on
+  the running month and after the setup and gestures cards. Closing or using
+  it puts it in `store.tipState.done` for good (a device pref) and starts a
+  seven-day pause. A new feature gets a tip here rather than anything on the
+  first screens; `plans/37-simplicity-review.md` has the table of where each
+  feature first appears and the first-viewport counts to compare with.
 - **Automatic capture (plan 19, iPhone).** Two more App Intents in
   `SpartopfIntents.swift` for Shortcuts automations — `LogPaymentIntent`
   (the *Transaction* trigger: merchant, amount, card) and

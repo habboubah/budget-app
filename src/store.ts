@@ -6,6 +6,7 @@ import {
   computeBalances, laterCopies, laterTransferCopies, mainAccount, makeTransfer, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid, isIsoDay, isoDay, changeMonthStart, setMonthStart, validMonthStart,
 } from './logic';
+import { TipId, TipState, closeTip, readTipState } from './tips';
 import { Currency, DEFAULT_CURRENCY, currencyForLocale, isSupportedCurrency } from './currency';
 import { defaultCategories } from './data/defaults';
 import { ReminderPrefs, normalizeReminderPrefs } from './reminders';
@@ -32,6 +33,7 @@ const K = {
   copyCardDismissed: 'spartopf-copy-card-dismissed',
   autoCategory: 'spartopf-auto-category',
   captureReview: 'spartopf-capture-review',
+  tipState: 'spartopf-tip-state',
   account: 'spartopf-account',
 } as const;
 
@@ -186,6 +188,9 @@ export function useAppStore() {
   useEffect(() => { persist(K.firstUse, firstUse); }, [firstUse]);
   useEffect(() => { if (reviewAsked) persist(K.reviewAsked, reviewAsked); }, [reviewAsked]);
   useEffect(() => { persist(K.autoCategory, autoCategory ? '1' : '0'); }, [autoCategory]);
+  /** Plan 37: which tips are done, and when the last one was put away. */
+  const [tipState, setTipState] = useState<TipState>(() => readTipState(readJson(K.tipState)));
+  useEffect(() => { persist(K.tipState, JSON.stringify(tipState)); }, [tipState]);
   /** Plan 19: captured payments wait under *Neu* instead of being booked at once. */
   const [captureReview, setCaptureReview] = useState(() => readString(K.captureReview) === '1');
   useEffect(() => { persist(K.captureReview, captureReview ? '1' : '0'); }, [captureReview]);
@@ -878,6 +883,7 @@ export function useAppStore() {
     firstUse, reviewAsked, markReviewAsked: () => setReviewAsked(isoDay()),
     autoCategory, setAutoCategory,
     captureReview, setCaptureReview,
+    tipState, closeTip: (id: TipId) => setTipState(s => closeTip(s, id)),
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),
     expand: (id: string) => setCollapsed(prev => prev.filter(x => x !== id)),

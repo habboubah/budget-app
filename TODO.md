@@ -30,6 +30,14 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
+**Plan 37 — simplicity review** (needs people and devices)
+- [ ] Hand the app, freshly installed, to three people who don't know it:
+  the first entry in under 30 seconds, with at most three decisions before.
+- [ ] VoiceOver through setup, a new entry, ticking off, the month report;
+  text at 200 %; Voice Control names ("Tippe Sichern").
+- [ ] Cold start and typing an amount on the oldest iPhone you support.
+- [ ] Use the app a while: do the tips come at sensible moments, one a week?
+
 **Plan 19 — automatic capture**
 - [ ] Build in Xcode: the two new actions in `SpartopfIntents.swift` have not
   been compiled yet.
