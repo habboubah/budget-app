@@ -1,7 +1,7 @@
 import { registerPlugin } from '@capacitor/core';
 import { isNative } from '../platform';
 import { onWipe } from '../storage';
-import { Snapshot } from './snapshot';
+import { SiriAmounts, Snapshot } from './snapshot';
 import { systemFromAgent } from '../links';
 
 /*
@@ -19,9 +19,27 @@ interface SharedPlugin {
   open(options: { url: string }): Promise<void>;
   system(): Promise<{ name: string; version: string }>;
   makePdf(options: { name: string }): Promise<void>;
+  writeAmounts(options: { json: string }): Promise<void>;
+  removeAmounts(): Promise<void>;
 }
 
 const Shared = registerPlugin<SharedPlugin>('SpartopfShared');
+
+/**
+ * Plan 18: what Siri may say aloud, in a file iOS keeps readable only while
+ * the phone is unlocked. Fails quietly while it is locked (the midnight write);
+ * the next save writes again.
+ */
+export async function writeAmounts(amounts: SiriAmounts): Promise<void> {
+  if (!isNative()) return;
+  try { await Shared.writeAmounts({ json: JSON.stringify(amounts) }); } catch { /* the next save writes again */ }
+}
+
+/** Plan 18: no amounts for Siri — while the app lock is on. */
+export async function removeAmounts(): Promise<void> {
+  if (!isNative()) return;
+  try { await Shared.removeAmounts(); } catch { /* nothing to remove */ }
+}
 
 /** Writes the snapshot to the App Group (widgets reload). False when it couldn't. */
 export async function writeSnapshot(snapshot: Snapshot): Promise<boolean> {

@@ -627,9 +627,25 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     Plan 15 added `requestReview` (StoreKit's `AppStore.requestReview(in:)`,
     `SKStoreReviewController` before iOS 16), `open` (hands a link to iOS —
     https to `apps.apple.com` / `habboubah.github.io` and mailto: only) and
-    `system` (the iOS version for the feedback mail); plan 28 added `makePdf`
+    `system` (the iOS version for the feedback mail); plan 18 `writeAmounts` /
+    `removeAmounts` (below); plan 28 added `makePdf`
     (the page as printed, via `UIPrintPageRenderer` on A4 with 40 pt margins,
     into a temporary PDF offered in the share sheet and deleted after).
+  - **Siri and Shortcuts (plan 18, `ios/App/App/SpartopfIntents.swift`).** App
+    Intents in the app target (iOS 16+; the app still runs on 15), listed by
+    `SpartopfShortcuts` with phrases in English (code) and German / Arabic
+    (`de.lproj` / `ar.lproj` `AppShortcuts.strings`; titles and answers in
+    `Localizable.strings`, the English text as key). *Eintrag hinzufügen*
+    (`AddEntryIntent`: amount, name, `CategoryEntity` from the snapshot's
+    categories, date, paid) writes an inbox item with `source: "siri"` — booked
+    by the app at launch or on resume like any inbox item; the book's currency
+    wins over the one said. *Was bleibt am Monatsende?* and *Offene Rechnungen*
+    read `amounts.json` (`buildAmounts` in `snapshot.ts`: the main account's two
+    balances, the next open bills with amounts, how many are open) — class
+    Complete, written with the snapshot only while the app lock is off (removed
+    otherwise), and only for the running month; both have
+    `authenticationPolicy = .requiresAuthentication`. Without it they answer
+    "Öffne Spartopf". A new phrase or answer goes into both `.strings` files.
   - **PDF report (plan 28).** *Bericht teilen* under the Monatsbericht and the
     Jahresrückblick opens `ReportPdfSheet` (one switch: every entry or not).
     `PrintReport` draws the report a second time, as a portal on `<body>`

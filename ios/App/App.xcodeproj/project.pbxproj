@@ -18,6 +18,9 @@
 		A1B2C3D51FED7965001685AA /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D41FED7965001685AA /* SceneDelegate.swift */; };
 		B14A0C021FED7965001685AA /* SpartopfShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14A0C011FED7965001685AA /* SpartopfShared.swift */; };
 		5F16A0B00000000000000002 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5F16A0B00000000000000001 /* InfoPlist.strings */; };
+		B14A0C041FED7965001685AA /* SpartopfIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14A0C031FED7965001685AA /* SpartopfIntents.swift */; };
+		5F16A0B00000000000000012 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5F16A0B00000000000000011 /* Localizable.strings */; };
+		5F16A0B00000000000000016 /* AppShortcuts.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5F16A0B00000000000000015 /* AppShortcuts.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +50,11 @@
 		5F16A0B0000000000000000E /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		5F16A0B0000000000000000F /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		5F16A0B00000000000000010 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B14A0C031FED7965001685AA /* SpartopfIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpartopfIntents.swift; sourceTree = "<group>"; };
+		5F16A0B00000000000000013 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		5F16A0B00000000000000014 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
+		5F16A0B00000000000000017 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
+		5F16A0B00000000000000018 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,11 +93,14 @@
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				A1B2C3D41FED7965001685AA /* SceneDelegate.swift */,
 				B14A0C011FED7965001685AA /* SpartopfShared.swift */,
+				B14A0C031FED7965001685AA /* SpartopfIntents.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
 				504EC3131FED79650016851F /* Info.plist */,
 				5F16A0B00000000000000001 /* InfoPlist.strings */,
+				5F16A0B00000000000000011 /* Localizable.strings */,
+				5F16A0B00000000000000015 /* AppShortcuts.strings */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
 			);
@@ -180,6 +191,8 @@
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				5F16A0B00000000000000002 /* InfoPlist.strings in Resources */,
+				5F16A0B00000000000000012 /* Localizable.strings in Resources */,
+				5F16A0B00000000000000016 /* AppShortcuts.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -193,6 +206,7 @@
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				A1B2C3D51FED7965001685AA /* SceneDelegate.swift in Sources */,
 				B14A0C021FED7965001685AA /* SpartopfShared.swift in Sources */,
+				B14A0C041FED7965001685AA /* SpartopfIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,6 +248,24 @@
 				5F16A0B00000000000000010 /* tr */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		5F16A0B00000000000000011 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5F16A0B00000000000000013 /* de */,
+				5F16A0B00000000000000014 /* ar */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		5F16A0B00000000000000015 /* AppShortcuts.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5F16A0B00000000000000017 /* de */,
+				5F16A0B00000000000000018 /* ar */,
+			);
+			name = AppShortcuts.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

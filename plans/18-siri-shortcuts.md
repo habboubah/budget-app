@@ -41,3 +41,10 @@ On a device, try every phrase in every language:
 ## Done when
 
 - [ ] The three actions work by voice and in Shortcuts, in all three languages.
+
+## Notes (built)
+
+- **Where the amounts come from.** The widget snapshot holds no amounts on purpose (plan 14). So the answers read a second file, `amounts.json`, built by `buildAmounts` (src/native/snapshot.ts): the main account's two balances, the next three open bills with their amounts, and how many bills are open. It has class Complete, so it can't be read while the phone is locked. It is written with the snapshot, but only while the app lock is off; with the lock on, it is removed. It counts only for the running month: in a new month, the app has to be opened once first. Without the file, both actions say "Öffne Spartopf, um es zu sehen." (TODO.md had this as option (b).) *Beträge verbergen* doesn't stop them: as the plan says, they answer once the phone is unlocked.
+- **Swift:** `ios/App/App/SpartopfIntents.swift`, in the app target, not an extension. App Intents need iOS 16, and the app still supports 15, so everything is `@available(iOS 16.0, *)`. `AddEntryIntent` (amount as `IntentCurrencyAmount`, name, `CategoryEntity`, date, paid) writes `inbox/siri-<uuid>.json`. The book's own currency wins over the one spoken. `MonthEndIntent` and `OpenBillsIntent` have `authenticationPolicy = .requiresAuthentication`. `SpartopfShortcuts` uses `AppShortcut(intent:phrases:)` (iOS 16's initializer; newer SDKs mark it deprecated in favour of the one with `shortTitle`, which is a warning, not an error). `SpartopfShared` got `writeAmounts` / `removeAmounts`, and `clear` removes the file too.
+- **Texts:** English in the code, German and Arabic in `de.lproj` / `ar.lproj` (`Localizable.strings` for titles and answers, `AppShortcuts.strings` for the phrases), added to the Xcode project as variant groups. The other eleven languages fall back to English. Siri speaks several of them, so translating them is a follow-up.
+- **Not checked here:** the Swift has not been compiled (no Xcode in this environment). It needs a build, and then the phrases tried on a device.

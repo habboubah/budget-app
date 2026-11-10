@@ -21,6 +21,10 @@ class MainViewController: CAPBridgeViewController {
 ///   never the whole book, and without amounts unless the user allows them.
 /// - `inbox/<id>.json` — items extensions leave for the app to book
 ///   (src/native/inbox.ts); deleted once the app has taken them in.
+/// - `amounts.json` — plan 18: what Siri may say aloud (the two balances, the
+///   open bills' amounts; `buildAmounts` in src/native/snapshot.ts). Written with
+///   `complete` protection — readable only while the phone is unlocked — and
+///   only while the app lock is off.
 ///
 /// Our own code, no third-party plugin: it handles financial data. Files are
 /// written with `completeUntilFirstUserAuthentication`, because widgets and
@@ -39,7 +43,9 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "requestReview", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "open", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "system", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "makePdf", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "makePdf", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "writeAmounts", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "removeAmounts", returnType: CAPPluginReturnPromise)
     ]
 
     static let appGroup = "group.com.habboubah.spartopf"
@@ -53,6 +59,7 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
     }
     private var snapshotURL: URL? { container?.appendingPathComponent("snapshot.json") }
     private var inboxURL: URL? { container?.appendingPathComponent("inbox", isDirectory: true) }
+    private var amountsURL: URL? { container?.appendingPathComponent("amounts.json") }
 
     /// An inbox item's id is its file name: ASCII letters, digits, - and _ (no path tricks).
     static func isValidId(_ id: String) -> Bool {
@@ -206,9 +213,32 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    /// "Alle Daten löschen": the snapshot and the inbox go too (storage.ts `onWipe`).
+    /// Plan 18: what Siri may say aloud. `complete` protection: only readable while the phone is
+    /// unlocked, so writing fails while it is locked (the midnight write) — the next save writes again.
+    @objc func writeAmounts(_ call: CAPPluginCall) {
+        guard let json = call.getString("json"), let data = json.data(using: .utf8), data.count <= Self.maxSnapshotBytes,
+              let url = amountsURL else {
+            call.reject("No amounts to write")
+            return
+        }
+        do {
+            try data.write(to: url, options: [.atomic, .completeFileProtection])
+            call.resolve()
+        } catch {
+            call.reject("The amounts could not be written")
+        }
+    }
+
+    /// Plan 18: no amounts for Siri (the app lock is on).
+    @objc func removeAmounts(_ call: CAPPluginCall) {
+        if let url = amountsURL { try? FileManager.default.removeItem(at: url) }
+        call.resolve()
+    }
+
+    /// "Alle Daten löschen": the snapshot, Siri's amounts and the inbox go too (storage.ts `onWipe`).
     @objc func clear(_ call: CAPPluginCall) {
         if let url = snapshotURL { try? FileManager.default.removeItem(at: url) }
+        if let url = amountsURL { try? FileManager.default.removeItem(at: url) }
         if let dir = inboxURL { try? FileManager.default.removeItem(at: dir) }
         WidgetCenter.shared.reloadAllTimelines()
         call.resolve()

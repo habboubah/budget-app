@@ -100,3 +100,36 @@ export function buildSnapshot(data: AppData, prefs: SnapshotPrefs, today = new D
   if (shown) snapshot.balance = { now: b.now, end: b.end, perDay: leftPerDay(monthSettled(b).net, month, today) };
   return snapshot;
 }
+
+/**
+ * What Siri may say aloud (plan 18): the running month's two balances and the
+ * next open bills with their amounts — for "Was bleibt am Monatsende?" and
+ * "Offene Rechnungen". The snapshot itself never holds amounts, so this goes
+ * into a file of its own (`amounts.json`) that iOS keeps readable only while
+ * the phone is unlocked (NSFileProtectionComplete). The app writes it only
+ * while its lock is off, and removes it otherwise; the intents ask for the
+ * phone to be unlocked first, too (`authenticationPolicy`).
+ */
+export interface SiriAmounts {
+  v: 1;
+  writtenAt: string;
+  month: MonthKey;
+  locale: string;
+  currency: string;
+  /** *Jetzt auf dem Konto* and *Am Monatsende*, the main account's (cents). */
+  now: number;
+  end: number;
+  /** The next open bills, overdue first, with their amounts. */
+  bills: SnapshotBill[];
+  /** How many of the month's bills are still open. */
+  open: number;
+}
+
+export function buildAmounts(data: AppData, prefs: Pick<SnapshotPrefs, 'language' | 'locale' | 'accent'>, today = new Date()): SiriAmounts {
+  const s = buildSnapshot(data, { ...prefs, locked: false, showAmounts: true }, today);
+  return {
+    v: 1, writtenAt: s.writtenAt, month: s.month, locale: s.locale, currency: s.currency,
+    now: s.balance!.now, end: s.balance!.end, bills: s.bills, open: s.paid.total - s.paid.paid,
+  };
+}
+

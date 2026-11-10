@@ -68,6 +68,12 @@ Everything the app can do. Build and release steps are in the
   keeps its own opening balance; budgets, Statistik and Planen count every
   account, and Planen shows *Vermögen* — all of them together. A bank import
   goes into the account shown. An account goes only once it is empty.
+- **Siri and Shortcuts.** "Ausgabe in Spartopf" — Siri asks how much and what
+  for, and the entry is booked (with an undo when the app opens). "Was bleibt
+  am Monatsende in Spartopf" and "Offene Rechnungen in Spartopf" answer once
+  the phone is unlocked, never while the app lock is on. All three are in the
+  Shortcuts app and Spotlight too, for automations. German, English and
+  Arabic.
 - **Debts and loans.** *Optionen › Schulden und Kredite* takes a loan or a debt
   — what it was, since when, the interest a year, the monthly payment and the
   recurring entry it is paid with — or money lent to someone ("Mir

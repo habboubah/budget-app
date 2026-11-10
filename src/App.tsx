@@ -60,10 +60,10 @@ import { onReminderTap, remindersAvailable, syncReminders } from './notify';
 import { LockKind, authenticate, lockKind as findLockKind } from './lock';
 import { devNative, isNative } from './platform';
 import { SAVE_DEBOUNCE_MS, inDeviceBackup, saver, setInDeviceBackup } from './storage';
-import { buildSnapshot } from './native/snapshot';
+import { buildAmounts, buildSnapshot } from './native/snapshot';
 import { inboxToEntries } from './native/inbox';
 import { DeepLink, parseDeepLink } from './native/deepLink';
-import { makePdf, openExternal, readInbox, readSnapshot, removeInbox, requestReview, systemVersion, writeSnapshot } from './native/bridge';
+import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
 import { PrintReport, PrintSpec, ReportPdfSheet, reportFileName } from './components/PrintReport';
 import { REVIEW_URL, feedbackMail, privacyUrl } from './links';
 import { isDemoEntry } from './demo';
@@ -667,7 +667,12 @@ export default function App() {
   const snapshotFor = () => buildSnapshot(data, { language, locale: t.locale, accent: store.accent, locked: store.lockOn, showAmounts: false });
   useEffect(() => {
     if (!native) return;
-    const id = window.setTimeout(() => { void writeSnapshot(snapshotFor()); }, SAVE_DEBOUNCE_MS);
+    const id = window.setTimeout(() => {
+      void writeSnapshot(snapshotFor());
+      // What Siri may say aloud (plan 18): only while the app lock is off.
+      if (store.lockOn) void removeAmounts();
+      else void writeAmounts(buildAmounts(data, { language, locale: t.locale, accent: store.accent }));
+    }, SAVE_DEBOUNCE_MS);
     return () => window.clearTimeout(id);
   }, [native, data, language, store.accent, store.lockOn, midnight, resumed]);
   /** Debug (Sichern und übertragen): write the snapshot and read it back. */

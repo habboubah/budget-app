@@ -1,0 +1,24 @@
+/* Siri and Shortcuts (plan 18, SpartopfIntents.swift). The English text is the key. */
+
+"Add entry" = "إضافة بند";
+"Books an expense or an income in Spartopf." = "يسجّل مصروفًا أو دخلًا في Spartopf.";
+"Amount" = "المبلغ";
+"How much?" = "كم المبلغ؟";
+"Name" = "الاسم";
+"What for?" = "لأجل ماذا؟";
+"Category" = "الفئة";
+"Date" = "التاريخ";
+"Paid" = "مدفوع";
+"Add ${amount} for ${name}" = "أضف ${amount} لـ ${name}";
+"Booked: %@ %@" = "سُجّل: %1$@ %2$@";
+"Booked as open: %@ %@" = "سُجّل كمفتوح: %1$@ %2$@";
+"What’s left at the end of the month?" = "ماذا يبقى في نهاية الشهر؟";
+"Says what Spartopf expects in your account at the end of the month." = "يخبرك بما يتوقعه Spartopf في حسابك في نهاية الشهر.";
+"Open Spartopf to see it." = "افتح Spartopf لتراه.";
+"At the end of the month: %@. In your account now: %@." = "في نهاية الشهر: %1$@. في الحساب الآن: %2$@.";
+"Open bills" = "الفواتير المفتوحة";
+"Says which of this month’s bills are still open in Spartopf." = "يخبرك بفواتير هذا الشهر التي لا تزال مفتوحة في Spartopf.";
+"No bills are open this month." = "لا فواتير مفتوحة هذا الشهر.";
+"Open: %@. Next: %@." = "المفتوحة: %1$@. التالية: %2$@.";
+"Spartopf can’t be reached right now." = "تعذّر الوصول إلى Spartopf الآن.";
+"That amount can’t be booked." = "لا يمكن تسجيل هذا المبلغ.";

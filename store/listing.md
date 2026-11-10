@@ -268,6 +268,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: الديون والقروض. يعرض Spartopf كم تبقّى، ومتى تتخلص من الدين، وكم من الفائدة لا يزال قادمًا – وكذلك للمال الذي أقرضته.
 
+**DE:** Neu: Siri und Kurzbefehle. „Ausgabe in Spartopf“ trägt per Sprache ein; „Was bleibt am Monatsende?“ und „Offene Rechnungen“ antworten, sobald dein iPhone entsperrt ist.
+
+**EN:** New: Siri and Shortcuts. "Add an expense in Spartopf" books by voice; "What's left at the end of the month?" and "Open bills" answer once your iPhone is unlocked.
+
+**AR:** جديد: Siri والاختصارات. «أضف مصروفًا في Spartopf» يسجّل بالصوت؛ و«ماذا يبقى في نهاية الشهر؟» و«الفواتير المفتوحة» تجيبان بعد فتح قفل الـiPhone.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

@@ -1,0 +1,24 @@
+/* Siri and Shortcuts (plan 18, SpartopfIntents.swift). The English text is the key. */
+
+"Add entry" = "Eintrag hinzufügen";
+"Books an expense or an income in Spartopf." = "Bucht eine Ausgabe oder Einnahme in Spartopf.";
+"Amount" = "Betrag";
+"How much?" = "Wie viel?";
+"Name" = "Name";
+"What for?" = "Wofür?";
+"Category" = "Kategorie";
+"Date" = "Datum";
+"Paid" = "Bezahlt";
+"Add ${amount} for ${name}" = "${amount} für ${name} eintragen";
+"Booked: %@ %@" = "Gebucht: %1$@ %2$@";
+"Booked as open: %@ %@" = "Als offen gebucht: %1$@ %2$@";
+"What’s left at the end of the month?" = "Was bleibt am Monatsende?";
+"Says what Spartopf expects in your account at the end of the month." = "Sagt, was Spartopf am Monatsende auf deinem Konto erwartet.";
+"Open Spartopf to see it." = "Öffne Spartopf, um es zu sehen.";
+"At the end of the month: %@. In your account now: %@." = "Am Monatsende: %1$@. Jetzt auf dem Konto: %2$@.";
+"Open bills" = "Offene Rechnungen";
+"Says which of this month’s bills are still open in Spartopf." = "Sagt, welche Rechnungen diesen Monat in Spartopf noch offen sind.";
+"No bills are open this month." = "Diesen Monat ist keine Rechnung mehr offen.";
+"Open: %@. Next: %@." = "Offen: %1$@. Als Nächstes: %2$@.";
+"Spartopf can’t be reached right now." = "Spartopf ist gerade nicht erreichbar.";
+"That amount can’t be booked." = "Dieser Betrag lässt sich nicht buchen.";

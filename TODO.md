@@ -9,7 +9,9 @@ items off, or delete them once done. The details are in each plan's notes.
 - [x] ~~Build once in Xcode, and sign with the App Group and Data
   Protection~~: done with release v1.2.6 (build 10) on 9 Nov.
 - [ ] **Build again in Xcode** after each new plan with Swift. Plan 28 added
-  `makePdf` to `SpartopfShared.swift`.
+  `makePdf` to `SpartopfShared.swift`; plan 18 added `SpartopfIntents.swift`
+  and two `.strings` files per language (de, ar) — it hasn't been compiled
+  yet, so expect to tell Claude about any error.
 - [ ] **Push** when you're ready: `main` is ahead of GitHub (`git status`
   shows how far).
 
@@ -29,6 +31,17 @@ items off, or delete them once done. The details are in each plan's notes.
 
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
+
+**Plan 18 — Siri and Shortcuts** (Claude went with option (b): Siri's
+amounts in a file only readable while the phone is unlocked)
+- [ ] In German, English and Arabic: "Ausgabe in Spartopf" (Siri asks how
+  much), with the app closed and open — the entry is there with an undo.
+- [ ] "Was bleibt am Monatsende in Spartopf" and "Offene Rechnungen in
+  Spartopf": they answer after unlocking; with the app lock on they say to
+  open the app.
+- [ ] The three actions in the Shortcuts app and in Spotlight.
+- [ ] This also covers plan 14's open item: an inbox entry booked while the
+  app was closed.
 
 **Plan 31 — debts and loans**
 - [ ] *Optionen › Schulden und Kredite*: add a loan with its rate and the
@@ -64,8 +77,7 @@ for plan 15.
   *Sichern und übertragen › Widget-Daten testen* says "written and read back".
 - [ ] Links from Notes or Safari, with the app closed, open and locked:
   `spartopf://month/2026-10` and `spartopf://add?amount=12.50&name=Test`.
-- [ ] An inbox item booked while the app was closed. This is easiest with
-  plan 18's first Siri action, so leave it until then.
+- [ ] An inbox item booked while the app was closed (see plan 18).
 
 **Plan 06 — data protection**
 - [ ] Xcode's console on launch lists every book file as
@@ -95,13 +107,6 @@ for plan 15.
 
 ## Decide
 
-- [ ] **Plan 18 (Siri): how may Siri answer with an amount?** The widget file
-  holds no amounts on purpose (plan 14), so "Was bleibt am Monatsende?" has
-  nothing to read. Options: (a) the action just opens the month in the app;
-  (b) a second small file with only the two balances, readable only while the
-  phone is unlocked; (c) leave that action out. Claude suggests (b). Adding an
-  entry by voice and "Offene Rechnungen" (names, no amounts) work either way.
-  Plan 18 is all Swift, so it needs an Xcode build from you to check.
 
 - [ ] **Bug found in plan 06's work:** closing the photo import while it's
   still reading doesn't cancel it; the review pops up later. Should Claude

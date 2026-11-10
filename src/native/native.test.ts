@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSnapshot, SnapshotPrefs } from './snapshot';
+import { buildAmounts, buildSnapshot, SnapshotPrefs } from './snapshot';
 import { INBOX_MAX, inboxToEntries } from './inbox';
 import { parseDeepLink } from './deepLink';
 import { defaultCategories } from '../data/defaults';
@@ -62,6 +62,12 @@ describe('the snapshot (plan 14)', () => {
     expect(s.balance).toMatchObject({ now: 200000 + 320000 - 2500, end: 200000 + 320000 + 25500 - 105000 - 8500 - 2500 - 18000 - 20000 });
     expect(s.bills[0].amount).toBe(105000);
     expect(s.favorites[0].amount).toBe(450);
+  });
+  it('what Siri may say (plan 18): the two balances and the open bills with their amounts, nothing else of the book', () => {
+    const a = buildAmounts(data, { language: 'de', locale: 'de-DE', accent: 'petrol' }, today);
+    expect(a).toMatchObject({ v: 1, month: '2026-11', locale: 'de-DE', currency: 'EUR', now: 517500, end: 391500, open: 4 });
+    expect(a.bills.map(b => [b.name, b.amount, b.overdue])).toEqual([['Miete', 105000, true], ['Strom', 8500, false], ['Kfz-Steuer', 18000, false]]);
+    expect(Object.keys(a).sort()).toEqual(['bills', 'currency', 'end', 'locale', 'month', 'now', 'open', 'v', 'writtenAt']);
   });
 });
 
