@@ -65,6 +65,7 @@ const LANGS = {
     categories: 'Kategorien',
     transfer: 'Sichern und übertragen',
     reminders: 'An offene Posten erinnern',
+    capture: 'Automatisch erfassen',
     contracts: 'Abos & Verträge',
     explain: 'So berechnet',
     names: {
@@ -80,6 +81,7 @@ const LANGS = {
     categories: 'الفئات',
     transfer: 'النسخ الاحتياطي والنقل',
     reminders: 'التذكير بالبنود المعلّقة',
+    capture: 'التسجيل التلقائي',
     contracts: 'الاشتراكات والعقود',
     explain: 'كيف يُحسب',
     // Shop names stay Latin, as on a German receipt: mixed direction on purpose.
@@ -359,6 +361,12 @@ const SCREENS = [
     await page.locator(SIDE + ' button', { hasText: l.reminders }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page' },
+  // Optionen → Automatisch erfassen (plan 19).
+  { name: 'capture', storage: { 'spartopf-dev-native': '1' }, run: async (page, l) => {
+    await tab(3)(page);
+    await page.locator(SIDE + ' button', { hasText: l.capture }).first().click();
+    await page.waitForTimeout(500);
+  }, audit: 'page', full: true },
   // Optionen → Sichern und übertragen.
   { name: 'transfer', run: async (page, l) => {
     await tab(3)(page);

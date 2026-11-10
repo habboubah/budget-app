@@ -77,3 +77,13 @@ Nothing happens until the user sets up an automation. The guide is one screen wi
 
 - [ ] Apple Pay payments and bank notifications become entries without typing, with undo or review.
 - [ ] Sharing a screenshot or a CSV to Spartopf opens the import.
+
+## Notes (built, steps 1, 2 and 4)
+
+Built without a device, so the first *Done when* stays open until it has run on an iPhone:
+
+- **The two actions** are `LogPaymentIntent` ("Zahlung in Spartopf erfassen") and `LogNotificationIntent` ("Mitteilung in Spartopf erfassen") in `SpartopfIntents.swift` — the app target, no new target. They take **plain text** for every field instead of `IntentCurrencyAmount`: what a Shortcuts automation hands over as "Shortcut Input" then always fits, and the app reads the amount ("12,40 €", "€12.40", "12.4"). The notification action has a *Subtitle* too — iOS 27's trigger gives title, subtitle and body.
+- **The parser** (`parseNotificationText`) is written from the usual shapes of German banking pushes. **Its samples are made up** — nobody's real notifications were available. It needs real ones (anonymised) from the banks in use; that is in TODO.md. A text it can't read books nothing.
+- **Review mode** keeps the captured payments in the inbox (the App Group, protected by iOS) instead of a second list in the app: *Neu: 3* on the running month opens them in the import review; confirmed, they are gone.
+- **The guide** describes the steps in words, in 14 languages, with the menu names as iOS shows them as far as known — check them once on an iPhone in German. No pictures yet, and **no ready-made shortcut link**: an iCloud link has to be made on a device; automations can't be shared as links anyway, only shortcuts.
+- **Not built: step 3, the share extension** (*Teilen an Spartopf*). It is a new Xcode target with its own App Group entitlement and provisioning — to be added in Xcode.

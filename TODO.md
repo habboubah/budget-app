@@ -30,6 +30,22 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
+**Plan 19 — automatic capture**
+- [ ] Build in Xcode: the two new actions in `SpartopfIntents.swift` have not
+  been compiled yet.
+- [ ] *Optionen › Automatisch erfassen*: follow the Apple Pay guide once and
+  tell Claude where the wording differs from what Kurzbefehle shows
+  ("Transaktion", "Sofort ausführen", "Kurzbefehleingabe" …).
+- [ ] Pay something small with Apple Pay: the entry appears with an undo.
+  Switch to *Erst prüfen*, pay again: *Neu: 1* on the month, and the review.
+- [ ] On iOS 27: the same with a notification from your banking app.
+- [ ] Collect a few real notification texts from your banking apps (names
+  and amounts changed) and give them to Claude: the parser was written from
+  made-up samples.
+- [ ] *Teilen an Spartopf* needs a share extension — a new target in Xcode
+  (File › New › Target › Share Extension, App Group `group.…` as the app's).
+  Add the empty target; Claude can then write its code.
+
 **Plan 22 — iPad** (your decision first)
 - [ ] Decide whether Spartopf ships for iPad. If yes: Xcode › App › General ›
   Supported Destinations › add iPad (`TARGETED_DEVICE_FAMILY = "1,2"`). Once

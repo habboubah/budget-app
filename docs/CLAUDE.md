@@ -400,6 +400,22 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (`backupFiles`, `keepAttachments`). Daily snapshots hold the list, not the
   files. Carry-over doesn't copy receipts. `privacy-check.mjs` attaches a
   photo with EXIF and fails if any of it is stored.
+- **Automatic capture (plan 19, iPhone).** Two more App Intents in
+  `SpartopfIntents.swift` for Shortcuts automations — `LogPaymentIntent`
+  (the *Transaction* trigger: merchant, amount, card) and
+  `LogNotificationIntent` (iOS 27's *Notification* trigger: title, subtitle,
+  text). Both take plain text and only leave an inbox item (`source:
+  'wallet' | 'notification'`, the text in `text`, lines kept apart).
+  `parseNotificationText` (statementImport.ts, tested in
+  `notification.test.ts` with made-up samples only) reads the amount (the
+  first with a currency that isn't a balance), the payee and whether money
+  came in; the text is never stored. `inboxToEntries(…, { hold })`: with
+  *Erst prüfen* (`store.captureReview`, a device pref) the `CAPTURE_SOURCES`
+  stay in the inbox, App shows *Neu: n* on the running month, and
+  `inboxReview` opens them in `StatementImportSheet` (`source: 'inbox'`);
+  confirmed, they leave the inbox. `CaptureView` (*Optionen › Automatisch
+  erfassen*, native only) is the guide and the mode switch. The share
+  extension (*Teilen an Spartopf*) needs its own Xcode target — not built.
 - **Wide screens (plan 22).** From 700 px on (`ui/useWide.ts`, by width, never
   by device) App renders two columns that scroll by themselves: the month on
   the leading side, and beside it what the tab shows — *Statistik*, *Planen*,

@@ -1,6 +1,6 @@
 import { AppData, Entry } from '../types';
 import { MAX_CENTS, cleanText, displayName, isIsoDay, isoDay, uid } from '../logic';
-import { Found, applyStatement, planStatement } from '../statementImport';
+import { Found, PlannedRow, applyStatement, parseNotificationText, planStatement } from '../statementImport';
 
 /*
  * What Siri, widgets, Shortcuts automations and the Watch hand to the app
@@ -64,7 +64,8 @@ export function readInboxItem(id: string, v: unknown): InboxItem | null {
   if (isIsoDay(o.date)) item.date = o.date;
   const card = text(o.card, 40);
   if (card) item.card = card;
-  const said = text(o.text, 500);
+  // A notification's lines stay lines: title, subtitle, body (plan 19's parser reads them apart).
+  const said = typeof o.text === 'string' ? o.text.slice(0, 2000).split(/\r?\n/).map(l => cleanText(l, 300)).filter(Boolean).slice(0, 6).join('\n').slice(0, 500) : '';
   if (said) item.text = said;
   if (typeof o.favoriteId === 'string' && INBOX_ID.test(o.favoriteId)) item.favoriteId = o.favoriteId;
   if (o.paid === false) item.paid = false;
@@ -74,6 +75,9 @@ export function readInboxItem(id: string, v: unknown): InboxItem | null {
 /** A creation time worth dating an entry by: within the last year, and not ahead of today. */
 const plausible = (ms: number, today: Date) => ms > today.getTime() - 366 * 86_400_000 && ms <= today.getTime() + 86_400_000;
 
+/** What the automations of plan 19 leave: these can wait to be looked through first (*Erst prüfen*). */
+export const CAPTURE_SOURCES: readonly InboxSource[] = ['wallet', 'notification', 'share'];
+
 export interface InboxResult {
   /** New entries, as `store.importEntries` takes them. */
   add: Entry[];
@@ -81,14 +85,49 @@ export interface InboxResult {
   pay: string[];
   /** The items dealt with — booked, already there, or nothing to book: they leave the inbox. The rest stay. */
   done: string[];
+  /** Captured payments left in the inbox to be looked through first (`hold`). */
+  held: number;
 }
 
 export function inboxToEntries(
   raw: { id: string; item: unknown }[],
   data: AppData,
-  { language = 'de', today = new Date(), now = Date.now(), newId = uid }: { language?: string; today?: Date; now?: number; newId?: () => string } = {},
+  { language = 'de', today = new Date(), now = Date.now(), newId = uid, hold = false }: { language?: string; today?: Date; now?: number; newId?: () => string; hold?: boolean } = {},
 ): InboxResult {
+  const { rows, asked, done, held } = planInbox(raw, data, { language, today, only: hold ? 'direct' : 'all' });
+  const { add, pay } = applyStatement(rows, now, newId, today);
+  const open = new Set(asked.filter(i => i.paid === false).map(i => `inbox:${i.id}`));
+  const entries = add.map(e => {
+    if (!e.ref || !open.has(e.ref)) return e;
+    const { paidAt: _paidAt, ...rest } = e;
+    return { ...rest, paid: false };
+  });
+  done.push(...asked.map(i => i.id));
+  return { add: entries, pay, done, held };
+}
+
+/**
+ * *Erst prüfen* (plan 19): the captured payments waiting in the inbox, as the
+ * import review takes them. `ids` leave the inbox once the review is
+ * confirmed — the rows taken over and the ones left out alike.
+ */
+export function inboxReview(
+  raw: { id: string; item: unknown }[],
+  data: AppData,
+  { language = 'de', today = new Date() }: { language?: string; today?: Date } = {},
+): { rows: PlannedRow[]; ids: string[] } {
+  const { rows, asked, done } = planInbox(raw, data, { language, today, only: 'captured' });
+  return { rows, ids: [...done, ...asked.map(i => i.id)] };
+}
+
+/** The inbox's items as checked import rows. `only`: what books at once (`direct`), what waits (`captured`), or all. */
+function planInbox(
+  raw: { id: string; item: unknown }[],
+  data: AppData,
+  { language, today, only }: { language: string; today: Date; only: 'all' | 'direct' | 'captured' },
+): { rows: PlannedRow[]; asked: InboxItem[]; done: string[]; held: number } {
   const done: string[] = [];
+  let held = 0;
   const seen = new Set<string>();
   const items: InboxItem[] = [];
   for (const r of raw) {
@@ -105,25 +144,38 @@ export function inboxToEntries(
   const found: Found[] = [];
   const asked: InboxItem[] = [];
   for (const item of items.slice(0, INBOX_MAX)) {
+    const captured = CAPTURE_SOURCES.includes(item.source);
+    if (only !== 'all' && captured !== (only === 'captured')) { if (captured) held++; continue; }
     let { amount, name, categoryId } = item;
+    let { date } = item;
+    let incoming: boolean | undefined;
     if (item.favoriteId) {
       const f = favorites.get(item.favoriteId);
       if (!f || f.amount === undefined) { done.push(item.id); continue; } // gone, or it needs the sheet
       ({ amount, name, categoryId } = f);
     }
-    if (amount === undefined) {
-      // A notification's text waits for plan 19's parser; anything else has nothing to book.
-      if (!item.text) done.push(item.id);
-      continue;
+    if (amount === undefined && item.text && item.source === 'wallet') {
+      // An Apple Pay payment's amount as Shortcuts hands it over: "12,40 €", "€12.40", "12.4".
+      amount = parseNotificationText(/€|EUR/i.test(item.text) ? item.text : `${item.text.replace(/[^\d.,\s’'٠-٩۰-۹٫٬]/g, '')} €`)?.amount;
+    } else if (amount === undefined && item.text) {
+      // A banking app's push (plan 19): read once; only the entry is kept.
+      const said = parseNotificationText(item.text);
+      if (said) {
+        amount = said.amount;
+        name ??= said.name || cleanText(item.text.split('\n')[0], 80);
+        date ??= said.date;
+        incoming = said.income;
+      }
     }
+    if (amount === undefined) { done.push(item.id); continue; } // nothing to book
     const category = categoryId ? byId.get(categoryId) : undefined;
     const label = name ?? (category ? displayName(category.names, language) : '');
     found.push({
       name: label,
       raw: item.card ? `${label} ${item.card}` : label,
       amount,
-      income: category?.kind === 'income',
-      date: item.date ?? isoDay(plausible(item.createdAt, today) ? new Date(item.createdAt) : today),
+      income: category ? category.kind === 'income' : incoming === true,
+      date: date ?? isoDay(plausible(item.createdAt, today) ? new Date(item.createdAt) : today),
       ref: `inbox:${item.id}`,
     });
     asked.push({ ...item, categoryId: category?.id });
@@ -136,13 +188,5 @@ export function inboxToEntries(
     // Booked as open, an item can't tick off an open entry: the two are the same.
     return item.paid === false && r.status === 'pay' ? { ...r, include: false } : r;
   });
-  const { add, pay } = applyStatement(rows, now, newId, today);
-  const open = new Set(asked.filter(i => i.paid === false).map(i => `inbox:${i.id}`));
-  const entries = add.map(e => {
-    if (!e.ref || !open.has(e.ref)) return e;
-    const { paidAt: _paidAt, ...rest } = e;
-    return { ...rest, paid: false };
-  });
-  done.push(...asked.map(i => i.id));
-  return { add: entries, pay, done };
+  return { rows, asked, done, held };
 }

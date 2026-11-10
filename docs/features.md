@@ -73,6 +73,13 @@ Everything the app can do. Build and release steps are in the
   the entry shows it full screen. *Betrag vom Beleg lesen* suggests the total
   and the shop, read on the device. Photos are saved without their location
   data; receipts are part of the backup and are erased with the book.
+- **Automatic capture (iPhone).** *Optionen › Automatisch erfassen* explains
+  how to set up two automations in the Shortcuts app, once: after an Apple
+  Pay payment, and (from iOS 27) on a notification from the banking app.
+  The payment then becomes an entry by itself — the user's own name for the
+  payee, the right category, paid — with an undo, or, with *Erst prüfen*,
+  waiting under *Neu* on the month page. No bank login; the notification's
+  text is read on the phone and not kept.
 - **iPad and wide screens.** From 700 pt of width the month stays on one
   side and *Statistik*, *Planen* or *Optionen* open beside it, each scrolling
   by itself; sheets are centred panels. With a keyboard: ⌘N new entry, ⌘F

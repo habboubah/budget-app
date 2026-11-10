@@ -22,3 +22,14 @@
 "Open: %@. Next: %@." = "المفتوحة: %1$@. التالية: %2$@.";
 "Spartopf can’t be reached right now." = "تعذّر الوصول إلى Spartopf الآن.";
 "That amount can’t be booked." = "لا يمكن تسجيل هذا المبلغ.";
+
+/* Automatic capture (plan 19). */
+"Log payment in Spartopf" = "تسجيل دفعة في Spartopf";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "يسجّل دفعة بالبطاقة في Spartopf. لأتمتة «عملية» في الاختصارات.";
+"Merchant" = "التاجر";
+"Card" = "البطاقة";
+"Log notification in Spartopf" = "تسجيل إشعار في Spartopf";
+"Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "يسجّل الدفعة التي يُخبر بها إشعار تطبيق البنك. لأتمتة «إشعار» في الاختصارات.";
+"Title" = "العنوان";
+"Subtitle" = "العنوان الفرعي";
+"Text" = "النص";

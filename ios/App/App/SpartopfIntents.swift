@@ -219,6 +219,73 @@ struct OpenBillsIntent: AppIntent {
     }
 }
 
+// Plan 19: what a Shortcuts automation hands over — after an Apple Pay payment
+// (the "Transaction" trigger) or on a banking app's notification (iOS 27's
+// "Notification" trigger). Both only leave an inbox item; the app reads the
+// amount and the payee from the text, books the entry through the bank
+// import's path and throws the text away. Nothing is said or shown: these run
+// in the background. They take plain text, so whatever the automation's
+// "Shortcut Input" gives fits.
+
+/// "Zahlung in Spartopf erfassen" — the merchant, the amount and the card of a Wallet transaction.
+@available(iOS 16.0, *)
+struct LogPaymentIntent: AppIntent {
+    static var title: LocalizedStringResource = "Log payment in Spartopf"
+    static var description = IntentDescription("Books a card payment in Spartopf. For the Transaction automation in Shortcuts.")
+    static var openAppWhenRun = false
+
+    @Parameter(title: "Merchant")
+    var merchant: String?
+
+    @Parameter(title: "Amount")
+    var amount: String?
+
+    @Parameter(title: "Card")
+    var card: String?
+
+    func perform() async throws -> some IntentResult {
+        let sum = (amount ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !sum.isEmpty else { return .result() }
+        let id = "wallet-" + UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
+        var item: [String: Any] = ["source": "wallet", "createdAt": Int(Date().timeIntervalSince1970 * 1000), "text": String(sum.prefix(60))]
+        let shop = (merchant ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !shop.isEmpty { item["name"] = String(shop.prefix(80)) }
+        let pass = (card ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !pass.isEmpty { item["card"] = String(pass.prefix(40)) }
+        try SharedFiles.addToInbox(item, id: id)
+        return .result()
+    }
+}
+
+/// "Mitteilung in Spartopf erfassen" — a banking app's notification: its title, subtitle and text.
+@available(iOS 16.0, *)
+struct LogNotificationIntent: AppIntent {
+    static var title: LocalizedStringResource = "Log notification in Spartopf"
+    static var description = IntentDescription("Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts.")
+    static var openAppWhenRun = false
+
+    @Parameter(title: "Title")
+    var heading: String?
+
+    @Parameter(title: "Subtitle")
+    var subtitle: String?
+
+    @Parameter(title: "Text")
+    var body: String?
+
+    func perform() async throws -> some IntentResult {
+        let lines = [heading, subtitle, body]
+            .compactMap { $0?.replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .map { String($0.prefix(300)) }
+        guard !lines.isEmpty else { return .result() }
+        let id = "note-" + UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
+        let item: [String: Any] = ["source": "notification", "createdAt": Int(Date().timeIntervalSince1970 * 1000), "text": lines.joined(separator: "\n")]
+        try SharedFiles.addToInbox(item, id: id)
+        return .result()
+    }
+}
+
 /// The phrases Siri and Spotlight know. Each names the app; German and Arabic are in AppShortcuts.strings.
 @available(iOS 16.0, *)
 struct SpartopfShortcuts: AppShortcutsProvider {

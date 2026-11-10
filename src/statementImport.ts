@@ -125,6 +125,76 @@ export function cleanPayee(raw: string, purpose = '', type = ''): string {
   return (/[a-zäöüß]/.test(s) ? s : s.split(' ').map(caseWord).join(' ')).slice(0, 80);
 }
 
+/* ------------------------------------------- a bank's notification (plan 19) */
+
+const NOTE_AMOUNT = /(?:(€|EUR)\s?)?([+\-−–]?\s?(?:\d{1,3}(?:[.,\s’']\d{3})+|\d+)(?:[.,]\d{1,2})?)\s?(€|EUR\b)?/gi;
+const NOT_THE_PAYMENT = /(kontostand|saldo|verf[üu]gbar\w*|guthaben|balance|available|limit|rest\w*)(?:\s+[\p{L}]+){0,2}\s*:?\s*$/iu;
+const NOTE_INCOME = /gutschrift|geldeingang|zahlungseingang|eingegangen|eingang\b|erhalten|hat (?:dir|ihnen|euch)\b|gutgeschrieben|erstattung|r[üu]ckzahlung|gehalt|received|sent you|refund|incoming|credited|payment from|[üu]berweisung von/i;
+const NOTE_STOP = /\s+(?:am \d|on \d|um \d|mit (?:deiner|ihrer|der)|with your|[üu]ber \d|in h[öo]he|i\.\s?h\.\s?v|wurde|wurden|ist |war |was |has |get[äa]tigt|abgebucht|bezahlt|gebucht|erhalten|eingegangen|gutgeschrieben|gesendet|[üu]berwiesen|geschickt)|[.;:!?|\n]|,\s|\s[-–—]\s|$/i;
+const GENERIC_TITLE = /^(kartenzahlung|kartenumsatz|zahlung|lastschrift|gutschrift|geldeingang|zahlungseingang|[üu]berweisung|umsatz|neue[rs]? (umsatz|buchung|transaktion)|buchung|transaktion|konto\w*|payment|card payment|transaction|purchase|incoming payment|apple pay|google pay|girocard|visa|mastercard|debitkarte|kreditkarte)\b[\s\w]*$/i;
+
+/** "1.234,56" / "1,234.56" / "12" → cents; the last mark before one or two digits is the decimal one. */
+function noteCents(text: string): number | null {
+  const s = normalizeDigits(text).replace(/[+\-−–\s’']/g, '');
+  const m = /^(.*?)(?:[.,](\d{1,2}))?$/.exec(s);
+  if (!m) return null;
+  const whole = m[1].replace(/[.,]/g, '');
+  if (!/^\d{1,9}$/.test(whole)) return null;
+  const cents = Number(whole) * 100 + (m[2] ? Number(m[2].padEnd(2, '0')) : 0);
+  return cents > 0 ? cents : null;
+}
+
+/**
+ * What a banking app's push says (plan 19): "Kartenzahlung 12,40 € bei REWE"
+ * → the amount, the payee, whether money came in, and the day if one is
+ * named. `text` is the notification's title and body, one per line. Read
+ * once and thrown away — only the entry is kept. Null when no payment is in
+ * it (a login code, an offer). The amount is the first one with a currency
+ * that isn't a balance; the payee comes after "bei / an / von / at / to /
+ * from", from "… hat dir … gesendet", or from a title that names a shop.
+ */
+export function parseNotificationText(text: string): { amount: number; name: string; income: boolean; date?: string } | null {
+  const lines = normalizeDigits(text).split(/\r?\n/).map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  if (!lines.length) return null;
+  const all = lines.join('\n');
+  let amount: number | null = null;
+  let sign = '';
+  for (const m of all.matchAll(NOTE_AMOUNT)) {
+    if (!m[1] && !m[3]) continue; // a number without a currency: a date, a card's digits
+    if (NOT_THE_PAYMENT.test(all.slice(0, m.index))) continue;
+    amount = noteCents(m[2]);
+    if (amount !== null) { sign = /^[+\-−–]/.exec(m[2].trim())?.[0] ?? ''; break; }
+  }
+  if (amount === null) return null;
+  const income = sign === '+' || (sign === '' && NOTE_INCOME.test(all));
+
+  const until = (from: string) => { const stop = NOTE_STOP.exec(from); return (stop ? from.slice(0, stop.index) : from).trim(); };
+  const strip = (v: string) => v.replace(NOTE_AMOUNT, (whole, a, _n, b) => (a || b ? ' ' : whole)).replace(/\s+/g, ' ').trim();
+  const body = lines.length > 1 ? lines.slice(1).join('\n') : lines[0];
+  let who = '';
+  const sender = /^(.{2,60}?) (?:hat (?:dir|ihnen|euch)|sent you|has sent you)\b/im.exec(body);
+  if (sender) who = sender[1];
+  if (!who) {
+    const words = income ? ['von', 'from', 'bei', 'at'] : ['bei', 'an', 'at', 'to', 'für', 'for', 'von', 'from'];
+    for (const w of words) {
+      const m = new RegExp(`(?:^|[\\s(])${w} (?!dir\\b|ihnen\\b|ihrem\\b|deinem\\b|ihr\\b|dein\\b|your\\b|you\\b|\\d)(.+)`, 'i').exec(strip(body.replace(/\n/g, '. ')));
+      if (m && until(m[1]).length >= 2) { who = until(m[1]); break; }
+    }
+  }
+  // Title, subtitle, body (Apple Wallet: the card, the shop, the amount): the line between names the shop.
+  if (!who && lines.length > 2) who = lines.slice(1, -1).map(strip).find(l => /\p{L}{2}/u.test(l) && !GENERIC_TITLE.test(l)) ?? '';
+  if (!who && lines.length > 1 && !GENERIC_TITLE.test(strip(lines[0])) && /\p{L}{2}/u.test(strip(lines[0]))) who = strip(lines[0]);
+  if (!who) {
+    // "Kartenzahlung: REWE Markt 12,40 EUR" — what stands after the colon.
+    const m = /:\s*(.+)/.exec(strip(body.split('\n')[0]));
+    if (m && /\p{L}{2}/u.test(until(m[1]))) who = until(m[1]);
+  }
+  const day = /\b(\d{1,2}\.\d{1,2}\.(?:\d{4}|\d{2}))(?!\d)/.exec(all);
+  const date = day ? parseDay(day[1]) : undefined;
+  const name = who ? cleanPayee(who) : '';
+  return { amount, name: name === '?' ? '' : name, income, ...(date ? { date } : {}) };
+}
+
 const fingerprint = (date: string | undefined, cents: number, raw: string, purpose = '') =>
   `${date ?? ''}|${cents}|${normalizeName(raw).slice(0, 40)}|${normalizeName(purpose).slice(0, 40)}`;
 

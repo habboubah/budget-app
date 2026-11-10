@@ -11,7 +11,7 @@ import { tapLight } from '../ui/haptics';
 export type ImportState =
   | null
   | { phase: 'reading'; source: 'photo' | 'csv'; progress: number }
-  | { phase: 'review'; source: 'photo' | 'csv'; rows: PlannedRow[] };
+  | { phase: 'review'; source: 'photo' | 'csv' | 'inbox'; rows: PlannedRow[] };
 
 interface Props {
   state: ImportState;
@@ -52,7 +52,7 @@ export function StatementImportSheet({ state, categories, language, t, onClose, 
     }
     return [...by].sort(([a], [b]) => (a < b ? 1 : -1));
   }, [rows]);
-  const title = state?.source === 'photo' ? t.importPhoto : t.importCsv;
+  const title = state?.source === 'photo' ? t.importPhoto : state?.source === 'inbox' ? t.importInbox : t.importCsv;
   const allOn = rows.every(r => r.include || r.status === 'exists');
 
   return (

@@ -65,6 +65,8 @@ interface Props {
   account?: AccountSwitch;
   /** The month's transfers between accounts (App builds the card; plan 30). */
   transfers?: React.ReactNode;
+  /** Captured payments waiting to be looked through (plan 19, *Erst prüfen*). */
+  captured?: { count: number; onOpen: () => void };
   /**
    * What the budgets count (plan 30): every account's entries — a budget is
    * the category's, wherever it was paid from. Defaults to `entries`.
@@ -291,6 +293,19 @@ export function MonthView(p: Props) {
         />
       ) : (
         <>
+          {p.captured && p.captured.count > 0 && month === current && (
+            <button
+              type="button"
+              onClick={() => { tapLight(); p.captured?.onOpen(); }}
+              className="w-full min-h-tap rounded-lg bg-accent-dim px-4 py-3 flex items-center gap-3 text-start active:opacity-70 focus-visible:ring-focus"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-body font-semibold text-accent wrap-compound">{fmt(t.captureNew, { n: p.captured.count })}</span>
+                <span className="block text-caption text-fg-mute wrap-prose">{t.captureNewSub}</span>
+              </span>
+              <ChevronRight className="w-5 h-5 text-accent shrink-0 rtl:rotate-180" aria-hidden="true" />
+            </button>
+          )}
           {due.length > 0 && (
             <DueSoonRail items={due} categories={p.allCategories} language={p.language} t={t}
               onEdit={p.onEdit} onTick={p.onTickDue} onAll={p.onDueAll} />

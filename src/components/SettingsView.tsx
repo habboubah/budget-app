@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins, CalendarRange } from 'lucide-react';
+import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins, CalendarRange, Zap } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -60,6 +60,8 @@ interface Props {
   /** The reminder settings; null where there are no notifications (the web). */
   reminders: ReminderPrefs | null;
   onReminders: () => void;
+  /** Plan 19, iPhone only: the guide to the Shortcuts automations. */
+  onCapture?: () => void;
   /** Über Spartopf (plan 15): the App Store's review page — iPhone app only; Mail with the versions; the privacy policy. */
   onRate?: () => void;
   onFeedback: () => void;
@@ -194,6 +196,15 @@ export function SettingsView(p: Props) {
             leading={<IconTile icon={Bell} hue="tomato" />}
             trailing={<Next />}
             onClick={p.onReminders}
+          />
+        )}
+        {p.onCapture && (
+          <Row
+            label={t.captureRow}
+            sub={t.captureRowSub}
+            leading={<IconTile icon={Zap} hue="lemon" />}
+            trailing={<Next />}
+            onClick={p.onCapture}
           />
         )}
       </Group>

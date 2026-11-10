@@ -63,7 +63,8 @@ import { LockKind, authenticate, lockKind as findLockKind } from './lock';
 import { devNative, isNative } from './platform';
 import { SAVE_DEBOUNCE_MS, inDeviceBackup, saver, setInDeviceBackup } from './storage';
 import { buildAmounts, buildSnapshot } from './native/snapshot';
-import { inboxToEntries } from './native/inbox';
+import { inboxReview, inboxToEntries } from './native/inbox';
+import { CaptureView } from './components/CaptureView';
 import { DeepLink, parseDeepLink } from './native/deepLink';
 import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
 import { PrintReport, PrintSpec, ReportPdfSheet, reportFileName } from './components/PrintReport';
@@ -87,7 +88,7 @@ import { useShortcuts } from './ui/useShortcuts';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -95,7 +96,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -593,6 +594,17 @@ export default function App() {
   const confirmStatement = (rows: PlannedRow[]) => {
     const { add, pay } = applyStatement(rows, Date.now());
     const done = store.importEntries(intoAccount(add, target), pay);
+    // Looked through (plan 19): taken over or left out, the captured payments leave the inbox once the book is saved.
+    const ids = reviewIds.current;
+    reviewIds.current = null;
+    if (ids) {
+      setCaptured(0);
+      void (async () => {
+        await new Promise(resolve => window.setTimeout(resolve, SAVE_DEBOUNCE_MS + 50));
+        await saver.flush();
+        await removeInbox(ids);
+      })();
+    }
     setStatement(null);
     notifySuccess();
     // Stay on this month if it got something; else show the newest month that did.
@@ -729,14 +741,26 @@ export default function App() {
    * single.
    */
   const inboxBusy = useRef(false);
+  /** *Erst prüfen* (plan 19): how many captured payments wait in the inbox, and the ones in the open review. */
+  const [captured, setCaptured] = useState(0);
+  const reviewIds = useRef<string[] | null>(null);
+  const openCaptured = async () => {
+    const raw = await readInbox();
+    const s = storeRef.current;
+    const review = inboxReview(raw, accountView(s.data, target), { language: s.language });
+    if (!review.rows.length) { await removeInbox(review.ids); setCaptured(0); return; }
+    reviewIds.current = review.ids;
+    setStatement({ phase: 'review', source: 'inbox', rows: review.rows });
+  };
   const takeInbox = async () => {
     if (inboxBusy.current) return;
     inboxBusy.current = true;
     try {
       const raw = await readInbox();
-      if (!raw.length) return;
+      if (!raw.length) { setCaptured(0); return; }
       const s = storeRef.current;
-      const r = inboxToEntries(raw, s.data, { language: s.language });
+      const r = inboxToEntries(raw, s.data, { language: s.language, hold: s.captureReview });
+      setCaptured(r.held);
       const count = r.add.length + r.pay.length;
       if (count) {
         const done = s.importEntries(r.add, r.pay);
@@ -752,7 +776,7 @@ export default function App() {
       inboxBusy.current = false;
     }
   };
-  useEffect(() => { if (native && !locked) void takeInbox(); }, [native, locked, resumed]);
+  useEffect(() => { if (native && !locked) void takeInbox(); }, [native, locked, resumed, store.captureReview]);
   /**
    * spartopf:// links (a cold start's too: the App plugin keeps it until this
    * listens). Checked by parseDeepLink, held while locked, and none saves
@@ -986,6 +1010,8 @@ export default function App() {
             autoCategory={store.autoCategory}
             onAutoCategory={store.setAutoCategory}
           />
+        ) : id === 'capture' ? (
+          <CaptureView review={store.captureReview} t={t} onBack={back} onReview={store.setCaptureReview} />
         ) : id === 'reminders' ? (
           <RemindersView data={data} prefs={store.reminders} t={t} onBack={back} onChange={store.setReminders} />
         ) : id === 'transfer' ? (
@@ -1094,6 +1120,7 @@ export default function App() {
             deviceBackupBusy={backupMoving}
             reminders={remindersAvailable() ? store.reminders : null}
             onReminders={() => push('reminders')}
+            onCapture={native || devNative() ? () => push('capture') : undefined}
             onRate={native || devNative() ? () => void openExternal(REVIEW_URL) : undefined}
             onFeedback={() => void sendFeedback()}
             onPrivacy={() => void openExternal(privacyUrl(language))}
@@ -1173,6 +1200,7 @@ export default function App() {
             } : undefined}
             budgetEntries={allView.entries}
             budgetCards={account === MAIN_ACCOUNT || account === ALL_ACCOUNTS}
+            captured={captured > 0 ? { count: captured, onOpen: () => void openCaptured() } : undefined}
             transfers={multi && balance.started && transfers.length > 0 ? (
               <TransfersCard transfers={transfers} sides={monthSides} accounts={accounts} account={account} t={t} onToggle={toggleTransfer} onEdit={editTransfer} onNew={newTransfer} />
             ) : null}
@@ -1598,7 +1626,7 @@ export default function App() {
         categories={data.categories}
         language={language}
         t={t}
-        onClose={() => setStatement(null)}
+        onClose={() => { reviewIds.current = null; setStatement(null); }}
         onConfirm={confirmStatement}
         onReclassified={(row, categoryId, anchor) => setReclassify({ anchor, found: row.found, categoryId, name: row.name })}
       />

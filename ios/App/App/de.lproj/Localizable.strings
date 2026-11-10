@@ -22,3 +22,14 @@
 "Open: %@. Next: %@." = "Offen: %1$@. Als Nächstes: %2$@.";
 "Spartopf can’t be reached right now." = "Spartopf ist gerade nicht erreichbar.";
 "That amount can’t be booked." = "Dieser Betrag lässt sich nicht buchen.";
+
+/* Automatic capture (plan 19). */
+"Log payment in Spartopf" = "Zahlung in Spartopf erfassen";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Bucht eine Kartenzahlung in Spartopf. Für die Automation „Transaktion“ in Kurzbefehle.";
+"Merchant" = "Händler";
+"Card" = "Karte";
+"Log notification in Spartopf" = "Mitteilung in Spartopf erfassen";
+"Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Bucht die Zahlung, die eine Mitteilung der Banking-App meldet. Für die Automation „Mitteilung“ in Kurzbefehle.";
+"Title" = "Titel";
+"Subtitle" = "Untertitel";
+"Text" = "Text";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildAmounts, buildSnapshot, SnapshotPrefs } from './snapshot';
-import { INBOX_MAX, inboxToEntries } from './inbox';
+import { INBOX_MAX, inboxReview, inboxToEntries } from './inbox';
 import { parseDeepLink } from './deepLink';
 import { defaultCategories } from '../data/defaults';
 import { AppData, Entry } from '../types';
@@ -110,7 +110,7 @@ describe('the inbox (plan 14)', () => {
     expect(r.done.sort()).toEqual(['w1', 'w2', 'w3']);
   });
 
-  it('checks every field: bad items go without being booked, a notification’s text waits, "not paid" stays open', () => {
+  it('checks every field: bad items go without being booked, a text without a payment goes too, "not paid" stays open', () => {
     const r = inboxToEntries([
       { id: 'b1', item: { source: 'hacker', amount: 100, name: 'x' } },
       { id: 'b2', item: { source: 'siri', amount: -5, name: 'Minus' } },
@@ -118,13 +118,13 @@ describe('the inbox (plan 14)', () => {
       { id: 'b4', item: { source: 'siri', amount: 1e15, name: 'Riesig' } },
       { id: 'b5', item: 'not an object' },
       { id: '../../etc', item: { source: 'siri', amount: 100 } },
-      { id: 'n1', item: { source: 'notification', createdAt: 1, text: 'Kartenzahlung 12,40 € bei REWE' } },
+      { id: 'n1', item: { source: 'notification', createdAt: 1, text: 'Ihre TAN lautet 123456' } },
       { id: 'o1', item: { source: 'siri', createdAt: 2, amount: 3000, name: 'Arzt', paid: false, date: 'gestern', categoryId: '<script>' } },
     ], book(), { today, newId });
     expect(r.add).toHaveLength(1);
     expect(r.add[0]).toMatchObject({ name: 'Arzt', amount: 3000, paid: false, date: '2026-11-09' }); // no date, no plausible time: today
     expect(r.add[0].paidAt).toBeUndefined();
-    expect(r.done.sort()).toEqual(['b1', 'b2', 'b3', 'b4', 'b5', 'o1']); // the bad path is never touched; n1 waits
+    expect(r.done.sort()).toEqual(['b1', 'b2', 'b3', 'b4', 'b5', 'n1', 'o1']); // the bad path is never touched
   });
 
   it(`books at most ${INBOX_MAX} at a time; the rest wait`, () => {
@@ -132,6 +132,41 @@ describe('the inbox (plan 14)', () => {
     const r = inboxToEntries(inbox(many), book(), { today, newId });
     expect(r.add).toHaveLength(INBOX_MAX);
     expect(r.done).toHaveLength(INBOX_MAX);
+  });
+
+  it('a banking push becomes an entry: the amount, the user’s name for the payee, paid (plan 19)', () => {
+    const r = inboxToEntries(inbox([
+      { id: 'n1', source: 'notification', createdAt: today.getTime(), text: 'Sparkasse\nKartenzahlung 52,40 € bei ARAL TANKSTELLE' },
+      { id: 'n2', source: 'notification', createdAt: today.getTime(), text: 'Bank\nIhre TAN lautet 123456' },
+      { id: 'n3', source: 'notification', createdAt: today.getTime(), text: 'Wallet Karte\nBäckerei Muster\n3,80 €' },
+    ]), book(), { today, newId });
+    expect(r.add.map(e => [e.name, e.amount, e.paid, e.ref])).toEqual([['Aral Tankstelle', 5240, true, 'inbox:n1'], ['Bäckerei Muster', 380, true, 'inbox:n3']]);
+    expect(r.done.sort()).toEqual(['n1', 'n2', 'n3']);
+    expect(JSON.stringify(r.add)).not.toContain('Kartenzahlung');
+  });
+
+  it('an Apple Pay payment: the amount however Shortcuts writes it, the merchant as the name (plan 19)', () => {
+    const pay = (id: string, text: string) => ({ id, source: 'wallet', createdAt: today.getTime(), name: 'Aral Tankstelle', card: 'Girocard', text });
+    const r = inboxToEntries(inbox([pay('w1', '52,40 €'), pay('w2', '€7.50'), pay('w3', '12.4'), pay('w4', 'US$1,234.56'), pay('w5', 'abc')]), book(), { today, newId });
+    expect(r.add.map(e => e.amount)).toEqual([5240, 750, 1240, 123456]);
+    expect(r.add.every(e => e.name === 'Aral Tankstelle' && e.paid)).toBe(true);
+    expect(r.done).toContain('w5');
+  });
+
+  it('Erst prüfen: captured payments wait in the inbox, Siri’s are booked; the review takes the rest', () => {
+    const items = inbox([
+      { id: 's1', source: 'siri', createdAt: today.getTime(), amount: 450, name: 'Kaffee' },
+      { id: 'w1', source: 'wallet', createdAt: today.getTime(), amount: 5240, name: 'Aral Tankstelle' },
+      { id: 'n1', source: 'notification', createdAt: today.getTime(), text: 'Bank\nGutschrift: 20,00 EUR von Kim Beispiel' },
+      { id: 'n2', source: 'notification', createdAt: today.getTime(), text: 'Bank\nNeues Angebot' },
+    ]);
+    const r = inboxToEntries(items, book(), { today, newId, hold: true });
+    expect(r.add.map(e => e.name)).toEqual(['Kaffee']);
+    expect(r.done).toEqual(['s1']);
+    expect(r.held).toBe(3);
+    const review = inboxReview(items, book(), { today });
+    expect(review.rows.map(x => [x.name, x.found.amount, x.found.income])).toEqual([['Aral Tankstelle', 5240, false], ['Kim Beispiel', 2000, true]]);
+    expect(review.ids.sort()).toEqual(['n1', 'n2', 'w1']);
   });
 });
 

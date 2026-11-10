@@ -274,6 +274,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: الإيصالات. أرفق صورة أو ملف PDF ببند – ويمكن قراءة المبلغ مباشرة من الإيصال. تُحفظ الصور بلا بيانات الموقع وتبقى على الـiPhone.
 
+**DE:** Neu: Automatisch erfassen. Richte einmal eine Automation in Kurzbefehle ein – danach tragen sich Apple-Pay-Zahlungen und Mitteilungen deiner Bank von selbst ein. Ohne Bank-Login, alles bleibt auf dem iPhone.
+
+**EN:** New: automatic capture. Set up an automation in Shortcuts once – after that, Apple Pay payments and your bank’s notifications enter themselves. No bank login; everything stays on your iPhone.
+
+**AR:** جديد: التسجيل التلقائي. أعدّ أتمتة في «الاختصارات» مرة واحدة – وبعدها تُسجَّل مدفوعات Apple Pay وإشعارات بنكك من تلقاء نفسها. بلا تسجيل دخول إلى البنك، وكل شيء يبقى على الـiPhone.
+
 **DE:** Neu: Monat ab Gehaltstag. Lass deinen Monat am 25. beginnen – oder an jedem anderen Tag bis zum 28. Budgets, Fälligkeiten und „pro Tag übrig“ rechnen dann von Gehalt zu Gehalt.
 
 **EN:** New: month from payday. Let your month start on the 25th – or any other day up to the 28th. Budgets, due dates and “left per day” then count from one payday to the next.
