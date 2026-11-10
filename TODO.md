@@ -8,10 +8,8 @@ items off, or delete them once done. The details are in each plan's notes.
 
 - [x] ~~Build once in Xcode, and sign with the App Group and Data
   Protection~~: done with release v1.2.6 (build 10) on 9 Nov.
-- [ ] **Build again in Xcode** after each new plan with Swift. Plan 28 added
-  `makePdf` to `SpartopfShared.swift`; plan 18 added `SpartopfIntents.swift`
-  and two `.strings` files per language (de, ar) — it hasn't been compiled
-  yet, so expect to tell Claude about any error.
+- [x] ~~Build again in Xcode~~: release v1.2.7 (build 11) on 10 Nov compiled
+  plan 28's `makePdf` and plan 18's Siri code.
 - [ ] **Push** when you're ready: `main` is ahead of GitHub (`git status`
   shows how far).
 
