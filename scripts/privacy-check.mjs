@@ -140,6 +140,44 @@ try {
     }
     await page.waitForFunction(() => !document.querySelector('[role="dialog"]'), null, { timeout: 10000 });
   });
+  await step('a receipt attached: saved again as a JPEG, its location and EXIF gone (plan 27)', async () => {
+    if (await page.locator('[role="dialog"]').count()) {
+      await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(300);
+    }
+    await tab(0);
+    // A photo as a camera writes it: an EXIF block right after the start marker, with a place in it.
+    const shot = await page.screenshot({ type: 'jpeg', quality: 60 });
+    const tiff = Buffer.concat([Buffer.from('II*\0', 'latin1'), Buffer.from([8, 0, 0, 0, 0, 0, 0, 0, 0, 0]), Buffer.from('GPS-SECRET 50.1330N 8.9170E', 'latin1')]);
+    const body = Buffer.concat([Buffer.from('Exif\0\0', 'latin1'), tiff]);
+    const exif = Buffer.concat([Buffer.from([0xff, 0xe1, (body.length + 2) >> 8, (body.length + 2) & 0xff]), body]);
+    const photo = Buffer.concat([shot.subarray(0, 2), exif, shot.subarray(2)]);
+    if (!photo.includes('GPS-SECRET')) throw new Error('the test photo has no EXIF');
+    await page.locator('nav button.hero').click();
+    await page.waitForSelector('[role="dialog"]');
+    await page.locator('[role="dialog"] input[inputmode="decimal"]').first().fill('7,77');
+    await page.locator('[role="dialog"] button[aria-label="Beleg anhängen"]').click();
+    const chooser = page.waitForEvent('filechooser', { timeout: 5000 });
+    await page.locator('[role="menuitem"]', { hasText: 'Foto oder PDF wählen' }).click();
+    await (await chooser).setFiles({ name: 'Kassenbon.jpg', mimeType: 'image/jpeg', buffer: photo });
+    await page.waitForSelector('[role="dialog"] button[aria-label="Kassenbon ansehen"]', { timeout: 10000 });
+    await page.locator('[role="dialog"] button[type="submit"]').first().click();
+    await page.waitForFunction(() => !document.querySelector('[role="dialog"]'), null, { timeout: 5000 });
+    const stored = await page.evaluate(() => new Promise((resolve, reject) => {
+      const open = indexedDB.open('spartopf-files', 1);
+      open.onerror = () => reject(new Error('no file store'));
+      open.onsuccess = () => {
+        const all = open.result.transaction('files').objectStore('files').getAll();
+        all.onsuccess = () => resolve(all.result);
+        all.onerror = () => reject(new Error('unreadable'));
+      };
+    }));
+    if (stored.length !== 1) throw new Error(`${stored.length} files stored, expected 1`);
+    const bytes = Buffer.from(stored[0], 'base64');
+    if (bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error('the stored receipt is not a JPEG');
+    if (bytes.includes('GPS-SECRET') || bytes.includes('Exif')) throw new Error('the stored receipt still carries EXIF data');
+    if (!(await page.locator('[data-entry-row] .lucide-paperclip').count())) throw new Error('no paperclip on the entry');
+  });
   await step('a backup exported', async () => {
     // Guard against a lingering sheet from the flaky headless-OCR step: start
     // from a clean slate so nothing can intercept the taps below.
@@ -160,7 +198,9 @@ try {
     await page.locator('[role="dialog"] [role="switch"][aria-label="Ohne Passwort exportieren"]').click();
     const download = page.waitForEvent('download', { timeout: 15000 });
     await page.locator('[role="dialog"] button[type="submit"]').click();
-    await download;
+    // The backup carries the receipt attached above (plan 27).
+    const saved = fs.readFileSync(await (await download).path(), 'utf8');
+    if (!/"files":\s*\{\s*"[A-Za-z0-9_-]+":\s*"\/9j\//.test(saved)) throw new Error('the backup has no receipt in it');
   });
   await ctx.close();
 } finally {

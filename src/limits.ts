@@ -7,8 +7,12 @@
 const MB = 1024 * 1024;
 
 export const LIMITS = {
-  /** A backup file (.json or .spartopf). */
-  backupBytes: 25 * MB,
+  /** A backup file (.json or .spartopf) — with the receipts in it (plan 27). */
+  backupBytes: 150 * MB,
+  /** A PDF attached to an entry; photos are re-encoded far below this. */
+  attachmentBytes: 5 * MB,
+  /** The longer side of an attached photo after re-encoding, in pixels. */
+  attachmentPixels: 1600,
   backupEntries: 500_000,
   /** A bank CSV export. */
   csvBytes: 10 * MB,

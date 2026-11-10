@@ -32,6 +32,15 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
+**Plan 27 — receipts**
+- [ ] New entry › *Beleg* › *Foto aufnehmen*: the camera opens, the receipt
+  appears as a chip, the row gets a paperclip; the chip shows it full screen.
+- [ ] *Betrag vom Beleg lesen* on a real till receipt: the total (and the
+  shop) are filled in.
+- [ ] Attach a PDF from Files; *Öffnen* shows it.
+- [ ] Export a backup with a receipt, *Alle Daten löschen*, import it: the
+  receipt is back. Switch *Im iPhone-Backup sichern* off and on: still there.
+
 **Plan 18 — Siri and Shortcuts** (Claude went with option (b): Siri's
 amounts in a file only readable while the phone is unlocked)
 - [ ] In German, English and Arabic: "Ausgabe in Spartopf" (Siri asks how

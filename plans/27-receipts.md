@@ -41,6 +41,20 @@ It's only in the "+" menu. Rows without receipts look the same as today.
 
 ## Done when
 
-- [ ] Receipts can be attached, viewed, deleted, backed up and restored on iOS and Android.
-- [ ] Location and other EXIF data are removed.
-- [ ] Old backups still load.
+- [ ] Receipts can be attached, viewed, deleted, backed up and restored on iOS and Android. (Built and checked in the browser; the iPhone check is in TODO.md, Android comes with plan 23.)
+- [x] Location and other EXIF data are removed. (`privacy-check.mjs` attaches a photo with an EXIF block and a place in it, and fails if either is in what gets stored.)
+- [x] Old backups still load.
+
+## Notes (built)
+
+Where the build differs from the plan above:
+
+- **The backup stays one JSON file, not a zip.** The receipts ride along as `files` (id → base64) next to the book, so the encryption (plan 04) and the import path are unchanged, and a backup from before simply has no `files`. JPEGs don't compress, so a zip would only have saved the base64 overhead (about a third). The price: a backup with many receipts is read into memory whole. The limit is 150 MB.
+- **It's a pill, not a "+" menu.** The entry sheet has no "+" menu; *Beleg* sits with *Notiz* and *Tag*, and opens a small menu (*Foto aufnehmen*, *Foto oder PDF wählen*).
+- **The paperclip on a row is a marker, not a button.** A row is already one button (edit) beside the tick; a second one inside it isn't possible, and beside it would push the amount out of line. So: tap the row, then the receipt's chip — two taps instead of one.
+- **Deleting:** files the book no longer points to are removed at the next launch, not after a timer — by then the undo toast is long gone. A receipt added in a sheet that is closed without saving goes at once.
+- **Files are stored as base64 text** (`spartopf/files/<id>`), so they move between the backed-up and the not-backed-up folder with the same tested code as the book (plan 06). On the web they are in IndexedDB.
+- **PDFs** open through the share sheet (*Öffnen*); the app's CSP frames nothing, so there is no built-in PDF view.
+- **Limits:** five receipts an entry, a PDF up to 5 MB, a photo's longer side 1600 px at JPEG 80 %.
+- **Space:** *Sichern und übertragen* says "Belege: 4,2 MB." under the backup rows once there are any.
+- **Known gap:** restoring an older daily snapshot (plan 03) can bring back an entry whose receipt was already removed at a launch in between. The entry is back, and its receipt says "nicht mehr auf dem Gerät".

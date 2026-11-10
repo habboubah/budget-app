@@ -268,6 +268,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: الديون والقروض. يعرض Spartopf كم تبقّى، ومتى تتخلص من الدين، وكم من الفائدة لا يزال قادمًا – وكذلك للمال الذي أقرضته.
 
+**DE:** Neu: Belege. Häng ein Foto oder PDF an einen Eintrag – der Betrag lässt sich direkt vom Beleg lesen. Fotos werden ohne Standortdaten gespeichert und bleiben auf deinem iPhone.
+
+**EN:** New: receipts. Attach a photo or PDF to an entry – the amount can be read straight from the receipt. Photos are stored without location data and stay on your iPhone.
+
+**AR:** جديد: الإيصالات. أرفق صورة أو ملف PDF ببند – ويمكن قراءة المبلغ مباشرة من الإيصال. تُحفظ الصور بلا بيانات الموقع وتبقى على الـiPhone.
+
 **DE:** Neu: Siri und Kurzbefehle. „Ausgabe in Spartopf“ trägt per Sprache ein; „Was bleibt am Monatsende?“ und „Offene Rechnungen“ antworten, sobald dein iPhone entsperrt ist.
 
 **EN:** New: Siri and Shortcuts. "Add an expense in Spartopf" books by voice; "What's left at the end of the month?" and "Open bills" answer once your iPhone is unlocked.

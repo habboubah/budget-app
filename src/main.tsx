@@ -4,8 +4,8 @@ import { MotionConfig } from 'motion/react';
 import App from './App.tsx';
 import { applyDynamicType } from './dynamicType.ts';
 import { downloadFile } from './export.ts';
-import { isoDay } from './logic.ts';
-import { KEY_PREFIX, hydrate, installFlushTriggers, rawFiles, restoreLatestToData, setHydrated } from './storage.ts';
+import { attachmentIds, isoDay } from './logic.ts';
+import { KEY_PREFIX, hydrate, installFlushTriggers, rawFiles, restoreLatestToData, setHydrated, sweepFiles } from './storage.ts';
 import { isNative } from './platform.ts';
 import { isLanguage, DEFAULT_LANGUAGE, loadLanguage, stringsFor } from './translations.ts';
 import { initialLanguage } from './store.ts';
@@ -98,6 +98,8 @@ Promise.all([hydrate(), loadLanguage(initialLanguage()).catch(() => undefined)])
   .then(([{ data }]) => {
     setHydrated(data);
     installFlushTriggers();
+    // Receipts no entry points to any more (plan 27): gone once undo is out of reach — now.
+    void sweepFiles(attachmentIds(data)).catch(() => undefined);
     render(<App />);
   })
   .catch(error => render(<Unreadable error={error} />));

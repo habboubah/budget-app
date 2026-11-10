@@ -358,6 +358,7 @@ export function useAppStore() {
       // Back on the main account: no account is stored (plan 30).
       if (!next.accountId || next.accountId === MAIN_ACCOUNT) delete next.accountId;
       if (!next.debtId) delete next.debtId;
+      if (!next.files?.length) delete next.files;
       if (next.paid && !e.paid) next.paidAt = Date.now();
       if (!next.paid) delete next.paidAt;
       return next;

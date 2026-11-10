@@ -1,11 +1,15 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, Check, ChevronDown, ChevronUp, HandCoins, Hash, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, Star, Trash2 } from 'lucide-react';
-import { Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
+import { CalendarDays, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, Star, Trash2 } from 'lucide-react';
+import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
+import { NotAReceiptError, addAttachment, attachmentBlob, dropAttachment, readReceipt } from '../receipts';
+import { readImageText } from '../ocr';
+import { FileTooLargeError } from '../limits';
+import { ReceiptViewer } from './ReceiptViewer';
 import { budgetOf } from '../data/defaults';
 import {
   amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
-  normalizeDigits, topCategories, MAIN_ACCOUNT,
+  normalizeDigits, topCategories, MAIN_ACCOUNT, MAX_ATTACHMENTS,
 } from '../logic';
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
 import { Strings, fmt } from '../translations';
@@ -50,6 +54,8 @@ interface Props {
   defaultAccount?: string;
   /** The debts still open, once there is one (plan 31): a pill links the entry to one — an extra payment, money paid back. */
   debts?: { id: string; name: string }[];
+  /** Says why a receipt couldn't be attached or read (plan 27). */
+  onNotice?: (text: string) => void;
 }
 
 /** A compact control in the entry sheet's last row (date, status, repeat, note). */
@@ -78,7 +84,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * taps a category, and only with `autoCategory`; emptying the name goes back
  * to the category the sheet opened with.
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts, onNotice }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -116,6 +122,15 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   /** The debt it pays off (plan 31). */
   const [debtId, setDebtId] = useState<string | undefined>(undefined);
   const [debtAt, setDebtAt] = useState<HTMLElement | null>(null);
+  /** Receipts and documents (plan 27): what is attached, the one being looked at, and what is busy. */
+  const [files, setFiles] = useState<Attachment[]>([]);
+  const [fileAt, setFileAt] = useState<HTMLElement | null>(null);
+  const [viewing, setViewing] = useState<Attachment | null>(null);
+  const [fileBusy, setFileBusy] = useState<'adding' | 'reading' | null>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
+  const pickInput = useRef<HTMLInputElement>(null);
+  /** Stored during this visit and not yet part of a saved entry: they go again if the sheet is left without saving. */
+  const fresh = useRef<Set<string>>(new Set());
   const [repeatAt, setRepeatAt] = useState<HTMLElement | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -170,6 +185,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setGoalId(undefined);
     setAccountId(defaultAccount);
     setDebtId(undefined);
+    setFiles([]);
   };
 
   useEffect(() => {
@@ -193,6 +209,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setGoalId(e.goalId);
       setAccountId(e.accountId ?? MAIN_ACCOUNT);
       setDebtId(e.debtId);
+      setFiles(e.files ?? []);
       // An entry being edited keeps its category: guesses are only pointed out.
       setNameTyped(false);
       setCategoryChosen(true);
@@ -334,12 +351,64 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     if (accounts) d.accountId = accountId === MAIN_ACCOUNT || !accounts.some(a => a.id === accountId) ? undefined : accountId;
     // The same for the debt link (plan 31): said whenever debts show, so it can be taken off again.
     if (debts) d.debtId = debtId && debts.some(x => x.id === debtId) ? debtId : undefined;
+    // Always said, so the last receipt can be taken off again (plan 27).
+    d.files = files.length ? files : undefined;
     return d;
+  };
+
+  /* ---- Receipts (plan 27). */
+  // Left without saving: what was stored during this visit goes again.
+  useEffect(() => {
+    if (mode) return;
+    for (const id of fresh.current) void dropAttachment(id);
+    fresh.current.clear();
+  }, [mode]);
+
+  const attach = async (input: HTMLInputElement | null) => {
+    const f = input?.files?.[0];
+    if (input) input.value = '';
+    if (!f) return;
+    if (files.length >= MAX_ATTACHMENTS) { onNotice?.(t.receiptTooMany); return; }
+    setFileBusy('adding');
+    try {
+      const added = await addAttachment(f);
+      fresh.current.add(added.id);
+      setFiles(prev => [...prev, added]);
+    } catch (error) {
+      onNotice?.(error instanceof FileTooLargeError ? t.importTooLarge : error instanceof NotAReceiptError ? t.receiptNotReadable : t.receiptFailed);
+    } finally {
+      setFileBusy(null);
+    }
+  };
+
+  const detach = (id: string) => {
+    setFiles(prev => prev.filter(f => f.id !== id));
+    // One of this visit's goes at once; a saved entry's stays until the next launch, like a deleted entry's.
+    if (fresh.current.delete(id)) void dropAttachment(id);
+  };
+
+  /** Betrag vom Beleg lesen: the total, and the shop when no name is typed yet — read on the device. */
+  const readFromReceipt = async () => {
+    const photo = files.find(f => f.type === 'image/jpeg');
+    if (!photo || fileBusy) return;
+    setFileBusy('reading');
+    try {
+      const blob = await attachmentBlob(photo);
+      const found = blob ? readReceipt(await readImageText(blob)) : {};
+      if (!found.amount && !found.shop) { onNotice?.(t.receiptNothingRead); return; }
+      if (found.amount) setAmountText(amountToInput(found.amount, t.locale));
+      if (found.shop && !name.trim()) setName(found.shop);
+    } catch {
+      onNotice?.(t.receiptNothingRead);
+    } finally {
+      setFileBusy(null);
+    }
   };
 
   const save = (next = false) => {
     const d = draft();
     if (!d) { setShowError(true); return; }
+    fresh.current.clear(); // saved with the entry
     if (editing) onSave(editing.id, d);
     else onCreate(month, d);
     if (next) {
@@ -661,6 +730,18 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               </button>
             );
           })()}
+          <button
+            type="button"
+            aria-haspopup="menu"
+            aria-label={files.length ? `${t.receipt}: ${files.length}` : t.receiptAdd}
+            disabled={fileBusy === 'adding'}
+            onMouseDown={e => e.preventDefault()}
+            onClick={e => { tapLight(); setFileAt(e.currentTarget); }}
+            className={`${PILL} text-fg-mute disabled:opacity-50 focus-visible:ring-focus`}
+          >
+            <Paperclip className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+            <span aria-hidden="true">{fileBusy === 'adding' ? t.receiptAdding : t.receipt}</span>
+          </button>
           {!noteOpen && (
             <button
               type="button"
@@ -690,6 +771,58 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             key: r.value, label: r.label, sub: r.sub, icon: r.value === repeat ? Check : undefined, onSelect: () => setRepeat(r.value),
           }))]}
           onClose={() => setRepeatAt(null)}
+        />
+
+        {files.length > 0 && (
+          <ul className="flex flex-wrap gap-2" aria-label={t.receipt}>
+            {files.map(f => (
+              <li key={f.id} className="max-w-full inline-flex items-stretch rounded-full bg-surface-2 text-label font-medium text-fg">
+                <button
+                  type="button"
+                  onClick={() => { tapLight(); setViewing(f); }}
+                  aria-label={fmt(t.receiptView, { name: f.name })}
+                  className="min-w-0 min-h-tap ps-3 pe-1 inline-flex items-center gap-1.5 rounded-s-full active:opacity-60 focus-visible:ring-focus"
+                >
+                  {f.type === 'application/pdf'
+                    ? <FileText className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+                    : <ImageIcon className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />}
+                  <span className="truncate" aria-hidden="true">{f.name}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { tapLight(); detach(f.id); }}
+                  aria-label={fmt(t.receiptRemove, { name: f.name })}
+                  className="w-tap min-h-tap shrink-0 inline-flex items-center justify-center rounded-e-full text-fg-mute active:opacity-60 focus-visible:ring-focus"
+                >
+                  <X className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+            {files.some(f => f.type === 'image/jpeg') && (
+              <li>
+                <button
+                  type="button"
+                  onClick={() => { tapLight(); void readFromReceipt(); }}
+                  disabled={!!fileBusy}
+                  className="min-h-tap px-3 rounded-full inline-flex items-center gap-1.5 bg-accent-dim text-label font-medium text-accent disabled:opacity-50 active:opacity-60 focus-visible:ring-focus"
+                >
+                  <ScanText className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+                  {fileBusy === 'reading' ? t.receiptReading : t.receiptRead}
+                </button>
+              </li>
+            )}
+          </ul>
+        )}
+        <input ref={cameraInput} type="file" accept="image/*" capture="environment" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={e => void attach(e.currentTarget)} />
+        <input ref={pickInput} type="file" accept="image/*,application/pdf,.pdf" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={e => void attach(e.currentTarget)} />
+        <Menu
+          anchor={fileAt}
+          label={t.receiptAdd}
+          groups={[[
+            { key: 'camera', label: t.receiptCamera, icon: Camera, onSelect: () => cameraInput.current?.click() },
+            { key: 'pick', label: t.receiptPick, icon: ImageIcon, onSelect: () => pickInput.current?.click() },
+          ]]}
+          onClose={() => setFileAt(null)}
         />
 
         {debts && (
@@ -774,6 +907,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           )}
         </div>
       </form>
+      <ReceiptViewer file={viewing} t={t} onClose={() => setViewing(null)} />
       {/* The + − × ÷ row, only while the amount is being typed (plan 08). */}
       <OperatorKeys show={amountFocused} t={t} onInsert={insertOp} />
     </Sheet>

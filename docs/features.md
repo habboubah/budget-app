@@ -68,6 +68,11 @@ Everything the app can do. Build and release steps are in the
   keeps its own opening balance; budgets, Statistik and Planen count every
   account, and Planen shows *Vermögen* — all of them together. A bank import
   goes into the account shown. An account goes only once it is empty.
+- **Receipts and documents.** *Beleg* in the entry sheet takes a photo or
+  picks a photo or PDF (up to five an entry); a paperclip marks the row, and
+  the entry shows it full screen. *Betrag vom Beleg lesen* suggests the total
+  and the shop, read on the device. Photos are saved without their location
+  data; receipts are part of the backup and are erased with the book.
 - **Siri and Shortcuts.** "Ausgabe in Spartopf" — Siri asks how much and what
   for, and the entry is booked (with an undo when the app opens). "Was bleibt
   am Monatsende in Spartopf" and "Offene Rechnungen in Spartopf" answer once

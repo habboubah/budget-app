@@ -389,6 +389,7 @@ export default function App() {
     const entry: Entry = { id, month: m, seriesId: id, createdAt: now, ...d, ...(d.paid ? { paidAt: now } : {}) };
     if (!entry.accountId) delete entry.accountId;
     if (!entry.debtId) delete entry.debtId;
+    if (!entry.files?.length) delete entry.files;
     store.addEntry(entry);
     // The category stays in the month even if this entry is deleted again.
     store.showCategory(m, d.categoryId);
@@ -1253,6 +1254,7 @@ export default function App() {
         accounts={multi ? accounts.map(a => ({ id: a.id, label: accountName(a, t.accountMain), emoji: a.emoji })) : undefined}
         defaultAccount={target}
         debts={store.debts.length ? store.debts.map(d => ({ id: d.id, name: d.name })) : undefined}
+        onNotice={text => show(text)}
       />
 
       <DebtSheet

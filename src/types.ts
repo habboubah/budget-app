@@ -104,6 +104,8 @@ export interface Entry {
   accountId?: string;
   /** The debt this entry pays off — or, for money lent, is paid back on (schema 21, plan 31). */
   debtId?: string;
+  /** Receipts and documents attached to it (schema 22, plan 27): what each is; the file itself is kept by storage.ts under its id. */
+  files?: Attachment[];
   /**
    * One side of a transfer between two accounts (plan 30): money leaving one
    * account (`out`) and arriving in another (`in`), two entries sharing a
@@ -111,6 +113,15 @@ export interface Entry {
    * expense, so it moves only its account's balance.
    */
   transfer?: Transfer;
+}
+
+/** A receipt or document on an entry (plan 27). Photos are always re-encoded JPEGs; a PDF is kept as it came. */
+export interface Attachment {
+  id: string;
+  name: string;
+  type: 'image/jpeg' | 'application/pdf';
+  /** Bytes, for "Belege: 42 MB". */
+  size: number;
 }
 
 export interface Transfer {
@@ -281,4 +292,6 @@ export interface EntryDraft {
   accountId?: string;
   /** The debt it pays off (plan 31). */
   debtId?: string;
+  /** Receipts and documents (plan 27). */
+  files?: Attachment[];
 }

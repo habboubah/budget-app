@@ -135,6 +135,17 @@ describe('version 21 (debts)', () => {
   });
 });
 
+describe('version 22 (receipts)', () => {
+  it('an entry keeps what is attached to it, and the balances stay', () => {
+    const { data } = stored('storage-v22.json');
+    expect(data.entries.find(e => e.id === 'w3')?.files).toEqual([
+      { id: 'rcpt-1', name: 'Bestätigung', type: 'image/jpeg', size: 184320 },
+      { id: 'rcpt-2', name: 'Tilgungsplan', type: 'application/pdf', size: 90210 },
+    ]);
+    expect(balances(data)).toEqual([['2026-10', 275000, 275000], ['2026-11', 210000, 210000]]);
+  });
+});
+
 describe('a backup from schema 8 (before budgets)', () => {
   const text = load('backup-schema-8.json');
   const parsed = parseBackup(text);

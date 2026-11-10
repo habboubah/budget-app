@@ -231,7 +231,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `Entry.splitId` (plan 21: a split payment's parts are normal entries sharing
   it; `splitParts`); **schema 17** `AppData.demo` (the test data's record,
   `src/demo.ts`); **schema 20** accounts and transfers (plan 30, below);
-  **schema 21** `AppData.debts` + `Entry.debtId` (plan 31, below) — all
+  **schema 21** `AppData.debts` + `Entry.debtId` (plan 31, below);
+  **schema 22** `Entry.files` (plan 27, below) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
@@ -374,6 +375,30 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (`carryOver`, `laterTransferCopies`). An account can be deleted only once
   nothing is booked on it (`canDeleteAccount`); the main one stays. With
   accounts the CSV gets a *Konto* column, and a transfer's sign is its side.
+- **Receipts and documents (plan 27).** `Entry.files` (schema 22) lists what
+  is attached — `{ id, name, type, size }`, at most five, `image/jpeg` or
+  `application/pdf` (`normalizeAttachments`); the file itself is kept by
+  storage.ts (`fileStore()`): in the app as base64 text in
+  `spartopf/files/<id>` beside the book — same folder and Data Protection,
+  moved with it by `moveBook` / `tidyAfterMove` — and in IndexedDB
+  (`spartopf-files`) on the web. Ids are checked against `FILE_ID` everywhere,
+  so one can never be a path. `src/receipts.ts` takes a file in
+  (`addAttachment`): a photo is drawn onto a canvas of at most 1600 px and
+  saved again as a JPEG (80 %), which drops its location and all other EXIF;
+  a PDF is kept as it came, up to 5 MB. Nothing goes to the photo library.
+  The entry sheet's *Beleg* pill attaches (camera, or a photo / PDF), the
+  chips open `ReceiptViewer` or remove one, and *Betrag vom Beleg lesen* runs
+  the on-device OCR through `readReceipt` (pure, tested: the total by its
+  line, else the largest amount; the shop's first line). A row shows a
+  paperclip. Files a book no longer points to go at the next launch
+  (`sweepFiles` in main.tsx) — so deleting an entry stays undoable; a sheet
+  left without saving drops what it stored at once; *Alle Daten löschen*
+  removes them all. A backup carries them as `files` (id → base64) beside the
+  book — still one JSON, encrypted as before, up to 150 MB; an import writes
+  them first and keeps only the receipts that are really there
+  (`backupFiles`, `keepAttachments`). Daily snapshots hold the list, not the
+  files. Carry-over doesn't copy receipts. `privacy-check.mjs` attaches a
+  photo with EXIF and fails if any of it is stored.
 - **Debts and loans (plan 31, `src/insights/debts.ts`, pure and tested).**
   `Debt { name, direction: 'owe' | 'owed', principal, start, rate?, payment?,
   seriesId? }` in `AppData.debts` (schema 21). What is paid back comes from the

@@ -63,6 +63,8 @@ export const TMP = 'spartopf/data.json.tmp';
 export const PREV = 'spartopf/data.prev.json';
 /** Automatic snapshots (plan 03) live beside the data file, out of the Files app. */
 export const BACKUP_DIR = 'spartopf/backups';
+/** Receipts and documents (plan 27), one file per attachment under its id, as base64 text. They move with the book. */
+export const FILES_DIR = 'spartopf/files';
 /** The name of the snapshot taken of the current book just before a restore, so undo survives a restart. */
 export const PRE_RESTORE = 'pre-restore.json';
 
@@ -293,8 +295,9 @@ export async function hydrate(
  */
 export async function moveBook(from: FsLike, to: FsLike): Promise<void> {
   const snapshots = (await from.list(BACKUP_DIR)).map(n => `${BACKUP_DIR}/${n}`);
+  const receipts = (await from.list(FILES_DIR)).map(n => `${FILES_DIR}/${n}`);
   // data.json last: until it's there, the old folder holds the newest copy.
-  const paths = [...snapshots, PREV, TMP, FILE];
+  const paths = [...snapshots, ...receipts, PREV, TMP, FILE];
   const copied: string[] = [];
   const undo = async () => { for (const path of copied) await to.remove(path); };
   try {
@@ -326,18 +329,21 @@ export async function moveBook(from: FsLike, to: FsLike): Promise<void> {
  * whether `stale` has a data file at all (hydrate knows; it saves the calls).
  */
 export async function tidyAfterMove(stale: FsLike, book: FsLike, files = true): Promise<void> {
-  const names = await stale.list(BACKUP_DIR);
-  const have = new Set(names.length ? await book.list(BACKUP_DIR) : []);
-  for (const name of names) {
-    const path = `${BACKUP_DIR}/${name}`;
-    if (!have.has(name)) {
-      const text = await stale.read(path);
-      if (text !== null) {
-        await book.write(path, text);
-        if ((await book.read(path)) !== text) continue; // keep the original
+  // Snapshots, and receipts (plan 27) the same way.
+  for (const dir of [BACKUP_DIR, FILES_DIR]) {
+    const names = await stale.list(dir);
+    const have = new Set(names.length ? await book.list(dir) : []);
+    for (const name of names) {
+      const path = `${dir}/${name}`;
+      if (!have.has(name)) {
+        const text = await stale.read(path);
+        if (text !== null) {
+          await book.write(path, text);
+          if ((await book.read(path)) !== text) continue; // keep the original
+        }
       }
+      await stale.remove(path);
     }
-    await stale.remove(path);
   }
   if (files) for (const path of [TMP, PREV, FILE]) await stale.remove(path);
 }
@@ -730,9 +736,100 @@ export function onWipe(cleaner: () => void | Promise<void>): () => void {
   return () => wipeCleaners.delete(cleaner);
 }
 
-/** Erase everything: the data file and snapshots, then every registered cleaner. */
+/* ------------------------------------------------------ receipts (plan 27) */
+
+/**
+ * Where receipts are kept: one file per attachment, named by its id, holding
+ * the content as base64. In the iPhone app that is `spartopf/files/` beside
+ * the book (same folder, same Data Protection, moved with it); on the web
+ * IndexedDB, as localStorage is too small.
+ */
+export interface FileStore {
+  get(id: string): Promise<string | null>;
+  put(id: string, base64: string): Promise<void>;
+  remove(id: string): Promise<void>;
+  list(): Promise<string[]>;
+}
+
+const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
+/** Receipts in a folder of the file system; an id that isn't plain letters and digits is refused. */
+export function fsFileStore(fs: FsLike): FileStore {
+  const path = (id: string) => `${FILES_DIR}/${id}`;
+  return {
+    get: async id => (SAFE_ID.test(id) ? fs.read(path(id)) : null),
+    put: async (id, base64) => {
+      if (!SAFE_ID.test(id)) throw new Error('Not a file id.');
+      await fs.write(path(id), base64);
+    },
+    remove: async id => { if (SAFE_ID.test(id)) await fs.remove(path(id)); },
+    list: async () => (await fs.list(FILES_DIR)).filter(n => SAFE_ID.test(n)),
+  };
+}
+
+/** Receipts in IndexedDB (the web). Without IndexedDB — a private window, the tests — they last as long as the page. */
+function idbFileStore(): FileStore {
+  const memory = new Map<string, string>();
+  const open = (): Promise<IDBDatabase | null> => new Promise(resolve => {
+    if (typeof indexedDB === 'undefined') { resolve(null); return; }
+    try {
+      const req = indexedDB.open('spartopf-files', 1);
+      req.onupgradeneeded = () => { req.result.createObjectStore('files'); };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    } catch { resolve(null); }
+  });
+  const run = async <T>(mode: IDBTransactionMode, work: (s: IDBObjectStore) => IDBRequest, fallback: () => T): Promise<T> => {
+    const db = await open();
+    if (!db) return fallback();
+    return new Promise<T>((resolve, reject) => {
+      const tx = db.transaction('files', mode);
+      const req = work(tx.objectStore('files'));
+      tx.oncomplete = () => { db.close(); resolve(req.result as T); };
+      tx.onerror = () => { db.close(); reject(tx.error); };
+      tx.onabort = () => { db.close(); reject(tx.error); };
+    });
+  };
+  return {
+    get: id => run<unknown>('readonly', s => s.get(id), () => memory.get(id)).then(v => (typeof v === 'string' ? v : null)),
+    put: (id, base64) => run<unknown>('readwrite', s => s.put(base64, id), () => { memory.set(id, base64); }).then(() => undefined),
+    remove: id => run<unknown>('readwrite', s => s.delete(id), () => { memory.delete(id); }).then(() => undefined),
+    list: () => run<unknown[]>('readonly', s => s.getAllKeys(), () => [...memory.keys()]).then(keys => keys.map(String)),
+  };
+}
+
+const webFiles = idbFileStore();
+/** The receipts' store: beside the book in the app, IndexedDB on the web. */
+export function fileStore(): FileStore {
+  const fs = appFs();
+  return fs ? fsFileStore(fs) : webFiles;
+}
+
+/**
+ * Removes every stored file the book no longer points to — at launch, so an
+ * entry deleted (or a sheet closed without saving) frees its receipts only
+ * once undo is out of reach. Returns how many went.
+ */
+export async function sweepFiles(keep: Set<string>, store: FileStore = fileStore()): Promise<number> {
+  let gone = 0;
+  for (const id of await store.list()) {
+    if (keep.has(id)) continue;
+    await store.remove(id);
+    gone++;
+  }
+  return gone;
+}
+
+/** Every receipt, wherever the book has been ("Alle Daten löschen"). */
+async function wipeFiles(): Promise<void> {
+  const stores = isNative() ? [fsFileStore(capacitorFs), fsFileStore(capacitorFsNoBackup)] : [webFiles];
+  for (const store of stores) await sweepFiles(new Set(), store);
+}
+
+/** Erase everything: the data file and snapshots, the receipts, then every registered cleaner. */
 export async function wipeAll(): Promise<void> {
   await saver.forget();
+  try { await wipeFiles(); } catch { /* a wipe must finish */ }
   await Promise.all([...wipeCleaners].map(async c => { try { await c(); } catch { /* a wipe must finish */ } }));
 }
 

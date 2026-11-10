@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
-  BACKUP_DIR, FILE, FsLike, PRE_RESTORE, PREV, StorageCorruptError, TMP,
-  createSaver, hydrate, listSnapshots, moveBook, readEnvelope, readSnapshot, restoreSnapshot, snapshotsToKeep, takeSnapshot, writeLocal,
+  BACKUP_DIR, FILE, FILES_DIR, FsLike, PRE_RESTORE, PREV, StorageCorruptError, TMP, fsFileStore, sweepFiles,
+  createSaver, hydrate, listSnapshots, moveBook, tidyAfterMove, readEnvelope, readSnapshot, restoreSnapshot, snapshotsToKeep, takeSnapshot, writeLocal,
 } from './storage';
 import { computeBalances } from './logic';
 import { defaultCategories } from './data/defaults';
@@ -518,5 +518,45 @@ describe('the backup switch (plan 06)', () => {
     expect(status).toEqual([false, true]);
     await saver.retry(); // nothing left to write
     expect(status).toEqual([false, true]);
+  });
+});
+
+describe('receipts (plan 27)', () => {
+  it('keeps a file under its id, lists it, and refuses anything that could be a path', async () => {
+    const { fs } = memFs();
+    const store = fsFileStore(fs);
+    await store.put('r1', 'QUJD');
+    expect(await fs.read(`${FILES_DIR}/r1`)).toBe('QUJD');
+    expect(await store.get('r1')).toBe('QUJD');
+    expect(await store.list()).toEqual(['r1']);
+    await expect(store.put('../data.json', 'x')).rejects.toThrow();
+    expect(await store.get('../data.json')).toBeNull();
+    await store.remove('r1');
+    expect(await store.list()).toEqual([]);
+  });
+
+  it('sweeps what the book no longer points to, and nothing else', async () => {
+    const { fs } = memFs();
+    const store = fsFileStore(fs);
+    for (const id of ['a', 'b', 'c']) await store.put(id, 'QQ==');
+    expect(await sweepFiles(new Set(['b']), store)).toBe(2);
+    expect(await store.list()).toEqual(['b']);
+  });
+
+  it('move with the book, and a move cut short loses none', async () => {
+    const from = memFs();
+    const to = memFs();
+    const saver = createSaver(from.fs, noMirror, { snapshots: false });
+    saver.save(book(100000));
+    await saver.flush();
+    await fsFileStore(from.fs).put('r1', 'QUJD');
+    await moveBook(from.fs, to.fs);
+    expect(await fsFileStore(to.fs).get('r1')).toBe('QUJD');
+    expect(await fsFileStore(from.fs).list()).toEqual([]);
+    // A copy left behind in the stale folder: taken over if the book lacks it, then removed.
+    await fsFileStore(from.fs).put('r2', 'REVG');
+    await tidyAfterMove(from.fs, to.fs);
+    expect((await fsFileStore(to.fs).list()).sort()).toEqual(['r1', 'r2']);
+    expect(await fsFileStore(from.fs).list()).toEqual([]);
   });
 });

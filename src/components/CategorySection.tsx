@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, ChevronsDownUp, ChevronsUpDown, Circle, CircleMinus, Gauge, ListFilter, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
+import { Check, ChevronsDownUp, ChevronsUpDown, Circle, CircleMinus, Gauge, ListFilter, MoreHorizontal, Paperclip, Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
 import { dayLabel, displayName, formatMoney, formatMoneyShort, isOverdue, spoken } from '../logic';
 import { BudgetStatus } from '../budgets';
@@ -360,6 +360,16 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   if (e.note) meta.push(<span key="note" className="wrap-compound"><Highlight text={e.note} query={search} /></span>);
   // A part of a split payment (plan 21): a quiet marker; tapping the row opens its editor.
   if (e.splitId) meta.push(<span key="split" className="text-fg-mute">{t.splitPayPart}</span>);
+  // A receipt is attached (plan 27): a paperclip; the entry's sheet shows it.
+  if (e.files?.length) {
+    meta.push(
+      <span key="files" className="inline-flex items-center gap-0.5 whitespace-nowrap">
+        <Paperclip className="w-3.5 h-3.5" strokeWidth={2} aria-hidden="true" />
+        {e.files.length > 1 && <span aria-hidden="true">{e.files.length}</span>}
+        <span className="sr-only">{t.receipt}</span>
+      </span>,
+    );
+  }
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;
 
   return (

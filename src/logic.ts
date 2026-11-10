@@ -1,5 +1,5 @@
 import {
-  ACCOUNT_KINDS, Account, AccountKind, AppData, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
+  ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -19,8 +19,9 @@ import { isSupportedCurrency } from './currency';
  *      eleven languages added then (tr, pl, cs, sv, nb, da, fr, it, es, nl, pt).
  *  20: accounts and transfers (`AppData.accounts`, `Entry.accountId`, `Entry.transfer`,
  *      `MonthRecord.openings`, plan 30) — optional, unset = one account, as before.
- *  21: debts and loans (`AppData.debts`, `Entry.debtId`, plan 31) — optional, unset = none. */
-export const SCHEMA_VERSION = 21;
+ *  21: debts and loans (`AppData.debts`, `Entry.debtId`, plan 31) — optional, unset = none.
+ *  22: receipts (`Entry.files`, plan 27) — optional; a backup may carry the files themselves (`files`). */
+export const SCHEMA_VERSION = 22;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1392,6 +1393,8 @@ function normalizeEntry(v: unknown): Entry | null {
   if (goalId) e.goalId = goalId.slice(0, 80);
   const debtId = str(v.debtId);
   if (debtId) e.debtId = debtId.slice(0, 80);
+  const files = normalizeAttachments(v.files);
+  if (files.length) e.files = files;
   const tags = normalizeTags(v.tags);
   if (tags.length) e.tags = tags;
   const splitId = str(v.splitId);
@@ -1507,6 +1510,69 @@ export function normalizeState(raw: unknown): AppData {
 }
 
 export const MAX_DEBTS = 50;
+
+/** What a stored file may be called: letters, digits, "-" and "_" — never a path. */
+export const FILE_ID = /^[A-Za-z0-9_-]{1,64}$/;
+export const MAX_ATTACHMENTS = 5;
+
+/** An entry's receipts (schema 22): a safe id, a short name, a known type, a size. */
+export function normalizeAttachments(v: unknown): Attachment[] {
+  if (!Array.isArray(v)) return [];
+  return dedupe(v.map((f): Attachment | null => {
+    if (!isObj(f) || typeof f.id !== 'string' || !FILE_ID.test(f.id)) return null;
+    if (f.type !== 'image/jpeg' && f.type !== 'application/pdf') return null;
+    return {
+      id: f.id,
+      name: cleanText(str(f.name) ?? '', 80) || (f.type === 'application/pdf' ? 'PDF' : 'Foto'),
+      type: f.type,
+      size: typeof f.size === 'number' && Number.isFinite(f.size) && f.size > 0 ? Math.round(f.size) : 0,
+    };
+  }).filter((f): f is Attachment => f !== null), f => f.id).slice(0, MAX_ATTACHMENTS);
+}
+
+/** Every stored file the book still points to — the rest can go. */
+export function attachmentIds(data: AppData): Set<string> {
+  const ids = new Set<string>();
+  for (const e of data.entries) for (const f of e.files ?? []) ids.add(f.id);
+  return ids;
+}
+
+/** How much room the receipts take, in bytes. */
+export function attachmentBytes(data: AppData): number {
+  let sum = 0;
+  for (const e of data.entries) for (const f of e.files ?? []) sum += f.size;
+  return sum;
+}
+
+/** The book with only the receipts whose file is there (an import: in the backup or already on the device). */
+export function keepAttachments(data: AppData, have: Set<string>): AppData {
+  if (!data.entries.some(e => e.files?.some(f => !have.has(f.id)))) return data;
+  return {
+    ...data,
+    entries: data.entries.map(e => {
+      if (!e.files) return e;
+      const files = e.files.filter(f => have.has(f.id));
+      const { files: _drop, ...rest } = e;
+      return files.length ? { ...rest, files } : rest;
+    }),
+  };
+}
+
+/**
+ * The files a backup carries (plan 27): `files` maps an id to its content
+ * (base64). Only safe ids and plain base64 within the size limit come through;
+ * a backup from before has none.
+ */
+export function backupFiles(text: string, maxBytes: number): Record<string, string> {
+  let raw: unknown;
+  try { raw = JSON.parse(text); } catch { return {}; }
+  if (!isObj(raw) || !isObj(raw.files)) return {};
+  const out: Record<string, string> = {};
+  for (const [id, content] of Object.entries(raw.files)) {
+    if (FILE_ID.test(id) && typeof content === 'string' && content.length <= maxBytes * 1.4 && /^[A-Za-z0-9+/]*={0,2}$/.test(content)) out[id] = content;
+  }
+  return out;
+}
 
 /** Debts (schema 21): a name, a direction, whole cents, a start month, a rate between 0 and 100 %. Unset when there are none. */
 function normalizeDebts(v: unknown): Debt[] | undefined {
