@@ -17,7 +17,7 @@
    6. Widgets.
    7. Arabic and Turkish.
 2. **Screenshots**, made with `npm run screenshots` and `.claude/skills/app-store-screenshots`:
-   - devices: iPhone 6.9", iPad 13", an Android phone
+   - devices: iPhone 6.9", an Android phone
    - languages: DE, EN, AR, TR
    - light mode, plus one dark screenshot
 3. **App Preview video** (15–30 s): pay for a coffee with Apple Pay → it shows up in Spartopf → *pro Tag* updates.

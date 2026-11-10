@@ -3,7 +3,7 @@ import { balanceFor, computeBalances, displayName, isoDay, leftPerDay, monthKeyO
 import { dueSoon } from '../due';
 
 /*
- * What widgets, Siri, Shortcuts and the Watch may read of the book (plan 14):
+ * What widgets, Siri and Shortcuts may read of the book (plan 14):
  * a summary, never the whole book. The iPhone app writes it to the App Group
  * (`bridge.ts` → `SpartopfShared.writeSnapshot`) after each save and at
  * midnight. Pure and tested (native.test.ts).

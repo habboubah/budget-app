@@ -62,7 +62,6 @@ Written from the code as built, not from a walk through a fresh install — chec
 | Rating prompt (15) | iOS | 14 days, 30 entries, a good moment |
 | Siri (18), automatic capture (19) | iOS / *Optionen* | the user's own phrase or automation (and the tip) |
 | Split (21), tags (26), receipts (27) | entry sheet | *Aufteilen* in the editor; the *Tag* and *Beleg* pills |
-| Two columns, shortcuts (22) | — | a window from 700 px |
 | PDF report (28), year comparison (29) | report screens, *Statistik* | opening them; a second year of data |
 | Accounts, transfers (30) | *Optionen › Konten* | adding a second account — then the switch on the balance card |
 | Debts (31) | *Optionen › Schulden und Kredite* | adding one — then the card on *Planen* |

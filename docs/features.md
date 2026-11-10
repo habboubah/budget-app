@@ -85,11 +85,6 @@ Everything the app can do. Build and release steps are in the
   payee, the right category, paid — with an undo, or, with *Erst prüfen*,
   waiting under *Neu* on the month page. No bank login; the notification's
   text is read on the phone and not kept.
-- **iPad and wide screens.** From 700 pt of width the month stays on one
-  side and *Statistik*, *Planen* or *Optionen* open beside it, each scrolling
-  by itself; sheets are centred panels. With a keyboard: ⌘N new entry, ⌘F
-  search, ← → to change month. Narrower (an iPhone, an iPad in Split View) it
-  is the phone layout, unchanged.
 - **Month from payday.** *Optionen › Haushaltsbuch › Monat beginnt am*: the
   1st, or any day up to the 28th for those who plan from salary to salary.
   "November" then runs from 25 Oct to 24 Nov (named after the calendar month

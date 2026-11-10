@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useScroller } from './useWide';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronsUpDown } from 'lucide-react';
 import { tapLight } from './haptics';
@@ -39,17 +38,12 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
   // At the very top the bar is see-through, so the page's accent light shows
   // behind it; once anything scrolls under it, it turns solid (as iOS does).
   const [atTop, setAtTop] = useState(true);
-  // The window on a phone; the screen's own column when there are two (plan 22).
-  const scroller = useScroller();
   useEffect(() => {
-    if (scroller === null) return;
-    const from: HTMLElement | Window = scroller ?? window;
-    const top = () => (scroller ? scroller.scrollTop : window.scrollY);
-    const on = () => { setScrolled(top() > 44); setAtTop(top() < 1); };
+    const on = () => { setScrolled(window.scrollY > 44); setAtTop(window.scrollY < 1); };
     on();
-    from.addEventListener('scroll', on, { passive: true });
-    return () => from.removeEventListener('scroll', on);
-  }, [scroller]);
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, []);
 
   return (
     <div className={`relative isolate mx-auto w-full max-w-xl min-h-screen ${tabbed ? 'pb-safe-tabs' : docked ? 'pb-safe-dock' : 'pb-16'}`}>
@@ -265,7 +259,7 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions }: 
  */
 export function Dock({ children }: { children: React.ReactNode }) {
   return createPortal(
-    <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none split-end">
+    <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none">
       <div className="mx-auto w-full max-w-xl px-4 pt-8 pb-[calc(1.25rem+env(safe-area-inset-bottom))] dock-fade">
         <div className="pointer-events-auto">{children}</div>
       </div>

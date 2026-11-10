@@ -2,7 +2,7 @@ import { MonthKey } from '../types';
 import { cleanText, parseAmount } from '../logic';
 
 /*
- * The app's own links (plan 14), for widgets, Shortcuts and the Watch:
+ * The app's own links (plan 14), for widgets and Shortcuts:
  *   spartopf://add?category=…&amount=…&name=…   the entry sheet, filled in
  *   spartopf://month/2026-11                      that month
  *   spartopf://entry/<id>                         that entry, open to edit

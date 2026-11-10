@@ -3,7 +3,7 @@ import { MAX_CENTS, cleanText, displayName, isIsoDay, isoDay, uid } from '../log
 import { Found, PlannedRow, applyStatement, parseNotificationText, planStatement } from '../statementImport';
 
 /*
- * What Siri, widgets, Shortcuts automations and the Watch hand to the app
+ * What Siri, widgets and Shortcuts automations hand to the app
  * (plan 14): items they write to the App Group's inbox while the app may be
  * closed. The app reads them at launch and on resume and books them through
  * the bank import's own path (`planStatement` → `applyStatement`): the user's
@@ -17,7 +17,7 @@ import { Found, PlannedRow, applyStatement, parseNotificationText, planStatement
  * apps' notifications.
  */
 
-export const INBOX_SOURCES = ['siri', 'widget', 'wallet', 'notification', 'share', 'watch'] as const;
+export const INBOX_SOURCES = ['siri', 'widget', 'wallet', 'notification', 'share'] as const;
 export type InboxSource = (typeof INBOX_SOURCES)[number];
 
 export interface InboxItem {

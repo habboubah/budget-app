@@ -8,7 +8,7 @@
 
 ## Why
 
-Widgets, Siri, Shortcuts automations and the Watch all run outside the web view. They need a small, safe way to:
+Widgets, Siri and Shortcuts automations all run outside the web view. They need a small, safe way to:
 - read a summary of the book;
 - hand new entries to the app.
 
@@ -45,7 +45,7 @@ Nothing visible yet.
   - categories for intents: id, name in the user's language, emoji, kind
   - currency, locale, accent
   - `amountsHidden`, `locked`
-- **Inbox item:** `{ id, source: 'siri' | 'widget' | 'wallet' | 'notification' | 'share' | 'watch', createdAt, amount?, name?, categoryId?, date?, card?, text? }`.
+- **Inbox item:** `{ id, source: 'siri' | 'widget' | 'wallet' | 'notification' | 'share', createdAt, amount?, name?, categoryId?, date?, card?, text? }`.
 
 ### Web side, `src/native/`
 - `bridge.ts`: typed calls; no-ops on the web.

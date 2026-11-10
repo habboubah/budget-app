@@ -118,7 +118,6 @@ Change them here if you disagree, before the plan that depends on them starts.
 ### Phase 5 — reach
 | # | Plan | Covers | Depends on | Size | Native |
 |---|---|---|---|---|---|
-| 22 | [iPad and wide screens](22-ipad.md) | F21 | 17 | M | iOS |
 | 23 | [Android app](23-android.md) | F20 | 02, 05, 06 | L | Android |
 | 24 | [Android capture and widgets](24-android-capture.md) | F8, F18 on Android | 23, 19 | L | Android |
 | 25 | [Turkish and more languages](25-languages.md) | F27 | 07, 16 | M per language | strings |
@@ -139,7 +138,6 @@ Change them here if you disagree, before the plan that depends on them starts.
 |---|---|---|---|---|---|
 | 33 | [Device-to-device transfer](33-device-transfer.md) | F24 (local) | 04, 30 | L | iOS/Android |
 | 34 | [Nearby sync and household sharing](34-nearby-sync.md) | F24, F25 (local) | 33 | XL | iOS/Android |
-| 35 | [Apple Watch](35-apple-watch.md) | F22 | 14, 17 | L | watchOS |
 
 ### Phase 8 — bank connection without a server
 | # | Plan | Covers | Depends on | Size | Native |
@@ -177,7 +175,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 | Looking ahead: a warning before a yearly bill, what's left until the month ends | 06a (*Ausblick*, *November bis heute*), 11 |
 | Updates that make the app slower or cluttered | 01 (performance budgets), 37 |
 | More languages | 25 |
-| iPad, Android, Watch | 22, 23, 35 |
+| Android | 23 |
 | Savings goals, yearly bills, debts, receipts, tags, PDF, payday month | 12, 11, 31, 27, 26, 28, 32 |
 | Spending by shop | already there (payee card); a payee sheet in 06a |
 | Subscriptions and lost purchases | not applicable: free, nothing to buy |
@@ -197,7 +195,6 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 | Permission prompts in English only | `ios/App/App/Info.plist` | 16 |
 | Store listing and App Review note out of date | `store/listing.md` | 16 |
 | Arabic € placement inconsistent (REDESIGN.md §9) | translations | 16 |
-| iPhone only | `TARGETED_DEVICE_FAMILY = 1` | 22 |
 | No Android app | — | 23 |
 | Sparquote and 50/30/20 disagree once a savings category is used | `monthSeries` / `budgetSplit` in `src/insights.ts` | 06a |
 | *Notgroschen* divides today's balance by all spending | `InsightsView.tsx` | 06a |
@@ -230,7 +227,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 19 Apple Pay, bank notifications, "Teilen an Spartopf" — steps 1, 2 and 4 built, `npm run check` passes: two Shortcuts actions (Swift, not compiled yet), `parseNotificationText` (tested with made-up samples), *Gleich buchen* / *Erst prüfen* with *Neu: n* on the month, the guide under *Optionen › Automatisch erfassen*. Open: the share extension (a new Xcode target), real notification texts, the device check
 - [x] 20 Import rules and other apps — built, `npm run check` passes; schema 15 (`AppData.rules`), rule engine in `planStatement` (set/skip, order) tested, scope menu on a correction, Regeln screen, other-app columns recognised + auto-mapping fallback (`csvForMapping`/`parseMappedCsv` tested). Plan-19 inbox is native (n/a here); an interactive mapping sheet is a noted follow-up. Also stabilised the flaky 10-year perf test with `retry`
 - [x] 21 Split a payment — built, `npm run check` passes; schema 16 (`Entry.splitId`), `splitParts`/carry-over/import-match tested, "Aufteilen" in the editor → SplitSheet, parts share a splitId (balances unchanged). Delete-scope prompt + richer caption are noted follow-ups; perf baseline raised to 280 kB with a note
-- [ ] 22 iPad and wide screens — layout built, `npm run check` passes: two columns from 700 px (month + pane), three-tab bar over the pane, ⌘N / ⌘F / ← → (`shortcutFor` tested), ui-review on the iPad sizes in DE and AR. Open: switching the iPad target on (a release decision, TODO.md) and the check on a real iPad
+- Dropped (decided November 2026): 22 iPad and wide screens, 35 Apple Watch. Spartopf stays an iPhone app (Android: plan 23); their plan files and the two-column layout built for 22 are removed.
 - [ ] 23 Android app
 - [ ] 24 Android capture and widgets
 - [ ] 25 Turkish and more languages
@@ -243,7 +240,6 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 32 Month from payday — built, `npm run check` passes; schema 23 (`AppData.monthStart`), `periodOf`/`periodRange`/`changeMonthStart` tested (golden data round trip 1 → 16/25/28 → 1), *Optionen › Haushaltsbuch › Monat beginnt am* with a preview and undo, dates under the month title. iPhone check in TODO.md.
 - [ ] 33 Device-to-device transfer
 - [ ] 34 Nearby sync and household sharing
-- [ ] 35 Apple Watch
 - [ ] 36 On-device bank connection (FinTS)
 - [ ] 37 Simplicity review — checkpoint after plan 32 done, `npm run check` passes: the feature table, the first-viewport counts, *Optionen › Haushaltsbuch* reordered, and the tip system (`src/tips.ts`, five tips, one a week, tested). Open: the three-people test, VoiceOver / large text, speed on old phones (TODO.md)
 - [ ] 38 Screenshots, story and release

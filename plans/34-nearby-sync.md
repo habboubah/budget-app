@@ -14,7 +14,7 @@ Under *Optionen › Mit anderen Geräten teilen*:
 
 - **Pair once:** one phone shows a QR code, the other scans it.
 - **Sync by itself:** from then on, whenever both devices are on the same Wi-Fi with Spartopf open, they sync, e.g. "Mit Leas iPhone abgeglichen, gerade eben". **Jetzt abgleichen** starts a sync by hand.
-- **Who:** the user's own iPhone and iPad, or a partner's phone. Up to 5 devices.
+- **Who:** the user's own phones, or a partner's phone. Up to 5 devices.
 - **Trennen** removes a device. Its key is deleted on both sides the next time they meet.
 
 ## Keep it simple
@@ -47,11 +47,10 @@ One row in *Optionen* and two screens. Nothing changes for people who never pair
 ## Tests and checks
 
 - The merge and protocol tests: dropped connection, double delivery, a device that was unpaired.
-- Devices: two iPhones; iPhone + iPad; iPhone + Android. All of them with the router's internet connection unplugged.
+- Devices: two iPhones; iPhone + Android. All of them with the router's internet connection unplugged.
 
 ## Done when
 
 - [ ] Pairing, automatic sync, manual sync and unpairing all work with no internet connection, between:
   - two iPhones
-  - an iPhone and an iPad
   - an iPhone and an Android phone

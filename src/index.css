@@ -702,8 +702,3 @@ input[type="search"]::-webkit-search-results-button {
   .print-root .print-entries tr { break-inside: avoid; }
   .print-root .print-foot { margin-top: 6mm; }
 }
-
-/* Two columns (plan 22, ui/useWide.ts): the fixed chrome that belongs to the
-   pane beside the month — the tab bar and a screen's dock — sits over it. */
-html[data-split] .split-end { inset-inline-start: 50%; }
-html[data-split] body { overflow: hidden; }

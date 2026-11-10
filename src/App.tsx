@@ -85,8 +85,6 @@ import { Menu } from './ui/Menu';
 import { Confirm } from './ui/Sheet';
 import { notifySuccess, notifyWarning, tapLight } from './ui/haptics';
 import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
-import { ScrollerContext, useWide } from './ui/useWide';
-import { useShortcuts } from './ui/useShortcuts';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
@@ -147,23 +145,11 @@ export default function App() {
     ? { ...action, run: () => { trouble.current = true; action.run(); } }
     : action);
 
-  /**
-   * Wide enough for two columns (plan 22): the month stays on the leading
-   * side, and the tab — never *Monat* then — picks what is beside it.
-   */
-  const wide = useWide();
-  const [chosenTab, setTab] = useState<TabId>('month');
-  const sideTab = useRef<TabId>('stats');
-  if (chosenTab !== 'month') sideTab.current = chosenTab;
-  const tab: TabId = wide && chosenTab === 'month' ? sideTab.current : chosenTab;
-  const [monthPane, setMonthPane] = useState<HTMLElement | null>(null);
-  const [sidePane, setSidePane] = useState<HTMLElement | null>(null);
+  const [tab, setTab] = useState<TabId>('month');
   /** Per tab, the screen pushed over its root — each tab keeps its place, as on iOS. */
   const [stack, setStack] = useState<Partial<Record<TabId, PushedId>>>({});
   const push = (to: PushedId) => {
-    // Beside the month there is no month tab to push onto: its screens open in the pane.
-    const home = HOME[to] ?? tab;
-    const onTab = wide && home === 'month' ? tab : home;
+    const onTab = HOME[to] ?? tab;
     setTab(onTab);
     setStack(s => ({ ...s, [onTab]: to }));
   };
@@ -356,27 +342,12 @@ export default function App() {
   // Another screen starts at its top. Another month does too on the month
   // page — but the statistics keep their place, so stepping through months
   // there doesn't throw the reader back up.
-  useEffect(() => { if (wide) sidePane?.scrollTo(0, 0); else window.scrollTo(0, 0); }, [screen]);
+  useEffect(() => { window.scrollTo(0, 0); }, [screen]);
   const shownMonth = useRef(month);
   useEffect(() => {
-    if (shownMonth.current !== month) {
-      if (wide) monthPane?.scrollTo(0, 0);
-      else if (screen === 'month') window.scrollTo(0, 0);
-    }
+    if (shownMonth.current !== month && screen === 'month') window.scrollTo(0, 0);
     shownMonth.current = month;
   }, [month]);
-
-  // A hardware keyboard (plan 22): ⌘N a new entry, ⌘F the search, ← → the months.
-  useShortcuts({
-    rtl: t.dir === 'rtl',
-    onNew: () => { if (quickAddCategory && balance.started) setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory }); },
-    onSearch: () => {
-      if (!wide) { setTab('month'); setStack(s => ({ ...s, month: undefined })); }
-      window.setTimeout(() => document.querySelector<HTMLInputElement>('input[type="search"]')?.focus(), wide ? 0 : 80);
-    },
-    onPrev: () => setMonth(addMonths(month, -1)),
-    onNext: () => setMonth(addMonths(month, 1)),
-  });
 
   useEffect(() => {
     const handle = CapacitorApp.addListener('backButton', () => {
@@ -1255,7 +1226,7 @@ export default function App() {
     <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
       {covered && <PrivacyCover />}
       {store.storageError && (
-        <div role="alert" className={`bg-neg-dim text-neg px-4 py-2 safe-top ${wide ? 'fixed inset-x-0 top-0 z-40' : ''}`}>
+        <div role="alert" className="bg-neg-dim text-neg px-4 py-2 safe-top">
           <div className="mx-auto max-w-xl flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
             <span className="text-caption font-bold flex-1">{t.storageError}</span>
@@ -1263,27 +1234,6 @@ export default function App() {
         </div>
       )}
 
-      {wide ? (
-        // Two columns, each scrolling by itself: the month, and what the tab shows beside it.
-        <div className="fixed inset-0 grid grid-cols-2">
-          <div ref={setMonthPane} data-pane="month" className="min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain border-e border-hairline">
-            <ScrollerContext.Provider value={monthPane}>{screenFor('month')}</ScrollerContext.Provider>
-          </div>
-          <div ref={setSidePane} data-pane="side" className="min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain">
-            <ScrollerContext.Provider value={sidePane}>
-              <motion.div
-                key={screen}
-                initial={dir === 0 ? { opacity: 0 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={dir === 0 ? { duration: 0.18 } : { duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-              >
-                {screenFor(screen)}
-              </motion.div>
-            </ScrollerContext.Provider>
-          </div>
-        </div>
-      ) : (
-        <>
       {/* While a pushed screen is swiped away: its parent underneath, sliding
           in from a little behind and coming out of a light shade. */}
       {pushed && swipe.swiping && (
@@ -1321,16 +1271,13 @@ export default function App() {
         />
       )}
 
-        </>
-      )}
-
       <TabBar
         label={t.appName}
         active={tab}
         // Tapping the active tab again pops back to its root, as on iOS.
         onChange={id => { if (id === tab) popTo(id); setTab(id); }}
         tabs={[
-          ...(wide ? [] : [{ id: 'month' as TabId, label: t.tabMonth, icon: CalendarDays }]),
+          { id: 'month', label: t.tabMonth, icon: CalendarDays },
           { id: 'stats', label: t.tabStats, icon: BarChart3 },
           { id: 'insights', label: t.tabInsights, icon: PiggyBank },
           { id: 'settings', label: t.tabSettings, icon: Settings },

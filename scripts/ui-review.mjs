@@ -46,11 +46,6 @@ const DEVICES = {
   16: { width: 393, height: 852, top: 59, bottom: 34, kb: 336, label: 'iPhone 16 · 393 × 852' },
   '17pro': { width: 402, height: 874, top: 62, bottom: 34, kb: 336, label: 'iPhone 17 Pro · 402 × 874' },
   '17promax': { width: 440, height: 956, top: 62, bottom: 34, kb: 346, label: 'iPhone 17 Pro Max · 440 × 956' },
-  // iPad (plan 22), not in the default set: `--devices ipad11,ipad11l,ipad13,ipad13l` (l = landscape).
-  ipad11: { width: 820, height: 1180, top: 24, bottom: 20, kb: 0, label: 'iPad 11" · 820 × 1180' },
-  ipad11l: { width: 1180, height: 820, top: 24, bottom: 20, kb: 0, label: 'iPad 11" quer · 1180 × 820' },
-  ipad13: { width: 1032, height: 1376, top: 24, bottom: 20, kb: 0, label: 'iPad 13" · 1032 × 1376' },
-  ipad13l: { width: 1376, height: 1032, top: 24, bottom: 20, kb: 0, label: 'iPad 13" quer · 1376 × 1032' },
   // Not in the default set: `--devices desktop` (mouse, no safe areas).
   desktop: { width: 1280, height: 820, top: 0, bottom: 0, kb: 0, label: 'Desktop · 1280 × 820', desktop: true },
 };
@@ -184,36 +179,27 @@ const DEBTS = l => {
 /** Optionen → Schulden und Kredite. */
 const openDebts = async (page, l) => {
   await tab(3)(page);
-  await page.locator(SIDE + ' button', { hasText: l.debts.title }).first().click();
+  await page.locator('main button', { hasText: l.debts.title }).first().click();
   await page.waitForTimeout(500);
 };
 /** Optionen → Konten. */
 const openAccounts = async (page, l) => {
   await tab(3)(page);
-  await page.locator(SIDE + ' button', { hasText: l.accounts.title }).first().click();
+  await page.locator('main button', { hasText: l.accounts.title }).first().click();
   await page.waitForTimeout(500);
 };
 
 const dialog = '[role="dialog"], [role="alertdialog"]';
-// The screen beside the month when there are two columns (plan 22), else the only one.
-const SIDE = ':is(:root:not([data-split]) main, [data-pane="side"] main)';
-// From 700 px on the month is always shown and its tab is gone (plan 22): three tabs, one index lower.
-const tab = n => async page => {
-  const tabs = page.locator('nav button:not(.hero)');
-  const wide = (await tabs.count()) === 3;
-  if (wide && n === 0) return;
-  await tabs.nth(wide ? n - 1 : n).click();
-  await page.waitForTimeout(450);
-};
+const tab = n => async page => { await page.locator('nav button:not(.hero)').nth(n).click(); await page.waitForTimeout(450); };
 const openCategories = async (page, l) => {
   await tab(3)(page);
-  await page.locator(SIDE + ' button', { hasText: l.categories }).first().click();
+  await page.locator('main button', { hasText: l.categories }).first().click();
   await page.waitForTimeout(500);
 };
 /** Statistik → the first row of "Wofür das Geld geht": the category's own screen. */
 const openCategory1 = async page => {
   await tab(1)(page);
-  const row = page.locator(SIDE + ' li[data-hue] > button').first();
+  const row = page.locator('main li[data-hue] > button').first();
   await row.scrollIntoViewIfNeeded();
   await row.click();
   await page.waitForTimeout(600);
@@ -239,7 +225,7 @@ const openYearReview = async page => {
   await page.waitForTimeout(600);
 };
 /** Planen's Abos & Verträge card, found by its title (the cards above it come and go with the data). */
-const contractsCard = (page, l) => page.locator(SIDE + ' section', { has: page.locator('h3', { hasText: l.contracts }) }).first();
+const contractsCard = (page, l) => page.locator('main section', { has: page.locator('h3', { hasText: l.contracts }) }).first();
 /** Unfolds the balance card's details; returns the id of what it shows (null on a card without them). */
 const openDetails = async page => {
   const toggle = page.locator('section.hero button[aria-controls]').first();
@@ -307,7 +293,7 @@ const SCREENS = [
   // A payee row → its sheet.
   { name: 'payee-sheet', run: async page => {
     await openPayees(page);
-    await page.locator(SIDE + ' ol li button').first().click();
+    await page.locator('main ol li button').first().click();
   }, wait: dialog, audit: 'dialog' },
   // The ⓘ beside the averages → "So berechnet".
   { name: 'explain-sheet', run: async (page, l) => {
@@ -327,7 +313,7 @@ const SCREENS = [
   // Finanz-Check's first row opened: the savings rate and 50/30/20.
   { name: 'check-detail', full: true, run: async page => {
     await tab(2)(page);
-    const row = page.locator(SIDE + ' button[aria-expanded]').first();
+    const row = page.locator('main button[aria-expanded]').first();
     await row.scrollIntoViewIfNeeded();
     await row.click();
     await page.waitForTimeout(300);
@@ -358,19 +344,19 @@ const SCREENS = [
   // Optionen → An offene Posten erinnern, switched on.
   { name: 'reminders', storage: { 'spartopf-dev-native': '1', 'spartopf-reminders': JSON.stringify({ on: true, time: '09:00', lead: 1, amounts: false }) }, run: async (page, l) => {
     await tab(3)(page);
-    await page.locator(SIDE + ' button', { hasText: l.reminders }).first().click();
+    await page.locator('main button', { hasText: l.reminders }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page' },
   // Optionen → Automatisch erfassen (plan 19).
   { name: 'capture', storage: { 'spartopf-dev-native': '1' }, run: async (page, l) => {
     await tab(3)(page);
-    await page.locator(SIDE + ' button', { hasText: l.capture }).first().click();
+    await page.locator('main button', { hasText: l.capture }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page', full: true },
   // Optionen → Sichern und übertragen.
   { name: 'transfer', run: async (page, l) => {
     await tab(3)(page);
-    await page.locator(SIDE + ' button', { hasText: l.transfer }).first().click();
+    await page.locator('main button', { hasText: l.transfer }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page' },
   { name: 'categories', run: openCategories, audit: 'page' },
@@ -381,7 +367,7 @@ const SCREENS = [
     await page.locator('header button').last().click();
     await page.waitForTimeout(400);
   }, audit: 'page' },
-  { name: 'category-edit', run: async (page, l) => { await openCategories(page, l); await page.locator(SIDE + ' [data-category-body]').nth(4).click(); }, wait: dialog, audit: 'dialog' },
+  { name: 'category-edit', run: async (page, l) => { await openCategories(page, l); await page.locator('main [data-category-body]').nth(4).click(); }, wait: dialog, audit: 'dialog' },
   { name: 'first-run', fresh: true, audit: 'page' },
   { name: 'first-run-full', fresh: true, full: true },
   // The setup's first step answered: the balance card appears above it.
@@ -403,7 +389,7 @@ const SCREENS = [
   { name: 'accounts-all', accounts: true, storage: { 'spartopf-account': 'all' }, run: openDetails, audit: 'page' },
   { name: 'accounts-transfers', accounts: true, run: page => page.evaluate(() => document.querySelector('#transfers-title')?.scrollIntoView({ block: 'center' })), audit: 'page' },
   { name: 'accounts-screen', accounts: true, run: openAccounts, audit: 'page' },
-  { name: 'account-sheet', accounts: true, run: async (page, l) => { await openAccounts(page, l); await page.locator(SIDE + ' button[aria-label]').nth(3).click(); }, wait: dialog, audit: 'dialog' },
+  { name: 'account-sheet', accounts: true, run: async (page, l) => { await openAccounts(page, l); await page.locator('main button[aria-label]').nth(3).click(); }, wait: dialog, audit: 'dialog' },
   { name: 'accounts-first', run: async (page, l) => { await openAccounts(page, l); }, audit: 'page' },
   { name: 'transfer-sheet', accounts: true, run: async page => {
     await page.locator('header button').last().click();
@@ -416,8 +402,8 @@ const SCREENS = [
   // Debts and loans (plan 31).
   { name: 'debts-empty', run: openDebts, audit: 'page' },
   { name: 'debts', debts: true, run: openDebts, audit: 'page' },
-  { name: 'debt-sheet', debts: true, run: async (page, l) => { await openDebts(page, l); await page.locator(SIDE + ' button[aria-label]').nth(1).click(); }, wait: dialog, audit: 'dialog' },
-  { name: 'debt-new', run: async (page, l) => { await openDebts(page, l); await page.locator(SIDE + ' button', { hasText: '+' }).or(page.locator(SIDE + ' [class*="py-12"] button')).first().click(); }, wait: dialog, audit: 'dialog' },
+  { name: 'debt-sheet', debts: true, run: async (page, l) => { await openDebts(page, l); await page.locator('main button[aria-label]').nth(1).click(); }, wait: dialog, audit: 'dialog' },
+  { name: 'debt-new', run: async (page, l) => { await openDebts(page, l); await page.locator('main button', { hasText: '+' }).or(page.locator('main [class*="py-12"] button')).first().click(); }, wait: dialog, audit: 'dialog' },
   { name: 'insights-debts', debts: true, run: tab(2), full: true },
   { name: 'entry-debt', debts: true, run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
 ];

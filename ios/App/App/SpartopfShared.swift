@@ -14,7 +14,7 @@ class MainViewController: CAPBridgeViewController {
     }
 }
 
-/// Plan 14: what widgets, Siri, Shortcuts and the Watch share with the app,
+/// Plan 14: what widgets, Siri and Shortcuts share with the app,
 /// through the App Group `group.com.habboubah.spartopf`:
 ///
 /// - `snapshot.json` — the summary the app writes (src/native/snapshot.ts),

@@ -2,7 +2,7 @@
 
 - **Covers:**
   - The local-only replacement for cloud sync (F24).
-  - Moving to a new phone; using an iPhone and an iPad.
+  - Moving to a new phone; using two phones.
   - Complaints about failed restores on new phones (Monefy, MoneyControl).
 - **Depends on:** 04, 30
 - **Size:** L
