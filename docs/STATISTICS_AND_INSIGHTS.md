@@ -3,12 +3,12 @@
 Research and plan, written on **7 November 2026**. No app code was changed.
 
 - **Status:** built in November 2026, phases 0–4 (plans 06a and 13). What was decided along the way, measured and not yet verified on a device is in the two plans' notes; the ticks in §11 say what is done.
-- **In the roadmap:** phases 0–3 are [plan 06a](plans/06a-statistics-and-insights.md), phase 4 is [plan 13](plans/13-month-review.md). Decisions D1–D8 are taken (§14).
+- **In the roadmap:** phases 0–3 are plan 06a, phase 4 is plan 13. Decisions D1–D8 are taken (§14).
 - **Builds on:**
-  - [REDESIGN.md](REDESIGN.md), finished in plan 00. Step 8 *Statistik* and step 9 *Planen* are commits `bd4b7bb` and `9d16ad9`.
-  - [Plan 01](plans/01-quality-and-privacy-gates.md): the golden year, the old-data fixtures and the speed budgets that phase 0 extends.
-  - Plans [11](plans/11-yearly-reserve.md), [12](plans/12-savings-goals.md), [28](plans/28-pdf-report.md) and [29](plans/29-periods.md).
-  - [COMPETITOR_ANALYSIS.md](COMPETITOR_ANALYSIS.md).
+  - [REDESIGN.md](../REDESIGN.md), finished in plan 00. Step 8 *Statistik* and step 9 *Planen* are commits `bd4b7bb` and `9d16ad9`.
+  - Plan 01: the golden year, the old-data fixtures and the speed budgets that phase 0 extends.
+  - Plans 11, 12, 28 and 29.
+  - [COMPETITOR_ANALYSIS.md](../COMPETITOR_ANALYSIS.md).
 - **Mockups:** `screenshots/insights-plan/out/sheet.png` (first screen of *Statistik*, *Kategorie*, *Planen*) and `sheet-full.png` (whole screens). They're HTML with the app's own CSS, rendered like REDESIGN's; `node screenshots/insights-plan/render.mjs` redraws them. The folder is gitignored.
 - **Code facts** come from reading `src/insights.ts`, `src/budgets.ts`, `StatsView.tsx`, `InsightsView.tsx`, `Charts.tsx` (as of `9d16ad9`) and the step-8 captures. Where I couldn't reproduce something in the UI, I say so.
 
@@ -661,7 +661,7 @@ For a household spending 2.500 € a month, `MATERIAL` is 37,50 €; at 5.000 �
 
 Sizes as in COMPETITOR_ANALYSIS.md: S ≤ 2 days, M 3–10 days, L 2–6 weeks.
 
-| Phase | Goal | Size | Needs | Plan in [plans/README.md](plans/README.md) |
+| Phase | Goal | Size | Needs | Plan in [plans/README.md](../plans/README.md) |
 |---|---|---|---|---|
 | **0** | Numbers you can trust | M | plan 01 (golden year, speed budgets) | **06a**, after plan 06 |
 | **1** | Two clear tabs | M | 0 | **06a** |
@@ -871,7 +871,7 @@ Every phase:
 
 ## 14. Decisions
 
-Taken on 7 November 2026, all as recommended. To change one, change it here and in [plans/README.md](plans/README.md#decisions-already-taken) before plan 06a starts.
+Taken on 7 November 2026, all as recommended. To change one, change it here and in [plans/README.md](../plans/README.md#decisions-already-taken) before plan 06a starts.
 
 | # | Question | Decision | Not chosen |
 |---|---|---|---|

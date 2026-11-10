@@ -12,8 +12,8 @@ Bundle id `com.habboubah.spartopf` · Team Ahmad Habboubah (HZVBBHBAJN)
 - [docs/features.md](docs/features.md) — what the app does
 - [docs/project-layout.md](docs/project-layout.md) — where the code lives
 - [docs/ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md) — Android: run it, sign it, Google Play
-- [APP_STORE_RELEASE.md](APP_STORE_RELEASE.md) — full first-time App Store checklist and troubleshooting
-- [CLAUDE.md](CLAUDE.md) — conventions · [PLAN.md](PLAN.md) — concept and money rules
+- [APP_STORE_RELEASE.md](docs/APP_STORE_RELEASE.md) — full first-time App Store checklist and troubleshooting
+- [CLAUDE.md](docs/CLAUDE.md) — conventions · [PLAN.md](PLAN.md) — concept and money rules
 
 ## Requirements
 
@@ -97,7 +97,7 @@ cp ../pizza-driver-log/.env.release .env.release
 ls ~/.appstoreconnect/private_keys/     # AuthKey_<ASC_KEY_ID>.p8 must be here
 ```
 
-No key yet? Step 2 in [APP_STORE_RELEASE.md](APP_STORE_RELEASE.md#2-reuse-the-api-key).
+No key yet? Step 2 in [APP_STORE_RELEASE.md](docs/APP_STORE_RELEASE.md#2-reuse-the-api-key).
 `.env.release` and the `.p8` file are git-ignored.
 
 **Every release** — commit everything first (`git status` must be clean), then:
@@ -162,7 +162,7 @@ iPhone — is in [docs/ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md).
 ## Publish on the App Store
 
 The very first release (creating the app, privacy policy, store texts, App
-Privacy, pricing) is in [APP_STORE_RELEASE.md](APP_STORE_RELEASE.md). For every
+Privacy, pricing) is in [APP_STORE_RELEASE.md](docs/APP_STORE_RELEASE.md). For every
 version after that:
 
 1. **Upload the build** — `npm run release` (see above).

@@ -72,47 +72,17 @@ Change them here if you disagree, before the plan that depends on them starts.
 
 ## Order
 
-### Phase 0 — finish what's in flight
-| # | Plan | Covers | Depends on | Size | Native |
-|---|---|---|---|---|---|
-| 00 | [Finish the redesign](00-finish-redesign.md) | F1, F12, F13, F16, F17, U1, U3 | — | L | iOS |
-
-### Phase 1 — trust, safety, security
-| # | Plan | Covers | Depends on | Size | Native |
-|---|---|---|---|---|---|
-| 01 | [Quality and privacy gates](01-quality-and-privacy-gates.md) | regressions, privacy proof | 00 | M | — |
-| 02 | [Durable storage](02-durable-storage.md) | F23 | 01 | M | config |
-| 03 | [Automatic backups and restore](03-automatic-backups.md) | F23 | 02 | M | — |
-| 04 | [Encrypted backup files](04-encrypted-backups.md) | security | 03 | S–M | — |
-| 05 | [Security hardening](05-security-hardening.md) | security issues found | 04 | M | — |
-| 06 | [Data protection at rest](06-data-protection-at-rest.md) | security, privacy | 02, 00 | M | iOS |
-
-### Phase 2 — everyday wins
-| # | Plan | Covers | Depends on | Size | Native |
-|---|---|---|---|---|---|
-| 06a | [Statistics and insights](06a-statistics-and-insights.md) | U4; STATISTICS_AND_INSIGHTS.md phases 0–3 | 00, 01 | L | — |
-| 07 | [Currency](07-currency.md) | F26 | 00 | S–M | — |
-| 08 | [Calculator in the amount field](08-amount-calculator.md) | F4 | 00 | S | — |
-| 09 | [Favourites](09-favourites.md) | U5 | 00 | S–M | — |
-| 10 | [Match the bank balance](10-match-bank-balance.md) | U6 | 00 | S | — |
-| 11 | [Reserve for yearly bills](11-yearly-reserve.md) | F3 | 06a | S | — |
-| 12 | [Savings goals (Spartöpfe)](12-savings-goals.md) | F2 | 11 | M | — |
-| 13 | [Month report and year review](13-month-review.md) | U2; STATISTICS_AND_INSIGHTS.md phase 4 | 06a, 12 | M | — |
+Only the plans still open have a file here. A finished plan's file is deleted once it is built (November 2026: 00–15, 06a, 18, 20, 21, 26–32); what it built is described in `docs/CLAUDE.md` and `docs/features.md`, its one-line result is under [Status](#status) below, and the file itself is in the git history (`git log --diff-filter=D -- plans/`).
 
 ### Phase 3 — native foundation and store presence
 | # | Plan | Covers | Depends on | Size | Native |
 |---|---|---|---|---|---|
-| 14 | [Native bridge](14-native-bridge.md) | groundwork | 02, 06 | M | iOS |
-| 15 | [Ratings and feedback](15-ratings-and-feedback.md) | S3 | 14 | S | iOS |
 | 16 | [Store listing, accessibility labels, permission texts](16-store-listing.md) | S1, S2, S5 | 00 | S | iOS strings |
 
 ### Phase 4 — capture without typing
 | # | Plan | Covers | Depends on | Size | Native |
 |---|---|---|---|---|---|
-| 18 | [Siri and Shortcuts](18-siri-shortcuts.md) | F19 | 14, 09 | M | iOS |
 | 19 | [Apple Pay, bank notifications, "Teilen an Spartopf"](19-automatic-capture.md) | F8 | 14, 18 | M–L | iOS |
-| 20 | [Import rules and other apps](20-import-rules.md) | F9 | 19 | M | — |
-| 21 | [Split a payment](21-split-payment.md) | user request | 20 | M | — |
 
 ### Phase 5 — reach
 | # | Plan | Covers | Depends on | Size | Native |
@@ -120,21 +90,6 @@ Change them here if you disagree, before the plan that depends on them starts.
 | 23 | [Android app](23-android.md) | F20 | 02, 05, 06 | L | Android |
 | 24 | [Android capture and widgets](24-android-capture.md) | F8, F18 on Android | 23, 19 | L | Android |
 | 25 | [Turkish and more languages](25-languages.md) | F27 | 07, 16 | M per language | strings |
-
-### Phase 6 — deeper money features
-| # | Plan | Covers | Depends on | Size | Native |
-|---|---|---|---|---|---|
-| 26 | [Tags](26-tags.md) | F14 | 00 | M | — |
-| 27 | [Receipts and documents](27-receipts.md) | F10 | 02, 04, 06 | M–L | — |
-| 28 | [PDF report](28-pdf-report.md) | F15 | 13, 14 | S–M | iOS/Android |
-| 29 | [Periods and year comparison](29-periods.md) | U7 | 06a, 13 | M | — |
-| 30 | [Cash and savings accounts](30-accounts.md) | F5 | 20, 21 | L | — |
-| 31 | [Debts and loans](31-debts.md) | F7 | 30 | M | — |
-| 32 | [Month from payday](32-payday-month.md) | F6 | 30 | L–XL | — |
-
-### Phase 7 — more devices, still local
-| # | Plan | Covers | Depends on | Size | Native |
-|---|---|---|---|---|---|
 
 ### Phase 8 — bank connection without a server
 | # | Plan | Covers | Depends on | Size | Native |

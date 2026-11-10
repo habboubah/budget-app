@@ -156,7 +156,7 @@ amounts in a file only readable while the phone is unlocked)
   the balance card and the rows. How does it read the "••••" elsewhere?
 - [ ] **Encryption test (needs two iPhones):** restore an iCloud backup and
   an encrypted and an unencrypted Finder backup to the second phone. Step 3
-  of `plans/06-data-protection-at-rest.md`; the result goes into
+  of plan 06 (its file is in the git history); the result goes into
   `SECURITY.md`.
 
 **Earlier plans**
