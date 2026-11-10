@@ -231,18 +231,24 @@ export function currencySymbol(locale: string = (typeof document !== 'undefined'
   try {
     const part = new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, currencyDisplay: 'narrowSymbol' })
       .formatToParts(0).find(x => x.type === 'currency');
-    return part?.value ?? activeCurrency;
+    return plainSign(part?.value ?? activeCurrency);
   } catch {
     return activeCurrency;
   }
 }
+
+/**
+ * The dollar as plain "$": some locales (Arabic, for one) still write "US$"
+ * even with the narrow symbol.
+ */
+const plainSign = (text: string): string => text.replace('US$', '$');
 
 const formatters = new Map<string, Intl.NumberFormat>();
 function moneyFormat(locale: string, sign: 'auto' | 'always' | 'exceptZero'): Intl.NumberFormat {
   const key = `${locale}|${sign}`;
   let f = formatters.get(key);
   if (!f) {
-    f = new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, signDisplay: sign });
+    f = new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, currencyDisplay: 'narrowSymbol', signDisplay: sign });
     formatters.set(key, f);
   }
   return f;
@@ -279,7 +285,7 @@ function maskedMoney(locale: string): string {
   if (mask === undefined) {
     let figure = false;
     mask = moneyFormat(locale, 'auto').formatToParts(1).map(p => {
-      if (p.type === 'currency' || p.type === 'literal') return p.value;
+      if (p.type === 'currency' || p.type === 'literal') return plainSign(p.value);
       if (figure) return '';
       figure = true;
       return MASK;
@@ -293,7 +299,7 @@ function maskedMoney(locale: string): string {
 export function formatMoney(cents: number, locale: string, sign: 'auto' | 'always' | 'exceptZero' = 'auto'): string {
   if (amountsHidden) return maskedMoney(locale);
   // A true minus sign: the hyphen Intl uses is too short next to big digits.
-  return moneyFormat(locale, sign).format(cents / 100).replace('-', '−');
+  return plainSign(moneyFormat(locale, sign).format(cents / 100)).replace('-', '−');
 }
 
 /** Cents → what goes back into the amount field when editing: "1050,00". */
@@ -750,15 +756,15 @@ export function leftPerDay(net: number, month: MonthKey, today = new Date()): nu
 /** Rounded to whole euros — for averages, where the cents are noise: "3.798 €", "+1.241 €". */
 export function formatMoneyWhole(cents: number, locale: string, sign: 'auto' | 'exceptZero' = 'auto'): string {
   if (amountsHidden) return maskedMoney(locale);
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
-    .format(Math.round(cents / 100)).replace('-', '−');
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
+    .format(Math.round(cents / 100)).replace('US$', '$').replace('-', '−');
 }
 
 /** An amount without its cents when it has none — "400 €" for a budget, "212,88 €" otherwise. */
 export function formatMoneyShort(cents: number, locale: string): string {
   if (amountsHidden || cents % 100 !== 0) return formatMoney(cents, locale);
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
-    .format(cents / 100).replace('-', '−');
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    .format(cents / 100).replace('US$', '$').replace('-', '−');
 }
 
 /**
@@ -768,8 +774,8 @@ export function formatMoneyShort(cents: number, locale: string): string {
 export function formatMoneyApprox(cents: number, locale: string): string {
   if (amountsHidden || Math.abs(cents) < 1000) return formatMoney(cents, locale);
   const euros = Math.trunc(cents / 100);
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
-    .format(euros).replace('-', '−');
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    .format(euros).replace('US$', '$').replace('-', '−');
 }
 
 /**
@@ -783,8 +789,8 @@ export function formatMoneyEstimate(cents: number, locale: string, sign: 'auto' 
   const step = euros >= 10_000 ? 100 : euros >= 1_000 ? 10 : 1;
   const rounded = Math.round(euros / step) * step;
   const value = cents < 0 && rounded ? -rounded : rounded;
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
-    .format(value).replace('-', '−');
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: 0, maximumFractionDigits: 0, signDisplay: sign })
+    .format(value).replace('US$', '$').replace('-', '−');
 }
 
 /**
