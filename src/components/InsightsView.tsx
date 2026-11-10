@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Category, MonthKey } from '../types';
 import { formatMoney, monthKeyOf, monthLabel } from '../logic';
 import { ChevronRight, Wallet } from 'lucide-react';
@@ -40,6 +40,8 @@ interface Props {
   onExplain: (e: Explain) => void;
   /** Once there is more than one account (plan 30): all of them together, "Vermögen", and the way to the accounts. */
   wealth?: { now: number; count: number; onOpen: () => void };
+  /** Schulden (plan 31): App builds the card, only once a debt exists. */
+  debts?: React.ReactNode;
 }
 
 /**
@@ -51,7 +53,7 @@ interface Props {
  * 11 (Rücklage), 12 (Spartöpfe) and 31 (Schulden), and *Finanz-Check*.
  * Looking back is Statistik's.
  */
-export function InsightsView({ book, language, t, hidden, onBudget, onContract, onContractsAll, onReport, onAdd, onDue, onGoals, onReserveGoal, onExplain, wealth }: Props) {
+export function InsightsView({ book, language, t, hidden, onBudget, onContract, onContractsAll, onReport, onAdd, onDue, onGoals, onReserveGoal, onExplain, wealth, debts }: Props) {
   const data = book.data;
   const today = new Date();
   const current = monthKeyOf(today);
@@ -117,7 +119,7 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
         </button>
       )}
 
-      {/* Slot: Schulden (plan 31). */}
+      {debts}
 
       {check ? (
         <FinanceCheckCard check={check} points={chart} data={data} language={language} t={t} onReport={onReport} onDue={onDue} onExplain={onExplain} />

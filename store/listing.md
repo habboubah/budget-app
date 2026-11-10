@@ -262,6 +262,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: النقد وحساب التوفير، إن شئت. التحويلات بين حساباتك لا تُحتسب أبدًا دخلًا أو مصروفًا، و«كل الحسابات» يعرض ما لديك إجمالًا.
 
+**DE:** Neu: Schulden und Kredite. Spartopf zeigt, wie viel noch offen ist, wann du schuldenfrei bist und wie viele Zinsen noch kommen – auch für Geld, das du verliehen hast.
+
+**EN:** New: debts and loans. Spartopf shows how much is left, when you'll be debt-free and how much interest is still to come – for money you lent, too.
+
+**AR:** جديد: الديون والقروض. يعرض Spartopf كم تبقّى، ومتى تتخلص من الدين، وكم من الفائدة لا يزال قادمًا – وكذلك للمال الذي أقرضته.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

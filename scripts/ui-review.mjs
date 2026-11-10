@@ -67,6 +67,7 @@ const LANGS = {
       ins: 'Haftpflicht', gym: 'Fitnessstudio', fuel: 'Tanken', carIns: 'Kfz-Versicherung', carTax: 'Kfz-Steuer',
       shops: ['Lidl', 'Rewe', 'dm', 'Aldi', 'Edeka'], extras: ['Amazon', 'Apotheke', 'Restaurant', 'Kleidung'], kita: 'Kita',
     },
+    debts: { title: 'Schulden und Kredite', car: 'Autokredit', friend: 'Lena' },
     accounts: { title: 'Konten', cash: 'Bargeld', savings: 'Tagesgeld', atm: 'Abheben', save: 'Sparrate', market: 'Wochenmarkt', bakery: 'Bäcker' },
   },
   ar: {
@@ -82,6 +83,7 @@ const LANGS = {
       ins: 'تأمين المسؤولية', gym: 'النادي الرياضي', fuel: 'وقود', carIns: 'تأمين السيارة', carTax: 'ضريبة السيارة',
       shops: ['Lidl', 'Rewe', 'dm', 'Aldi', 'Edeka'], extras: ['Amazon', 'الصيدلية', 'مطعم', 'ملابس'], kita: 'الحضانة',
     },
+    debts: { title: 'الديون والقروض', car: 'قرض السيارة', friend: 'لينا' },
     accounts: { title: 'الحسابات', cash: 'النقد', savings: 'التوفير', atm: 'سحب نقدي', save: 'ادخار شهري', market: 'سوق الخضار', bakery: 'المخبز' },
   },
 };
@@ -161,6 +163,23 @@ const ACCOUNTS = l => ({
     { id: 'a-sav', name: l.accounts.savings, kind: 'savings', emoji: '🐷', hue: 'berry', createdAt: 2 },
   ]),
 });
+/** A car loan and money lent (plan 31), started a year ago. */
+const DEBTS = l => {
+  const d = new Date(); d.setMonth(d.getMonth() - 10);
+  const start = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return {
+    'spartopf-debts': JSON.stringify([
+      { id: 'debt-car', name: l.debts.car, direction: 'owe', principal: 1200000, start, rate: 4.9, payment: 26500, seriesId: l.names.carIns, createdAt: 1 },
+      { id: 'debt-lena', name: l.debts.friend, direction: 'owed', principal: 40000, start, createdAt: 2 },
+    ]),
+  };
+};
+/** Optionen → Schulden und Kredite. */
+const openDebts = async (page, l) => {
+  await tab(3)(page);
+  await page.locator('main button', { hasText: l.debts.title }).first().click();
+  await page.waitForTimeout(500);
+};
 /** Optionen → Konten. */
 const openAccounts = async (page, l) => {
   await tab(3)(page);
@@ -372,6 +391,13 @@ const SCREENS = [
   }, wait: dialog, audit: 'dialog' },
   { name: 'entry-account', accounts: true, run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
   { name: 'insights-accounts', accounts: true, run: tab(2), full: true },
+  // Debts and loans (plan 31).
+  { name: 'debts-empty', run: openDebts, audit: 'page' },
+  { name: 'debts', debts: true, run: openDebts, audit: 'page' },
+  { name: 'debt-sheet', debts: true, run: async (page, l) => { await openDebts(page, l); await page.locator('main button[aria-label]').nth(1).click(); }, wait: dialog, audit: 'dialog' },
+  { name: 'debt-new', run: async (page, l) => { await openDebts(page, l); await page.locator('main button', { hasText: '+' }).or(page.locator('main [class*="py-12"] button')).first().click(); }, wait: dialog, audit: 'dialog' },
+  { name: 'insights-debts', debts: true, run: tab(2), full: true },
+  { name: 'entry-debt', debts: true, run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
 ];
 // Snapshotted as static HTML with --dom (mockups start from these).
 const DOM_SCREENS = ['month', 'entry-new', 'stats', 'insights', 'settings', 'category', 'month-report'];
@@ -485,7 +511,7 @@ async function runContext(browser, c, report, safeAreaMode) {
         localStorage.setItem('spartopf-meta', JSON.stringify({ schemaVersion: seed.schema, seeded: true }));
       }
       for (const [k, v] of Object.entries(extra)) localStorage.setItem(k, v);
-    }, [s.accounts ? withAccounts(data, l.accounts) : data, c.lang, !!s.fresh, TEXT_SCALE, { ...(s.accounts ? ACCOUNTS(l) : {}), ...(s.storage ?? {}) }]);
+    }, [s.accounts ? withAccounts(data, l.accounts) : data, c.lang, !!s.fresh, TEXT_SCALE, { ...(s.accounts ? ACCOUNTS(l) : {}), ...(s.debts ? DEBTS(l) : {}), ...(s.storage ?? {}) }]);
     const mode = await applySafeArea(page, d);
     safeAreaMode.add(mode);
     await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' });

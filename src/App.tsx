@@ -11,7 +11,7 @@ import {
   computeBalances, displayName, formatMoneyShort, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
   shouldAskForReview, transferPair, uid,
 } from './logic';
-import { Insight, buildBook, goalProgress, highlights, monthReview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
+import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, monthReview, paymentSeries, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
 import { CategoryView } from './components/CategoryView';
@@ -37,6 +37,8 @@ import { AccountsView } from './components/AccountsView';
 import { AccountSheet, AccountSheetMode } from './components/AccountSheet';
 import { TransferSheet, TransferSheetMode } from './components/TransferSheet';
 import { TransfersCard } from './components/TransfersCard';
+import { DebtsCard, DebtsView } from './components/DebtsView';
+import { DebtSheet, DebtSheetMode } from './components/DebtSheet';
 import { MonthActionsMenu } from './components/MonthActionsMenu';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
@@ -81,7 +83,7 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -89,7 +91,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -301,6 +303,10 @@ export default function App() {
   const [transferSheet, setTransferSheet] = useState<TransferSheetMode>(null);
   const [accountSheet, setAccountSheet] = useState<AccountSheetMode>(null);
   const totals = useMemo(() => accountTotals(data, monthKeyOf()), [data]);
+  /** Debts and loans (plan 31): every one's plan, and what can pay them. */
+  const debts = useMemo(() => debtsOverview(data), [data]);
+  const [debtSheet, setDebtSheet] = useState<DebtSheetMode>(null);
+  const series = useMemo(() => (debtSheet ? paymentSeries(data) : []), [data, debtSheet]);
 
   // The screen pushed on this tab, if any: the nav's single source of truth —
   // it drives the hardware back, the edge swipe, the scroll reset and the
@@ -382,6 +388,7 @@ export default function App() {
     const now = Date.now();
     const entry: Entry = { id, month: m, seriesId: id, createdAt: now, ...d, ...(d.paid ? { paidAt: now } : {}) };
     if (!entry.accountId) delete entry.accountId;
+    if (!entry.debtId) delete entry.debtId;
     store.addEntry(entry);
     // The category stays in the month even if this entry is deleted again.
     store.showCategory(m, d.categoryId);
@@ -421,6 +428,10 @@ export default function App() {
   const addAccount = (kind: AccountKind) => {
     if (accounts.length >= 12) { show(t.accountsFull); return; }
     setAccountSheet({ kind: 'new', accountKind: kind });
+  };
+  const editDebt = (id: string) => {
+    const d = store.debts.find(x => x.id === id);
+    if (d) setDebtSheet({ kind: 'edit', debt: d, plan: debtPlan(data, d) });
   };
   const editAccount = (id: string) => {
     const a = accounts.find(x => x.id === id);
@@ -985,6 +996,8 @@ export default function App() {
             }}
             onBack={back}
           />
+        ) : id === 'debts' ? (
+          <DebtsView overview={debts} t={t} onBack={back} onNew={() => setDebtSheet({ kind: 'new' })} onEdit={editDebt} />
         ) : id === 'accounts' ? (
           <AccountsView totals={totals} t={t} onBack={back} onEdit={editAccount} onAdd={addAccount} />
         ) : id === 'rules' ? (
@@ -1016,6 +1029,8 @@ export default function App() {
             onRules={() => push('rules')}
             accountCount={accounts.length}
             onAccounts={() => push('accounts')}
+            debtCount={store.debts.length}
+            onDebts={() => push('debts')}
             onTransfer={() => push('transfer')}
             hasDemo={store.hasDemo}
             onAddDemo={addDemo}
@@ -1072,6 +1087,7 @@ export default function App() {
             onReserveGoal={(goal, due) => setGoalSheet({ kind: 'new', preset: { name: t.reserveTitle, target: goal, due } })}
             onExplain={setExplain}
             wealth={multi ? { now: totals.now, count: accounts.length, onOpen: () => push('accounts') } : undefined}
+            debts={store.debts.length ? <DebtsCard overview={debts} t={t} onOpen={() => push('debts')} onEdit={editDebt} /> : null}
           />
         ) : (
           <MonthView
@@ -1231,6 +1247,20 @@ export default function App() {
         autoCategory={store.autoCategory}
         accounts={multi ? accounts.map(a => ({ id: a.id, label: accountName(a, t.accountMain), emoji: a.emoji })) : undefined}
         defaultAccount={target}
+        debts={store.debts.length ? store.debts.map(d => ({ id: d.id, name: d.name })) : undefined}
+      />
+
+      <DebtSheet
+        mode={debtSheet}
+        series={series}
+        t={t}
+        onClose={() => setDebtSheet(null)}
+        onCreate={d => { store.addDebt(d); notifySuccess(); show(fmt(t.debtAdded, { name: d.name })); }}
+        onSave={(id, d) => store.updateDebt(id, { ...d, rate: d.rate, payment: d.payment, seriesId: d.seriesId })}
+        onDelete={d => {
+          const removed = store.removeDebt(d.id);
+          if (removed) show(t.debtDeleted, { label: t.undo, run: () => store.restoreDebt(removed) });
+        }}
       />
 
       <TransferSheet

@@ -102,6 +102,8 @@ export interface Entry {
   splitId?: string;
   /** The account it was paid from or into (schema 20, plan 30). Unset = the main account. */
   accountId?: string;
+  /** The debt this entry pays off — or, for money lent, is paid back on (schema 21, plan 31). */
+  debtId?: string;
   /**
    * One side of a transfer between two accounts (plan 30): money leaving one
    * account (`out`) and arriving in another (`in`), two entries sharing a
@@ -175,6 +177,30 @@ export interface AppData {
   demo?: DemoInfo;
   /** The accounts, the main one first, once there is more than one (schema 20, plan 30). Unset = only the main account. */
   accounts?: Account[];
+  /** Debts and loans, and money lent (schema 21, plan 31). Unset = none. */
+  debts?: Debt[];
+}
+
+/**
+ * A loan or a debt (`owe`), or money lent to someone (`owed`) — plan 31.
+ * What is paid back comes from the book: the paid entries of the linked
+ * recurring series, and any entry carrying its id (`Entry.debtId`).
+ */
+export interface Debt {
+  id: string;
+  name: string;
+  direction: 'owe' | 'owed';
+  /** What it was at `start`, in cents. */
+  principal: number;
+  /** The month it began; interest runs from the month after. */
+  start: MonthKey;
+  /** Interest per year in percent (3.9 = 3,9 %), compounded monthly. Unset = none. */
+  rate?: number;
+  /** The monthly payment in cents. Unset = the linked series' latest amount. */
+  payment?: number;
+  /** The recurring entry it is paid with (`Entry.seriesId`). */
+  seriesId?: string;
+  createdAt: number;
 }
 
 /**
@@ -253,4 +279,6 @@ export interface EntryDraft {
   tags?: string[];
   /** The account (plan 30). Unset = the main account. */
   accountId?: string;
+  /** The debt it pays off (plan 31). */
+  debtId?: string;
 }

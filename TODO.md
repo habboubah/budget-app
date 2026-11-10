@@ -30,6 +30,13 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
+**Plan 31 — debts and loans**
+- [ ] *Optionen › Schulden und Kredite*: add a loan with its rate and the
+  monthly entry it is paid with; the payoff month and the interest look
+  right next to your bank's plan. Planen shows the *Schulden* card.
+- [ ] Money lent: link a repayment from the entry sheet's *Zu einer Schuld*
+  pill; what is left goes down.
+
 **Plan 30 — cash and savings accounts**
 - [ ] *Optionen › Konten › Bargeld hinzufügen* with today's cash: the balance
   card gets the switch; Giro, Bargeld and *Alle Konten* each show the right

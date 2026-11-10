@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, Check, ChevronDown, ChevronUp, Hash, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, Star, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, ChevronUp, HandCoins, Hash, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, Star, Trash2 } from 'lucide-react';
 import { Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
 import { budgetOf } from '../data/defaults';
 import {
@@ -48,6 +48,8 @@ interface Props {
   accounts?: { id: string; label: string; emoji: string }[];
   /** The account a new entry goes into (the one the month shows). */
   defaultAccount?: string;
+  /** The debts still open, once there is one (plan 31): a pill links the entry to one — an extra payment, money paid back. */
+  debts?: { id: string; name: string }[];
 }
 
 /** A compact control in the entry sheet's last row (date, status, repeat, note). */
@@ -76,7 +78,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * taps a category, and only with `autoCategory`; emptying the name goes back
  * to the category the sheet opened with.
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -111,6 +113,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   /** The account it is paid from or into (plan 30). */
   const [accountId, setAccountId] = useState(MAIN_ACCOUNT);
   const [accountAt, setAccountAt] = useState<HTMLElement | null>(null);
+  /** The debt it pays off (plan 31). */
+  const [debtId, setDebtId] = useState<string | undefined>(undefined);
+  const [debtAt, setDebtAt] = useState<HTMLElement | null>(null);
   const [repeatAt, setRepeatAt] = useState<HTMLElement | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -164,6 +169,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setAllSuggestions(false);
     setGoalId(undefined);
     setAccountId(defaultAccount);
+    setDebtId(undefined);
   };
 
   useEffect(() => {
@@ -186,6 +192,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setShowError(false);
       setGoalId(e.goalId);
       setAccountId(e.accountId ?? MAIN_ACCOUNT);
+      setDebtId(e.debtId);
       // An entry being edited keeps its category: guesses are only pointed out.
       setNameTyped(false);
       setCategoryChosen(true);
@@ -325,6 +332,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     if (tags.length) d.tags = tags;
     // Always said once accounts show, so moving an entry back to the main account clears its account (plan 30).
     if (accounts) d.accountId = accountId === MAIN_ACCOUNT || !accounts.some(a => a.id === accountId) ? undefined : accountId;
+    // The same for the debt link (plan 31): said whenever debts show, so it can be taken off again.
+    if (debts) d.debtId = debtId && debts.some(x => x.id === debtId) ? debtId : undefined;
     return d;
   };
 
@@ -636,6 +645,22 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               </button>
             );
           })()}
+          {debts && (() => {
+            const chosenDebt = debts.find(x => x.id === debtId);
+            return (
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-label={chosenDebt ? fmt(t.entryForDebt, { name: chosenDebt.name }) : t.entryForDebtNone}
+                onMouseDown={e => e.preventDefault()}
+                onClick={e => { tapLight(); setDebtAt(e.currentTarget); }}
+                className={`${PILL} focus-visible:ring-focus ${chosenDebt ? '' : 'text-fg-mute'}`}
+              >
+                <HandCoins className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+                <span aria-hidden="true" className="truncate">{chosenDebt ? chosenDebt.name : t.entryForDebtNone}</span>
+              </button>
+            );
+          })()}
           {!noteOpen && (
             <button
               type="button"
@@ -666,6 +691,18 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           }))]}
           onClose={() => setRepeatAt(null)}
         />
+
+        {debts && (
+          <Menu
+            anchor={debtAt}
+            label={t.entryForDebtNone}
+            groups={[[
+              { key: 'none', label: t.entryForDebtClear, icon: debtId ? undefined : Check, onSelect: () => setDebtId(undefined) },
+              ...debts.map(x => ({ key: x.id, label: x.name, icon: x.id === debtId ? Check : undefined, onSelect: () => setDebtId(x.id) })),
+            ]]}
+            onClose={() => setDebtAt(null)}
+          />
+        )}
 
         {accounts && (
           <Menu

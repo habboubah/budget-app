@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ACCENTS, Accent, Account, AppData, Category, Contract, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
+import { ACCENTS, Accent, Account, AppData, Category, Contract, Debt, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
 import { Language, isLanguage, DEFAULT_LANGUAGE, languageForTag, loadLanguage, stringsFor } from './translations';
 import {
   ALL_ACCOUNTS, AccountView, MAIN_ACCOUNT, MAX_ACCOUNTS, MAX_FAVORITES, TransferDraft, canDeleteAccount, canRemoveFromMonth, carryCandidates, carryOver,
@@ -104,6 +104,8 @@ export function useAppStore() {
   const [rules, setRules] = useState<Rule[]>(initial.rules ?? []);
   /** What the test data added (schema 17, src/demo.ts) — data, so part of a backup. */
   const [demo, setDemo] = useState<DemoInfo | undefined>(initial.demo);
+  /** Debts and loans, and money lent (plan 31). */
+  const [debts, setDebts] = useState<Debt[]>(initial.debts ?? []);
   /** The accounts once there is more than the main one (plan 30). */
   const [accounts, setAccounts] = useState<Account[]>(initial.accounts ?? []);
   /** Which account the balance card and the month show (plan 30): an account's id, or all of them. */
@@ -215,8 +217,9 @@ export function useAppStore() {
       ...(rules.length ? { rules } : {}),
       ...(demo ? { demo } : {}),
       ...(accounts.length ? { accounts } : {}),
+      ...(debts.length ? { debts } : {}),
     }),
-    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts],
+    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts],
   );
   /** Whether the book holds test data: Optionen offers to remove it instead of adding it. */
   const hasDemo = useMemo(() => hasDemoData(data), [data]);
@@ -354,6 +357,7 @@ export function useAppStore() {
       if (!next.note) delete next.note;
       // Back on the main account: no account is stored (plan 30).
       if (!next.accountId || next.accountId === MAIN_ACCOUNT) delete next.accountId;
+      if (!next.debtId) delete next.debtId;
       if (next.paid && !e.paid) next.paidAt = Date.now();
       if (!next.paid) delete next.paidAt;
       return next;
@@ -629,6 +633,7 @@ export function useAppStore() {
     setRules(fixed.rules ?? []);
     setDemo(fixed.demo);
     setAccounts(fixed.accounts ?? []);
+    setDebts(fixed.debts ?? []);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -664,6 +669,7 @@ export function useAppStore() {
     setDemo(undefined);
     setAccounts([]);
     setAccountView(MAIN_ACCOUNT);
+    setDebts([]);
     setCurrency(currencyForLocale(navigator.language));
     setIntroDone(false);
     setTipsDone(false);
@@ -754,6 +760,45 @@ export function useAppStore() {
     if (entryIds.length) setEntries(prev => prev.map(e => (entryIds.includes(e.id) ? { ...e, goalId: r.goal.id } : e)));
   };
 
+  /* ------------------------------------------------------- debts (plan 31) */
+
+  const addDebt = (d: Omit<Debt, 'id' | 'createdAt'>): Debt => {
+    const created: Debt = { id: uid(), createdAt: Date.now(), ...d };
+    setDebts(prev => [...prev, created]);
+    return created;
+  };
+
+  /** Change a debt; optional fields set to undefined are dropped. */
+  const updateDebt = (id: string, patch: Partial<Omit<Debt, 'id' | 'createdAt'>>) =>
+    setDebts(prev => prev.map(d => {
+      if (d.id !== id) return d;
+      const next: Debt = { ...d, ...patch };
+      if (!next.rate) delete next.rate;
+      if (!next.payment) delete next.payment;
+      if (!next.seriesId) delete next.seriesId;
+      return next;
+    }));
+
+  interface RemovedDebt { debt: Debt; index: number; entryIds: string[] }
+  /** Remove a debt; the entries that paid it stay, without the link. Returns what to undo. */
+  const removeDebt = (id: string): RemovedDebt | null => {
+    const index = debts.findIndex(d => d.id === id);
+    if (index === -1) return null;
+    const entryIds = entries.filter(e => e.debtId === id).map(e => e.id);
+    setDebts(prev => prev.filter(d => d.id !== id));
+    if (entryIds.length) setEntries(prev => prev.map(e => {
+      if (e.debtId !== id) return e;
+      const { debtId: _drop, ...rest } = e;
+      return rest;
+    }));
+    return { debt: debts[index], index, entryIds };
+  };
+
+  const restoreDebt = (r: RemovedDebt) => {
+    setDebts(prev => (prev.some(d => d.id === r.debt.id) ? prev : [...prev.slice(0, r.index), r.debt, ...prev.slice(r.index)]));
+    if (r.entryIds.length) setEntries(prev => prev.map(e => (r.entryIds.includes(e.id) ? { ...e, debtId: r.debt.id } : e)));
+  };
+
   /* ----------------------------------------------------------- import rules */
 
   /** Create an import rule (plan 20); returns it. A dupe (same match + set) is reused. */
@@ -826,6 +871,7 @@ export function useAppStore() {
     favorites, addFavorite, removeFavorite, restoreFavorite, reorderFavorites,
     goals, addGoal, updateGoal, closeGoal, withdrawGoal, removeGoal, restoreGoal,
     rules, addRule, updateRule, removeRule, restoreRule,
+    debts, addDebt, updateDebt, removeDebt, restoreDebt,
     lastExport, markExported: () => setLastExport(new Date().toISOString().slice(0, 10)),
     copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),
     newId: uid,

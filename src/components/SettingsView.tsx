@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet } from 'lucide-react';
+import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -30,6 +30,9 @@ interface Props {
   /** How many accounts the book has (1 until another is added, plan 30). */
   accountCount: number;
   onAccounts: () => void;
+  /** How many debts the book has (plan 31). */
+  debtCount: number;
+  onDebts: () => void;
   /** Pushes "Sichern und übertragen": backup, Excel, CSV. */
   onTransfer: () => void;
   /** The book holds test data (src/demo.ts): the row offers to remove it instead of adding it. */
@@ -234,6 +237,13 @@ export function SettingsView(p: Props) {
           leading={<IconTile icon={Wallet} hue="leaf" />}
           trailing={<Next value={p.accountCount > 1 ? p.accountCount : undefined} />}
           onClick={p.onAccounts}
+        />
+        <Row
+          label={t.debtsTitle}
+          sub={t.debtsRowSub}
+          leading={<IconTile icon={HandCoins} hue="sand" />}
+          trailing={<Next value={p.debtCount || undefined} />}
+          onClick={p.onDebts}
         />
         <Row
           label={t.favorites}

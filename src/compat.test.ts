@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { SCHEMA_VERSION, computeBalances, makeBackup, parseBackup } from './logic';
 import { loadStored, writeLocal } from './storage';
 import { AppData } from './types';
+import { debtPlan } from './insights';
 
 /*
  * What earlier versions stored and backed up (src/fixtures/, synthetic data
@@ -115,6 +116,22 @@ describe('what each version stored still loads', () => {
     expect(computeBalances(d).map(b => [b.key, b.now, b.end])).toEqual([['2026-11', 239500, 229500]]);
     expect(computeBalances(d, 'a-cash').map(b => [b.key, b.now, b.end])).toEqual([['2026-11', 16700, 16700]]);
     expect(computeBalances(d, 'all').map(b => b.now)).toEqual([256200]);
+  });
+});
+
+describe('version 21 (debts)', () => {
+  it('a loan, an extra payment and money lent come back, with the same balances', () => {
+    const { data } = stored('storage-v21.json');
+    expect(data.debts?.map(d => [d.id, d.direction])).toEqual([['debt-car', 'owe'], ['debt-lena', 'owed']]);
+    expect(data.entries.filter(e => e.debtId).map(e => e.id)).toEqual(['w3', 'w4']);
+    expect(balances(data)).toEqual([['2026-10', 275000, 275000], ['2026-11', 210000, 210000]]);
+    const today = new Date(2026, 10, 15, 10);
+    // 10.000 € from September, 4,9 %: two payments of 250 € and one of 500 €.
+    const car = debtPlan(data, data.debts![0], today);
+    expect(car.paid).toBe(100000);
+    expect(car.monthly).toBe(25000);
+    const lena = debtPlan(data, data.debts![1], today);
+    expect(lena.left).toBe(20000);
   });
 });
 

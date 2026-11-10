@@ -68,6 +68,13 @@ Everything the app can do. Build and release steps are in the
   keeps its own opening balance; budgets, Statistik and Planen count every
   account, and Planen shows *Vermögen* — all of them together. A bank import
   goes into the account shown. An account goes only once it is empty.
+- **Debts and loans.** *Optionen › Schulden und Kredite* takes a loan or a debt
+  — what it was, since when, the interest a year, the monthly payment and the
+  recurring entry it is paid with — or money lent to someone ("Mir
+  geschuldet"). Each shows what is left and when it ends ("schuldenfrei im
+  August 2028"), with the interest still to come; an extra payment, or money
+  paid back, is linked from the entry sheet's *Zu einer Schuld* pill. Planen
+  gets a *Schulden* card once there is one.
 - **Split a payment.** In an entry's editor, *Aufteilen* turns one receipt
   ("Lidl 48,20 €") into parts in different categories ("Lebensmittel 35,10 € ·
   Drogerie 13,10 €") that must add up to the original. The parts are normal

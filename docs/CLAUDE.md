@@ -156,7 +156,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     heute*), `BudgetsCard`, `OutlookCard` (from three finished months),
     `ContractsCard` (+ new subscriptions, missing payments with *Eintragen* —
     the entry sheet prefilled and open — and a price change's yearly effect),
-    slots for plans 11 / 12 / 31, `FinanceCheckCard` (rows with details: the
+    the slots for plans 11 / 12, *Vermögen* (plan 30), `DebtsCard` (plan 31), `FinanceCheckCard` (rows with details: the
     savings-rate chart and 50/30/20, the due list, the reserve meter).
   - Key figures carry an ⓘ (`ExplainButton`) that opens `ExplainSheet`
     (*So berechnet*: definition, the user's own numbers, the months, what is
@@ -230,7 +230,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   category; `set` reclassifies/renames, `skip` drops a transfer); **schema 16**
   `Entry.splitId` (plan 21: a split payment's parts are normal entries sharing
   it; `splitParts`); **schema 17** `AppData.demo` (the test data's record,
-  `src/demo.ts`); **schema 20** accounts and transfers (plan 30, below) — all
+  `src/demo.ts`); **schema 20** accounts and transfers (plan 30, below);
+  **schema 21** `AppData.debts` + `Entry.debtId` (plan 31, below) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
@@ -373,6 +374,22 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (`carryOver`, `laterTransferCopies`). An account can be deleted only once
   nothing is booked on it (`canDeleteAccount`); the main one stays. With
   accounts the CSV gets a *Konto* column, and a transfer's sign is its side.
+- **Debts and loans (plan 31, `src/insights/debts.ts`, pure and tested).**
+  `Debt { name, direction: 'owe' | 'owed', principal, start, rate?, payment?,
+  seriesId? }` in `AppData.debts` (schema 21). What is paid back comes from the
+  book (`debtPayments`): the paid entries of the linked monthly series and any
+  paid entry carrying `Entry.debtId` (the entry sheet's pill, shown once a debt
+  exists — an extra payment, money a friend paid back), from `start` on.
+  `debtSchedule` runs the months as they went (interest from the month after
+  `start`, monthly compounding, rounded to the cent, then the month's
+  payments), then projects the monthly payment (`payment`, else the series'
+  latest amount; this month's if none was made yet) until nothing is left:
+  `left`, `paid`, `interestPaid`, `interestLeft`, `payoff`, `never` (the
+  payment doesn't cover the interest). `annuityPayment` is checked against the
+  published tables. *Optionen › Schulden und Kredite* (`DebtsView`, the way in
+  for the first one), `DebtSheet`, and Planen's `DebtsCard`, which exists only
+  once there is a debt. Deleting a debt keeps its entries and drops the link
+  (undoable).
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Currency (plan 07, `src/currency.ts`).** `AppData.currency` (ISO 4217,

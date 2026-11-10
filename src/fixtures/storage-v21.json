@@ -1,0 +1,145 @@
+{
+ "_about": "What version 21 keeps in localStorage (synthetic): a car loan at 4,9 % paid by a monthly entry, one extra payment linked to it, and 300 € lent to a friend, 100 € of it paid back.",
+ "spartopf-meta": {
+  "seeded": true,
+  "schemaVersion": 21
+ },
+ "spartopf-categories": [
+  {
+   "id": "income",
+   "names": {
+    "de": "Einkommen",
+    "en": "Income",
+    "ar": "الدخل"
+   },
+   "emoji": "💰",
+   "hue": "leaf",
+   "kind": "income",
+   "repeat": "monthly",
+   "builtin": true
+  },
+  {
+   "id": "fixed",
+   "names": {
+    "de": "Wohnen",
+    "en": "Home",
+    "ar": "المنزل"
+   },
+   "emoji": "🏠",
+   "hue": "sky",
+   "kind": "expense",
+   "repeat": "monthly",
+   "budget": "need",
+   "builtin": true
+  },
+  {
+   "id": "groceries",
+   "names": {
+    "de": "Lebensmittel und Drogerie",
+    "en": "Groceries & drugstore",
+    "ar": "البقالة والعناية الشخصية"
+   },
+   "emoji": "🛒",
+   "hue": "lime",
+   "kind": "expense",
+   "repeat": "none",
+   "budget": "need",
+   "builtin": true,
+   "keywords": [
+    "Habibi Markt",
+    "Lidl",
+    "Rewe"
+   ]
+  }
+ ],
+ "spartopf-months": [
+  {
+   "key": "2026-10",
+   "startedAt": 1790000000000,
+   "opening": 300000
+  },
+  {
+   "key": "2026-11",
+   "startedAt": 1793000000000
+  }
+ ],
+ "spartopf-entries": [
+  {
+   "id": "w1",
+   "month": "2026-10",
+   "categoryId": "fixed",
+   "name": "Autokredit",
+   "amount": 25000,
+   "paid": true,
+   "repeat": "monthly",
+   "seriesId": "car",
+   "createdAt": 1790000000001,
+   "date": "2026-10-01"
+  },
+  {
+   "id": "w2",
+   "month": "2026-11",
+   "categoryId": "fixed",
+   "name": "Autokredit",
+   "amount": 25000,
+   "paid": true,
+   "repeat": "monthly",
+   "seriesId": "car",
+   "createdAt": 1793000000001,
+   "date": "2026-11-01"
+  },
+  {
+   "id": "w3",
+   "month": "2026-11",
+   "categoryId": "fixed",
+   "name": "Sondertilgung",
+   "amount": 50000,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "w3",
+   "createdAt": 1793000000002,
+   "date": "2026-11-05",
+   "debtId": "debt-car"
+  },
+  {
+   "id": "w4",
+   "month": "2026-11",
+   "categoryId": "income",
+   "name": "Lena zahlt zurück",
+   "amount": 10000,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "w4",
+   "createdAt": 1793000000003,
+   "date": "2026-11-08",
+   "debtId": "debt-lena"
+  }
+ ],
+ "spartopf-contracts": {},
+ "spartopf-currency": null,
+ "spartopf-favorites": [],
+ "spartopf-goals": [],
+ "spartopf-rules": [],
+ "spartopf-demo": null,
+ "spartopf-accounts": [],
+ "spartopf-debts": [
+  {
+   "id": "debt-car",
+   "name": "Autokredit",
+   "direction": "owe",
+   "principal": 1000000,
+   "start": "2026-09",
+   "rate": 4.9,
+   "seriesId": "car",
+   "createdAt": 1789000000000
+  },
+  {
+   "id": "debt-lena",
+   "name": "Lena",
+   "direction": "owed",
+   "principal": 30000,
+   "start": "2026-10",
+   "createdAt": 1790000000000
+  }
+ ]
+}

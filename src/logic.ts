@@ -1,5 +1,5 @@
 import {
-  ACCOUNT_KINDS, Account, AccountKind, AppData, Backup, Category, CategoryKind, Contract, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
+  ACCOUNT_KINDS, Account, AccountKind, AppData, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -18,8 +18,9 @@ import { isSupportedCurrency } from './currency';
  *  19: no new field — built-ins still named as shipped get their names in the
  *      eleven languages added then (tr, pl, cs, sv, nb, da, fr, it, es, nl, pt).
  *  20: accounts and transfers (`AppData.accounts`, `Entry.accountId`, `Entry.transfer`,
- *      `MonthRecord.openings`, plan 30) — optional, unset = one account, as before. */
-export const SCHEMA_VERSION = 20;
+ *      `MonthRecord.openings`, plan 30) — optional, unset = one account, as before.
+ *  21: debts and loans (`AppData.debts`, `Entry.debtId`, plan 31) — optional, unset = none. */
+export const SCHEMA_VERSION = 21;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -952,6 +953,8 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
     if (e.order !== undefined) copy.order = e.order;
     // A recurring entry keeps its goal (a standing order fills the pot, plan 12) and its tags (plan 26).
     if (e.goalId) copy.goalId = e.goalId;
+    // A recurring repayment keeps paying the same debt (plan 31).
+    if (e.debtId) copy.debtId = e.debtId;
     if (e.tags?.length) copy.tags = [...e.tags];
     // A split payment carries all its parts; they keep their shared splitId (plan 21).
     if (e.splitId) copy.splitId = e.splitId;
@@ -1387,6 +1390,8 @@ function normalizeEntry(v: unknown): Entry | null {
   if (ref) e.ref = ref.slice(0, 200);
   const goalId = str(v.goalId);
   if (goalId) e.goalId = goalId.slice(0, 80);
+  const debtId = str(v.debtId);
+  if (debtId) e.debtId = debtId.slice(0, 80);
   const tags = normalizeTags(v.tags);
   if (tags.length) e.tags = tags;
   const splitId = str(v.splitId);
@@ -1467,6 +1472,10 @@ export function normalizeState(raw: unknown): AppData {
   const accounts = normalizeAccounts(v.accounts);
   const accountSet = new Set((accounts ?? []).map(a => a.id));
   for (const e of entries) if (e.accountId && !accountSet.has(e.accountId)) delete e.accountId;
+  // Debts (schema 21): an entry's link to a debt that isn't there is dropped.
+  const debts = normalizeDebts(v.debts);
+  const debtSet = new Set((debts ?? []).map(d => d.id));
+  for (const e of entries) if (e.debtId && !debtSet.has(e.debtId)) delete e.debtId;
   for (const m of months) {
     if (!m.openings) continue;
     for (const id of Object.keys(m.openings)) if (!accountSet.has(id)) delete m.openings[id];
@@ -1493,7 +1502,36 @@ export function normalizeState(raw: unknown): AppData {
     ...(rules ? { rules } : {}),
     ...(demo ? { demo } : {}),
     ...(accounts ? { accounts } : {}),
+    ...(debts ? { debts } : {}),
   };
+}
+
+export const MAX_DEBTS = 50;
+
+/** Debts (schema 21): a name, a direction, whole cents, a start month, a rate between 0 and 100 %. Unset when there are none. */
+function normalizeDebts(v: unknown): Debt[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const list = dedupe(v.map((d): Debt | null => {
+    if (!isObj(d) || !str(d.id) || !isMonthKey(d.start)) return null;
+    const cents = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) && x >= 0 ? Math.min(Math.round(x), MAX_CENTS) : undefined);
+    const principal = cents(d.principal);
+    if (principal === undefined) return null;
+    const debt: Debt = {
+      id: (d.id as string).slice(0, 80),
+      name: cleanText(str(d.name) ?? '', 40) || '?',
+      direction: d.direction === 'owed' ? 'owed' : 'owe',
+      principal,
+      start: d.start,
+      createdAt: typeof d.createdAt === 'number' && Number.isFinite(d.createdAt) ? d.createdAt : 0,
+    };
+    if (typeof d.rate === 'number' && Number.isFinite(d.rate) && d.rate > 0) debt.rate = Math.round(Math.min(d.rate, 100) * 1000) / 1000;
+    const payment = cents(d.payment);
+    if (payment) debt.payment = payment;
+    const seriesId = str(d.seriesId);
+    if (seriesId) debt.seriesId = seriesId.slice(0, 80);
+    return debt;
+  }).filter((d): d is Debt => d !== null), d => d.id).slice(0, MAX_DEBTS);
+  return list.length ? list : undefined;
 }
 
 /** The test data's record (schema 17): months, an opening, budgets and categories it added. */
