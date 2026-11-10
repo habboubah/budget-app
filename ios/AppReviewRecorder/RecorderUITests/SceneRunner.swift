@@ -573,15 +573,46 @@ final class SceneRunner {
     // MARK: Screen recording
 
     private func openControlCenter() {
-        let start = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.0))
-        let end = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.55))
-        start.press(forDuration: 0.1, thenDragTo: end)
-        rest(1.2)
+        // Slow, short pull with a hold at the end: a fast fling opens Control Center
+        // and carries on to its second page (connectivity), away from Screen Recording.
+        let start = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.005))
+        let end = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.3))
+        start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.4)
+        rest(1.5)
     }
 
-    private func recordButton() throws -> XCUIElement {
-        try element(system("screenRecording", ["Screen Recording", "Bildschirmaufnahme"]), nth: 0, role: nil, timeout: 4,
-                    in: springboard, modes: [.exact, .prefix])
+    private var recordLabels: [String] { system("screenRecording", ["Screen Recording", "Bildschirmaufnahme"]) }
+
+    /// Control Center has several pages (iOS 18+) and can't "scroll to visible".
+    /// Look for the button; if it's missing or above the screen, swipe back a page;
+    /// if it's below, swipe on a page. Then tap its centre by coordinate.
+    private func tapRecordButton() throws {
+        let screen = springboard.frame
+        let visible = screen.insetBy(dx: 0, dy: 40)
+        for attempt in 0..<5 {
+            let button = try? element(recordLabels, nth: 0, role: nil, timeout: 2, in: springboard, modes: [.exact, .prefix])
+            var centre: CGPoint? = nil
+            if let button = button {
+                // Let any page animation settle.
+                var last = CGPoint(x: button.frame.midX, y: button.frame.midY)
+                for _ in 0..<5 { rest(0.25); let now = CGPoint(x: button.frame.midX, y: button.frame.midY); if now == last { break }; last = now }
+                centre = last
+            }
+            if let c = centre, visible.contains(c) {
+                springboard.coordinate(withNormalizedOffset: .zero)
+                    .withOffset(CGVector(dx: c.x - screen.minX, dy: c.y - screen.minY)).tap()
+                return
+            }
+            let goBack = centre == nil || centre!.y < screen.midY // missing or on an earlier page → swipe down
+            log("  Screen Recording \(centre == nil ? "not found" : "off screen (y \(Int(centre!.y)))") – swiping Control Center \(goBack ? "down" : "up") (\(attempt + 1))")
+            let from = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: goBack ? 0.35 : 0.7))
+            let to = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: goBack ? 0.7 : 0.35))
+            from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .default, thenHoldForDuration: 0.2)
+            rest(1)
+        }
+        attachScreenshot(named: "Control Center – no Screen Recording")
+        XCUIDevice.shared.press(.home)
+        throw StepFailure("couldn't reach Screen Recording in Control Center – check it's on the first page (long-press an empty spot › Add a Control › Screen Recording)")
     }
 
     func startScreenRecording() throws {
@@ -589,11 +620,7 @@ final class SceneRunner {
         XCUIDevice.shared.press(.home)
         rest(1)
         openControlCenter()
-        guard let button = try? recordButton() else {
-            XCUIDevice.shared.press(.home)
-            throw StepFailure("no Screen Recording button in Control Center – add it there once (Control Center › Add a Control › Screen Recording)")
-        }
-        button.tap()
+        try tapRecordButton()
         recording = true
         rest(4.5) // the 3-2-1 countdown
         XCUIDevice.shared.press(.home)
@@ -603,7 +630,7 @@ final class SceneRunner {
     func stopScreenRecording() throws {
         guard recording else { return }
         openControlCenter()
-        if let button = try? recordButton() { button.tap() }
+        try? tapRecordButton()
         recording = false
         rest(1.5)
         XCUIDevice.shared.press(.home)
