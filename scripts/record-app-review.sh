@@ -19,25 +19,40 @@ cd "$(dirname "$0")/.."
 PROJECT=ios/AppReviewRecorder/AppReviewRecorder.xcodeproj
 RESULT="build/app-review-recording-$(date +%Y%m%d-%H%M%S).xcresult"
 
+command -v xcodebuild >/dev/null 2>&1 || { echo "xcodebuild not found – this runs on a Mac with Xcode." >&2; exit 1; }
+echo "Looking for the iPhone …"
+
+# Never let a failing lookup end the script without a word: every step
+# below may find nothing, and then the message at the end says why.
 if [ -z "${DEVICE:-}" ]; then
-  # The first connected iPhone (or iPad) that isn't a simulator.
-  tmp=$(mktemp)
+  # Xcode 15+: devicectl's device list as JSON (not .json-less: node reads it with JSON.parse).
+  tmp="$(mktemp -d)/devices.json"
   if xcrun devicectl list devices --json-output "$tmp" >/dev/null 2>&1; then
     DEVICE=$(node -e '
-      const list = require(process.argv[1]).result?.devices ?? [];
-      const d = list.find(d => d.hardwareProperties?.platform === "iOS" && d.connectionProperties?.tunnelState !== "unavailable");
-      if (d) console.log(d.hardwareProperties.udid);
-    ' "$tmp")
+      const fs = require("fs");
+      let list = [];
+      try { list = JSON.parse(fs.readFileSync(process.argv[1], "utf8")).result?.devices ?? []; } catch {}
+      const phones = list.filter(d => /ios/i.test(d.hardwareProperties?.platform ?? "") && !/simulator/i.test(d.hardwareProperties?.reality ?? ""));
+      const state = d => d.connectionProperties?.tunnelState ?? "";
+      const d = phones.find(d => state(d) === "connected") ?? phones.find(d => state(d) && state(d) !== "unavailable");
+      if (d?.hardwareProperties?.udid) console.log(d.hardwareProperties.udid);
+    ' "$tmp" 2>/dev/null || true)
   fi
-  rm -f "$tmp"
+  rm -rf "$(dirname "$tmp")"
 fi
 if [ -z "${DEVICE:-}" ]; then
-  # Older Xcode: the device list of xctrace ("Name (iOS version) (UDID)").
-  DEVICE=$(xcrun xctrace list devices 2>/dev/null | awk '/^== Devices ==/{on=1; next} /^== /{on=0} on' \
-    | grep -E '\([0-9]+\.[0-9.]+\) \([0-9A-Fa-f-]{20,}\)$' | head -1 | sed -E 's/.*\(([0-9A-Fa-f-]+)\)$/\1/')
+  # Older Xcode: xctrace's list, lines like "Ahmad’s iPhone (26.1) (00008110-001A2B3C4D5E801E)".
+  DEVICE=$( { xcrun xctrace list devices 2>/dev/null || true; } \
+    | awk '/^== Devices ==/{on=1; next} /^== /{on=0} on' \
+    | grep -E '\([0-9]+(\.[0-9]+)*\) \([0-9A-Fa-f-]{20,}\)$' \
+    | head -1 | sed -E 's/.*\(([0-9A-Fa-f-]+)\)$/\1/' || true)
 fi
 if [ -z "${DEVICE:-}" ]; then
-  echo "No iPhone found. Connect it with a cable, unlock it, trust this Mac, and turn on Developer Mode." >&2
+  echo "No iPhone found." >&2
+  echo "Connect it with a cable, unlock it, tap Trust on the iPhone, and turn on" >&2
+  echo "Settings › Privacy & Security › Developer Mode. What Xcode sees right now:" >&2
+  xcrun devicectl list devices 2>&1 | sed 's/^/  /' >&2 || true
+  echo "If your iPhone is listed, run it with its identifier: DEVICE=<identifier> npm run record:app-review" >&2
   exit 1
 fi
 
