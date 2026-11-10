@@ -186,3 +186,26 @@ version after that:
 Apple usually reviews within 24–48 hours. If it's rejected: read the
 *Resolution Center*, fix it, run `node scripts/release.js --keep-version`, pick
 the new build and submit again.
+
+## App Review screen recording
+
+When App Review asks for a video on a real iPhone (Guideline 2.1), a UI test
+taps through every feature and records the screen by itself. Details and
+troubleshooting: [ios/AppReviewRecorder/README.md](ios/AppReviewRecorder/README.md).
+
+**Once:** on the iPhone, *Settings › Privacy & Security › Developer Mode* on,
+*Settings › Developer › Enable UI Automation* on, **Screen Recording** added to
+Control Center, and the Spartopf icon on the first home screen page.
+
+**Each time:**
+
+1. Back up your own data: *Settings › Back up and transfer › Export backup*.
+2. `npm run rehearse:app-review` — checks every step against the code (5 min).
+3. AirDrop the four files in `ios/AppReviewRecorder/demo-files/` to the iPhone.
+4. Delete Spartopf and install it again from TestFlight. Don't open it.
+5. iPhone on the cable, unlocked, Do Not Disturb on:
+   `DRY_RUN=1 npm run record:app-review`.
+6. Reinstall from TestFlight once more, then `npm run record:app-review`, with
+   the phone facing you (Face ID).
+7. The video is in Photos: upload it under *App Review Information ›
+   Attachment*, then import your backup again.

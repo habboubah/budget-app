@@ -16,8 +16,11 @@ items off, or delete them once done. The details are in each plan's notes.
 ## App Store
 
 - [ ] **The 2.1 resubmission, if it isn't sent yet:** the screen recording
-  (the project doc *spartopf-recording-steps*) and the App Review note in
-  `store/listing.md` (plan 16).
+  and the App Review note in `store/listing.md` (plan 16). The recording
+  can now play itself: `ios/AppReviewRecorder/README.md`, "Once" and "Every
+  recording". The recorder hasn't run on an iPhone yet — expect a round of
+  fixes in `SceneRunner.swift` on the first dry run (`DRY_RUN=1 npm run
+  record:app-review`); tell Claude where it stops.
 - [ ] **Once the app is live:** *Optionen › Spartopf bewerten* opens the
   review page (plan 15, app id 6829541731).
 - [ ] **Accessibility Nutrition Labels:** check the app on a device and

@@ -822,6 +822,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | Regenerate icons/splash | `npm run assets:generate` |
 | App Store screenshots (DE + EN, 1290×2796) | `npm run screenshots` |
 | Upload to App Store Connect / TestFlight | `npm run release` (first time: `npm run release:first`; preview: `npm run release:dry`) |
+| App Review screen recording: check the scenes against the code / record on the connected iPhone | `npm run rehearse:app-review` / `npm run record:app-review` (`ios/AppReviewRecorder/README.md`) |
+
+A change to a screen, a label or a flow that the App Review recording passes
+through means a change to `ios/AppReviewRecorder/scenes.json`; run
+`npm run rehearse:app-review` after it.
 
 ## Releasing (only when explicitly asked)
 Same pipeline as pizza-driver-log and shopping-list: `scripts/release.js`
