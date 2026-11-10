@@ -107,6 +107,10 @@ Everything the app can do. Build and release steps are in the
 - **Reminders and a lock** (iPhone app): a notification before an open bill is
   due and a week before a contract's last day to cancel — without amounts
   unless you want them; Face ID (or the passcode) when opening Spartopf.
+- **PDF report:** *Bericht teilen* under a month's report or the year review
+  makes a PDF — totals, budgets, categories, open items, and every entry if
+  you like — to share or print, with amounts even when they're hidden in the
+  app.
 - **Über Spartopf** (*Optionen*): rate the app in the App Store, send
   feedback by mail (with the app's and iOS's version, nothing else), and the
   privacy policy. Now and then, right after something good — a month that

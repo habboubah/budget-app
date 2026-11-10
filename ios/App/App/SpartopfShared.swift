@@ -1,4 +1,6 @@
 import Foundation
+import UIKit
+import WebKit
 import Capacitor
 import StoreKit
 import WidgetKit
@@ -36,7 +38,8 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "clear", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestReview", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "open", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "system", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "system", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "makePdf", returnType: CAPPluginReturnPromise)
     ]
 
     static let appGroup = "group.com.habboubah.spartopf"
@@ -161,6 +164,45 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func system(_ call: CAPPluginCall) {
         Task { @MainActor in
             call.resolve(["name": UIDevice.current.systemName, "version": UIDevice.current.systemVersion])
+        }
+    }
+
+    /// Plan 28: the page as printed — the print stylesheet shows only the report (index.css,
+    /// `.print-root`) — drawn on A4 pages into a PDF, then offered in the share sheet. The file
+    /// lives in the temporary folder and is deleted once the sheet closes.
+    @objc func makePdf(_ call: CAPPluginCall) {
+        let name = (call.getString("name") ?? "Spartopf")
+            .components(separatedBy: CharacterSet(charactersIn: "/\\:*?\"<>|")).joined(separator: "-")
+        Task { @MainActor in
+            guard let webView = self.bridge?.webView, let presenter = self.bridge?.viewController else {
+                call.reject("No page to print")
+                return
+            }
+            let renderer = UIPrintPageRenderer()
+            renderer.addPrintFormatter(webView.viewPrintFormatter(), startingAtPageAt: 0)
+            let paper = CGRect(x: 0, y: 0, width: 595.28, height: 841.89) // A4 in points
+            renderer.setValue(NSValue(cgRect: paper), forKey: "paperRect")
+            renderer.setValue(NSValue(cgRect: paper.insetBy(dx: 40, dy: 40)), forKey: "printableRect")
+            let pdf = NSMutableData()
+            UIGraphicsBeginPDFContextToData(pdf, paper, nil)
+            renderer.prepare(forDrawingPages: NSRange(location: 0, length: renderer.numberOfPages))
+            for page in 0..<renderer.numberOfPages {
+                UIGraphicsBeginPDFPage()
+                renderer.drawPage(at: page, in: UIGraphicsGetPDFContextBounds())
+            }
+            UIGraphicsEndPDFContext()
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(name).pdf")
+            do {
+                try pdf.write(to: url, options: .atomic)
+            } catch {
+                call.reject("The PDF could not be written")
+                return
+            }
+            let share = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            share.popoverPresentationController?.sourceView = presenter.view
+            share.completionWithItemsHandler = { _, _, _, _ in try? FileManager.default.removeItem(at: url) }
+            presenter.present(share, animated: true)
+            call.resolve()
         }
     }
 

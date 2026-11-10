@@ -1,8 +1,8 @@
 import { CSSProperties, useMemo, useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, Share2 } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, FileText, Share2 } from 'lucide-react';
 import { Category } from '../types';
 import { displayName, formatMoney, formatMoneyApprox, formatMoneyEstimate, formatMoneyShort, formatPercent, monthLabel, withAmounts } from '../logic';
-import { Book, Fraction, nearFraction, yearReview } from '../insights';
+import { Book, Fraction, YearReview, nearFraction, yearReview } from '../insights';
 import { Strings, fmt } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
 import { Card } from '../ui/Card';
@@ -24,7 +24,7 @@ const FRACTION: Record<Fraction, 'fracHalf' | 'fracThird' | 'fracQuarter' | 'fra
  * It can be shared as a picture, made only on tap, without amounts unless
  * switched on (D7).
  */
-export function YearReviewView({ book, year, language, t, onBack, onApplyBudgets, onShare }: {
+export function YearReviewView({ book, year, language, t, onBack, onApplyBudgets, onShare, onPdf }: {
   book: Book;
   year: string;
   language: string;
@@ -32,13 +32,12 @@ export function YearReviewView({ book, year, language, t, onBack, onApplyBudgets
   onBack: () => void;
   onApplyBudgets: (budgets: { category: Category; amount: number }[]) => void;
   onShare: (image: ShareImage) => void;
+  /** *Bericht teilen* (plan 28): a PDF of this review. */
+  onPdf?: () => void;
 }) {
   const y = useMemo(() => yearReview(book, year, new Date()), [book, year]);
   const [amounts, setAmounts] = useState(false);
-  const money = (c: number) => formatMoney(c, t.locale);
   const approx = (c: number) => formatMoneyApprox(c, t.locale);
-  const est = (c: number) => formatMoneyEstimate(Math.abs(c), t.locale);
-  const next = String(Number(year) + 1);
   if (!y.months.length) {
     return (
       <Screen title={t.yearTitle} eyebrow={year} onBack={onBack} backLabel={t.back} tabbed>
@@ -46,15 +45,7 @@ export function YearReviewView({ book, year, language, t, onBack, onApplyBudgets
       </Screen>
     );
   }
-  const fraction = y.rate !== null && y.rate > 0 ? nearFraction(y.rate) : null;
-  const share = fraction ? t[FRACTION[fraction]] : y.rate !== null ? formatPercent(Math.round(y.rate * 100), t.locale) : '';
-  const headlineText = () => (y.saved < 0 ? fmt(t.yearHeadlineOver, { year, amount: est(y.saved) }) : fmt(t.yearHeadline, { year, amount: est(y.saved), share }));
-  const headline = headlineText();
-  const tiles = [
-    { label: t.yearIn, value: approx(y.income) },
-    { label: t.yearOut, value: approx(y.spending) },
-    { label: t.saved, value: approx(y.saved), tone: y.saved < 0 ? 'text-neg' : 'text-fg' },
-  ];
+  const headlineText = () => yearHeadline(y, year, t);
   const name = (c: Category) => displayName(c.names, language);
   // A picture shared with amounts carries them even while the screen hides them (plan 06).
   const image = (): ShareImage => withAmounts(() => {
@@ -70,6 +61,48 @@ export function YearReviewView({ book, year, language, t, onBack, onApplyBudgets
 
   return (
     <Screen title={t.yearTitle} eyebrow={year} onBack={onBack} backLabel={t.back} tabbed>
+      <YearReviewBody y={y} year={year} language={language} t={t} onApplyBudgets={onApplyBudgets} />
+      <section className="rounded-md bg-surface card-edge p-[16px] space-y-3">
+        <div className="flex items-center gap-3">
+          <span className="min-w-0 flex-1 text-body text-fg wrap-compound">{t.yearShowAmounts}</span>
+          <Switch checked={amounts} onChange={setAmounts} label={t.yearShowAmounts} />
+        </div>
+        <p className="text-caption text-fg-mute wrap-prose">{t.yearShareNote}</p>
+        <Button variant="primary" full icon={Share2} onClick={() => onShare(image())}>{t.yearShare}</Button>
+      </section>
+      {onPdf && <Button variant="secondary" full icon={FileText} onClick={onPdf}>{t.reportShare}</Button>}
+    </Screen>
+  );
+}
+
+/** The review's first sentence: what the year saved, as a share of the income where it can. */
+function yearHeadline(y: YearReview, year: string, t: Strings): string {
+  const est = (c: number) => formatMoneyEstimate(Math.abs(c), t.locale);
+  const fraction = y.rate !== null && y.rate > 0 ? nearFraction(y.rate) : null;
+  const share = fraction ? t[FRACTION[fraction]] : y.rate !== null ? formatPercent(Math.round(y.rate * 100), t.locale) : '';
+  return y.saved < 0 ? fmt(t.yearHeadlineOver, { year, amount: est(y.saved) }) : fmt(t.yearHeadline, { year, amount: est(y.saved), share });
+}
+
+/** The review itself — on the screen, and in the printed PDF (plan 28's `PrintReport`). */
+export function YearReviewBody({ y, year, language, t, onApplyBudgets }: {
+  y: YearReview;
+  year: string;
+  language: string;
+  t: Strings;
+  onApplyBudgets?: (budgets: { category: Category; amount: number }[]) => void;
+}) {
+  const money = (c: number) => formatMoney(c, t.locale);
+  const approx = (c: number) => formatMoneyApprox(c, t.locale);
+  const next = String(Number(year) + 1);
+  const headline = yearHeadline(y, year, t);
+  const tiles = [
+    { label: t.yearIn, value: approx(y.income) },
+    { label: t.yearOut, value: approx(y.spending) },
+    { label: t.saved, value: approx(y.saved), tone: y.saved < 0 ? 'text-neg' : 'text-fg' },
+  ];
+  const name = (c: Category) => displayName(c.names, language);
+  return (
+    <>
       <section className="rounded-md hero hero-glow text-on-hero p-[16px]">
         <h2 className="display text-heading font-semibold tabular-nums wrap-prose">{headline}</h2>
         <dl className="mt-3 grid grid-cols-3 gap-2 rounded-sm hero-panel p-3">
@@ -170,20 +203,12 @@ export function YearReviewView({ book, year, language, t, onBack, onApplyBudgets
               ))}
             </ul>
             <div className="mt-3">
-              <Button variant="secondary" full onClick={() => onApplyBudgets(y.next.budgets)}>{t.yearApply}</Button>
+              {onApplyBudgets && <Button variant="secondary" full onClick={() => onApplyBudgets(y.next.budgets)}>{t.yearApply}</Button>}
             </div>
           </div>
         )}
       </Card>
 
-      <section className="rounded-md bg-surface card-edge p-[16px] space-y-3">
-        <div className="flex items-center gap-3">
-          <span className="min-w-0 flex-1 text-body text-fg wrap-compound">{t.yearShowAmounts}</span>
-          <Switch checked={amounts} onChange={setAmounts} label={t.yearShowAmounts} />
-        </div>
-        <p className="text-caption text-fg-mute wrap-prose">{t.yearShareNote}</p>
-        <Button variant="primary" full icon={Share2} onClick={() => onShare(image())}>{t.yearShare}</Button>
-      </section>
-    </Screen>
+    </>
   );
 }

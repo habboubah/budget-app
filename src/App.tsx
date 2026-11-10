@@ -53,7 +53,8 @@ import { SAVE_DEBOUNCE_MS, inDeviceBackup, saver, setInDeviceBackup } from './st
 import { buildSnapshot } from './native/snapshot';
 import { inboxToEntries } from './native/inbox';
 import { DeepLink, parseDeepLink } from './native/deepLink';
-import { openExternal, readInbox, readSnapshot, removeInbox, requestReview, systemVersion, writeSnapshot } from './native/bridge';
+import { makePdf, openExternal, readInbox, readSnapshot, removeInbox, requestReview, systemVersion, writeSnapshot } from './native/bridge';
+import { PrintReport, PrintSpec, ReportPdfSheet, reportFileName } from './components/PrintReport';
 import { REVIEW_URL, feedbackMail, privacyUrl } from './links';
 import { isDemoEntry } from './demo';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
@@ -87,6 +88,16 @@ const LOCK_AFTER_MS = 60_000;
 const PEEK_MS = 30_000;
 /** `localStorage['spartopf-dev-season'] = '1'`: the year review's card out of season (screenshots, ui-review). */
 const devSeason = (() => { try { return localStorage.getItem('spartopf-dev-season') === '1'; } catch { return false; } })();
+
+/**
+ * Sets *Beträge verbergen* for what renders after it (plan 28): React renders
+ * siblings in order, so a pair of these around the print copy shows its
+ * amounts while everything else stays as the switch says.
+ */
+function AmountsShown({ hidden = false }: { hidden?: boolean }) {
+  setAmountsHidden(hidden);
+  return null;
+}
 
 export default function App() {
   const store = useAppStore();
@@ -197,6 +208,9 @@ export default function App() {
   // (logic.ts), set here before any screen renders. The eye on the balance
   // card shows them for PEEK_MS, or until the app leaves the screen.
   const [peek, setPeek] = useState(false);
+  // ---- The PDF report (plan 28): drawn a second time for print.
+  const [printing, setPrinting] = useState<PrintSpec | null>(null);
+  const [pdfFor, setPdfFor] = useState<Omit<PrintSpec, 'entries'> | null>(null);
   setAmountsHidden(store.hideAmounts && !peek);
   useEffect(() => {
     if (!peek) return;
@@ -687,6 +701,22 @@ export default function App() {
     reachedGoals.current = reached;
     if (before && [...reached].some(id => !before.has(id))) goodMoment('goalReached');
   }, [data]);
+  /**
+   * *Bericht teilen* (plan 28): the report drawn for print, then a PDF and the
+   * share sheet in the iPhone app, the browser's print (and "Save as PDF") on
+   * the web.
+   */
+  const makeReport = async (spec: PrintSpec) => {
+    setPdfFor(null);
+    setPrinting(spec);
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))); // drawn
+    if (native) {
+      if (!(await makePdf(reportFileName(spec, t)))) show(t.reportPdfFailed);
+    } else {
+      window.print();
+    }
+    setPrinting(null);
+  };
   /** Optionen › Über Spartopf. */
   const sendFeedback = async () => { void openExternal(feedbackMail(t, __APP_VERSION__, await systemVersion())); };
 
@@ -805,7 +835,8 @@ export default function App() {
             onContracts={() => push('contracts')}
           />
         ) : id === 'monthReport' ? (
-          <MonthReportView book={book} month={reportMonth} language={language} t={t} onBack={back} onOpenMonth={openMonthPage} />
+          <MonthReportView book={book} month={reportMonth} language={language} t={t} onBack={back} onOpenMonth={openMonthPage}
+            onPdf={() => setPdfFor({ kind: 'month', month: reportMonth, year: reportMonth.slice(0, 4) })} />
         ) : id === 'yearReview' ? (
           <YearReviewView
             book={book}
@@ -815,6 +846,7 @@ export default function App() {
             onBack={back}
             onApplyBudgets={applyBudgets}
             onShare={image => void shareYear(image)}
+            onPdf={() => setPdfFor({ kind: 'year', month: `${reviewYear}-12`, year: reviewYear })}
           />
         ) : id === 'dueSoon' ? (
           <DueSoonView
@@ -1156,6 +1188,15 @@ export default function App() {
         }}
       />
 
+      <ReportPdfSheet open={pdfFor !== null} t={t} onClose={() => setPdfFor(null)} onMake={entries => { if (pdfFor) void makeReport({ ...pdfFor, entries }); }} />
+      {printing && (
+        // The PDF carries its amounts (an export the user asked for); the screen behind it keeps hiding them.
+        <>
+          <AmountsShown />
+          <PrintReport spec={printing} book={book} data={data} language={language} accent={store.accent} t={t} />
+          <AmountsShown hidden={store.hideAmounts && !peek} />
+        </>
+      )}
       <ReconcileSheet
         open={reconcileOpen}
         month={month}

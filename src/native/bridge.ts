@@ -18,6 +18,7 @@ interface SharedPlugin {
   requestReview(): Promise<void>;
   open(options: { url: string }): Promise<void>;
   system(): Promise<{ name: string; version: string }>;
+  makePdf(options: { name: string }): Promise<void>;
 }
 
 const Shared = registerPlugin<SharedPlugin>('SpartopfShared');
@@ -79,6 +80,15 @@ export async function systemVersion(): Promise<string> {
     try { const { name, version } = await Shared.system(); return `${name} ${version}`; } catch { /* the user agent below */ }
   }
   return systemFromAgent(navigator.userAgent);
+}
+
+/**
+ * Plan 28: the page as printed (only the report — index.css `.print-root`) as a
+ * PDF, offered in the share sheet. False when it couldn't be made.
+ */
+export async function makePdf(name: string): Promise<boolean> {
+  if (!isNative()) return false;
+  try { await Shared.makePdf({ name }); return true; } catch { return false; }
 }
 
 // "Alle Daten löschen" erases the snapshot and the inbox too (plan 05's wipeAll).

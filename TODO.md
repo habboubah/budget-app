@@ -6,15 +6,12 @@ items off, or delete them once done. The details are in each plan's notes.
 
 ## Before the next release
 
-- [ ] **Build once in Xcode** (`npm run build:ios`). Plans 06, 14 and 15 added
-  Swift that hasn't been compiled yet (`AppDelegate.swift`,
-  `SpartopfShared.swift`, `SceneDelegate.swift`). Fix or report any error.
-- [ ] **Signing & Capabilities**, if the build or `npm run release` complains
-  about the provisioning profile, tick these once:
-  - *App Groups → group.com.habboubah.spartopf* (plan 14)
-  - *Data Protection → Complete Protection* (plan 06)
-- [ ] **Push** when you're ready: `main` is ahead of GitHub by plan 16, the
-  privacy-check fix, plans 06, 14 and 15, and this list.
+- [x] ~~Build once in Xcode, and sign with the App Group and Data
+  Protection~~: done with release v1.2.6 (build 10) on 9 Nov.
+- [ ] **Build again in Xcode** after each new plan with Swift. Plan 28 added
+  `makePdf` to `SpartopfShared.swift`.
+- [ ] **Push** when you're ready: `main` is ahead of GitHub (`git status`
+  shows how far).
 
 ## App Store
 
@@ -32,6 +29,11 @@ items off, or delete them once done. The details are in each plan's notes.
 
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
+
+**Plan 28 — PDF report**
+- [ ] Monatsbericht › *Bericht teilen*, with and without every entry, in
+  German and Arabic: the share sheet opens and the PDF looks right
+  (margins, page breaks). Then the same for a long year, and print one page.
 
 **Plan 15 — ratings and feedback**
 - [ ] The rating prompt appears when the rule allows it: 14 days, 30 entries

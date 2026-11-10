@@ -236,7 +236,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 25 Turkish and more languages
 - [x] 26 Tags — built, `npm run check` passes; schema 14 (`Entry.tags`), `normalizeTags`/`tagTotals` tested, `#tag` search, entry-sheet "# Tag", Statistik Tags breakdown, CSV tags column (injection-guarded). ui-review on device still to do
 - [ ] 27 Receipts and documents
-- [ ] 28 PDF report
+- [x] 28 PDF report — built, `npm run check` passes. *Bericht teilen* under the Monatsbericht and the Jahresrückblick: `PrintReport` (the shared report bodies, an optional entries table, a footer; light, with amounts even when hidden on screen), the print stylesheet, `SpartopfShared.makePdf` (UIPrintPageRenderer → share sheet) and `window.print()` on the web. Checked through Chromium's print-to-PDF in DE, AR and a long year. Still to do on an iPhone: the PDF from the share sheet and a paper print
 - [x] 29 Periods and year comparison — core built, `npm run check` passes; `periodSeries`/`compareYears`/`bookYears` tested, a year picker + a "Mit Vorjahr vergleichen" line in Statistik. The faint last-year chart outlines and the Wofür change-vs-last-year chips are a noted follow-up (Charts.tsx surgery); ui-review on device still to do
 - [ ] 30 Cash and savings accounts
 - [ ] 31 Debts and loans

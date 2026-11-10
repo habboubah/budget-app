@@ -578,7 +578,21 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     Plan 15 added `requestReview` (StoreKit's `AppStore.requestReview(in:)`,
     `SKStoreReviewController` before iOS 16), `open` (hands a link to iOS —
     https to `apps.apple.com` / `habboubah.github.io` and mailto: only) and
-    `system` (the iOS version for the feedback mail); plan 28 adds `makePdf`.
+    `system` (the iOS version for the feedback mail); plan 28 added `makePdf`
+    (the page as printed, via `UIPrintPageRenderer` on A4 with 40 pt margins,
+    into a temporary PDF offered in the share sheet and deleted after).
+  - **PDF report (plan 28).** *Bericht teilen* under the Monatsbericht and the
+    Jahresrückblick opens `ReportPdfSheet` (one switch: every entry or not).
+    `PrintReport` draws the report a second time, as a portal on `<body>`
+    with `data-theme="light"`: `MonthReportBody` / `YearReviewBody` (the
+    screens and the print share them), an entries table, a footer. The print
+    stylesheet (index.css, end) shows only `.print-root`, hides its buttons and
+    switches, prints its backgrounds (the hero, the bars) and keeps sections
+    whole. Tailwind resolves the `--color-*` tokens at the root, so
+    `.print-root` declares them again (`index.test.ts` keeps the list in step
+    with `@theme`). The PDF always has its amounts: an `AmountsShown` pair
+    around the print copy lifts *Beträge verbergen* for it alone. Web:
+    `window.print()`.
   - **Ratings and feedback (plan 15).** *Optionen › Über Spartopf*: *Spartopf
     bewerten* (iPhone app only; `REVIEW_URL` with `APP_STORE_ID`),
     *Feedback senden* (Mail with the app's and the system's version, nothing

@@ -640,3 +640,65 @@ input[type="search"]::-webkit-search-results-button {
      page); pinch-zoom stays. Utilities (touch-none on grips) still win. */
   button, a, label, input, select, textarea, summary, [role="button"] { touch-action: manipulation; }
 }
+
+/* ------------------------------------------------------------------ print (plan 28)
+   The month report and the year review as a PDF: only `.print-root` (PrintReport,
+   a portal on <body>, light whatever the theme) is printed; the app and its sheets
+   are not. iOS draws it through UIPrintPageRenderer (the margins come from there),
+   the web through window.print. Backgrounds print inside the report, so the share
+   bars and the hero keep their colour. */
+.print-root { display: none; }
+/* Tailwind resolves the colour tokens once, at the root; declared again here
+   they follow the report's own light theme in a dark app (index.test.ts keeps
+   this list in step with @theme). */
+.print-root {
+  --color-bg: var(--t-bg);
+  --color-surface: var(--t-surface);
+  --color-surface-2: var(--t-surface-2);
+  --color-hairline: var(--t-hairline);
+  --color-raised: var(--t-raised);
+  --color-fg: var(--t-fg);
+  --color-fg-mute: var(--t-fg-mute);
+  --color-fg-faint: var(--t-fg-faint);
+  --color-accent: var(--t-accent);
+  --color-accent-dim: var(--t-accent-dim);
+  --color-accent-fill: var(--t-accent-fill);
+  --color-accent-fill-ink: var(--t-accent-fill-ink);
+  --color-mark: var(--t-mark);
+  --color-pos: var(--t-pos);
+  --color-pos-dim: var(--t-pos-dim);
+  --color-neg: var(--t-neg);
+  --color-neg-dim: var(--t-neg-dim);
+  --color-warn: var(--t-warn);
+  --color-warn-dim: var(--t-warn-dim);
+  --color-swipe-paid: var(--t-swipe-paid);
+  --color-swipe-open: var(--t-swipe-open);
+  --color-swipe-delete: var(--t-swipe-delete);
+  --color-chart-in: var(--t-chart-in);
+  --color-chart-out: var(--t-chart-out);
+  --color-chart-line: var(--t-chart-line);
+  --color-chart-want: var(--t-chart-want);
+  --color-chart-save: var(--t-chart-save);
+  --color-chart-label: var(--t-chart-label);
+}
+@media print {
+  @page { size: A4; margin: 14mm; }
+  html, body { background: none !important; }
+  body > *:not(.print-root) { display: none !important; }
+  .print-root {
+    display: block;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 11pt;
+  }
+  .print-root button, .print-root [role="switch"] { display: none !important; }
+  .print-root .print-head { margin-bottom: 4mm; }
+  .print-root section, .print-root dl, .print-root .card-edge { break-inside: avoid; box-shadow: none; }
+  .print-root h2, .print-root caption { break-after: avoid; }
+  .print-root .print-entries { break-before: page; }
+  .print-root .print-entries table { border-collapse: collapse; margin-bottom: 6mm; }
+  .print-root .print-entries caption { padding: 2mm 0; }
+  .print-root .print-entries th, .print-root .print-entries td { padding: 1.2mm 2mm 1.2mm 0; border-bottom: 0.2mm solid var(--color-hairline); vertical-align: top; }
+  .print-root .print-entries tr { break-inside: avoid; }
+  .print-root .print-foot { margin-top: 6mm; }
+}

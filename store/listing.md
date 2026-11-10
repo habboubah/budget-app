@@ -250,6 +250,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: إخفاء المبالغ – عند استخدام التطبيق خارج المنزل. اضغط على العين لرؤيتها لحظات. بياناتك مقفلة ما دام جهازك مقفلًا، وإن شئت تبقى خارج نسخة الـ iPhone الاحتياطية تمامًا.
 
+**DE:** Neu: Monatsbericht und Jahresrückblick als PDF – zum Teilen oder Ausdrucken, auf Wunsch mit allen Einträgen.
+
+**EN:** New: the month report and the year review as a PDF – to share or print, with every entry if you like.
+
+**AR:** جديد: تقرير الشهر ومراجعة السنة كملف PDF – للمشاركة أو الطباعة، مع كل البنود إن شئت.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

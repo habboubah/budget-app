@@ -1,11 +1,12 @@
 import { CSSProperties, ReactNode, useMemo } from 'react';
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, FileText, X } from 'lucide-react';
 import { MonthKey } from '../types';
 import { displayName, formatMoney, formatMoneyApprox, formatPercent, monthLabel } from '../logic';
 import { Book, MonthReview, monthReview } from '../insights';
 import { Strings, fmt } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
 import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
 import { MiniBars, ShareBar } from './Charts';
 import { HintRow } from './HintRows';
@@ -33,25 +34,39 @@ function Part({ title, children }: { title: string; children: ReactNode }) {
  * what changed, where the money went, what is still open (*Abhaken* opens
  * the month) and a look at the month after. Its figures are Statistik's.
  */
-export function MonthReportView({ book, month, language, t, onBack, onOpenMonth }: {
+export function MonthReportView({ book, month, language, t, onBack, onOpenMonth, onPdf }: {
   book: Book;
   month: MonthKey;
   language: string;
   t: Strings;
   onBack: () => void;
   onOpenMonth: (m: MonthKey) => void;
+  /** *Bericht teilen* (plan 28): a PDF of this report. */
+  onPdf?: () => void;
 }) {
   const r = useMemo(() => monthReview(book, month, new Date()), [book, month]);
-  const money = (c: number) => formatMoney(c, t.locale);
-  const approx = (c: number) => formatMoneyApprox(c, t.locale);
   const title = monthLabel(month, t.locale);
-  const byId = book.byId;
-  const shell = (children: ReactNode) => (
+  return (
     <Screen title={t.reportTitle} eyebrow={r.running ? fmt(t.reportRunning, { month: title }) : title} onBack={onBack} backLabel={t.back} tabbed>
-      {children}
+      <MonthReportBody r={r} book={book} month={month} language={language} t={t} onOpenMonth={onOpenMonth} />
+      {!r.empty && onPdf && <Button variant="secondary" full icon={FileText} onClick={onPdf}>{t.reportShare}</Button>}
     </Screen>
   );
-  if (r.empty) return shell(<Empty emoji="🗓️" title={fmt(t.reportEmpty, { month: monthLabel(month, t.locale, 'name') })} />);
+}
+
+/** The report itself — on the screen, and in the printed PDF (plan 28's `PrintReport`). */
+export function MonthReportBody({ r, book, month, language, t, onOpenMonth }: {
+  r: MonthReview;
+  book: Book;
+  month: MonthKey;
+  language: string;
+  t: Strings;
+  onOpenMonth?: (m: MonthKey) => void;
+}) {
+  const money = (c: number) => formatMoney(c, t.locale);
+  const approx = (c: number) => formatMoneyApprox(c, t.locale);
+  const byId = book.byId;
+  if (r.empty) return <Empty emoji="🗓️" title={fmt(t.reportEmpty, { month: monthLabel(month, t.locale, 'name') })} />;
 
   const p = r.point;
   const tiles = [
@@ -62,7 +77,7 @@ export function MonthReportView({ book, month, language, t, onBack, onOpenMonth 
   ];
   const spendTotal = r.categories.reduce((s, c) => s + c.amount, 0);
 
-  return shell(
+  return (
     <>
       <section className="rounded-md bg-surface card-edge p-[16px]">
         <h2 className={`display text-heading font-semibold tabular-nums wrap-prose ${p.saved < 0 ? 'text-neg' : 'text-fg'}`}>{reviewResult(r, t)}</h2>
@@ -133,14 +148,14 @@ export function MonthReportView({ book, month, language, t, onBack, onOpenMonth 
               <p className="text-body text-warn font-semibold tabular-nums wrap-prose">{fmt(t.reportOpenLine, { n: r.open.count, amount: money(r.open.expense) })}</p>
               {r.open.income > 0 && <p className="text-label text-fg-mute tabular-nums wrap-prose">{fmt(t.reportOpenIncome, { amount: money(r.open.income) })}</p>}
             </div>
-            <button
+            {onOpenMonth && <button
               type="button"
               onClick={() => { tapLight(); onOpenMonth(month); }}
               className="shrink-0 -me-2 h-tap px-2 inline-flex items-center gap-1 text-label font-semibold text-accent rounded-sm active:opacity-60 focus-visible:ring-focus"
             >
               {t.reportOpenAction}
               <ChevronRight className="w-4 h-4 rtl:rotate-180" strokeWidth={2.4} aria-hidden="true" />
-            </button>
+            </button>}
           </div>
         )}
       </Part>
@@ -153,7 +168,7 @@ export function MonthReportView({ book, month, language, t, onBack, onOpenMonth 
             : t.reportNextNone}
         </p>
       </Part>
-    </>,
+    </>
   );
 }
 
