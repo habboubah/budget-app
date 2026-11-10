@@ -1,0 +1,34 @@
+/* Siri and Shortcuts (plans 18 and 19, SpartopfIntents.swift). The English text is the key.
+   Machine-drafted (plan 25): a native speaker still has to read these. */
+
+"Add entry" = "Tilføj post";
+"Books an expense or an income in Spartopf." = "Bogfører en udgift eller indtægt i Spartopf.";
+"Amount" = "Beløb";
+"How much?" = "Hvor meget?";
+"Name" = "Navn";
+"What for?" = "Til hvad?";
+"Category" = "Kategori";
+"Date" = "Dato";
+"Paid" = "Betalt";
+"Add ${amount} for ${name}" = "Tilføj ${amount} for ${name}";
+"Booked: %@ %@" = "Bogført: %1$@ %2$@";
+"Booked as open: %@ %@" = "Bogført som afventende: %1$@ %2$@";
+"What’s left at the end of the month?" = "Hvad er der tilbage sidst på måneden?";
+"Says what Spartopf expects in your account at the end of the month." = "Siger, hvad Spartopf forventer på din konto sidst på måneden.";
+"Open Spartopf to see it." = "Åbn Spartopf for at se det.";
+"At the end of the month: %@. In your account now: %@." = "Sidst på måneden: %1$@. På kontoen nu: %2$@.";
+"Open bills" = "Ubetalte regninger";
+"Says which of this month’s bills are still open in Spartopf." = "Siger, hvilke af månedens regninger der stadig er ubetalte i Spartopf.";
+"No bills are open this month." = "Ingen regninger er ubetalte denne måned.";
+"Open: %@. Next: %@." = "Afventer: %1$@. Næste: %2$@.";
+"Spartopf can’t be reached right now." = "Spartopf kan ikke nås lige nu.";
+"That amount can’t be booked." = "Det beløb kan ikke bogføres.";
+"Log payment in Spartopf" = "Registrer betaling i Spartopf";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Bogfører en kortbetaling i Spartopf. Til automatiseringen “Transaktion” i Genveje.";
+"Merchant" = "Forhandler";
+"Card" = "Kort";
+"Log notification in Spartopf" = "Registrer notifikation i Spartopf";
+"Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Bogfører den betaling, som en notifikation fra bankappen melder. Til automatiseringen “Notifikation” i Genveje.";
+"Title" = "Titel";
+"Subtitle" = "Undertitel";
+"Text" = "Tekst";

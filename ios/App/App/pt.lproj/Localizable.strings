@@ -1,0 +1,34 @@
+/* Siri and Shortcuts (plans 18 and 19, SpartopfIntents.swift). The English text is the key.
+   Machine-drafted (plan 25): a native speaker still has to read these. */
+
+"Add entry" = "Adicionar registo";
+"Books an expense or an income in Spartopf." = "Regista uma despesa ou uma receita no Spartopf.";
+"Amount" = "Montante";
+"How much?" = "Quanto?";
+"Name" = "Nome";
+"What for?" = "Para quê?";
+"Category" = "Categoria";
+"Date" = "Data";
+"Paid" = "Pago";
+"Add ${amount} for ${name}" = "Adicionar ${amount} para ${name}";
+"Booked: %@ %@" = "Registado: %1$@ %2$@";
+"Booked as open: %@ %@" = "Registado como pendente: %1$@ %2$@";
+"What’s left at the end of the month?" = "O que sobra no fim do mês?";
+"Says what Spartopf expects in your account at the end of the month." = "Diz o que o Spartopf prevê na tua conta no fim do mês.";
+"Open Spartopf to see it." = "Abre o Spartopf para ver.";
+"At the end of the month: %@. In your account now: %@." = "No fim do mês: %1$@. Agora na conta: %2$@.";
+"Open bills" = "Contas pendentes";
+"Says which of this month’s bills are still open in Spartopf." = "Diz que contas deste mês ainda estão pendentes no Spartopf.";
+"No bills are open this month." = "Não há contas pendentes este mês.";
+"Open: %@. Next: %@." = "Pendentes: %1$@. Próximas: %2$@.";
+"Spartopf can’t be reached right now." = "De momento não é possível aceder ao Spartopf.";
+"That amount can’t be booked." = "Esse montante não pode ser registado.";
+"Log payment in Spartopf" = "Registar pagamento no Spartopf";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Regista um pagamento com cartão no Spartopf. Para a automatização «Transação» dos Atalhos.";
+"Merchant" = "Comerciante";
+"Card" = "Cartão";
+"Log notification in Spartopf" = "Registar notificação no Spartopf";
+"Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Regista o pagamento anunciado por uma notificação da app do banco. Para a automatização «Notificação» dos Atalhos.";
+"Title" = "Título";
+"Subtitle" = "Subtítulo";
+"Text" = "Texto";

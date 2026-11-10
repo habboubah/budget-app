@@ -28,14 +28,21 @@
 <p>The app does not request, collect, or transmit any personally identifiable information. I (the developer) have no access to your data, no server it is sent to, and no way to view, recover, or delete it on your behalf — it exists only on your device.</p>
 
 <h2>What the App Uses on Your Device</h2>
-<p>Some features use parts of your iPhone. Each one is used only when you start that feature, and none of them sends anything off your device.</p>
+<p>Some features use parts of your phone. Each one is used only when you start that feature, and none of them sends anything off your device.</p>
 <ul>
 <li><strong>Camera and photos.</strong> When you choose "Take transactions from a photo", you can take a picture or pick one from your photo library. Spartopf reads the text in it on your device, with a text recognition library built into the app, and shows you the transactions it found so you can check them. Spartopf does not keep the picture and never uploads it.</li>
+<li><strong>Receipts.</strong> If you attach a receipt to an entry, the photo or PDF is kept in Spartopf's private storage on your device, as part of your data. A photo is saved again without its location and other camera details. It is included in backups you export and removed when you delete the entry or all data.</li>
 <li><strong>Saving to your photos.</strong> If you share the picture of your year in review and choose "Save Image", iOS asks whether Spartopf may add it to your photo library. Spartopf only adds that picture; it does not read your library.</li>
 <li><strong>Files you import.</strong> A bank CSV file, an Excel workbook or a Spartopf backup that you pick is read on your device. Nothing is uploaded.</li>
 <li><strong>Face ID or passcode.</strong> If you turn on the lock, Spartopf asks iOS to confirm that it's you. iOS only tells the app whether that worked; your face data and your passcode never reach the app.</li>
 <li><strong>Notifications.</strong> If you turn on reminders, Spartopf schedules local notifications on your device before open bills are due and before a contract's last day to cancel. There is no notification server. Notifications show no amounts unless you turn that on, and they can appear on your lock screen.</li>
 </ul>
+
+<h2>Siri and Shortcuts (iPhone)</h2>
+<p>If you use Siri or set up an automation in the Shortcuts app, what you say or what the automation hands over — an amount, a name, the text of a payment notification you chose — stays on your iPhone. Spartopf reads the amount and the payee from it, books the entry and does not keep the text. Spartopf never reads notifications by itself.</p>
+
+<h2>On Android</h2>
+<p>The Android app works the same way and collects nothing. It contains no Google services, no Firebase and no analytics. If you turn on the lock, Android confirms your fingerprint, face or screen lock and only tells the app whether that worked. With "Include in device backup" switched on, Android may include your Spartopf data in your device's Google backup or copy it to a new device, under Google's privacy policy; switched off, the data stays out of both. While the lock is on, Android blocks screenshots of the app.</p>
 
 <h2>Where Your Data Is Stored</h2>
 <p>Your data is kept in Spartopf's private storage on your device, which other apps cannot read. Spartopf also keeps automatic backups there — one a day for the last 14 days and one a month for a year — so you can go back to an earlier version. If your device's own backup (for example iCloud Backup) is turned on, iOS may include this storage in it, under Apple's privacy policy.</p>
@@ -55,7 +62,7 @@
 
 <h2>Changes to This Privacy Policy</h2>
 <p>I may update this Privacy Policy from time to time, for example if the app's data practices change. Any changes will be posted on this page.</p>
-<p>This policy is effective as of 2026-11-09. It was last updated to describe photo text reading, file imports, Face ID, reminders and the automatic backups.</p>
+<p>This policy is effective as of 2026-11-10. It was last updated to describe receipts, Siri and Shortcuts, and the Android app.</p>
 
 <h2>Contact</h2>
 <p>If you have any questions about this Privacy Policy or need support with Spartopf, contact me at <a href="mailto:ahmad.habboubah@gmail.com">ahmad.habboubah@gmail.com</a>.</p>

@@ -1,0 +1,34 @@
+/* Siri and Shortcuts (plans 18 and 19, SpartopfIntents.swift). The English text is the key.
+   Machine-drafted (plan 25): a native speaker still has to read these. */
+
+"Add entry" = "Legg til post";
+"Books an expense or an income in Spartopf." = "Bokfører en utgift eller inntekt i Spartopf.";
+"Amount" = "Beløp";
+"How much?" = "Hvor mye?";
+"Name" = "Navn";
+"What for?" = "Til hva?";
+"Category" = "Kategori";
+"Date" = "Dato";
+"Paid" = "Betalt";
+"Add ${amount} for ${name}" = "Legg til ${amount} for ${name}";
+"Booked: %@ %@" = "Bokført: %1$@ %2$@";
+"Booked as open: %@ %@" = "Bokført som ventende: %1$@ %2$@";
+"What’s left at the end of the month?" = "Hva er igjen ved månedsslutt?";
+"Says what Spartopf expects in your account at the end of the month." = "Sier hva Spartopf regner med på kontoen din ved månedsslutt.";
+"Open Spartopf to see it." = "Åpne Spartopf for å se det.";
+"At the end of the month: %@. In your account now: %@." = "Ved månedsslutt: %1$@. På kontoen nå: %2$@.";
+"Open bills" = "Ubetalte regninger";
+"Says which of this month’s bills are still open in Spartopf." = "Sier hvilke av månedens regninger som fortsatt er ubetalt i Spartopf.";
+"No bills are open this month." = "Ingen regninger er ubetalt denne måneden.";
+"Open: %@. Next: %@." = "Venter: %1$@. Neste: %2$@.";
+"Spartopf can’t be reached right now." = "Spartopf kan ikke nås akkurat nå.";
+"That amount can’t be booked." = "Det beløpet kan ikke bokføres.";
+"Log payment in Spartopf" = "Registrer betaling i Spartopf";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Bokfører en kortbetaling i Spartopf. For automatiseringen «Transaksjon» i Snarveier.";
+"Merchant" = "Forhandler";
+"Card" = "Kort";
+"Log notification in Spartopf" = "Registrer varsel i Spartopf";
+"Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Bokfører betalingen et varsel fra bankappen melder om. For automatiseringen «Varsel» i Snarveier.";
+"Title" = "Tittel";
+"Subtitle" = "Undertittel";
+"Text" = "Tekst";

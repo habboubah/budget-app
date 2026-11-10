@@ -62,5 +62,31 @@ On first launch the app follows the device language, as it does today.
   *Valg*, da *Opsætning*, nl *Opties*, it *Opzioni*); the hint action button
   got `min-w-tap` (three-letter labels were under 44 px); month titles are
   capitalised.
-- Not done: App Store listing texts and keywords beyond DE/EN/AR. (The iOS
-  permission prompts are in all 14 languages since plan 16.)
+- (The iOS permission prompts are in all 14 languages since plan 16.)
+
+## Notes (November 2026, the rest of what can be done without reviewers)
+
+- **Siri and Shortcuts** speak the eleven languages too: `Localizable.strings`
+  (31 texts — the three intents of plan 18 and the two capture actions of
+  plan 19) and `AppShortcuts.strings` (the seven Siri phrases) in every
+  `xx.lproj`, registered in the Xcode project. Not compiled yet. Where the
+  app says "waiting" for an open entry (sv *väntar*, pl *oczekuje*, cs *čeká*,
+  tr *bekliyor* …) the Siri answers use the same word.
+- **Category guessing** works in the eleven languages: their words for a
+  category are the names they already suggest there (`suggestionNames`), so
+  "Kira" finds *Wohnen* in Turkish (`shippedKeywords`, tested). No second
+  word list to translate and keep in step. The German, English and Arabic
+  lists stay behind them, with the brands.
+- **`plans/glossary.md`** (step 7): 34 core terms per language, generated from
+  the strings themselves so it can't drift
+  (`WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`), with a
+  *Reviewed* column for the native speaker.
+- **Store listing** in the eleven languages: `store/listing-languages.md` —
+  name, subtitle, short description, keywords, promotional text and one
+  description for both stores, every length checked. Drafts.
+- **Android** (`strings.xml`) has only the app's name; nothing to translate.
+
+**Still open, and not something Claude can do:** a native speaker reads each
+language — the app's strings, the Siri texts and the store listing — and
+ticks the glossary. Until then every one of the eleven is machine-drafted,
+Turkish included, and the first *Done when* stays open.

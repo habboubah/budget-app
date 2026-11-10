@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Category, Entry } from './types';
 import { defaultCategories } from './data/defaults';
 import { shippedKeywords } from './data/keywords';
+import { loadLanguage } from './translations';
 import { keywordKey, keywordTokens, normalizeKeywords, normalizeState } from './logic';
 import {
   buildKeywordIndex, completeNames, correctTypo, editDistance, guessCategories, isShippedList, keywordIdeas, keywordOwners, keywordsForName, keywordsOf,
@@ -227,5 +228,27 @@ describe('editDistance', () => {
     expect(editDistance('ldil', 'lidl')).toBe(1);
     expect(editDistance('fittness', 'fitness')).toBe(1);
     expect(editDistance('abcdef', 'uvwxyz', 2)).toBe(3);
+  });
+});
+
+describe('category keywords in the languages loaded on demand (plan 25)', () => {
+  it('a language’s own words for a category are the names it suggests there', async () => {
+    await loadLanguage('tr');
+    await loadLanguage('fr');
+    expect(shippedKeywords('fixed', 'tr')).toContain('Kira');
+    expect(shippedKeywords('fixed', 'tr')[0]).toBe('Kira');
+    expect(shippedKeywords('fixed', 'fr')).toContain('Loyer');
+    // The brands and the German, English and Arabic words stay behind them.
+    expect(shippedKeywords('groceries', 'tr')).toEqual(expect.arrayContaining(['Lidl', 'Lebensmittel', 'Groceries']));
+    // German, English and Arabic keep exactly their own lists.
+    expect(shippedKeywords('fixed', 'de')[0]).toBe('Miete');
+    expect(shippedKeywords('fixed', 'de')).not.toContain('Kira');
+  });
+
+  it('typing the word guesses the category', async () => {
+    await loadLanguage('tr');
+    const categories = defaultCategories();
+    const index = buildKeywordIndex({ categories, entries: [], lang: 'tr' });
+    expect(guessCategories(index, 'Kira')[0]?.categoryId).toBe('fixed');
   });
 });

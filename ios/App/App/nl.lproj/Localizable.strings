@@ -1,0 +1,34 @@
+/* Siri and Shortcuts (plans 18 and 19, SpartopfIntents.swift). The English text is the key.
+   Machine-drafted (plan 25): a native speaker still has to read these. */
+
+"Add entry" = "Post toevoegen";
+"Books an expense or an income in Spartopf." = "Boekt een uitgave of inkomst in Spartopf.";
+"Amount" = "Bedrag";
+"How much?" = "Hoeveel?";
+"Name" = "Naam";
+"What for?" = "Waarvoor?";
+"Category" = "Categorie";
+"Date" = "Datum";
+"Paid" = "Betaald";
+"Add ${amount} for ${name}" = "Voeg ${amount} toe voor ${name}";
+"Booked: %@ %@" = "Geboekt: %1$@ %2$@";
+"Booked as open: %@ %@" = "Geboekt als open: %1$@ %2$@";
+"What’s left at the end of the month?" = "Wat blijft er aan het eind van de maand over?";
+"Says what Spartopf expects in your account at the end of the month." = "Zegt wat Spartopf aan het eind van de maand op je rekening verwacht.";
+"Open Spartopf to see it." = "Open Spartopf om het te zien.";
+"At the end of the month: %@. In your account now: %@." = "Aan het eind van de maand: %1$@. Nu op je rekening: %2$@.";
+"Open bills" = "Open rekeningen";
+"Says which of this month’s bills are still open in Spartopf." = "Zegt welke rekeningen van deze maand nog open staan in Spartopf.";
+"No bills are open this month." = "Deze maand staan er geen rekeningen open.";
+"Open: %@. Next: %@." = "Open: %1$@. Eerstvolgende: %2$@.";
+"Spartopf can’t be reached right now." = "Spartopf is nu niet bereikbaar.";
+"That amount can’t be booked." = "Dat bedrag kan niet worden geboekt.";
+"Log payment in Spartopf" = "Betaling vastleggen in Spartopf";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Boekt een kaartbetaling in Spartopf. Voor de automatisering ‘Transactie’ in Opdrachten.";
+"Merchant" = "Verkoper";
+"Card" = "Kaart";
+"Log notification in Spartopf" = "Melding vastleggen in Spartopf";
+"Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Boekt de betaling die een melding van je bank-app meldt. Voor de automatisering ‘Melding’ in Opdrachten.";
+"Title" = "Titel";
+"Subtitle" = "Subtitel";
+"Text" = "Tekst";

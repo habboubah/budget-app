@@ -1,0 +1,34 @@
+/* Siri and Shortcuts (plans 18 and 19, SpartopfIntents.swift). The English text is the key.
+   Machine-drafted (plan 25): a native speaker still has to read these. */
+
+"Add entry" = "Añadir apunte";
+"Books an expense or an income in Spartopf." = "Apunta un gasto o un ingreso en Spartopf.";
+"Amount" = "Importe";
+"How much?" = "¿Cuánto?";
+"Name" = "Nombre";
+"What for?" = "¿Para qué?";
+"Category" = "Categoría";
+"Date" = "Fecha";
+"Paid" = "Pagado";
+"Add ${amount} for ${name}" = "Añadir ${amount} para ${name}";
+"Booked: %@ %@" = "Apuntado: %1$@ %2$@";
+"Booked as open: %@ %@" = "Apuntado como pendiente: %1$@ %2$@";
+"What’s left at the end of the month?" = "¿Qué queda a fin de mes?";
+"Says what Spartopf expects in your account at the end of the month." = "Dice lo que Spartopf espera en tu cuenta a fin de mes.";
+"Open Spartopf to see it." = "Abre Spartopf para verlo.";
+"At the end of the month: %@. In your account now: %@." = "A fin de mes: %1$@. Ahora en tu cuenta: %2$@.";
+"Open bills" = "Facturas pendientes";
+"Says which of this month’s bills are still open in Spartopf." = "Dice qué facturas de este mes siguen pendientes en Spartopf.";
+"No bills are open this month." = "No hay facturas pendientes este mes.";
+"Open: %@. Next: %@." = "Pendientes: %1$@. Próximas: %2$@.";
+"Spartopf can’t be reached right now." = "Ahora mismo no se puede acceder a Spartopf.";
+"That amount can’t be booked." = "Ese importe no se puede apuntar.";
+"Log payment in Spartopf" = "Registrar pago en Spartopf";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Apunta un pago con tarjeta en Spartopf. Para la automatización «Transacción» de Atajos.";
+"Merchant" = "Comercio";
+"Card" = "Tarjeta";
+"Log notification in Spartopf" = "Registrar notificación en Spartopf";
+"Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Apunta el pago que anuncia una notificación de la app del banco. Para la automatización «Notificación» de Atajos.";
+"Title" = "Título";
+"Subtitle" = "Subtítulo";
+"Text" = "Texto";

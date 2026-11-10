@@ -1,0 +1,10 @@
+/* Siri phrases (plan 18, SpartopfShortcuts in SpartopfIntents.swift). Each names the app.
+   Machine-drafted (plan 25): a native speaker still has to read these. */
+
+"Add an expense in ${applicationName}" = "Tilføj en udgift i ${applicationName}";
+"New entry in ${applicationName}" = "Ny post i ${applicationName}";
+"Book in ${applicationName}" = "Bogfør i ${applicationName}";
+"What’s left at the end of the month in ${applicationName}" = "Hvad er der tilbage sidst på måneden i ${applicationName}";
+"Month end in ${applicationName}" = "Månedens slutning i ${applicationName}";
+"Open bills in ${applicationName}" = "Ubetalte regninger i ${applicationName}";
+"What’s still open in ${applicationName}" = "Hvad er stadig ubetalt i ${applicationName}";

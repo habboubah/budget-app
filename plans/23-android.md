@@ -77,4 +77,5 @@ Where the build differs from the plan above:
 - **Charts on a 360-wide phone:** Statistik's six month columns are 42 px wide there, 2 under the 44 px tap size (ui-review `android360`). Left as it is.
 - **`release-android.js --upload`** (the Play Developer API) is written but has not run: the first upload of an app is by hand in the Console anyway.
 - **CI** builds a debug APK on every push (`.github/workflows/ci.yml`, job `android`).
+- **Privacy policy:** `store/privacy/` (English and German) now has a section *On Android* (the device backup, no Google services, the lock, no screenshots) — and, missing until now, one for receipts and one for Siri and Shortcuts. It still has to be published (TODO.md).
 - **Steps 3 and 4** — two real phones, the upload key, the Play Console — are yours: `docs/ANDROID_RELEASE.md`.

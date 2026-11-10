@@ -13,6 +13,8 @@
  * start of a longer word ("Strom" → "Stromrechnung"), one of five or more its
  * end ("Versicherung" → "Hausratversicherung").
  */
+import { NAME_SUGGESTIONS } from './defaults';
+
 export interface ShippedKeywords {
   /** Brands and names that read the same in every language. */
   all?: string[];
@@ -193,5 +195,9 @@ export function shippedKeywords(id: string, lang: string): string[] {
   const k = CATEGORY_KEYWORDS[id];
   if (!k) return [];
   const others = (['de', 'en', 'ar'] as const).filter(l => l !== lang).flatMap(l => k[l] ?? []);
-  return [...(k[lang as 'de' | 'en' | 'ar'] ?? []), ...(k.all ?? []), ...others];
+  // The eleven languages loaded on demand (plan 25) have no list of their own
+  // here: their words for a category are the names they suggest for it
+  // (i18n/xx.ts `suggestionNames`) — "Kira" finds Wohnen in Turkish.
+  const own = lang in k ? [] : (NAME_SUGGESTIONS[id] ?? []).flatMap(n => (lang !== 'de' && n[lang] ? [n[lang]] : []));
+  return [...own, ...(k[lang as 'de' | 'en' | 'ar'] ?? []), ...(k.all ?? []), ...others];
 }

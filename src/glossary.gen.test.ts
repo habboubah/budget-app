@@ -1,0 +1,27 @@
+import { it } from 'vitest';
+import { writeFileSync } from 'node:fs';
+import { LANGUAGE_NAMES, languages, loadAllLanguages, stringsFor } from './translations';
+
+const TERMS: [string, string][] = [
+  ['balanceNow', 'what is in the account now'], ['balanceEnd', 'the balance expected at the end of the month'], ['leftOverNow', 'income minus spending this month'],
+  ['carryShort', 'balance carried over from last month'], ['income', ''], ['expenses', ''], ['open', 'not paid yet'], ['paidState', ''], ['expected', 'income not received yet'],
+  ['overdue', ''], ['dueTitle', 'open entries due soon'], ['repeatNone', 'an entry that does not repeat'], ['repeatMonthly', ''], ['repeatYearly', ''],
+  ['category', ''], ['categories', ''], ['budgetsTitle', 'a monthly limit per category'], ['goalsTitle', 'savings pots — the app is named after one'], ['outlookTitle', 'the forecast (never "forecast")'],
+  ['favorites', 'entries saved for one tap'], ['rulesTitle', 'import rules'], ['accountsTitle', ''], ['transferNew', 'money moved between two accounts'], ['debtsTitle', ''],
+  ['receipt', 'a photo or PDF on an entry'], ['splitPayAction', 'one payment across categories'], ['exportData', ''], ['bookSection', 'the budget book itself'],
+  ['tabMonth', 'tab'], ['tabStats', 'tab'], ['tabInsights', 'tab'], ['tabSettings', 'tab'], ['save', ''], ['undo', ''],
+];
+
+it.skipIf(!process.env.WRITE_GLOSSARY)('writes plans/glossary.md from the app’s own strings', async () => {
+  await loadAllLanguages();
+  const order = ['de', 'en', ...languages.filter(l => l !== 'de' && l !== 'en')];
+  let out = '# Glossary\n\nThe app\'s core terms as each language has them **now**, taken from the strings themselves (plan 25, step 7). German and English are the originals; Arabic was written with them; the other eleven are machine-drafted. A reviewer checks a language\'s column first — a term changed here must be changed everywhere it appears in `src/i18n/<language>.ts`.\n\nRegenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.\n';
+  for (const lang of order.filter(l => l !== 'de' && l !== 'en')) {
+    const t = stringsFor(lang as never) as unknown as Record<string, string>;
+    const de = stringsFor('de') as unknown as Record<string, string>;
+    const en = stringsFor('en') as unknown as Record<string, string>;
+    out += `\n## ${LANGUAGE_NAMES[lang as keyof typeof LANGUAGE_NAMES]} (${lang})\n\n| Deutsch | English | ${lang} | Meaning | Reviewed |\n|---|---|---|---|---|\n`;
+    for (const [key, note] of TERMS) out += `| ${de[key]} | ${en[key]} | ${t[key]} | ${note} | |\n`;
+  }
+  writeFileSync('plans/glossary.md', out);
+});

@@ -33,6 +33,14 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
+**Plan 25 — languages** (needs people)
+- [ ] Find a native speaker for Turkish first, then the other ten. Give them
+  `plans/glossary.md` (tick *Reviewed*), the app in their language, and
+  their section of `store/listing-languages.md`. Corrections go to Claude.
+- [ ] Build in Xcode: 22 new string files (Siri and Shortcuts in eleven
+  languages) are registered in the project but not compiled yet.
+- [ ] Until a language is reviewed, leave its store listing on English.
+
 **Plan 23 — Android** (`docs/ANDROID_RELEASE.md` has every step)
 - [ ] Install Android Studio, then `npm run build:android` and press Run on a
   phone or the emulator. **The app has never run on Android** — if it doesn't
@@ -54,8 +62,9 @@ for plan 15.
   Console; `npm run release:android`; upload the bundle to *Internal testing*.
   A new personal developer account needs a closed test with 12 testers for
   14 days before production.
-- [ ] Add a sentence about Android to the privacy policy (device backup, no
-  Google services).
+- [ ] Publish the updated privacy policy: `store/privacy/index.html` and
+  `store/privacy/de/index.html` now cover Android, receipts and Siri /
+  Shortcuts — copy them to the `privacy-policy` repository and push it.
 
 **Plan 37 — simplicity review** (needs people and devices)
 - [ ] Hand the app, freshly installed, to three people who don't know it:

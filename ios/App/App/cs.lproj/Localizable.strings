@@ -1,0 +1,34 @@
+/* Siri and Shortcuts (plans 18 and 19, SpartopfIntents.swift). The English text is the key.
+   Machine-drafted (plan 25): a native speaker still has to read these. */
+
+"Add entry" = "Přidat položku";
+"Books an expense or an income in Spartopf." = "Zapíše výdaj nebo příjem do Spartopf.";
+"Amount" = "Částka";
+"How much?" = "Kolik?";
+"Name" = "Název";
+"What for?" = "Za co?";
+"Category" = "Kategorie";
+"Date" = "Datum";
+"Paid" = "Zaplaceno";
+"Add ${amount} for ${name}" = "Přidat ${amount} za ${name}";
+"Booked: %@ %@" = "Zapsáno: %1$@ %2$@";
+"Booked as open: %@ %@" = "Zapsáno jako čekající: %1$@ %2$@";
+"What’s left at the end of the month?" = "Co zbyde na konci měsíce?";
+"Says what Spartopf expects in your account at the end of the month." = "Řekne, kolik Spartopf čeká na tvém účtu na konci měsíce.";
+"Open Spartopf to see it." = "Otevři Spartopf a podívej se.";
+"At the end of the month: %@. In your account now: %@." = "Na konci měsíce: %1$@. Teď na účtu: %2$@.";
+"Open bills" = "Nezaplacené účty";
+"Says which of this month’s bills are still open in Spartopf." = "Řekne, které účty z tohoto měsíce jsou ve Spartopf ještě nezaplacené.";
+"No bills are open this month." = "Tento měsíc nejsou žádné nezaplacené účty.";
+"Open: %@. Next: %@." = "Čeká: %1$@. Nejbližší: %2$@.";
+"Spartopf can’t be reached right now." = "Spartopf teď není dostupný.";
+"That amount can’t be booked." = "Tuto částku nelze zapsat.";
+"Log payment in Spartopf" = "Zapsat platbu do Spartopf";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Zapíše platbu kartou do Spartopf. Pro automatizaci „Transakce“ ve Zkratkách.";
+"Merchant" = "Obchodník";
+"Card" = "Karta";
+"Log notification in Spartopf" = "Zapsat oznámení do Spartopf";
+"Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Zapíše platbu, o které informuje oznámení bankovní aplikace. Pro automatizaci „Oznámení“ ve Zkratkách.";
+"Title" = "Název";
+"Subtitle" = "Podnázev";
+"Text" = "Text";
