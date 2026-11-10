@@ -400,6 +400,18 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (`backupFiles`, `keepAttachments`). Daily snapshots hold the list, not the
   files. Carry-over doesn't copy receipts. `privacy-check.mjs` attaches a
   photo with EXIF and fails if any of it is stored.
+- **Wide screens (plan 22).** From 700 px on (`ui/useWide.ts`, by width, never
+  by device) App renders two columns that scroll by themselves: the month on
+  the leading side, and beside it what the tab shows — *Statistik*, *Planen*,
+  *Optionen* and every pushed screen; the tab bar has no *Monat* then and sits
+  over that pane (`.split-end`, `html[data-split]`), as does a `Dock`. In App,
+  `tab` is the effective tab (never `'month'` while wide) and `push` opens the
+  month's screens in the pane. A `Screen` reads its scroll position from
+  `ScrollerContext` (the window on a phone, its column when wide) — **don't
+  read `window.scrollY` in a screen**. No edge-swipe back while wide. Sheets
+  are centred panels from 640 px (they always were). `ui/useShortcuts.ts`:
+  ⌘N new entry, ⌘F search, ← → months (swapped in RTL; `shortcutFor` is pure
+  and tested). `ui-review.mjs --devices ipad11,ipad11l,ipad13,ipad13l`.
 - **Month from payday (plan 32, `src/period.test.ts`).** `AppData.monthStart`
   (2–28; absent = the 1st, schema 23) is the day the book's month begins. A
   month is then a *period*: with the 25th, "2026-11" runs 25 Oct – 24 Nov — a

@@ -30,6 +30,16 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
+**Plan 22 — iPad** (your decision first)
+- [ ] Decide whether Spartopf ships for iPad. If yes: Xcode › App › General ›
+  Supported Destinations › add iPad (`TARGETED_DEVICE_FAMILY = "1,2"`). Once
+  an iPad build is live it can't be taken back, and every submission then
+  needs 13" iPad screenshots.
+- [ ] Then on an iPad: landscape and portrait show the month with Statistik /
+  Planen / Optionen beside it; Split View at a third falls back to the phone
+  layout; with a keyboard ⌘N, ⌘F and ← → work; in Arabic the month is on the
+  right.
+
 **Plan 32 — month from payday**
 - [ ] *Optionen › Haushaltsbuch › Monat beginnt am* › your payday: the sheet
   says how many entries move; after *Sichern* the month title shows the dates

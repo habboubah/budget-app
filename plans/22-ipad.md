@@ -41,4 +41,16 @@ Nothing changes on the iPhone. On the iPad it's the same app, just wider.
 
 ## Done when
 
-- [ ] The app passes ui-review on the iPad sizes and works on a real iPad with a keyboard.
+- [ ] The app passes ui-review on the iPad sizes and works on a real iPad with a keyboard. (The layout, the shortcuts and ui-review on the iPad sizes in DE and AR are done; the real iPad waits for the device family, see below.)
+
+## Notes (built)
+
+Where the build differs from the plan above:
+
+- **The iPad target is not switched on yet.** `TARGETED_DEVICE_FAMILY` is still `1`. Turning it to `"1,2"` is a decision for the release: once a build with iPad support is in the App Store it cannot be taken back, and every submission then needs 13" iPad screenshots (plan 38). It is one line in Xcode (*App › General › Supported Destinations › iPad*); it is in TODO.md. Until then an iPad runs the iPhone app, and the layout is ready for the day it is switched.
+- **Which pane:** the month is always on the leading side. Beside it is what the tab bar picks — *Statistik* first, *Planen*, *Optionen* — and every pushed screen (categories, reports, accounts …) opens there. The tab bar has three tabs then, and sits over that pane with the add button.
+- **Two scrolling columns** instead of one page: each side keeps its place while the other scrolls.
+- **No swipe-back** in two columns; the back button and the keyboard stay.
+- **Sheets** were already centred panels from 640 px, 512 px wide; nothing to change.
+- **⌘N in a desktop browser** opens a browser window — the browser keeps that one. In the app (WKWebView) it reaches Spartopf.
+- **Widgets on iPad** come with plan 17.

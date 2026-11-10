@@ -230,7 +230,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 19 Apple Pay, bank notifications, "Teilen an Spartopf"
 - [x] 20 Import rules and other apps — built, `npm run check` passes; schema 15 (`AppData.rules`), rule engine in `planStatement` (set/skip, order) tested, scope menu on a correction, Regeln screen, other-app columns recognised + auto-mapping fallback (`csvForMapping`/`parseMappedCsv` tested). Plan-19 inbox is native (n/a here); an interactive mapping sheet is a noted follow-up. Also stabilised the flaky 10-year perf test with `retry`
 - [x] 21 Split a payment — built, `npm run check` passes; schema 16 (`Entry.splitId`), `splitParts`/carry-over/import-match tested, "Aufteilen" in the editor → SplitSheet, parts share a splitId (balances unchanged). Delete-scope prompt + richer caption are noted follow-ups; perf baseline raised to 280 kB with a note
-- [ ] 22 iPad and wide screens
+- [ ] 22 iPad and wide screens — layout built, `npm run check` passes: two columns from 700 px (month + pane), three-tab bar over the pane, ⌘N / ⌘F / ← → (`shortcutFor` tested), ui-review on the iPad sizes in DE and AR. Open: switching the iPad target on (a release decision, TODO.md) and the check on a real iPad
 - [ ] 23 Android app
 - [ ] 24 Android capture and widgets
 - [ ] 25 Turkish and more languages

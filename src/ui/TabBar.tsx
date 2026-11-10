@@ -29,10 +29,10 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
 }) {
   return createPortal(
     <>
-      <div aria-hidden="true" className="fixed inset-x-0 bottom-0 z-20 h-[calc(60px+env(safe-area-inset-bottom))] edge-fade-bottom opacity-80 pointer-events-none" />
+      <div aria-hidden="true" className="fixed inset-x-0 bottom-0 z-20 h-[calc(60px+env(safe-area-inset-bottom))] split-end edge-fade-bottom opacity-80 pointer-events-none" />
       <nav
         aria-label={label}
-        className="fixed inset-x-0 z-30 pointer-events-none"
+        className="fixed inset-x-0 z-30 pointer-events-none split-end"
         style={{ bottom: 'max(calc(env(safe-area-inset-bottom) - 6px), 14px)' }}
       >
         {/* Physical spacing: the bar is chrome, its size doesn't follow the text (iOS doesn't either). */}
