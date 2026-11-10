@@ -689,7 +689,7 @@ export default function App() {
     const id = window.setTimeout(() => setMidnight(n => n + 1), new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 0, 0, 5).getTime() - d.getTime());
     return () => window.clearTimeout(id);
   }, [native, midnight]);
-  // No amounts leave the app until plan 17's switch exists — and never while Beträge verbergen is on.
+  // No amounts in the snapshot: there is no switch for them — and never while Beträge verbergen is on.
   const snapshotFor = () => buildSnapshot(data, { language, locale: t.locale, accent: store.accent, locked: store.lockOn, showAmounts: false });
   useEffect(() => {
     if (!native) return;

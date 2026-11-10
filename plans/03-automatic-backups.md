@@ -76,4 +76,4 @@ It works without the user doing anything. There's no new step and no pop-up. The
 
 ## Not in this plan
 
-Encrypted export (04), moving data to another device (33).
+Encrypted export (04).

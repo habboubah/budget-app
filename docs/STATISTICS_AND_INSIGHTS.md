@@ -125,7 +125,7 @@ Statistics and insights only; COMPETITOR_ANALYSIS.md covers the rest. Content is
 
 - **A single "financial health score".** It's opaque and judgmental. *Finanz-Check* shows the indicators themselves, each with a next step.
 - **An AI chat** (Monarch, Copilot, Finanzguru). A cloud model breaks the privacy promise, and a model can get numbers wrong. Insights are deterministic rules with translated templates, so they're testable.
-- **Sankey diagrams on iPhone.** At 375 pt with 10+ categories they're hard to read. Maybe on iPad later (plan 22).
+- **Sankey diagrams on iPhone.** At 375 pt with 10+ categories they're hard to read.
 - **User-arranged dashboards** (Outbank, Actual). Too much to set up (ground rule 4 in plans/README).
 - **Pies and donuts.** Bars are more precise for ranking and just as good for part-to-whole ([Cleveland & McGill](https://info3312.infosci.cornell.edu/ae/graphical-perception-A.html); ["Are pie charts evil?", 2024](https://journals.sagepub.com/doi/10.1177/14738716241259432)).
 - **Net worth and age of money.** One account today; net worth comes with plan 30.
@@ -784,8 +784,6 @@ Step 9 already renamed the tab (file and id stay `InsightsView.tsx` / `insights`
   - "Dein Oktober im Rückblick";
   - "Restaurants: Budget zu 80 % verbraucht";
   - "Im März wird es knapp".
-- **Widgets** (plan 17): the pace line, *pro Tag*.
-- **iPad** (plan 22): Statistik and the category screen side by side; a Sankey could live there.
 - **Tags** (26) in *Wofür*; **accounts** (30) bring net worth; **debts** (31) in *Ausblick*.
 - **Payday month** (32): pace and *Ausblick* go through the month helpers only, never `Date` arithmetic, so plan 32 can redefine a month.
 

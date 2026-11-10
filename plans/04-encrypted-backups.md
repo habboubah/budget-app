@@ -1,6 +1,6 @@
 # 04 · Encrypted backup files
 
-- **Covers:** the security focus, F23 (exports), and the groundwork for device-to-device transfer (33)
+- **Covers:** the security focus, F23 (exports)
 - **Depends on:** 03
 - **Size:** S–M
 - **Native:** none
@@ -75,4 +75,4 @@ One password field. No key files, no account. If the password is lost, the file 
 
 ## Not in this plan
 
-Opening `.spartopf` files straight from Files or AirDrop, and merging instead of replacing (33).
+Opening `.spartopf` files straight from Files or AirDrop.

@@ -12,7 +12,7 @@ There is one plan per feature, built strictly in order. The plans draw on three 
 1. **Everything stays on the device.**
    - No server, no account, no analytics, no crash reporter, and no SDK that phones home.
    - The app makes no network requests. The one exception is the opt-in connection to the user's own bank (plan 36).
-   - Devices sync with each other directly (plans 33–34), never through a cloud.
+   - No sync. Data moves to another phone as a backup file the user carries over (plans 03, 04).
 2. **Secure by default.**
    - Files from outside are checked before they're read.
    - Exports are encrypted.
@@ -57,13 +57,13 @@ Change them here if you disagree, before the plan that depends on them starts.
 
 | Decision | Why | Plans |
 |---|---|---|
-| No iCloud or CloudKit. Devices sync directly, by file or over the local network. | Everything stays local. | 33, 34 |
+| No iCloud or CloudKit, and no sync. A new phone gets the book from a backup file. | Everything stays local. | 03, 04 |
 | The data file is part of the phone's own backup by default; one switch leaves it out. | Lost data is the angriest complaint about competitors, and the OS backup is under the user's control. | 02, 06, 23 |
 | Bank connection only via on-device FinTS, opt-in, after a feasibility check. | No aggregator server. | 36 |
 | Cash and savings accounts get built, but stay invisible until a second account exists. | Users ask to track cash. PLAN.md's "one account" stays the default view. | 30 |
 | A month that starts on payday is optional and off by default. | Requested, but it touches every date rule. | 32 |
 | No paid tier. | Free for all users. | all |
-| Notifications, widgets, the lock screen and a shared year review show no amounts by default. | People can read them over your shoulder. | 00, 13, 14, 17 |
+| Notifications, widgets, the lock screen and a shared year review show no amounts by default. | People can read them over your shoulder. | 00, 13, 14 |
 | Exports are encrypted by default. Plain export is one switch away. | Financial data in a mail attachment or a shared folder. | 04 |
 | In every statistic, money put into a savings category counts as saved, not spent. The month page keeps the account view. | Sparquote and 50/30/20 must agree (STATISTICS_AND_INSIGHTS.md D1). | 06a, 13 |
 | Statistik looks back, Planen looks ahead. At most three hints per screen, ranked, each with a next step. | One time scope per section, and hints that lead somewhere (D2). | 06a, 13 |
@@ -109,7 +109,6 @@ Change them here if you disagree, before the plan that depends on them starts.
 ### Phase 4 — capture without typing
 | # | Plan | Covers | Depends on | Size | Native |
 |---|---|---|---|---|---|
-| 17 | [Widgets and controls](17-widgets.md) | F18 | 14, 09 | L | iOS |
 | 18 | [Siri and Shortcuts](18-siri-shortcuts.md) | F19 | 14, 09 | M | iOS |
 | 19 | [Apple Pay, bank notifications, "Teilen an Spartopf"](19-automatic-capture.md) | F8 | 14, 18 | M–L | iOS |
 | 20 | [Import rules and other apps](20-import-rules.md) | F9 | 19 | M | — |
@@ -136,8 +135,6 @@ Change them here if you disagree, before the plan that depends on them starts.
 ### Phase 7 — more devices, still local
 | # | Plan | Covers | Depends on | Size | Native |
 |---|---|---|---|---|---|
-| 33 | [Device-to-device transfer](33-device-transfer.md) | F24 (local) | 04, 30 | L | iOS/Android |
-| 34 | [Nearby sync and household sharing](34-nearby-sync.md) | F24, F25 (local) | 33 | XL | iOS/Android |
 
 ### Phase 8 — bank connection without a server
 | # | Plan | Covers | Depends on | Size | Native |
@@ -158,18 +155,18 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 
 | Request or complaint | Plan |
 |---|---|
-| Capture without typing (bank messages, Apple Pay) | 17, 18, 19, 24 |
+| Capture without typing (bank messages, Apple Pay) | 18, 19, 24 |
 | Budgets per category | 00 (step 4) |
 | Reminders for bills | 00 (step 11) |
 | App lock | 00 (step 12), 06 |
 | Contracts and notice periods | 00 (step 9) |
-| Lost data, broken backups, failed restores on a new phone | 02, 03, 04, 33 |
+| Lost data, broken backups, failed restores on a new phone | 02, 03, 04 |
 | Track cash | 30 |
 | Adjust to the real bank balance | 10 |
 | Other currencies (CHF and others) | 07 |
 | Own rules, leave transfers out, choose which bookings a category change hits | 20, 30 |
 | Item-level tracking | 21 |
-| Budgeting as a couple | 34 |
+| Budgeting as a couple | not planned (34 was dropped) |
 | Bank sync (and complaints that it keeps breaking) | 36, with CSV/screenshot/Apple Pay as fallbacks |
 | Wrong totals | 01 (golden data), 06a (one meaning of *gespart*), 30 (transfers) |
 | Looking ahead: a warning before a yearly bill, what's left until the month ends | 06a (*Ausblick*, *November bis heute*), 11 |
@@ -222,12 +219,11 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 14 Native bridge — built, `npm run check` passes. `MainViewController` + our own plugin `SpartopfShared` (App Group snapshot and inbox, `completeUntilFirstUserAuthentication`), the `spartopf://` scheme, and `src/native/` with `buildSnapshot` (no amount fields unless allowed), `inboxToEntries` (checked, booked through the import path, refs against doubles) and `parseDeepLink`, all tested. Swift not compiled yet. Still to do on an iPhone: the App Group on the App ID, the debug round trip, an inbox item with the app closed, and the links
 - [x] 15 Ratings and feedback — built, `npm run check` passes. `shouldAskForReview` (14 days, 30 own entries, a good moment, no trouble this session, 120 days between asks; tested), Apple's prompt via `SpartopfShared.requestReview`, and *Über Spartopf* with *Spartopf bewerten*, *Feedback senden* and *Datenschutz* (`src/links.ts`). Still to do on an iPhone: the prompt with a development build, the three rows, and the review link once the app is live
 - [ ] 16 Store listing, accessibility labels, permission texts — listing (DE/EN/AR), review note, privacy policy and permission prompts (14 languages) done; accessibility labels (device check) and the Arabic € placement still open
-- [ ] 17 Widgets and controls
 - [x] 18 Siri and Shortcuts — built, compiled with release 1.2.7: three App Intents in the app target, phrases and answers in DE / EN / AR, entries through the inbox (`source: "siri"`), amounts from a Complete-protected `amounts.json` written only while the app lock is off. Device check still to do
 - [ ] 19 Apple Pay, bank notifications, "Teilen an Spartopf" — steps 1, 2 and 4 built, `npm run check` passes: two Shortcuts actions (Swift, not compiled yet), `parseNotificationText` (tested with made-up samples), *Gleich buchen* / *Erst prüfen* with *Neu: n* on the month, the guide under *Optionen › Automatisch erfassen*. Open: the share extension (a new Xcode target), real notification texts, the device check
 - [x] 20 Import rules and other apps — built, `npm run check` passes; schema 15 (`AppData.rules`), rule engine in `planStatement` (set/skip, order) tested, scope menu on a correction, Regeln screen, other-app columns recognised + auto-mapping fallback (`csvForMapping`/`parseMappedCsv` tested). Plan-19 inbox is native (n/a here); an interactive mapping sheet is a noted follow-up. Also stabilised the flaky 10-year perf test with `retry`
 - [x] 21 Split a payment — built, `npm run check` passes; schema 16 (`Entry.splitId`), `splitParts`/carry-over/import-match tested, "Aufteilen" in the editor → SplitSheet, parts share a splitId (balances unchanged). Delete-scope prompt + richer caption are noted follow-ups; perf baseline raised to 280 kB with a note
-- Dropped (decided November 2026): 22 iPad and wide screens, 35 Apple Watch. Spartopf stays an iPhone app (Android: plan 23); their plan files and the two-column layout built for 22 are removed.
+- Dropped (decided November 2026): 17 widgets, 22 iPad and wide screens, 33 device-to-device transfer, 34 nearby sync and household sharing, 35 Apple Watch. Spartopf stays a phone app (Android: plan 23) whose data moves by backup file; the plan files and the two-column layout built for 22 are removed.
 - [ ] 23 Android app
 - [ ] 24 Android capture and widgets
 - [ ] 25 Turkish and more languages
@@ -238,8 +234,6 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 30 Cash and savings accounts — built, `npm run check` passes; schema 20 (`AppData.accounts`, `Entry.accountId`, `Entry.transfer`, `MonthRecord.openings`), balances per account and for all, transfers as linked pairs outside every total, *Optionen › Konten*, the balance card's switch, *Umbuchen*, the entry sheet's account pill, Planen's *Vermögen*, imports into the shown account. Goals pointing at a savings account are a noted follow-up; device check still to do
 - [x] 31 Debts and loans — built, `npm run check` passes; schema 21 (`AppData.debts`, `Entry.debtId`), `debtSchedule`/`annuityPayment` tested against the published tables, *Optionen › Schulden und Kredite*, the debt sheet, Planen's *Schulden* card (only with a debt), the entry sheet's debt pill. The reminder for money lent is a noted follow-up; device check still to do
 - [x] 32 Month from payday — built, `npm run check` passes; schema 23 (`AppData.monthStart`), `periodOf`/`periodRange`/`changeMonthStart` tested (golden data round trip 1 → 16/25/28 → 1), *Optionen › Haushaltsbuch › Monat beginnt am* with a preview and undo, dates under the month title. iPhone check in TODO.md.
-- [ ] 33 Device-to-device transfer
-- [ ] 34 Nearby sync and household sharing
 - [ ] 36 On-device bank connection (FinTS)
 - [ ] 37 Simplicity review — checkpoint after plan 32 done, `npm run check` passes: the feature table, the first-viewport counts, *Optionen › Haushaltsbuch* reordered, and the tip system (`src/tips.ts`, five tips, one a week, tested). Open: the three-people test, VoiceOver / large text, speed on old phones (TODO.md)
 - [ ] 38 Screenshots, story and release

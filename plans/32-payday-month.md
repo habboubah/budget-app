@@ -61,4 +61,3 @@ Where the build differs from the plan above:
 - **Entries without a date** stay in their month; a legacy due day (no date) is read inside the period.
 - **Excel import** reads months from tab names and has no dates, so nothing changes there.
 - **Siri (plan 18):** `amounts.json` now says until which day it holds (`until`), and the intent checks it — one line in `SpartopfIntents.swift`. Around the turn of a calendar month inside a period Siri may ask to open the app once.
-- **Widgets (plan 17)**, when built, must take the period from the snapshot, not from the calendar.

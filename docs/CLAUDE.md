@@ -746,8 +746,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
       next three open bills, favourites (`hasAmount`), categories named in the
       app's language, currency, locale, accent, `locked`. With
       `showAmounts` off it has **no amount field at all** (`balance`,
-      `amount` left out — not zeros). App passes `false` until plan 17's
-      switch exists, and must keep passing `false` while *Beträge verbergen*
+      `amount` left out — not zeros). App passes `false` (there is no
+      switch for it), and must keep passing `false` while *Beträge verbergen*
       is on.
     - `inboxToEntries(raw, data)` — checks every field (`readInboxItem`:
       source list, integer cents ≤ `MAX_CENTS`, ids `[A-Za-z0-9_-]{1,64}`, ISO

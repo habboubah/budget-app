@@ -65,7 +65,7 @@ Remove `console.*` calls that print user data. `npm run check` greps `src/` for 
 ### 7. One wipe
 `wipeAll()` in `src/storage.ts`, which every later plan with its own files registers with:
 - now: the data file, snapshots, pending notifications
-- later: the widget snapshot and inbox (14), attachments (27), pairing keys (34), bank credentials (36)
+- later: the widget snapshot and inbox (14), attachments (27), bank credentials (36)
 
 *Alle Daten löschen* calls it.
 

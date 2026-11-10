@@ -24,7 +24,7 @@ Nothing visible yet.
 - **Summary only.** The shared files hold only what widgets and intents need (see the snapshot below), never the whole book.
 - **File protection.** Shared files are written with `completeUntilFirstUserAuthentication`, because widgets and intents can run while the phone is locked.
 - **Inbox.** It's deleted as soon as the app has taken in its items.
-- **Amounts outside the app.** Allowed only when the user turns that on (plan 17's switch). By default the snapshot holds `amountsHidden: true` and no amounts at all.
+- **Amounts outside the app.** Allowed only when the user turns that on (a switch for it — none exists). By default the snapshot holds `amountsHidden: true` and no amounts at all.
 
 ## Design
 
@@ -95,9 +95,9 @@ Nothing visible yet.
   - `readInbox` returns `{ id, json }` per file, so the app can drop a broken item by its file name.
   - Caps: snapshot 256 KB, item 64 KB, 500 items per read; ids `[A-Za-z0-9_-]`, no paths.
 - **Decided while building:**
-  - The inbox item gains `favoriteId` and `paid`. A widget's favourite button (plan 17) sends only the favourite's id and the app looks up name, category and amount, so the snapshot needn't carry amounts for the buttons to work; the snapshot says `hasAmount` instead. `paid: false` books an open entry (Siri's `paid` parameter, plan 18).
+  - The inbox item gains `favoriteId` and `paid`. A favourite button outside the app sends only the favourite's id and the app looks up name, category and amount, so the snapshot needn't carry amounts for the buttons to work; the snapshot says `hasAmount` instead. `paid: false` books an open entry (Siri's `paid` parameter, plan 18).
   - An item without a date is dated by its creation time only when that is within the past year; otherwise today. The tests caught a 1970 date.
-  - `showAmounts` is `false` until plan 17's switch exists, and must stay `false` while *Beträge verbergen* (plan 06) is on.
+  - `showAmounts` is `false` as long as no switch for it exists, and must stay `false` while *Beträge verbergen* (plan 06) is on.
   - Only the `appUrlOpen` listener, not `getLaunchUrl()`: the App plugin keeps a cold start's link until a listener is there (`retainUntilConsumed`), and `getLaunchUrl` would also return the last link on every later call.
   - The inbox is read only once the app is unlocked, and a link is held while locked.
   - Items leave the inbox 350 ms after booking, once `saver.flush()` has put the book on disk. If the app stops before that, the refs mark them as already there on the next read.

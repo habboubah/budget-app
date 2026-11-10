@@ -35,10 +35,10 @@ REDESIGN.md §8, steps 4–14, exactly as written there. REDESIGN.md stays the s
 
 The *Optionen* groups for step 10:
 
-- **Sicherheit und Mitteilungen:** lock, reminders. Later: backup switch and *Beträge verbergen* (06), widget amounts (17), automatic capture (19).
+- **Sicherheit und Mitteilungen:** lock, reminders. Later: backup switch and *Beträge verbergen* (06), automatic capture (19).
 - **Darstellung:** language, appearance, colour. Later: currency (07).
 - **Haushaltsbuch:** categories and budgets. Later: favourites (09), rules (20), accounts (30), month start (32).
-- **Sichern und übertragen:** backup, Excel, CSV. Later: automatic backups (03), encrypted files (04), transfer (33), sharing (34), bank (36).
+- **Sichern und übertragen:** backup, Excel, CSV. Later: automatic backups (03), encrypted files (04), bank (36).
 
 ## Done when
 

@@ -8,8 +8,8 @@ import { dueSoon } from '../due';
  * (`bridge.ts` → `SpartopfShared.writeSnapshot`) after each save and at
  * midnight. Pure and tested (native.test.ts).
  *
- * No amounts by default: with `showAmounts` off (plan 17's switch, not built
- * yet, and never while *Beträge verbergen* is on) the snapshot has no amount
+ * No amounts by default: with `showAmounts` off (always, for now: no switch
+ * exists, and never while *Beträge verbergen* is on) the snapshot has no amount
  * field at all — not zeros, not masks — so nothing outside the app can show
  * one. Counts, names and dates stay.
  */
@@ -24,7 +24,7 @@ export interface SnapshotPrefs {
   /** Its locale ("de-DE"), for whoever formats a date or an amount. */
   locale: string;
   accent: Accent;
-  /** The app lock is on: widgets redact what is readable on the lock screen (plan 17). */
+  /** The app lock is on: whoever shows the snapshot redacts what is readable on the lock screen. */
   locked: boolean;
   /** Amounts may leave the app. */
   showAmounts: boolean;

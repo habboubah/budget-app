@@ -35,7 +35,7 @@ export interface InboxItem {
   card?: string;
   /** A notification's text, for plan 19's parser. */
   text?: string;
-  /** A favourite tapped on a widget (plan 17): the app takes its name, category and amount. */
+  /** A favourite tapped outside the app (an Android widget, plan 24): the app takes its name, category and amount. */
   favoriteId?: string;
   /** Unset = paid. */
   paid?: boolean;

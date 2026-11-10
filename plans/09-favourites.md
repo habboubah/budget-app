@@ -3,7 +3,7 @@
 - **Covers:**
   - U5.
   - Competitor equivalents: Money Manager bookmarks, Wallet templates, MoneyControl shortcuts (praised in reviews).
-  - Groundwork for widget buttons (17) and Siri (18).
+  - Groundwork for Siri (18).
 - **Depends on:** 00
 - **Size:** S–M
 - **Native:** none
@@ -57,4 +57,4 @@ The small daily things (Bäcker, Tanken, Kantine) are the entries people give up
 
 ## Not in this plan
 
-Favourites in widgets (17) and Siri (18).
+Favourites in Siri (18).

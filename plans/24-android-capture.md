@@ -1,6 +1,6 @@
 # 24 · Android capture and widgets
 
-- **Covers:** the Android equivalent of plans 17–19, and the Monefy reviewer's request to read bank messages
+- **Covers:** the Android equivalent of plans 18–19 (plan 17, widgets on the iPhone, was dropped), and the Monefy reviewer's request to read bank messages
 - **Depends on:** 23, 19
 - **Size:** L
 - **Native:** Android
