@@ -1,6 +1,6 @@
 # Glossary
 
-The app's core terms as each language has them **now**, taken from the strings themselves (plan 25, step 7). German and English are the originals; Arabic was written with them; the other eleven are machine-drafted. A reviewer checks a language's column first — a term changed here must be changed everywhere it appears in `src/i18n/<language>.ts`.
+The app's core terms as each language has them **now**, taken from the strings themselves (the languages plan). German and English are the originals; Arabic was written with them; the other eleven are machine-drafted. A reviewer checks a language's column first — a term changed here must be changed everywhere it appears in `src/i18n/<language>.ts`.
 
 Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 

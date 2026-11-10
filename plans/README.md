@@ -72,7 +72,7 @@ Change them here if you disagree, before the plan that depends on them starts.
 
 ## Order
 
-Only the plans still open have a file here. A finished plan's file is deleted once it is built (November 2026: 00–15, 06a, 18, 20, 21, 26–32); what it built is described in `docs/CLAUDE.md` and `docs/features.md`, its one-line result is under [Status](#status) below, and the file itself is in the git history (`git log --diff-filter=D -- plans/`).
+Only the plans still open have a file here. A finished plan's file is deleted once it is built (November 2026: 00–15, 06a, 18, 20, 21, 25–32); what it built is described in `docs/CLAUDE.md` and `docs/features.md`, its one-line result is under [Status](#status) below, and the file itself is in the git history (`git log --diff-filter=D -- plans/`).
 
 ### Phase 3 — native foundation and store presence
 | # | Plan | Covers | Depends on | Size | Native |
@@ -89,7 +89,6 @@ Only the plans still open have a file here. A finished plan's file is deleted on
 |---|---|---|---|---|---|
 | 23 | [Android app](23-android.md) | F20 | 02, 05, 06 | L | Android |
 | 24 | [Android capture and widgets](24-android-capture.md) | F8, F18 on Android | 23, 19 | L | Android |
-| 25 | [Turkish and more languages](25-languages.md) | F27 | 07, 16 | M per language | strings |
 
 ### Phase 8 — bank connection without a server
 | # | Plan | Covers | Depends on | Size | Native |
@@ -181,7 +180,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - Dropped (decided November 2026): 17 widgets, 22 iPad and wide screens, 33 device-to-device transfer, 34 nearby sync and household sharing, 35 Apple Watch. Spartopf stays a phone app (Android: plan 23) whose data moves by backup file; the plan files and the two-column layout built for 22 are removed.
 - [ ] 23 Android app — steps 1 and 2 built, `npm run check` passes and Gradle builds a debug APK and a release bundle: `android/` (Capacitor 8.6), its own native plugin (links, PDF through the print dialog, FLAG_SECURE with the lock), backup rules for `files/spartopf/` only, Android's wording in 14 languages, Nunito for amounts, the system back, Pixel sizes in ui-review, `release-android.js`, the Play listing. **Never run on a device.** Open: two phones, the upload key, the Play Console (`docs/ANDROID_RELEASE.md`, TODO.md)
 - [ ] 24 Android capture and widgets
-- [ ] 25 Turkish and more languages — everything but the review is built, `npm run check` passes: 14 languages in the app, Siri and Shortcuts texts and category guessing in all of them, `plans/glossary.md` for the reviewers, store listing drafts (`store/listing-languages.md`). Open: a native speaker per language (TODO.md)
+- [x] 25 Turkish and more languages — closed November 2026: 14 languages in the app, Siri and Shortcuts texts and category guessing in all of them, store listing drafts (`store/listing-languages.md`), `plans/glossary.md`. The eleven newer languages are machine-drafted and were not read by a native speaker; the glossary's *Reviewed* column and TODO.md are there for whoever does.
 - [x] 26 Tags — built, `npm run check` passes; schema 14 (`Entry.tags`), `normalizeTags`/`tagTotals` tested, `#tag` search, entry-sheet "# Tag", Statistik Tags breakdown, CSV tags column (injection-guarded). ui-review on device still to do
 - [x] 27 Receipts and documents — built for the web and iPhone, `npm run check` passes (it now attaches a photo with EXIF and checks that none is stored): schema 22 (`Entry.files`), files beside the book, photos re-encoded, *Beleg* in the entry sheet with viewer and *Betrag vom Beleg lesen*, receipts inside the backup, removed with *Alle Daten löschen*. Android follows with plan 23; device check still to do
 - [x] 28 PDF report — built, `npm run check` passes. *Bericht teilen* under the Monatsbericht and the Jahresrückblick: `PrintReport` (the shared report bodies, an optional entries table, a footer; light, with amounts even when hidden on screen), the print stylesheet, `SpartopfShared.makePdf` (UIPrintPageRenderer → share sheet) and `window.print()` on the web. Checked through Chromium's print-to-PDF in DE, AR and a long year. Still to do on an iPhone: the PDF from the share sheet and a paper print

@@ -33,7 +33,7 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
-**Plan 25 — languages** (needs people)
+**Languages** (plan 25 is closed; this is what it left for people)
 - [ ] Find a native speaker for Turkish first, then the other ten. Give them
   `plans/glossary.md` (tick *Reviewed*), the app in their language, and
   their section of `store/listing-languages.md`. Corrections go to Claude.

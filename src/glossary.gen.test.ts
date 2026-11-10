@@ -15,7 +15,7 @@ const TERMS: [string, string][] = [
 it.skipIf(!process.env.WRITE_GLOSSARY)('writes plans/glossary.md from the app’s own strings', async () => {
   await loadAllLanguages();
   const order = ['de', 'en', ...languages.filter(l => l !== 'de' && l !== 'en')];
-  let out = '# Glossary\n\nThe app\'s core terms as each language has them **now**, taken from the strings themselves (plan 25, step 7). German and English are the originals; Arabic was written with them; the other eleven are machine-drafted. A reviewer checks a language\'s column first — a term changed here must be changed everywhere it appears in `src/i18n/<language>.ts`.\n\nRegenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.\n';
+  let out = '# Glossary\n\nThe app\'s core terms as each language has them **now**, taken from the strings themselves (the languages plan). German and English are the originals; Arabic was written with them; the other eleven are machine-drafted. A reviewer checks a language\'s column first — a term changed here must be changed everywhere it appears in `src/i18n/<language>.ts`.\n\nRegenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.\n';
   for (const lang of order.filter(l => l !== 'de' && l !== 'en')) {
     const t = stringsFor(lang as never) as unknown as Record<string, string>;
     const de = stringsFor('de') as unknown as Record<string, string>;
