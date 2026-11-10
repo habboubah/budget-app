@@ -95,6 +95,14 @@ for plan 15.
 
 ## Decide
 
+- [ ] **Plan 18 (Siri): how may Siri answer with an amount?** The widget file
+  holds no amounts on purpose (plan 14), so "Was bleibt am Monatsende?" has
+  nothing to read. Options: (a) the action just opens the month in the app;
+  (b) a second small file with only the two balances, readable only while the
+  phone is unlocked; (c) leave that action out. Claude suggests (b). Adding an
+  entry by voice and "Offene Rechnungen" (names, no amounts) work either way.
+  Plan 18 is all Swift, so it needs an Xcode build from you to check.
+
 - [ ] **Bug found in plan 06's work:** closing the photo import while it's
   still reading doesn't cancel it; the review pops up later. Should Claude
   fix it?
