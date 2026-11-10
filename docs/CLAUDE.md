@@ -232,7 +232,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   it; `splitParts`); **schema 17** `AppData.demo` (the test data's record,
   `src/demo.ts`); **schema 20** accounts and transfers (plan 30, below);
   **schema 21** `AppData.debts` + `Entry.debtId` (plan 31, below);
-  **schema 22** `Entry.files` (plan 27, below) — all
+  **schema 22** `Entry.files` (plan 27, below);
+  **schema 23** `AppData.monthStart` (plan 32, below) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
@@ -399,6 +400,25 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (`backupFiles`, `keepAttachments`). Daily snapshots hold the list, not the
   files. Carry-over doesn't copy receipts. `privacy-check.mjs` attaches a
   photo with EXIF and fails if any of it is stored.
+- **Month from payday (plan 32, `src/period.test.ts`).** `AppData.monthStart`
+  (2–28; absent = the 1st, schema 23) is the day the book's month begins. A
+  month is then a *period*: with the 25th, "2026-11" runs 25 Oct – 24 Nov — a
+  start up to the 15th names the period after the month it starts in, a later
+  one after the next. Dates stay the truth: `Entry.month` is
+  `periodOf(entry.date)`, and entries without a date stay where they are. The
+  day lives in logic.ts as a module-level switch like the currency
+  (`setMonthStart`, set by the store before anything computes), so **never do
+  calendar maths on a month key**: use `periodOf`, `periodRange` (first/last
+  day, days), `dayIndex`/`dateAt` (n-th day of the month), `dayOfMonth(today)`,
+  `daysInMonth` and `dayInMonth` (all period-aware); `dayInCalendarMonth` is
+  the calendar one (contract dates). `changeMonthStart(data, day)` moves every
+  dated entry to its new month, keeps each account's balance from every month
+  on where it was (manual openings are adjusted by what crossed them), drops
+  months it emptied, and says how many entries moved — the sheet's preview
+  (`MonthStartSheet`, *Optionen › Haushaltsbuch › Monat beginnt am*); the
+  change is undone as a whole (`store.changeStart` returns the book before).
+  The month title's subline shows the dates while the start isn't the 1st.
+  Siri's `amounts.json` carries `until`, the period's last day.
 - **Debts and loans (plan 31, `src/insights/debts.ts`, pure and tested).**
   `Debt { name, direction: 'owe' | 'owed', principal, start, rate?, payment?,
   seriesId? }` in `AppData.debts` (schema 21). What is paid back comes from the

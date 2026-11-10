@@ -4,7 +4,7 @@ import { Language, isLanguage, DEFAULT_LANGUAGE, languageForTag, loadLanguage, s
 import {
   ALL_ACCOUNTS, AccountView, MAIN_ACCOUNT, MAX_ACCOUNTS, MAX_FAVORITES, TransferDraft, canDeleteAccount, canRemoveFromMonth, carryCandidates, carryOver,
   computeBalances, laterCopies, laterTransferCopies, mainAccount, makeTransfer, monthKeyOf, moveEntry as move, normalizeState,
-  restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid, isIsoDay, isoDay,
+  restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid, isIsoDay, isoDay, changeMonthStart, setMonthStart, validMonthStart,
 } from './logic';
 import { Currency, DEFAULT_CURRENCY, currencyForLocale, isSupportedCurrency } from './currency';
 import { defaultCategories } from './data/defaults';
@@ -106,6 +106,21 @@ export function useAppStore() {
   const [demo, setDemo] = useState<DemoInfo | undefined>(initial.demo);
   /** Debts and loans, and money lent (plan 31). */
   const [debts, setDebts] = useState<Debt[]>(initial.debts ?? []);
+  /**
+   * The day the book's month begins (plan 32) — data, so part of a backup.
+   * `setMonthStart` keeps logic.ts in step; set in the same breath as the
+   * state, so nothing computes a month with the old day.
+   */
+  const [monthStart, setMonthStartState] = useState<number>(() => {
+    const day = validMonthStart(initial.monthStart);
+    setMonthStart(day);
+    return day;
+  });
+  const applyMonthStart = (day: number | undefined) => {
+    const valid = validMonthStart(day);
+    setMonthStart(valid);
+    setMonthStartState(valid);
+  };
   /** The accounts once there is more than the main one (plan 30). */
   const [accounts, setAccounts] = useState<Account[]>(initial.accounts ?? []);
   /** Which account the balance card and the month show (plan 30): an account's id, or all of them. */
@@ -218,8 +233,9 @@ export function useAppStore() {
       ...(demo ? { demo } : {}),
       ...(accounts.length ? { accounts } : {}),
       ...(debts.length ? { debts } : {}),
+      ...(monthStart !== 1 ? { monthStart } : {}),
     }),
-    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts],
+    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts, monthStart],
   );
   /** Whether the book holds test data: Optionen offers to remove it instead of adding it. */
   const hasDemo = useMemo(() => hasDemoData(data), [data]);
@@ -624,6 +640,7 @@ export function useAppStore() {
     // A backup without categories still gets the defaults, or every entry
     // would land in "Sonstiges".
     const fixed = d.categories.length ? d : normalizeState({ ...d, categories: defaultCategories() });
+    applyMonthStart(fixed.monthStart);
     setCategories(fixed.categories);
     setEntries(fixed.entries);
     setMonths(fixed.months.length ? fixed.months : [{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fixed.categories) }]);
@@ -653,6 +670,12 @@ export function useAppStore() {
   /** Take the test data out again; the user's own data stays. Returns the book as it was, for undo. */
   const removeDemo = (): AppData => restoreData(removeDemoData(data));
 
+  /**
+   * Optionen › Monat beginnt am (plan 32): every dated entry moves to the
+   * month it now belongs to. Returns the book as it was, for undo.
+   */
+  const changeStart = (day: number): AppData => restoreData(changeMonthStart(data, day).data);
+
   const resetAll = () => {
     // Everything goes first (no copy of the old book stays behind): the data
     // file, its snapshots, pending reminders, and whatever later plans
@@ -660,6 +683,7 @@ export function useAppStore() {
     void wipeAll();
     void cancelAllReminders();
     const fresh = defaultCategories();
+    applyMonthStart(1);
     setCategories(fresh);
     setEntries([]);
     setMonths([{ key: monthKeyOf(), startedAt: Date.now(), categories: standardCategoryIds(fresh) }]);
@@ -873,6 +897,7 @@ export function useAppStore() {
     goals, addGoal, updateGoal, closeGoal, withdrawGoal, removeGoal, restoreGoal,
     rules, addRule, updateRule, removeRule, restoreRule,
     debts, addDebt, updateDebt, removeDebt, restoreDebt,
+    monthStart, changeStart,
     lastExport, markExported: () => setLastExport(new Date().toISOString().slice(0, 10)),
     copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),
     newId: uid,

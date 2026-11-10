@@ -190,6 +190,8 @@ export interface AppData {
   accounts?: Account[];
   /** Debts and loans, and money lent (schema 21, plan 31). Unset = none. */
   debts?: Debt[];
+  /** The day the months start on, 2–28 (schema 23, plan 32: a month from payday to payday). Unset = the 1st. */
+  monthStart?: number;
 }
 
 /**

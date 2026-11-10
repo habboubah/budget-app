@@ -5,8 +5,9 @@ import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ListFilter, MoreHo
 import { Category, Entry, MonthKey } from '../types';
 import {
   MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, parseMonthKey, searchByMonth, searchEntries, searchTerms,
-  sortEntries,
+  sortEntries, monthStartDay,
 } from '../logic';
+import { periodLabel } from './MonthStartSheet';
 import { Strings, capitalize, fmt, plural } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
@@ -181,6 +182,7 @@ export function MonthView(p: Props) {
     <Screen
       title={label}
       tabbed
+      subtitle={monthStartDay() !== 1 ? periodLabel(month, t) : undefined}
       eyebrow={month === current ? t.thisMonth : (
         <button
           type="button"

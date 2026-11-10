@@ -30,6 +30,16 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
+**Plan 32 — month from payday**
+- [ ] *Optionen › Haushaltsbuch › Monat beginnt am* › your payday: the sheet
+  says how many entries move; after *Sichern* the month title shows the dates
+  (e.g. "25. Okt. – 24. Nov."), and *Rückgängig* puts everything back.
+- [ ] With the start on the 25th: look over two or three past months — the
+  salary sits in the month it pays for, and *Kontostand jetzt* is the same as
+  before the change.
+- [ ] Siri "Was bleibt am Monatsende?" still answers (the app was opened once
+  after the change).
+
 **Plan 27 — receipts**
 - [ ] New entry › *Beleg* › *Foto aufnehmen*: the camera opens, the receipt
   appears as a chip, the row gets a paperclip; the chip shows it full screen.

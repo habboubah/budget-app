@@ -146,6 +146,19 @@ describe('version 22 (receipts)', () => {
   });
 });
 
+describe('version 23 (month from payday)', () => {
+  it('the month starts on the 25th: the salary of 27 October stays in November', () => {
+    const { data } = stored('storage-v23.json');
+    expect(data.monthStart).toBe(25);
+    expect(data.entries.find(e => e.id === 'w5')).toMatchObject({ month: '2026-11', date: '2026-10-27' });
+    expect(balances(data)).toEqual([['2026-10', 275000, 275000], ['2026-11', 410000, 410000]]);
+  });
+
+  it('a book without the setting starts its months on the 1st', () => {
+    expect(stored('storage-v22.json').data.monthStart).toBeUndefined();
+  });
+});
+
 describe('a backup from schema 8 (before budgets)', () => {
   const text = load('backup-schema-8.json');
   const parsed = parseBackup(text);

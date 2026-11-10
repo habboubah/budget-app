@@ -67,7 +67,7 @@ describe('the snapshot (plan 14)', () => {
     const a = buildAmounts(data, { language: 'de', locale: 'de-DE', accent: 'petrol' }, today);
     expect(a).toMatchObject({ v: 1, month: '2026-11', locale: 'de-DE', currency: 'EUR', now: 517500, end: 391500, open: 4 });
     expect(a.bills.map(b => [b.name, b.amount, b.overdue])).toEqual([['Miete', 105000, true], ['Strom', 8500, false], ['Kfz-Steuer', 18000, false]]);
-    expect(Object.keys(a).sort()).toEqual(['bills', 'currency', 'end', 'locale', 'month', 'now', 'open', 'v', 'writtenAt']);
+    expect(Object.keys(a).sort()).toEqual(['bills', 'currency', 'end', 'locale', 'month', 'now', 'open', 'until', 'v', 'writtenAt']);
   });
 });
 

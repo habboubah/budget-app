@@ -1,5 +1,5 @@
 import { AppData, Category, Contract, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Repeat } from './types';
-import { MAX_FAVORITES, addMonths, carryOver, dayInMonth, daysInMonth, monthKeyOf, parseMonthKey, standardCategoryIds } from './logic';
+import { MAX_FAVORITES, addMonths, carryOver, dayInMonth, daysInMonth, monthKeyOf, parseMonthKey, standardCategoryIds, isoDay, dayOfMonth } from './logic';
 import { defaultCategories } from './data/defaults';
 
 /*
@@ -372,18 +372,20 @@ export function demoEntries(today = new Date(), language = 'de'): Entry[] {
   for (let i = 0; i < DEMO_MONTHS; i++) {
     const key = addMonths(first, i);
     const items = itemsFor(key, i, first);
-    if (key === running && todayDay >= 4) {
-      items.push({ cat: 'fixed', name: N.handyman, amount: 18_450, day: todayDay - 3, overdue: true });
+    if (key === running && dayOfMonth(today) >= 4) {
+      const due = new Date(today.getFullYear(), today.getMonth(), todayDay - 3).getDate();
+      items.push({ cat: 'fixed', name: N.handyman, amount: 18_450, day: due, overdue: true });
     }
     let n = 0;
     for (const it of items) {
       const date = dayInMonth(key, it.day);
-      const day = Number(date.slice(8, 10));
       let paid = true;
       if (key === running) {
         const recurring = it.repeat === 'monthly' || it.repeat === 'yearly';
-        if (day > todayDay && !recurring && !it.planned) continue; // hasn't happened yet
-        paid = day <= todayDay && !it.overdue;
+        // By the date, not the day's number: a month from payday runs across two calendar months (plan 32).
+        const past = date <= isoDay(today);
+        if (!past && !recurring && !it.planned) continue; // hasn't happened yet
+        paid = past && !it.overdue;
       }
       const id = `${DEMO_PREFIX}${key}-${++n}`;
       const at = noon(date);

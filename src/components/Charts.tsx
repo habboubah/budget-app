@@ -3,6 +3,7 @@ import { Category, Hue, MonthKey } from '../types';
 import { MonthPoint, BudgetSplit, Outlook, OutlookItem, Pace, RulePart } from '../insights';
 import {
   MASK, areAmountsHidden, compactMoney, dayLabel, displayName, formatMoney, formatMoneyApprox, formatMoneyEstimate, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, parseMonthKey,
+  dateAt,
 } from '../logic';
 import { Strings, fmt } from '../translations';
 import { useWidth } from '../ui/useWidth';
@@ -820,7 +821,7 @@ export function PaceChart({ pace: p, now, t, groups }: {
   const ticks = niceTicks(0, hi);
   const top = ticks[ticks.length - 1];
   const y = (v: number) => PAD_T + PLOT_H - (v / top) * PLOT_H;
-  const dayName = (i: number) => dayLabel(`${p.month}-${String(i + 1).padStart(2, '0')}`, t.locale);
+  const dayName = (i: number) => dayLabel(dateAt(p.month, i + 1), t.locale);
   const num = new Intl.NumberFormat(t.locale);
   const legend = [
     { key: 'now', label: now, className: 'bg-chart-out' },

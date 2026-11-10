@@ -1,5 +1,5 @@
 import { AppData, Category, Entry, MonthKey } from '../types';
-import { MonthBalance, computeBalances, daysInMonth, monthKeyOf, normalizeName } from '../logic';
+import { MonthBalance, computeBalances, dayIndex, daysInMonth, isoDay, monthKeyOf, normalizeName } from '../logic';
 import { budgetOf } from '../data/defaults';
 import { Bucket } from './rules';
 import { MonthPoint, monthSeries } from './series';
@@ -93,11 +93,13 @@ export interface Book {
  * entry's month. Null: no day (an old entry, an import of a past month).
  */
 export function entryDay(e: Entry): number | null {
-  if (e.date && e.date.slice(0, 7) === e.month) return Number(e.date.slice(8, 10));
+  const dated = e.date ? dayIndex(e.date, e.month) : null;
+  if (dated !== null) return dated;
   for (const at of [e.paidAt, e.createdAt]) {
     if (at === undefined) continue;
     const d = new Date(at);
-    if (monthKeyOf(d) === e.month) return d.getDate();
+    const index = dayIndex(isoDay(d), e.month);
+    if (index !== null) return index;
   }
   return null;
 }

@@ -274,6 +274,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: الإيصالات. أرفق صورة أو ملف PDF ببند – ويمكن قراءة المبلغ مباشرة من الإيصال. تُحفظ الصور بلا بيانات الموقع وتبقى على الـiPhone.
 
+**DE:** Neu: Monat ab Gehaltstag. Lass deinen Monat am 25. beginnen – oder an jedem anderen Tag bis zum 28. Budgets, Fälligkeiten und „pro Tag übrig“ rechnen dann von Gehalt zu Gehalt.
+
+**EN:** New: month from payday. Let your month start on the 25th – or any other day up to the 28th. Budgets, due dates and “left per day” then count from one payday to the next.
+
+**AR:** جديد: الشهر من يوم الراتب. اجعل شهرك يبدأ في اليوم 25 – أو في أي يوم آخر حتى 28. عندها تُحسب الميزانيات والاستحقاقات و«المتبقي لكل يوم» من راتب إلى راتب.
+
 **DE:** Neu: Siri und Kurzbefehle. „Ausgabe in Spartopf“ trägt per Sprache ein; „Was bleibt am Monatsende?“ und „Offene Rechnungen“ antworten, sobald dein iPhone entsperrt ist.
 
 **EN:** New: Siri and Shortcuts. "Add an expense in Spartopf" books by voice; "What's left at the end of the month?" and "Open bills" answer once your iPhone is unlocked.

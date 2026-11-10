@@ -1,5 +1,5 @@
 import { AppData, Contract, Entry, MonthKey } from './types';
-import { addMonths, dayInMonth, isoDay } from './logic';
+import { addMonths, dayInCalendarMonth, dayInMonth, isoDay } from './logic';
 
 /*
  * "Abos & Verträge": the recurring costs grown into a list of contracts.
@@ -30,7 +30,7 @@ export interface ContractItem {
 
 /** A day moved by whole months, kept inside its month ("31 Jan" + 1 → "28 Feb"). */
 export function shiftDay(iso: string, months: number): string {
-  return dayInMonth(addMonths(iso.slice(0, 7), months), Number(iso.slice(8, 10)));
+  return dayInCalendarMonth(addMonths(iso.slice(0, 7), months), Number(iso.slice(8, 10)));
 }
 
 /** Days from today to a YYYY-MM-DD (negative when past), in local days. */

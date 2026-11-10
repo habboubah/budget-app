@@ -10,6 +10,7 @@ import {
   ALL_ACCOUNTS, MAIN_ACCOUNT, REVIEW_RULE, ReviewMoment, accountName, accountTotals, accountView, accountsOf, addMonths, balanceFor, canDeleteAccount, carryCandidates,
   computeBalances, displayName, formatMoneyShort, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
   shouldAskForReview, transferPair, uid,
+  changeMonthStart,
 } from './logic';
 import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, monthReview, paymentSeries, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
@@ -35,6 +36,7 @@ import { ReconcileSheet } from './components/ReconcileSheet';
 import { SplitSheet } from './components/SplitSheet';
 import { AccountsView } from './components/AccountsView';
 import { AccountSheet, AccountSheetMode } from './components/AccountSheet';
+import { MonthStartSheet } from './components/MonthStartSheet';
 import { TransferSheet, TransferSheetMode } from './components/TransferSheet';
 import { TransfersCard } from './components/TransfersCard';
 import { DebtsCard, DebtsView } from './components/DebtsView';
@@ -491,6 +493,15 @@ export default function App() {
     notifyWarning();
     setMonth(monthKeyOf());
     show(t.demoRemoved, { label: t.undo, run: () => store.restoreData(before) });
+  };
+
+  /** Optionen › Monat beginnt am (plan 32): every dated entry to its new month, shown on the running one. Undoable. */
+  const [monthStartOpen, setMonthStartOpen] = useState(false);
+  const changeStart = (day: number) => {
+    const before = store.changeStart(day);
+    notifySuccess();
+    setMonth(monthKeyOf());
+    show(fmt(t.monthStartDone, { day }), { label: t.undo, run: () => { store.restoreData(before); setMonth(monthKeyOf()); } });
   };
 
   const deleteMonth = () => {
@@ -1037,6 +1048,8 @@ export default function App() {
             onAccounts={() => push('accounts')}
             debtCount={store.debts.length}
             onDebts={() => push('debts')}
+            monthStart={store.monthStart}
+            onMonthStart={() => setMonthStartOpen(true)}
             onTransfer={() => push('transfer')}
             hasDemo={store.hasDemo}
             onAddDemo={addDemo}
@@ -1268,6 +1281,15 @@ export default function App() {
           const removed = store.removeDebt(d.id);
           if (removed) show(t.debtDeleted, { label: t.undo, run: () => store.restoreDebt(removed) });
         }}
+      />
+
+      <MonthStartSheet
+        open={monthStartOpen}
+        current={store.monthStart}
+        moved={day => changeMonthStart(data, day).moved}
+        t={t}
+        onClose={() => setMonthStartOpen(false)}
+        onSave={changeStart}
       />
 
       <TransferSheet

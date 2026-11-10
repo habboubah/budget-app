@@ -1,5 +1,5 @@
 import { Accent, AppData, CategoryKind, MonthKey } from '../types';
-import { balanceFor, computeBalances, displayName, leftPerDay, monthKeyOf, monthSettled } from '../logic';
+import { balanceFor, computeBalances, displayName, isoDay, leftPerDay, monthKeyOf, monthSettled, periodRange } from '../logic';
 import { dueSoon } from '../due';
 
 /*
@@ -114,6 +114,8 @@ export interface SiriAmounts {
   v: 1;
   writtenAt: string;
   month: MonthKey;
+  /** The running month's last day (plan 32) — past it the amounts are stale, whatever the calendar says. */
+  until: string;
   locale: string;
   currency: string;
   /** *Jetzt auf dem Konto* and *Am Monatsende*, the main account's (cents). */
@@ -128,7 +130,8 @@ export interface SiriAmounts {
 export function buildAmounts(data: AppData, prefs: Pick<SnapshotPrefs, 'language' | 'locale' | 'accent'>, today = new Date()): SiriAmounts {
   const s = buildSnapshot(data, { ...prefs, locked: false, showAmounts: true }, today);
   return {
-    v: 1, writtenAt: s.writtenAt, month: s.month, locale: s.locale, currency: s.currency,
+    // `month` is the calendar month here: that is what the intents compare with today.
+    v: 1, writtenAt: s.writtenAt, month: isoDay(today).slice(0, 7), until: periodRange(s.month).last, locale: s.locale, currency: s.currency,
     now: s.balance!.now, end: s.balance!.end, bills: s.bills, open: s.paid.total - s.paid.paid,
   };
 }

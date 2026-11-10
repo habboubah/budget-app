@@ -73,6 +73,11 @@ Everything the app can do. Build and release steps are in the
   the entry shows it full screen. *Betrag vom Beleg lesen* suggests the total
   and the shop, read on the device. Photos are saved without their location
   data; receipts are part of the backup and are erased with the book.
+- **Month from payday.** *Optionen › Haushaltsbuch › Monat beginnt am*: the
+  1st, or any day up to the 28th for those who plan from salary to salary.
+  "November" then runs from 25 Oct to 24 Nov (named after the calendar month
+  most of its days fall in) and the month title says so. Before the change the
+  sheet says how many entries move to another month; it can be undone.
 - **Siri and Shortcuts.** "Ausgabe in Spartopf" — Siri asks how much and what
   for, and the entry is booked (with an undo when the app opens). "Was bleibt
   am Monatsende in Spartopf" and "Offene Rechnungen in Spartopf" answer once

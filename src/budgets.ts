@@ -1,5 +1,5 @@
 import { AppData, Category, Entry, MonthKey } from './types';
-import { daysInMonth, monthKeyOf } from './logic';
+import { dayOfMonth, daysInMonth, monthKeyOf } from './logic';
 
 /*
  * Monthly budgets: what an expense category may cost a month (`limit`), the
@@ -49,11 +49,11 @@ export function budgetStatus(entries: Entry[], category: Category, month: MonthK
   const now = monthKeyOf(today);
   const days = daysInMonth(month);
   const running = month === now;
-  const elapsed = month < now ? 1 : month > now ? 0 : today.getDate() / days;
+  const elapsed = month < now ? 1 : month > now ? 0 : dayOfMonth(today) / days;
   const free = limit - recurring;
   return {
     limit, paid, open, spent, left, elapsed,
-    perDay: running && left > 0 ? Math.floor(left / (days - today.getDate() + 1)) : null,
+    perDay: running && left > 0 ? Math.floor(left / (days - dayOfMonth(today) + 1)) : null,
     ahead: running && left > 0 && free > 0 && oneOffPaid / free > elapsed + 0.1,
   };
 }

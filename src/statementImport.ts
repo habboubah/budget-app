@@ -1,5 +1,5 @@
 import { AppData, Category, Entry, MonthKey, Rule } from './types';
-import { displayName, isIsoDay, monthKeyOf, normalizeDigits, normalizeName, parseAmount, uid } from './logic';
+import { displayName, isIsoDay, monthKeyOf, normalizeDigits, periodOf, normalizeName, parseAmount, uid } from './logic';
 import { OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3 } from './data/defaults';
 import { LIMITS, checkCount } from './limits';
 
@@ -442,7 +442,7 @@ export function planStatement(found: Found[], data: AppData, today = new Date())
       if (!f.income && byId.get(categoryId)?.kind === 'income') categoryId = fallback;
     }
     const name = ruleName ?? prior?.name ?? f.name;
-    const month: MonthKey = f.date ? f.date.slice(0, 7) : monthKeyOf(today);
+    const month: MonthKey = f.date ? periodOf(f.date) : monthKeyOf(today);
     const kindOf = (e: Entry) => byId.get(e.categoryId)?.kind === 'income';
     let status: RowStatus = 'new';
     let match: Entry | undefined;
@@ -474,7 +474,7 @@ export function applyStatement(rows: PlannedRow[], now: number, newId: () => str
     const id = newId();
     const e: Entry = {
       id,
-      month: r.found.date ? r.found.date.slice(0, 7) : monthKeyOf(today),
+      month: r.found.date ? periodOf(r.found.date) : monthKeyOf(today),
       categoryId: r.categoryId,
       name: r.name.trim() || r.found.name,
       amount: r.found.amount,

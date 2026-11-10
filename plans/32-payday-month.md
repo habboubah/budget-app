@@ -46,6 +46,19 @@ The default stays the calendar month. The setting is one menu row.
 
 ## Done when
 
-- [ ] With start day 1 nothing changes.
-- [ ] With start day 25, every rule follows the period.
-- [ ] Switching back restores the original months.
+- [x] With start day 1 nothing changes. (All earlier tests and the golden data pass untouched.)
+- [x] With start day 25, every rule follows the period. (`src/period.test.ts`: dates, overdue, carry-over, budgets, pace, left per day, bank import, sorting.)
+- [x] Switching back restores the original months. (Golden data from the 1st to the 16th, 25th and 28th and back: the same entries, months and balances.)
+
+## Notes (built)
+
+Where the build differs from the plan above:
+
+- **No feature flag.** The plan kept it behind a flag until the golden data passed with both settings; it does, so the setting is simply there, and off (the 1st) by default.
+- **Naming rule, made exact:** a start up to the 15th names the month after the calendar month it starts in, a later one after the next. That is "the month most of its days fall in" without a tie-break in February.
+- **A sheet, not a menu:** the row opens a sheet with the days 1–28, the dates the running month would cover and "Einträge, die den Monat wechseln: 80" (worded without a plural, like the other counts). *Sichern* applies it; the toast undoes it.
+- **Balances stay.** Changing the day keeps every account's balance from each month on: a manual opening is adjusted by the paid entries that crossed it, the first month's opening moves along if entries land before it, and a month the change emptied is dropped.
+- **Entries without a date** stay in their month; a legacy due day (no date) is read inside the period.
+- **Excel import** reads months from tab names and has no dates, so nothing changes there.
+- **Siri (plan 18):** `amounts.json` now says until which day it holds (`until`), and the intent checks it — one line in `SpartopfIntents.swift`. Around the turn of a calendar month inside a period Siri may ask to open the app once.
+- **Widgets (plan 17)**, when built, must take the period from the snapshot, not from the calendar.

@@ -1,5 +1,5 @@
 import { MonthKey } from '../types';
-import { daysInMonth, monthKeyOf } from '../logic';
+import { dayIndex, dayOfMonth, daysInMonth, isoDay, monthKeyOf } from '../logic';
 import { Book, entryDay, everydayOf, finishedKeys, monthOf } from './book';
 import { DATED_SHARE, EARLY_DAYS, PACE_FLOOR, PACE_SHARE, STALE_DAYS, mean, median, quantile } from './baseline';
 
@@ -53,7 +53,7 @@ const onBasis = (d: number, days: number, basisDays: number) => (d >= days ? bas
 export function pace(book: Book, today = new Date()): Pace {
   const month = monthKeyOf(today);
   const days = daysInMonth(month);
-  const day = today.getDate();
+  const day = dayOfMonth(today);
   const m = monthOf(book, month);
 
   const perDay = Array.from({ length: days }, () => 0);
@@ -63,7 +63,8 @@ export function pace(book: Book, today = new Date()): Pace {
   const seen = (at: number | undefined) => {
     if (at === undefined) return;
     const d = new Date(at);
-    if (monthKeyOf(d) === month && d.getDate() <= day) lastSeen = Math.max(lastSeen, d.getDate());
+    const index = dayIndex(isoDay(d), month);
+    if (index !== null && index <= day) lastSeen = Math.max(lastSeen, index);
   };
   for (const e of m.entries) {
     seen(e.paidAt);

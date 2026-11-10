@@ -20,8 +20,10 @@ import { isSupportedCurrency } from './currency';
  *  20: accounts and transfers (`AppData.accounts`, `Entry.accountId`, `Entry.transfer`,
  *      `MonthRecord.openings`, plan 30) — optional, unset = one account, as before.
  *  21: debts and loans (`AppData.debts`, `Entry.debtId`, plan 31) — optional, unset = none.
- *  22: receipts (`Entry.files`, plan 27) — optional; a backup may carry the files themselves (`files`). */
-export const SCHEMA_VERSION = 22;
+ *  22: receipts (`Entry.files`, plan 27) — optional; a backup may carry the files themselves (`files`).
+ *  23: `AppData.monthStart` (plan 32: months from payday) — optional, unset = the 1st; with it an
+ *      entry's `month` is the period its date falls in. */
+export const SCHEMA_VERSION = 23;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -339,8 +341,152 @@ export function isMonthKey(v: unknown): v is MonthKey {
   return typeof v === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(v);
 }
 
+/**
+ * The month a day belongs to. A month is a calendar month unless the book
+ * starts its months on another day (plan 32, `setMonthStart`): then it is a
+ * period from that day to the day before it a month later.
+ */
 export function monthKeyOf(d = new Date()): MonthKey {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return periodOf(isoDay(d));
+}
+
+/* -------------------------------------------- month from payday (plan 32) */
+
+/** The latest day a month can start on: every month has a 28th. */
+export const MAX_MONTH_START = 28;
+
+/**
+ * The day the book's months start on — 1 unless the user set another
+ * (*Optionen › Monat beginnt am*). A module-level switch like the currency:
+ * the store sets it from the book, every month rule reads it, tests set it.
+ */
+let monthStart = 1;
+export function setMonthStart(day: number | undefined): void { monthStart = validMonthStart(day); }
+export const monthStartDay = (): number => monthStart;
+export function validMonthStart(day: unknown): number {
+  return typeof day === 'number' && Number.isInteger(day) && day >= 1 && day <= MAX_MONTH_START ? day : 1;
+}
+
+const calendarKey = (iso: string): MonthKey => iso.slice(0, 7);
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const calendarDays = (key: MonthKey) => { const { year, month } = parseMonthKey(key); return new Date(year, month, 0).getDate(); };
+
+/**
+ * The month (period) a date falls in, for months starting on `start`.
+ * A period is named after the calendar month most of it lies in: starting on
+ * the 2nd–15th it keeps the name of the month it starts in ("November" from
+ * 10 Nov to 9 Dec); starting on the 16th–28th it takes the next one's
+ * ("November" from 25 Oct to 24 Nov). The same rule in every month, whatever
+ * its length.
+ */
+export function periodOf(iso: string, start = monthStart): MonthKey {
+  const key = calendarKey(iso);
+  if (start === 1) return key;
+  const day = Number(iso.slice(8, 10));
+  if (start <= 15) return day >= start ? key : addMonths(key, -1);
+  return day >= start ? addMonths(key, 1) : key;
+}
+
+/** A month's first and last day, and how many days it has. */
+export function periodRange(key: MonthKey, start = monthStart): { first: string; last: string; days: number } {
+  if (start === 1) { const days = calendarDays(key); return { first: `${key}-01`, last: `${key}-${pad2(days)}`, days }; }
+  const from = start <= 15 ? key : addMonths(key, -1);
+  const to = addMonths(from, 1);
+  // The start month's days from `start` on, and the next month's up to the day before.
+  return { first: `${from}-${pad2(start)}`, last: `${to}-${pad2(start - 1)}`, days: calendarDays(from) - start + 1 + (start - 1) };
+}
+
+/** Which day of its month a date is, counted from 1 — the 25th is day 1 when months start on the 25th. Null outside the month. */
+export function dayIndex(iso: string, key: MonthKey, start = monthStart): number | null {
+  if (periodOf(iso, start) !== key) return null;
+  const day = Number(iso.slice(8, 10));
+  if (start === 1) return day;
+  if (day >= start) return day - start + 1;
+  return calendarDays(addMonths(calendarKey(iso), -1)) - start + 1 + day;
+}
+
+/** The date of the n-th day of a month (1 = its first), kept inside it. */
+export function dateAt(key: MonthKey, index: number, start = monthStart): string {
+  const { first, days } = periodRange(key, start);
+  const n = Math.max(1, Math.min(Math.round(index), days));
+  const [y, m, d] = first.split('-').map(Number);
+  return isoDay(new Date(y, m - 1, d + n - 1));
+}
+
+/**
+ * Moves every dated entry into the month its date falls in when months start
+ * on `start` (plan 32) — dates are the truth, entries without one stay. The
+ * months the entries then need are there; a month left without entries, with
+ * no opening balance of its own, goes. Changing back to the old day gives the
+ * old months again. Returns the book and how many entries changed month.
+ */
+export function changeMonthStart(data: AppData, start: number, now = Date.now()): { data: AppData; moved: number } {
+  const day = validMonthStart(start);
+  const kind = kindLookup(data.categories);
+  /** What a paid entry does to its account's balance. */
+  const effect = (e: Entry) => (!e.paid ? 0 : e.transfer ? (e.transfer.direction === 'in' ? e.amount : -e.amount) : kind(e.categoryId) === 'income' ? e.amount : -e.amount);
+  const single = !data.accounts?.length;
+  const moves: { e: Entry; from: MonthKey; to: MonthKey }[] = [];
+  const entries = data.entries.map(e => {
+    if (!e.date) return e;
+    const month = periodOf(e.date, day);
+    if (month === e.month) return e;
+    moves.push({ e, from: e.month, to: month });
+    return { ...e, month };
+  });
+
+  // An opening balance set by hand says what was there before its month. An
+  // entry that crossed that line is taken out of it, or put into it, so every
+  // balance after stays what it was.
+  let months: MonthRecord[] = data.months.map(m => {
+    let opening = m.opening;
+    const openings = m.openings ? { ...m.openings } : undefined;
+    for (const { e, from, to } of moves) {
+      const crossed = to < m.key && from >= m.key ? 1 : from < m.key && to >= m.key ? -1 : 0;
+      if (!crossed) continue;
+      const account = single ? MAIN_ACCOUNT : accountOf(e);
+      if (account === MAIN_ACCOUNT) { if (opening !== undefined) opening += crossed * effect(e); }
+      else if (openings?.[account] !== undefined) openings[account] += crossed * effect(e);
+    }
+    const { opening: _o, openings: _os, ...rest } = m;
+    return { ...rest, ...(opening !== undefined ? { opening } : {}), ...(openings ? { openings } : {}) };
+  });
+
+  const byKey = (a: MonthRecord, b: MonthRecord) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
+  months.sort(byKey);
+  const used = new Set(entries.map(e => e.month));
+  const had = new Set(data.entries.map(e => e.month));
+  const have = new Set(months.map(m => m.key));
+  const added = [...used].filter(k => !have.has(k)).sort();
+  // A new first month, before the one that held the opening balance: the
+  // opening belongs at the very start, so it moves there (less what now
+  // happens in that new month).
+  const oldFirst = months[0];
+  if (oldFirst && added.length && added[0] < oldFirst.key) {
+    const early = entries.filter(e => e.month < oldFirst.key);
+    const sum = (account: string) => early.reduce((t, e) => ((single ? MAIN_ACCOUNT : accountOf(e)) === account ? t + effect(e) : t), 0);
+    const first: MonthRecord = { key: added[0], startedAt: now };
+    const { opening, openings, ...rest } = oldFirst;
+    if (opening !== undefined) first.opening = opening - sum(MAIN_ACCOUNT);
+    if (openings) first.openings = Object.fromEntries(Object.entries(openings).map(([id, cents]) => [id, cents - sum(id)]));
+    months[0] = rest;
+    months.unshift(first);
+    have.add(first.key);
+  }
+  for (const key of added) if (!have.has(key)) months.push({ key, startedAt: now });
+  months.sort(byKey);
+  // And the other way: a first month this change emptied hands its opening on and goes.
+  while (months.length > 1 && !used.has(months[0].key) && had.has(months[0].key)) {
+    const [first, next, ...later] = months;
+    const merged: MonthRecord = { ...next };
+    if (first.opening !== undefined && merged.opening === undefined) merged.opening = first.opening;
+    if (first.openings) merged.openings = { ...first.openings, ...merged.openings };
+    months = [merged, ...later];
+  }
+  // Any other month this change emptied, with no opening of its own, goes too.
+  months = months.filter(m => used.has(m.key) || !had.has(m.key) || m.opening !== undefined || m.openings !== undefined);
+  const { monthStart: _old, ...rest } = data;
+  return { data: { ...rest, entries, months, ...(day !== 1 ? { monthStart: day } : {}) }, moved: moves.length };
 }
 
 export function parseMonthKey(key: MonthKey): { year: number; month: number } {
@@ -387,21 +533,37 @@ export function monthsBetween(a: MonthKey, b: MonthKey): number {
   return (y.year - x.year) * 12 + (y.month - x.month);
 }
 
+/** How many days a month has — the period's, when months don't start on the 1st (plan 32). */
 export function daysInMonth(key: MonthKey): number {
-  const { year, month } = parseMonthKey(key);
-  return new Date(year, month, 0).getDate();
+  return periodRange(key).days;
 }
 
 export const isIsoDay = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(v);
 
-/** Day `day` of a month, kept inside it ("31" in February is the 28th / 29th), as YYYY-MM-DD. */
+/** Day `day` of a calendar month, kept inside it ("31" in February is the 28th / 29th), as YYYY-MM-DD. */
+export function dayInCalendarMonth(key: MonthKey, day: number): string {
+  return `${key}-${pad2(Math.max(1, Math.min(day, calendarDays(key))))}`;
+}
+
+/**
+ * The date in a month that falls on calendar day `day` ("the 3rd"), kept
+ * inside it. With months from the 25th, "November" has its 27th in October
+ * and its 3rd in November (plan 32).
+ */
 export function dayInMonth(key: MonthKey, day: number): string {
-  return `${key}-${String(Math.max(1, Math.min(day, daysInMonth(key)))).padStart(2, '0')}`;
+  if (monthStart === 1) return dayInCalendarMonth(key, day);
+  const from = monthStart <= 15 ? key : addMonths(key, -1);
+  return day >= monthStart ? dayInCalendarMonth(from, day) : dayInCalendarMonth(addMonths(from, 1), Math.max(1, day));
 }
 
 /** A new entry's date: today in the current month, else the same day of the month it goes into. */
 export function defaultEntryDate(key: MonthKey, today = new Date()): string {
   return dayInMonth(key, today.getDate());
+}
+
+/** Which day of the running month today is, counted from 1 (plan 32: the 25th can be day 1). */
+export function dayOfMonth(today = new Date()): number {
+  return dayIndex(isoDay(today), monthKeyOf(today)) ?? today.getDate();
 }
 
 /** "3. Nov." / "3 Nov" — an entry's date on the month page, where the year goes without saying. */
@@ -458,7 +620,12 @@ export function canRemoveFromMonth(data: AppData, key: MonthKey, categoryId: str
  * order it was entered — the way the Excel column grows.
  */
 /** The day of the month an entry happens: its date, or for older entries without one, the due day. */
-const dayOf = (e: Entry): number | undefined => (e.date ? Number(e.date.slice(8, 10)) : e.dueDay);
+const dayOf = (e: Entry): number | undefined => {
+  if (e.date) return dayIndex(e.date, e.month) ?? Number(e.date.slice(8, 10));
+  if (e.dueDay === undefined || monthStart === 1) return e.dueDay;
+  // Counted from the month's first day: with a start on the 25th, the 28th comes before the 3rd.
+  return e.dueDay >= monthStart ? e.dueDay - monthStart + 1 : e.dueDay + 31 - monthStart + 1;
+};
 
 export function sortEntries(entries: Entry[]): Entry[] {
   return [...entries].sort((a, b) => {
@@ -502,7 +669,7 @@ export function isOverdue(e: Entry, today = new Date()): boolean {
   const now = monthKeyOf(today);
   if (e.month < now) return true;
   if (e.month > now || e.dueDay === undefined) return false;
-  return Math.min(e.dueDay, daysInMonth(e.month)) < today.getDate();
+  return dayInMonth(e.month, e.dueDay) < isoDay(today);
 }
 
 /* ---------------------------------------------------------------- balances */
@@ -563,7 +730,7 @@ export function monthSettled(t: Totals): { income: number; expense: number; net:
  */
 export function leftPerDay(net: number, month: MonthKey, today = new Date()): number | null {
   if (net <= 0 || month !== monthKeyOf(today)) return null;
-  const daysLeft = daysInMonth(month) - today.getDate() + 1;
+  const daysLeft = daysInMonth(month) - dayOfMonth(today) + 1;
   return Math.floor(net / daysLeft);
 }
 
@@ -1366,7 +1533,7 @@ function normalizeCategory(v: unknown): Category | null {
   };
 }
 
-function normalizeEntry(v: unknown): Entry | null {
+function normalizeEntry(v: unknown, start = 1): Entry | null {
   if (!isObj(v) || !str(v.id) || !isMonthKey(v.month) || !str(v.categoryId)) return null;
   const amount = typeof v.amount === 'number' && Number.isFinite(v.amount) ? Math.min(Math.round(Math.abs(v.amount)), MAX_CENTS) : 0;
   const due = typeof v.dueDay === 'number' && Number.isInteger(v.dueDay) && v.dueDay >= 1 && v.dueDay <= 31 ? v.dueDay : undefined;
@@ -1382,7 +1549,8 @@ function normalizeEntry(v: unknown): Entry | null {
     createdAt: typeof v.createdAt === 'number' && Number.isFinite(v.createdAt) ? v.createdAt : 0,
   };
   if (due !== undefined) e.dueDay = due;
-  if (isIsoDay(v.date) && v.date.slice(0, 7) === e.month) e.date = v.date;
+  // A date is always inside its month — the period, when months start on another day (plan 32).
+  if (isIsoDay(v.date) && periodOf(v.date, start) === e.month) e.date = v.date;
   const note = cleanText(str(v.note) ?? '', 200);
   if (note) e.note = note;
   if (typeof v.paidAt === 'number' && Number.isFinite(v.paidAt)) e.paidAt = v.paidAt;
@@ -1461,7 +1629,8 @@ export function normalizeState(raw: unknown): AppData {
   const v = isObj(raw) ? raw : {};
   const arr = (x: unknown) => (Array.isArray(x) ? x : []);
   const categories = dedupe(arr(v.categories).map(normalizeCategory).filter((c): c is Category => c !== null), c => c.id);
-  const entries = dedupe(arr(v.entries).map(normalizeEntry).filter((e): e is Entry => e !== null), e => e.id);
+  const monthStart = validMonthStart(v.monthStart);
+  const entries = dedupe(arr(v.entries).map(e => normalizeEntry(e, monthStart)).filter((e): e is Entry => e !== null), e => e.id);
   const months = dedupe(arr(v.months).map(normalizeMonth).filter((m): m is MonthRecord => m !== null), m => m.key);
 
   const known = new Set(categories.map(c => c.id));
@@ -1506,6 +1675,7 @@ export function normalizeState(raw: unknown): AppData {
     ...(demo ? { demo } : {}),
     ...(accounts ? { accounts } : {}),
     ...(debts ? { debts } : {}),
+    ...(monthStart !== 1 ? { monthStart } : {}),
   };
 }
 

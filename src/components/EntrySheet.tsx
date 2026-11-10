@@ -8,7 +8,7 @@ import { FileTooLargeError } from '../limits';
 import { ReceiptViewer } from './ReceiptViewer';
 import { budgetOf } from '../data/defaults';
 import {
-  amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
+  amountToInput, cleanText, dayLabel, periodRange, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
   normalizeDigits, topCategories, MAIN_ACCOUNT, MAX_ATTACHMENTS,
 } from '../logic';
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
@@ -233,8 +233,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const due = /^\d{1,2}$/.test(dueText.trim()) ? Number(dueText) : undefined;
   const dueValid = dueText.trim() === '' || (due !== undefined && due >= 1 && due <= 31);
   // A date inside the entry's month, or none (entries from before dates existed).
-  const firstDay = `${month}-01`;
-  const lastDay = `${month}-${String(daysInMonth(month)).padStart(2, '0')}`;
+  const { first: firstDay, last: lastDay } = periodRange(month);
   const dateValid = dateText === '' || (isIsoDay(dateText) && dateText >= firstDay && dateText <= lastDay);
   const valid = amount !== null && !!category && dueValid && dateValid;
 

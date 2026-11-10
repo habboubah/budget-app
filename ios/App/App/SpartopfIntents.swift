@@ -37,6 +37,8 @@ enum SharedFiles {
     /// Siri's amounts, when the app wrote them for the running month (a new month: open the app once).
     static var amounts: [String: Any]? {
         guard let a = json("amounts.json"), (a["month"] as? String) == monthKey(Date()) else { return nil }
+        // A month that starts on payday ends inside a calendar month (plan 32).
+        if let until = a["until"] as? String, isoDay(Date()) > until { return nil }
         return a
     }
 

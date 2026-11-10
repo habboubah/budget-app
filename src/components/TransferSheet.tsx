@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CalendarDays, Check, Trash2 } from 'lucide-react';
 import { Account, Entry, MonthKey, Repeat } from '../types';
 import {
-  MAIN_ACCOUNT, TransferDraft, accountName, amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, isIsoDay, normalizeDigits, parseAmount,
+  MAIN_ACCOUNT, TransferDraft, accountName, amountToInput, cleanText, dayLabel, periodOf, periodRange, defaultEntryDate, isIsoDay, normalizeDigits, parseAmount,
 } from '../logic';
 import { Strings } from '../translations';
 import { Sheet } from '../ui/Sheet';
@@ -69,9 +69,9 @@ export function TransferSheet({ mode, accounts, t, onClose, onCreate, onSave, on
 
   const amount = parseAmount(amountText, t.locale);
   const same = from === to;
-  const firstDay = month ? `${month}-01` : undefined;
-  const lastDay = month ? `${month}-${String(daysInMonth(month)).padStart(2, '0')}` : undefined;
-  const dateValid = !date || (isIsoDay(date) && date.slice(0, 7) === month);
+  const firstDay = month ? periodRange(month).first : undefined;
+  const lastDay = month ? periodRange(month).last : undefined;
+  const dateValid = !date || (isIsoDay(date) && periodOf(date) === month);
   const valid = amount !== null && amount > 0 && !same && dateValid;
   const label = (a: Account) => accountName(a, t.accountMain);
 

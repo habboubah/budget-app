@@ -240,7 +240,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [x] 29 Periods and year comparison — core built, `npm run check` passes; `periodSeries`/`compareYears`/`bookYears` tested, a year picker + a "Mit Vorjahr vergleichen" line in Statistik. The faint last-year chart outlines and the Wofür change-vs-last-year chips are a noted follow-up (Charts.tsx surgery); ui-review on device still to do
 - [x] 30 Cash and savings accounts — built, `npm run check` passes; schema 20 (`AppData.accounts`, `Entry.accountId`, `Entry.transfer`, `MonthRecord.openings`), balances per account and for all, transfers as linked pairs outside every total, *Optionen › Konten*, the balance card's switch, *Umbuchen*, the entry sheet's account pill, Planen's *Vermögen*, imports into the shown account. Goals pointing at a savings account are a noted follow-up; device check still to do
 - [x] 31 Debts and loans — built, `npm run check` passes; schema 21 (`AppData.debts`, `Entry.debtId`), `debtSchedule`/`annuityPayment` tested against the published tables, *Optionen › Schulden und Kredite*, the debt sheet, Planen's *Schulden* card (only with a debt), the entry sheet's debt pill. The reminder for money lent is a noted follow-up; device check still to do
-- [ ] 32 Month from payday
+- [x] 32 Month from payday — built, `npm run check` passes; schema 23 (`AppData.monthStart`), `periodOf`/`periodRange`/`changeMonthStart` tested (golden data round trip 1 → 16/25/28 → 1), *Optionen › Haushaltsbuch › Monat beginnt am* with a preview and undo, dates under the month title. iPhone check in TODO.md.
 - [ ] 33 Device-to-device transfer
 - [ ] 34 Nearby sync and household sharing
 - [ ] 35 Apple Watch

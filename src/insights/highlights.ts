@@ -1,5 +1,5 @@
 import { MonthKey } from '../types';
-import { addMonths, monthKeyOf, normalizeName } from '../logic';
+import { addMonths, dayOfMonth, monthKeyOf, normalizeName } from '../logic';
 import { Book, entryDay, everydayOf, finishedKeys, monthOf, spendingOf } from './book';
 import { materiality, mean, median } from './baseline';
 import { bestWorst, biggestExpenses, categoryTrends, missingRegulars, priceChanges, unusual } from './hints';
@@ -240,7 +240,7 @@ function missing(book: Book, today: Date): Draft[] {
     if (hits.some(h => h.length !== 1)) continue;
     const days = hits.map(h => entryDay(h[0])).filter((d): d is number => d !== null);
     const usualDay = days.length ? Math.round(median(days)) : 1;
-    if (today.getDate() < usualDay + 2) continue;
+    if (dayOfMonth(today) < usualDay + 2) continue;
     const income = book.partOf(x.categoryId) === 'income';
     out.push({
       id: `missing:${key}:${now}`, kind: 'missing', variant: income ? 'income' : 'expense', home: 'planen', months: [now], categoryId: x.categoryId,

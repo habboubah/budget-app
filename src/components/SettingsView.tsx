@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins } from 'lucide-react';
+import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins, CalendarRange } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -22,6 +22,9 @@ interface Props {
   onAccent: (a: Accent) => void;
   currency: Currency;
   onCurrency: (c: Currency) => void;
+  /** The day the book's month begins (plan 32). */
+  monthStart: number;
+  onMonthStart: () => void;
   onCategories: () => void;
   favoriteCount: number;
   onFavorites: () => void;
@@ -244,6 +247,13 @@ export function SettingsView(p: Props) {
           leading={<IconTile icon={HandCoins} hue="sand" />}
           trailing={<Next value={p.debtCount || undefined} />}
           onClick={p.onDebts}
+        />
+        <Row
+          label={t.monthStartRow}
+          sub={t.monthStartRowSub}
+          leading={<IconTile icon={CalendarRange} hue="sky" />}
+          trailing={<Next value={fmt(t.monthStartValue, { day: p.monthStart })} />}
+          onClick={p.onMonthStart}
         />
         <Row
           label={t.favorites}

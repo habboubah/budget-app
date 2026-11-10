@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
 import { Category } from '../types';
-import { dayLabel, displayName, formatMoney, monthLabel } from '../logic';
+import { dayLabel, displayName, formatMoney, monthLabel, periodOf } from '../logic';
 import { PlannedRow } from '../statementImport';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
@@ -47,7 +47,7 @@ export function StatementImportSheet({ state, categories, language, t, onClose, 
   const groups = useMemo(() => {
     const by = new Map<string, PlannedRow[]>();
     for (const r of rows) {
-      const k = r.found.date?.slice(0, 7) ?? '';
+      const k = r.found.date ? periodOf(r.found.date) : '';
       by.set(k, [...(by.get(k) ?? []), r]);
     }
     return [...by].sort(([a], [b]) => (a < b ? 1 : -1));
