@@ -9,7 +9,9 @@ No account, no server: everything lives on the device. Same stack and
 conventions as `pizza-driver-log` and `shopping-list` (React 19 + TypeScript,
 Vite 6, Tailwind 4, `motion`, `lucide-react`, Capacitor 8 for the iOS shell,
 `vite-plugin-pwa` for the installable web app, vitest for the pure logic).
-One bank account only, on purpose.
+One account by default, on purpose: cash or a savings account show up only
+once the user adds one (plan 30), and a book with one account looks as it
+always did.
 
 ## What the Excel sheet does (and the app keeps)
 

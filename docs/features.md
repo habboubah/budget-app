@@ -57,6 +57,17 @@ Everything the app can do. Build and release steps are in the
   the entry there. All of this month's categories show at once, the rest behind
   *Weitere*. "Sichern & nächster" for a stack of receipts (keeps the date).
   Deleting is undoable.
+- **Cash and savings accounts.** One account is all most people need, and
+  that is all a book shows until *Optionen › Konten* gets another — cash, a
+  savings account or any other, each with what is on it today. From then on
+  the balance card has a small switch ("🏦 Girokonto ▾", *Alle Konten* for the
+  total), a new entry has an account pill, and the month's "⋯" has
+  **Umbuchen**: "200 € vom Giro aufs Bargeld" as one transfer, which moves
+  both balances and is neither income nor expense — it gets its own card
+  under the categories, never counted in Statistik or a budget. Each account
+  keeps its own opening balance; budgets, Statistik and Planen count every
+  account, and Planen shows *Vermögen* — all of them together. A bank import
+  goes into the account shown. An account goes only once it is empty.
 - **Split a payment.** In an entry's editor, *Aufteilen* turns one receipt
   ("Lidl 48,20 €") into parts in different categories ("Lebensmittel 35,10 € ·
   Drogerie 13,10 €") that must add up to the original. The parts are normal

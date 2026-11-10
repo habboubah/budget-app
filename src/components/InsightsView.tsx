@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Category, MonthKey } from '../types';
-import { monthKeyOf, monthLabel } from '../logic';
+import { formatMoney, monthKeyOf, monthLabel } from '../logic';
+import { ChevronRight, Wallet } from 'lucide-react';
 import { Book, Insight, contractHints, financeCheck, finishedKeys, outlook, pace, savings, upToNow, yearlyReserve } from '../insights';
 import { ContractItem, contractItems } from '../contracts';
 import { Strings, fmt } from '../translations';
@@ -37,6 +38,8 @@ interface Props {
   /** Turn the yearly reserve into a savings goal (plans 11 + 12). */
   onReserveGoal: (target: number, due?: MonthKey) => void;
   onExplain: (e: Explain) => void;
+  /** Once there is more than one account (plan 30): all of them together, "Vermögen", and the way to the accounts. */
+  wealth?: { now: number; count: number; onOpen: () => void };
 }
 
 /**
@@ -48,7 +51,7 @@ interface Props {
  * 11 (Rücklage), 12 (Spartöpfe) and 31 (Schulden), and *Finanz-Check*.
  * Looking back is Statistik's.
  */
-export function InsightsView({ book, language, t, hidden, onBudget, onContract, onContractsAll, onReport, onAdd, onDue, onGoals, onReserveGoal, onExplain }: Props) {
+export function InsightsView({ book, language, t, hidden, onBudget, onContract, onContractsAll, onReport, onAdd, onDue, onGoals, onReserveGoal, onExplain, wealth }: Props) {
   const data = book.data;
   const today = new Date();
   const current = monthKeyOf(today);
@@ -94,6 +97,25 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
       )}
 
       <GoalsCard data={data} t={t} today={today} onOpen={onGoals} />
+
+      {wealth && (
+        <button
+          type="button"
+          onClick={wealth.onOpen}
+          className="w-full rounded-md bg-surface card-edge px-[16px] py-3.5 flex items-center gap-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+        >
+          <span className="w-8 h-8 rounded-full bg-accent-dim text-accent inline-flex items-center justify-center shrink-0" aria-hidden="true">
+            <Wallet className="w-[18px] h-[18px]" strokeWidth={2.2} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block eyebrow text-fg-mute">{t.wealth}</span>
+            <span className="block text-body text-fg wrap-compound">
+              {fmt(t.wealthLine, { amount: formatMoney(wealth.now, t.locale), n: wealth.count })}
+            </span>
+          </span>
+          <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
+        </button>
+      )}
 
       {/* Slot: Schulden (plan 31). */}
 

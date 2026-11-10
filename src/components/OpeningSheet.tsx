@@ -16,6 +16,8 @@ interface Props {
   /** Where the automatic carry-over comes from, and how much it is. */
   prevKey?: MonthKey;
   carried?: number;
+  /** Whose opening it is, once there is more than one account (plan 30). */
+  accountLabel?: string;
   t: Strings;
   onClose: () => void;
   /** `undefined` = go back to the automatic carry-over. */
@@ -27,7 +29,7 @@ interface Props {
  * before; set by hand for the very first month, or when the real account has
  * drifted from the book. Can be negative (an overdrawn account).
  */
-export function OpeningSheet({ open, month, current, overridden, prevKey, carried, t, onClose, onSave }: Props) {
+export function OpeningSheet({ open, month, current, overridden, prevKey, carried, accountLabel, t, onClose, onSave }: Props) {
   const [text, setText] = useState('');
   useEffect(() => {
     if (open) setText(overridden || !prevKey ? (current ? (current < 0 ? '-' : '') + amountToInput(Math.abs(current), t.locale) : '') : '');
@@ -48,7 +50,7 @@ export function OpeningSheet({ open, month, current, overridden, prevKey, carrie
       action={{ label: t.save, onClick: save, disabled: value === null }}>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-5">
         <p className="text-label text-fg-mute wrap-prose">
-          {monthLabel(month, t.locale)} — {prevKey ? t.openingBody : t.openingFirstBody}
+          {accountLabel ? `${accountLabel} · ` : ''}{monthLabel(month, t.locale)} — {prevKey ? t.openingBody : t.openingFirstBody}
         </p>
         <Field
           label={prevKey ? t.carryManual : t.startingBalance}

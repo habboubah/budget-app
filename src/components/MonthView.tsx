@@ -15,7 +15,7 @@ import { useEntryDrag } from '../ui/useEntryDrag';
 import { rise, stagger } from '../ui/stagger';
 import { Picture } from '../ui/Picture';
 import { SearchField } from '../ui/SearchField';
-import { BalanceCard } from './BalanceCard';
+import { AccountSwitch, BalanceCard } from './BalanceCard';
 import { CategorySection } from './CategorySection';
 import { StartMonthCard } from './StartMonthCard';
 import { EmptyCategories } from './EmptyCategories';
@@ -58,7 +58,19 @@ interface Props {
   onDelete: (e: Entry) => void;
   /** Tap the month's name: the month picker. */
   onPickMonth: () => void;
-  onOpening: () => void;
+  /** Unset for "Alle Konten" (plan 30). */
+  onOpening?: () => void;
+  /** The balance card's account switch, once there is more than one account (plan 30). */
+  account?: AccountSwitch;
+  /** The month's transfers between accounts (App builds the card; plan 30). */
+  transfers?: React.ReactNode;
+  /**
+   * What the budgets count (plan 30): every account's entries — a budget is
+   * the category's, wherever it was paid from. Defaults to `entries`.
+   */
+  budgetEntries?: Entry[];
+  /** A budget alone earns a category its card (unset = yes). Off for an account besides the main one: only what it was used for shows. */
+  budgetCards?: boolean;
   /** Opens Settings → Kategorien (when there are none left). */
   onCategories: () => void;
   /** Ids of the categories folded down to their header. */
@@ -115,7 +127,7 @@ export function MonthView(p: Props) {
   // wait in one row of chips at the end.
   // A category with a budget always has something to say (what is left of it), so it keeps its card.
   const used = new Set(mine.map(e => e.categoryId));
-  const hasCard = (c: Category) => used.has(c.id) || (c.kind === 'expense' && !!c.limit);
+  const hasCard = (c: Category) => used.has(c.id) || (p.budgetCards !== false && c.kind === 'expense' && !!c.limit);
   const shownCategories = allOpen
     ? categories.filter(c => mine.some(e => e.categoryId === c.id && !e.paid))
     : categories.filter(hasCard);
@@ -261,7 +273,7 @@ export function MonthView(p: Props) {
           onOpenMonth={m => { setQuery(''); p.onMonth(m); }}
         />
       ) : (<>
-      {!p.hideBalance && <BalanceCard balance={balance} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} />}
+      {!p.hideBalance && <BalanceCard balance={balance} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account} />}
 
       {/* Keyed by month: stepping to another one brings its cards in afresh
           (the balance card above stays, and its numbers run to the new values). */}
@@ -270,7 +282,7 @@ export function MonthView(p: Props) {
         <StartMonthCard
           month={month}
           from={balance.prevKey}
-          candidates={p.candidates}
+          candidates={p.candidates.filter(e => !e.transfer)}
           categories={categories}
           t={t}
           onStart={p.onStart}
@@ -338,7 +350,7 @@ export function MonthView(p: Props) {
               onEdit={p.onEdit}
               onToggle={p.onToggle}
               onDelete={p.onDelete}
-              budget={budgetStatus(entries, c, month, today)}
+              budget={budgetStatus(p.budgetEntries ?? entries, c, month, today)}
               onBudget={c.kind === 'expense' ? () => p.onBudget(c) : undefined}
               openOnly={filtered(c.id)}
               onOpenOnly={() => {
@@ -352,6 +364,8 @@ export function MonthView(p: Props) {
               onMoveBy={moveBy}
             />
           ))}
+
+          {p.transfers}
 
           {emptyCategories.length > 0 && (
             <EmptyCategories

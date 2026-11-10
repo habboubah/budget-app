@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ACCENTS, Accent, AppData, Category, Contract, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
+import { ACCENTS, Accent, Account, AppData, Category, Contract, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
 import { Language, isLanguage, DEFAULT_LANGUAGE, languageForTag, loadLanguage, stringsFor } from './translations';
 import {
-  MAX_FAVORITES, canRemoveFromMonth, carryCandidates, carryOver, computeBalances, laterCopies, monthKeyOf, moveEntry as move, normalizeState,
+  ALL_ACCOUNTS, AccountView, MAIN_ACCOUNT, MAX_ACCOUNTS, MAX_FAVORITES, TransferDraft, canDeleteAccount, canRemoveFromMonth, carryCandidates, carryOver,
+  computeBalances, laterCopies, laterTransferCopies, mainAccount, makeTransfer, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid, isIsoDay, isoDay,
 } from './logic';
 import { Currency, DEFAULT_CURRENCY, currencyForLocale, isSupportedCurrency } from './currency';
@@ -30,6 +31,7 @@ const K = {
   lastExport: 'spartopf-last-export',
   copyCardDismissed: 'spartopf-copy-card-dismissed',
   autoCategory: 'spartopf-auto-category',
+  account: 'spartopf-account',
 } as const;
 
 /** Dismissed hints and seen reviews are kept as their last 200 ids — no amounts in them. */
@@ -102,6 +104,10 @@ export function useAppStore() {
   const [rules, setRules] = useState<Rule[]>(initial.rules ?? []);
   /** What the test data added (schema 17, src/demo.ts) — data, so part of a backup. */
   const [demo, setDemo] = useState<DemoInfo | undefined>(initial.demo);
+  /** The accounts once there is more than the main one (plan 30). */
+  const [accounts, setAccounts] = useState<Account[]>(initial.accounts ?? []);
+  /** Which account the balance card and the month show (plan 30): an account's id, or all of them. */
+  const [accountView, setAccountView] = useState<AccountView>(() => readString(K.account) ?? MAIN_ACCOUNT);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = readString(K.theme);
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
@@ -162,6 +168,7 @@ export function useAppStore() {
   useEffect(() => { persist(K.firstUse, firstUse); }, [firstUse]);
   useEffect(() => { if (reviewAsked) persist(K.reviewAsked, reviewAsked); }, [reviewAsked]);
   useEffect(() => { persist(K.autoCategory, autoCategory ? '1' : '0'); }, [autoCategory]);
+  useEffect(() => { persist(K.account, accountView); }, [accountView]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.hintsHidden, JSON.stringify(hintsHidden)); }, [hintsHidden]);
   useEffect(() => { persist(K.reviewsSeen, JSON.stringify(reviewsSeen)); }, [reviewsSeen]);
@@ -207,15 +214,23 @@ export function useAppStore() {
       ...(goals.length ? { goals } : {}),
       ...(rules.length ? { rules } : {}),
       ...(demo ? { demo } : {}),
+      ...(accounts.length ? { accounts } : {}),
     }),
-    [categories, entries, months, contracts, currency, favorites, goals, rules, demo],
+    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts],
   );
   /** Whether the book holds test data: Optionen offers to remove it instead of adding it. */
   const hasDemo = useMemo(() => hasDemoData(data), [data]);
   // Every change to the book goes to storage (debounced, written atomically; storage.ts).
   useEffect(() => { saver.save(data); }, [data]);
-  // Contracts don't move money: the balances don't follow them.
-  const balances = useMemo(() => computeBalances({ categories, entries, months }), [categories, entries, months]);
+  // Contracts don't move money: the balances don't follow them. The main account's (plan 30).
+  const balances = useMemo(
+    () => computeBalances({ categories, entries, months, ...(accounts.length ? { accounts } : {}) }),
+    [categories, entries, months, accounts],
+  );
+  /** The account shown, as long as it is still there; the main one otherwise. */
+  const shownAccount: AccountView = accountView === ALL_ACCOUNTS
+    ? (accounts.length > 1 ? ALL_ACCOUNTS : MAIN_ACCOUNT)
+    : accounts.some(a => a.id === accountView) ? accountView : MAIN_ACCOUNT;
 
   /* ---------------------------------------------------------------- months */
 
@@ -231,7 +246,8 @@ export function useAppStore() {
    */
   const startMonth = (key: MonthKey, carry: boolean): number => {
     const copies = carry ? carryOver(carryCandidates(data, key), key, Date.now()) : [];
-    const record = newMonth(key, copies.map(e => e.categoryId));
+    // A carried transfer brings no category along (plan 30).
+    const record = newMonth(key, copies.filter(e => !e.transfer).map(e => e.categoryId));
     setMonths(prev => (prev.some(m => m.key === key) ? prev : sortMonths([...prev, record])));
     if (copies.length) setEntries(prev => [...prev, ...copies]);
     return copies.length;
@@ -267,14 +283,20 @@ export function useAppStore() {
     return copies.length;
   };
 
-  /** Set (or with `undefined`, clear) a month's manual opening balance. */
-  const setOpening = (key: MonthKey, opening: number | undefined) => {
+  /** Set (or with `undefined`, clear) a month's manual opening balance — the main account's, or another's (plan 30). */
+  const setOpening = (key: MonthKey, opening: number | undefined, account: string = MAIN_ACCOUNT) => {
     ensureMonth(key);
     setMonths(prev => {
       const has = prev.some(m => m.key === key);
       const next = has ? prev : [...prev, newMonth(key)];
       return sortMonths(next.map(m => {
         if (m.key !== key) return m;
+        if (account !== MAIN_ACCOUNT) {
+          const { [account]: _old, ...others } = m.openings ?? {};
+          const openings = opening === undefined ? others : { ...others, [account]: opening };
+          const { openings: _drop, ...rest } = m;
+          return Object.keys(openings).length ? { ...rest, openings } : rest;
+        }
         const { opening: _drop, ...rest } = m;
         return opening === undefined ? rest : { ...rest, opening };
       }));
@@ -330,6 +352,8 @@ export function useAppStore() {
       // Optional fields set to undefined are dropped, not stored as null.
       if (next.dueDay === undefined) delete next.dueDay;
       if (!next.note) delete next.note;
+      // Back on the main account: no account is stored (plan 30).
+      if (!next.accountId || next.accountId === MAIN_ACCOUNT) delete next.accountId;
       if (next.paid && !e.paid) next.paidAt = Date.now();
       if (!next.paid) delete next.paidAt;
       return next;
@@ -434,6 +458,105 @@ export function useAppStore() {
   const restoreEntry = (entry: Entry, index: number) =>
     setEntries(prev => (prev.some(e => e.id === entry.id) ? prev : [...prev.slice(0, index), entry, ...prev.slice(index)]));
 
+  /* ---------------------------------------------------- transfers (plan 30) */
+
+  /** A transfer between two accounts: its two entries; a recurring one also in the months started after it. */
+  const addTransfer = (d: TransferDraft): string => {
+    ensureMonth(d.month);
+    const now = Date.now();
+    const pair = makeTransfer(d, now);
+    const later = laterTransferCopies(data, pair, now + 2);
+    setEntries(prev => [...prev, ...pair, ...later]);
+    return pair[0].transfer!.pairId;
+  };
+
+  /** Change both sides of a transfer at once. Returns them as they were, for undo (`restoreEntries`). */
+  const updateTransfer = (pairId: string, patch: Partial<Omit<TransferDraft, 'month'>>): Entry[] => {
+    const before = entries.filter(e => e.transfer?.pairId === pairId);
+    const now = Date.now();
+    setEntries(prev => prev.map(e => {
+      if (e.transfer?.pairId !== pairId) return e;
+      const next: Entry = { ...e };
+      if (patch.amount !== undefined) next.amount = patch.amount;
+      if (patch.name !== undefined) next.name = patch.name || e.name;
+      if (patch.repeat !== undefined) next.repeat = patch.repeat;
+      if ('date' in patch) { if (patch.date) next.date = patch.date; else delete next.date; }
+      if ('note' in patch) { if (patch.note) next.note = patch.note; else delete next.note; }
+      if (patch.paid !== undefined) {
+        next.paid = patch.paid;
+        if (patch.paid && !e.paid) next.paidAt = now;
+        if (!patch.paid) delete next.paidAt;
+      }
+      const account = e.transfer.direction === 'out' ? patch.from : patch.to;
+      if (account !== undefined) { if (account === MAIN_ACCOUNT) delete next.accountId; else next.accountId = account; }
+      return next;
+    }));
+    return before;
+  };
+
+  /** Remove a transfer's two entries; returns them for undo. */
+  const removeTransfer = (pairId: string): Entry[] => {
+    const gone = entries.filter(e => e.transfer?.pairId === pairId);
+    setEntries(prev => prev.filter(e => e.transfer?.pairId !== pairId));
+    return gone;
+  };
+
+  const restoreTransfer = (gone: Entry[]) => setEntries(prev => {
+    const ids = new Set(prev.map(e => e.id));
+    return [...prev, ...gone.filter(e => !ids.has(e.id))];
+  });
+
+  /* ----------------------------------------------------- accounts (plan 30) */
+
+  /** A new account; the main one is written down with the first. Null once there are as many as fit. */
+  const addAccount = (a: Omit<Account, 'id' | 'createdAt'>): Account | null => {
+    if (accounts.length >= MAX_ACCOUNTS) return null;
+    const created: Account = { ...a, id: uid(), createdAt: Date.now() };
+    setAccounts(prev => [...(prev.length ? prev : [mainAccount()]), created]);
+    return created;
+  };
+
+  const updateAccount = (id: string, patch: Partial<Omit<Account, 'id' | 'createdAt'>>) =>
+    setAccounts(prev => {
+      const list = prev.length ? prev : [mainAccount()];
+      return list.map(a => (a.id === id ? { ...a, ...patch } : a));
+    });
+
+  interface RemovedAccount { account: Account; index: number; openings: Record<MonthKey, number>; before: Account[] }
+  /** Remove an account nothing is booked on (and its opening balances). Null when it can't go. */
+  const removeAccount = (id: string): RemovedAccount | null => {
+    const index = accounts.findIndex(a => a.id === id);
+    if (index === -1 || !canDeleteAccount(data, id)) return null;
+    const openings: Record<MonthKey, number> = {};
+    for (const m of months) if (m.openings?.[id] !== undefined) openings[m.key] = m.openings[id];
+    setAccounts(prev => {
+      const left = prev.filter(a => a.id !== id);
+      // Back to the main account alone, as it shipped: nothing about accounts is kept.
+      return left.length === 1 && !left[0].name && left[0].emoji === mainAccount().emoji && left[0].hue === mainAccount().hue ? [] : left;
+    });
+    if (Object.keys(openings).length) {
+      setMonths(prev => prev.map(m => {
+        if (m.openings?.[id] === undefined) return m;
+        const { [id]: _old, ...others } = m.openings;
+        const { openings: _drop, ...rest } = m;
+        return Object.keys(others).length ? { ...rest, openings: others } : rest;
+      }));
+    }
+    if (accountView === id) setAccountView(MAIN_ACCOUNT);
+    return { account: accounts[index], index, openings, before: accounts };
+  };
+
+  const restoreAccount = (r: RemovedAccount) => {
+    setAccounts(prev => {
+      if (prev.some(a => a.id === r.account.id)) return prev;
+      const base = prev.length ? prev : [r.before[0]];
+      return [...base.slice(0, r.index), r.account, ...base.slice(r.index)];
+    });
+    if (Object.keys(r.openings).length) {
+      setMonths(prev => prev.map(m => (r.openings[m.key] === undefined ? m : { ...m, openings: { ...m.openings, [r.account.id]: r.openings[m.key] } })));
+    }
+  };
+
   /* ------------------------------------------------------------ categories */
 
   /**
@@ -505,6 +628,7 @@ export function useAppStore() {
     setGoals(fixed.goals ?? []);
     setRules(fixed.rules ?? []);
     setDemo(fixed.demo);
+    setAccounts(fixed.accounts ?? []);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -538,6 +662,8 @@ export function useAppStore() {
     setGoals([]);
     setRules([]);
     setDemo(undefined);
+    setAccounts([]);
+    setAccountView(MAIN_ACCOUNT);
     setCurrency(currencyForLocale(navigator.language));
     setIntroDone(false);
     setTipsDone(false);
@@ -692,6 +818,8 @@ export function useAppStore() {
     startMonth, pullRecurring, setOpening, setReconciled, removeMonth, restoreMonth, hideCategory, showCategory,
     addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,
     splitEntry, unsplit,
+    addTransfer, updateTransfer, removeTransfer, restoreTransfer,
+    accounts, addAccount, updateAccount, removeAccount, restoreAccount, accountView: shownAccount, setAccountView,
     addCategory, updateCategory, removeCategory, restoreCategory, setCategoryOrder, restoreDefaults,
     setCategories, importData, restoreData, resetAll, setContract,
     hasDemo, addDemo, removeDemo,

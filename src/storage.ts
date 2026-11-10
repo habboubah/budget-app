@@ -39,6 +39,7 @@ export const DATA_KEYS = {
   goals: 'spartopf-goals',
   rules: 'spartopf-rules',
   demo: 'spartopf-demo',
+  accounts: 'spartopf-accounts',
   meta: 'spartopf-meta',
 } as const;
 
@@ -131,6 +132,7 @@ export function loadStored(read: (key: string) => unknown): AppData {
     goals: read(DATA_KEYS.goals),
     rules: read(DATA_KEYS.rules),
     demo: read(DATA_KEYS.demo),
+    accounts: read(DATA_KEYS.accounts),
   });
   // Saved by an older version: new and renamed built-in categories, merges.
   const data = missing ? loaded : upgradeData(loaded, meta?.schemaVersion ?? 1);
@@ -157,6 +159,7 @@ export function writeLocal(data: AppData, write: (key: string, value: string) =>
   write(DATA_KEYS.goals, JSON.stringify(data.goals ?? []));
   write(DATA_KEYS.rules, JSON.stringify(data.rules ?? []));
   write(DATA_KEYS.demo, JSON.stringify(data.demo ?? null));
+  write(DATA_KEYS.accounts, JSON.stringify(data.accounts ?? []));
   write(DATA_KEYS.meta, JSON.stringify({ schemaVersion: SCHEMA_VERSION, seeded: true }));
 }
 

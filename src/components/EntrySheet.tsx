@@ -5,7 +5,7 @@ import { Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '.
 import { budgetOf } from '../data/defaults';
 import {
   amountToInput, cleanText, dayLabel, daysInMonth, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
-  normalizeDigits, topCategories,
+  normalizeDigits, topCategories, MAIN_ACCOUNT,
 } from '../logic';
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
 import { Strings, fmt } from '../translations';
@@ -44,6 +44,10 @@ interface Props {
   onSplit?: (entry: Entry) => void;
   /** Take the category the typed name points to, until one is tapped (plan 32; Kategorien → switch). Off: only point it out. */
   autoCategory?: boolean;
+  /** The accounts, once there is more than one (plan 30): an account pill joins the details. */
+  accounts?: { id: string; label: string; emoji: string }[];
+  /** The account a new entry goes into (the one the month shows). */
+  defaultAccount?: string;
 }
 
 /** A compact control in the entry sheet's last row (date, status, repeat, note). */
@@ -72,7 +76,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * taps a category, and only with `autoCategory`; emptying the name goes back
  * to the category the sheet opened with.
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -104,6 +108,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   /** The category the sheet opened with, for when the name is emptied again. */
   const [baseCategory, setBaseCategory] = useState('');
   const [goalMenuAt, setGoalMenuAt] = useState<HTMLElement | null>(null);
+  /** The account it is paid from or into (plan 30). */
+  const [accountId, setAccountId] = useState(MAIN_ACCOUNT);
+  const [accountAt, setAccountAt] = useState<HTMLElement | null>(null);
   const [repeatAt, setRepeatAt] = useState<HTMLElement | null>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -156,6 +163,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setAllCategories(false);
     setAllSuggestions(false);
     setGoalId(undefined);
+    setAccountId(defaultAccount);
   };
 
   useEffect(() => {
@@ -177,6 +185,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setAllCategories(false);
       setShowError(false);
       setGoalId(e.goalId);
+      setAccountId(e.accountId ?? MAIN_ACCOUNT);
       // An entry being edited keeps its category: guesses are only pointed out.
       setNameTyped(false);
       setCategoryChosen(true);
@@ -314,6 +323,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     if (isSaving && goalId && goals.some(g => g.id === goalId)) d.goalId = goalId;
     const tags = normalizeTags(tagText.split(/[,\s]+/));
     if (tags.length) d.tags = tags;
+    // Always said once accounts show, so moving an entry back to the main account clears its account (plan 30).
+    if (accounts) d.accountId = accountId === MAIN_ACCOUNT || !accounts.some(a => a.id === accountId) ? undefined : accountId;
     return d;
   };
 
@@ -327,6 +338,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       reset(categoryId);
       setDateText(keepDate); // a stack of receipts is usually from one day
       setPaid(paid);
+      setAccountId(accountId); // and paid from the same account
       amountRef.current?.focus({ preventScroll: true });
     } else onClose();
   };
@@ -608,6 +620,22 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             <RepeatIcon className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
             <span aria-hidden="true">{repeats.find(r => r.value === repeat)!.label}</span>
           </button>
+          {accounts && (() => {
+            const a = accounts.find(x => x.id === accountId) ?? accounts[0];
+            return (
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-label={`${t.account}: ${a.label}`}
+                onMouseDown={e => e.preventDefault()}
+                onClick={e => { tapLight(); setAccountAt(e.currentTarget); }}
+                className={`${PILL} focus-visible:ring-focus`}
+              >
+                <span className="emoji text-[15px] leading-none" aria-hidden="true">{a.emoji}</span>
+                <span aria-hidden="true" className="truncate">{a.label}</span>
+              </button>
+            );
+          })()}
           {!noteOpen && (
             <button
               type="button"
@@ -638,6 +666,15 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           }))]}
           onClose={() => setRepeatAt(null)}
         />
+
+        {accounts && (
+          <Menu
+            anchor={accountAt}
+            label={t.account}
+            groups={[accounts.map(a => ({ key: a.id, label: `${a.emoji} ${a.label}`, icon: a.id === accountId ? Check : undefined, onSelect: () => setAccountId(a.id) }))]}
+            onClose={() => setAccountAt(null)}
+          />
+        )}
 
         <Menu
           anchor={goalMenuAt}

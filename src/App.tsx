@@ -5,8 +5,12 @@ import { motion, useTransform } from 'motion/react';
 import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import { fmt, plural, stringsFor } from './translations';
-import { Category, Contract, Entry, EntryDraft, MonthKey } from './types';
-import { REVIEW_RULE, ReviewMoment, addMonths, balanceFor, carryCandidates, displayName, formatMoneyShort, monthCategories, monthKeyOf, monthLabel, openBefore, setAmountsHidden, shouldAskForReview, uid } from './logic';
+import { AccountKind, Category, Contract, Entry, EntryDraft, MonthKey } from './types';
+import {
+  ALL_ACCOUNTS, MAIN_ACCOUNT, REVIEW_RULE, ReviewMoment, accountName, accountTotals, accountView, accountsOf, addMonths, balanceFor, canDeleteAccount, carryCandidates,
+  computeBalances, displayName, formatMoneyShort, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
+  shouldAskForReview, transferPair, uid,
+} from './logic';
 import { Insight, buildBook, goalProgress, highlights, monthReview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
@@ -29,6 +33,10 @@ import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
 import { ReconcileSheet } from './components/ReconcileSheet';
 import { SplitSheet } from './components/SplitSheet';
+import { AccountsView } from './components/AccountsView';
+import { AccountSheet, AccountSheetMode } from './components/AccountSheet';
+import { TransferSheet, TransferSheetMode } from './components/TransferSheet';
+import { TransfersCard } from './components/TransfersCard';
 import { MonthActionsMenu } from './components/MonthActionsMenu';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
@@ -73,7 +81,7 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -81,7 +89,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -101,8 +109,25 @@ function AmountsShown({ hidden = false }: { hidden?: boolean }) {
 
 export default function App() {
   const store = useAppStore();
-  const { data, categories, entries, balances, language, themeMode } = store;
+  const { data, categories, entries, language, themeMode } = store;
   const t = stringsFor(language);
+  /* Accounts (plan 30): nothing about them shows until the book has a second one. */
+  const multi = hasAccounts(data);
+  const accounts = accountsOf(data);
+  const account = store.accountView;
+  /** What the month page shows: the shown account's entries, transfers aside. */
+  const view = useMemo(() => accountView(data, account), [data, account]);
+  /** Every account's entries, transfers aside: what Statistik, Planen and the reports read. */
+  const allView = useMemo(() => accountView(data, ALL_ACCOUNTS), [data]);
+  const allBalances = useMemo(() => (multi ? computeBalances(data, ALL_ACCOUNTS) : store.balances), [data, multi, store.balances]);
+  /** The shown account's balances (the main account's in a book with one). */
+  const balances = useMemo(
+    () => (!multi || account === MAIN_ACCOUNT ? store.balances : account === ALL_ACCOUNTS ? allBalances : computeBalances(data, account)),
+    [data, multi, account, store.balances, allBalances],
+  );
+  /** Where a new entry, a bank import or an opening goes: the shown account, or the main one for "Alle Konten". */
+  const target = account === ALL_ACCOUNTS ? MAIN_ACCOUNT : account;
+  const nameOf = (id: string) => { const a = accounts.find(x => x.id === id); return a ? accountName(a, t.accountMain) : t.accountMain; };
   const { toast, show: showToast, hide } = useToast();
   /**
    * Plan 15: this session had trouble — an error, a failed import, an undo —
@@ -123,7 +148,7 @@ export default function App() {
   };
   const popTo = (onTab: TabId) => setStack(s => ({ ...s, [onTab]: undefined }));
   /** Every entry read once per change: what Statistik, Planen and the reports compute from. */
-  const book = useMemo(() => buildBook(data, balances), [data, balances]);
+  const book = useMemo(() => buildBook(allView, allBalances), [allView, allBalances]);
   /** Statistik's period — the category screen follows it. */
   const [statsRange, setStatsRange] = useState<StatsRange>('6');
   /** The pushed screens' parameters. */
@@ -267,9 +292,15 @@ export default function App() {
   const prevBalance = balance.prevKey ? balances.find(b => b.key === balance.prevKey) : undefined;
   const candidates = useMemo(() => carryCandidates(data, month), [data, month]);
   /** The categories this month shows (its own list, plus any with entries). */
-  const shownCategories = useMemo(() => monthCategories(data, month), [data, month]);
+  const shownCategories = useMemo(() => monthCategories(view, month), [view, month]);
   const hiddenCategories = categories.filter(c => !shownCategories.includes(c));
-  const openEarlier = useMemo(() => (balance.started ? openBefore(data, month) : []), [data, month, balance.started]);
+  const openEarlier = useMemo(() => (balance.started ? openBefore(view, month) : []), [view, month, balance.started]);
+  /** The month's transfers (plan 30): every side, and the ones the shown account takes part in. */
+  const monthSides = useMemo(() => (multi ? monthTransfers(data, month, ALL_ACCOUNTS) : []), [data, month, multi]);
+  const transfers = account === ALL_ACCOUNTS ? monthSides : monthSides.filter(e => (e.accountId ?? MAIN_ACCOUNT) === account);
+  const [transferSheet, setTransferSheet] = useState<TransferSheetMode>(null);
+  const [accountSheet, setAccountSheet] = useState<AccountSheetMode>(null);
+  const totals = useMemo(() => accountTotals(data, monthKeyOf()), [data]);
 
   // The screen pushed on this tab, if any: the nav's single source of truth —
   // it drives the hardware back, the edge swipe, the scroll reset and the
@@ -319,11 +350,11 @@ export default function App() {
   // While the setup runs: opening = the balance given − what the month has settled since.
   useEffect(() => {
     if (!setupNow || store.introDone) return;
-    const b = balances.find(x => x.key === setupNow.month);
+    const b = store.balances.find(x => x.key === setupNow.month);
     if (!b || b.prevKey) return;
     const want = setupNow.now - (b.incomePaid - b.expensePaid);
     if (!b.overridden || b.openingNow !== want) store.setOpening(setupNow.month, want);
-  }, [setupNow, balances, store.introDone]);
+  }, [setupNow, store.balances, store.introDone]);
 
   // Reminders: after a change settles, and on every return to the app, what is
   // pending on the device becomes the plan again (iPhone app only).
@@ -350,6 +381,7 @@ export default function App() {
     const id = uid();
     const now = Date.now();
     const entry: Entry = { id, month: m, seriesId: id, createdAt: now, ...d, ...(d.paid ? { paidAt: now } : {}) };
+    if (!entry.accountId) delete entry.accountId;
     store.addEntry(entry);
     // The category stays in the month even if this entry is deleted again.
     store.showCategory(m, d.categoryId);
@@ -371,6 +403,28 @@ export default function App() {
     show(fmt(t.entryDeleted, { name: removed.entry.name }), {
       label: t.undo, run: () => store.restoreEntry(removed.entry, removed.index),
     });
+  };
+
+  /* ---- Transfers and accounts (plan 30). */
+  const newTransfer = () => setTransferSheet({ kind: 'new', month, from: target });
+  const editTransfer = (pairId: string) => { const pair = transferPair(entries, pairId); setTransferSheet({ kind: 'edit', out: pair.out, in: pair.in }); };
+  const toggleTransfer = (pairId: string, paid: boolean) => {
+    if (paid) notifySuccess(); else tapLight();
+    store.updateTransfer(pairId, { paid });
+  };
+  const deleteTransfer = (pairId: string) => {
+    const gone = store.removeTransfer(pairId);
+    if (!gone.length) return;
+    notifyWarning();
+    show(t.transferDeleted, { label: t.undo, run: () => store.restoreTransfer(gone) });
+  };
+  const addAccount = (kind: AccountKind) => {
+    if (accounts.length >= 12) { show(t.accountsFull); return; }
+    setAccountSheet({ kind: 'new', accountKind: kind });
+  };
+  const editAccount = (id: string) => {
+    const a = accounts.find(x => x.id === id);
+    if (a) setAccountSheet({ kind: 'edit', account: a, deletable: canDeleteAccount(data, id) });
   };
 
   const toggle = (e: Entry) => {
@@ -475,7 +529,8 @@ export default function App() {
           allCategoryNames(data.categories, language),
         );
       if (!found.length) { setStatement(null); show(t.importNothing); return; }
-      setStatement({ phase: 'review', source, rows: planStatement(found, data) });
+      // Matched and checked against the account it goes into (plan 30).
+      setStatement({ phase: 'review', source, rows: planStatement(found, accountView(data, target)) });
     } catch (e) {
       setStatement(null);
       trouble.current = true;
@@ -485,7 +540,7 @@ export default function App() {
 
   const confirmStatement = (rows: PlannedRow[]) => {
     const { add, pay } = applyStatement(rows, Date.now());
-    const done = store.importEntries(add, pay);
+    const done = store.importEntries(intoAccount(add, target), pay);
     setStatement(null);
     notifySuccess();
     // Stay on this month if it got something; else show the newest month that did.
@@ -667,7 +722,9 @@ export default function App() {
     if (link.kind === 'month') { toMonth(link.month); return; }
     if (link.kind === 'entry') {
       const e = s.entries.find(x => x.id === link.id);
-      if (e) { toMonth(e.month); setEntrySheet({ kind: 'edit', entry: e }); }
+      // A transfer opens as one (plan 30), never as an entry without a category.
+      if (e?.transfer) { const pair = transferPair(s.entries, e.transfer.pairId); toMonth(e.month); setTransferSheet({ kind: 'edit', out: pair.out, in: pair.in }); }
+      else if (e) { toMonth(e.month); setEntrySheet({ kind: 'edit', entry: e }); }
       return;
     }
     const categoryId = link.categoryId && s.categories.some(c => c.id === link.categoryId) ? link.categoryId : quickAddCategory;
@@ -850,7 +907,7 @@ export default function App() {
           />
         ) : id === 'dueSoon' ? (
           <DueSoonView
-            data={data}
+            data={allView}
             language={language}
             t={t}
             onBack={back}
@@ -928,6 +985,8 @@ export default function App() {
             }}
             onBack={back}
           />
+        ) : id === 'accounts' ? (
+          <AccountsView totals={totals} t={t} onBack={back} onEdit={editAccount} onAdd={addAccount} />
         ) : id === 'rules' ? (
           <RulesView
             rules={store.rules}
@@ -955,6 +1014,8 @@ export default function App() {
             onFavorites={() => push('favorites')}
             ruleCount={store.rules.length}
             onRules={() => push('rules')}
+            accountCount={accounts.length}
+            onAccounts={() => push('accounts')}
             onTransfer={() => push('transfer')}
             hasDemo={store.hasDemo}
             onAddDemo={addDemo}
@@ -1008,15 +1069,16 @@ export default function App() {
             onAdd={addMissing}
             onDue={() => push('dueSoon')}
             onGoals={() => push('goals')}
-            onReserveGoal={(target, due) => setGoalSheet({ kind: 'new', preset: { name: t.reserveTitle, target, due } })}
+            onReserveGoal={(goal, due) => setGoalSheet({ kind: 'new', preset: { name: t.reserveTitle, target: goal, due } })}
             onExplain={setExplain}
+            wealth={multi ? { now: totals.now, count: accounts.length, onOpen: () => push('accounts') } : undefined}
           />
         ) : (
           <MonthView
             month={month}
             balance={balance}
             categories={shownCategories}
-            entries={entries}
+            entries={view.entries}
             candidates={candidates}
             openEarlier={openEarlier}
             setup={setup}
@@ -1037,7 +1099,19 @@ export default function App() {
             onToggle={toggle}
             onDelete={e => deleteEntry(e.id)}
             onPickMonth={() => setMonthPickerOpen(true)}
-            onOpening={() => setOpeningOpen(true)}
+            onOpening={account === ALL_ACCOUNTS ? undefined : () => setOpeningOpen(true)}
+            account={multi ? {
+              label: account === ALL_ACCOUNTS ? t.accountsAll : nameOf(account),
+              emoji: account === ALL_ACCOUNTS ? '∑' : accounts.find(a => a.id === account)?.emoji ?? '🏦',
+              options: [...accounts.map(a => ({ id: a.id, label: accountName(a, t.accountMain), emoji: a.emoji })), { id: ALL_ACCOUNTS, label: t.accountsAll, emoji: '∑' }],
+              selected: account,
+              onSelect: store.setAccountView,
+            } : undefined}
+            budgetEntries={allView.entries}
+            budgetCards={account === MAIN_ACCOUNT || account === ALL_ACCOUNTS}
+            transfers={multi && balance.started && transfers.length > 0 ? (
+              <TransfersCard transfers={transfers} sides={monthSides} accounts={accounts} account={account} t={t} onToggle={toggleTransfer} onEdit={editTransfer} onNew={newTransfer} />
+            ) : null}
             reconciledAt={store.months.find(m => m.key === month)?.reconciledAt}
             peek={store.hideAmounts ? { shown: peek, onToggle: () => setPeek(v => !v) } : undefined}
             onCategories={() => push('categories')}
@@ -1155,6 +1229,43 @@ export default function App() {
         goals={store.goals}
         onSplit={e => setSplitEntry(e)}
         autoCategory={store.autoCategory}
+        accounts={multi ? accounts.map(a => ({ id: a.id, label: accountName(a, t.accountMain), emoji: a.emoji })) : undefined}
+        defaultAccount={target}
+      />
+
+      <TransferSheet
+        mode={transferSheet}
+        accounts={accounts}
+        t={t}
+        onClose={() => setTransferSheet(null)}
+        onCreate={d => {
+          store.addTransfer(d);
+          notifySuccess();
+          show(fmt(t.transferDone, { from: nameOf(d.from), to: nameOf(d.to) }));
+        }}
+        onSave={(pairId, patch) => {
+          const before = store.updateTransfer(pairId, patch);
+          show(t.transferSaved, { label: t.undo, run: () => store.restoreEntries(before) });
+        }}
+        onDelete={deleteTransfer}
+      />
+
+      <AccountSheet
+        mode={accountSheet}
+        t={t}
+        onClose={() => setAccountSheet(null)}
+        onCreate={(draft, start) => {
+          const created = store.addAccount(draft);
+          if (!created) { show(t.accountsFull); return; }
+          if (start !== null) store.setOpening(monthKeyOf(), start, created.id);
+          notifySuccess();
+          show(fmt(t.accountAdded, { name: draft.name }));
+        }}
+        onSave={(id, patch) => store.updateAccount(id, patch)}
+        onDelete={a => {
+          const removed = store.removeAccount(a.id);
+          if (removed) show(t.accountDeleted, { label: t.undo, run: () => store.restoreAccount(removed) });
+        }}
       />
 
       <SplitSheet
@@ -1176,12 +1287,13 @@ export default function App() {
         overridden={balance.overridden}
         prevKey={balance.prevKey}
         carried={prevBalance?.now}
+        accountLabel={multi ? nameOf(target) : undefined}
         t={t}
         onClose={() => setOpeningOpen(false)}
         onSave={v => {
           // Set by hand: the setup's balance doesn't steer the opening any more.
           setSetupNow(null);
-          store.setOpening(month, v);
+          store.setOpening(month, v, target);
           show(v === undefined && balance.prevKey
             ? fmt(t.openingReset, { month: monthLabel(balance.prevKey, t.locale) })
             : t.openingSaved);
@@ -1193,7 +1305,7 @@ export default function App() {
         // The PDF carries its amounts (an export the user asked for); the screen behind it keeps hiding them.
         <>
           <AmountsShown />
-          <PrintReport spec={printing} book={book} data={data} language={language} accent={store.accent} t={t} />
+          <PrintReport spec={printing} book={book} data={allView} language={language} accent={store.accent} t={t} />
           <AmountsShown hidden={store.hideAmounts && !peek} />
         </>
       )}
@@ -1209,18 +1321,19 @@ export default function App() {
         onBook={draft => {
           const id = uid();
           const now = Date.now();
-          const entry: Entry = { id, month, seriesId: id, createdAt: now, ...draft, paidAt: now };
+          const entry: Entry = { id, month, seriesId: id, createdAt: now, ...draft, paidAt: now, ...(target !== MAIN_ACCOUNT ? { accountId: target } : {}) };
           store.addEntry(entry);
           store.showCategory(month, draft.categoryId);
           const prevRec = store.setReconciled(month, now);
           show(t.reconcileDone, { label: t.undo, run: () => { store.removeEntry(id); store.setReconciled(month, prevRec); } });
         }}
         onAdjustOpening={opening => {
-          const prevOpening = store.months.find(m => m.key === month)?.opening;
+          const record = store.months.find(m => m.key === month);
+          const prevOpening = target === MAIN_ACCOUNT ? record?.opening : record?.openings?.[target];
           const prevRec = store.setReconciled(month, Date.now());
           setSetupNow(null);
-          store.setOpening(month, opening);
-          show(t.reconcileDone, { label: t.undo, run: () => { store.setOpening(month, prevOpening); store.setReconciled(month, prevRec); } });
+          store.setOpening(month, opening, target);
+          show(t.reconcileDone, { label: t.undo, run: () => { store.setOpening(month, prevOpening, target); store.setReconciled(month, prevRec); } });
         }}
         onAgree={() => {
           const prevRec = store.setReconciled(month, Date.now());
@@ -1306,8 +1419,9 @@ export default function App() {
         allCollapsed={categories.length > 0 && categories.every(c => store.collapsed.includes(c.id))}
         t={t}
         onClose={() => setActionsAnchor(null)}
-        onOpening={() => setOpeningOpen(true)}
-        onReconcile={() => setReconcileOpen(true)}
+        onOpening={account === ALL_ACCOUNTS ? undefined : () => setOpeningOpen(true)}
+        onReconcile={account === ALL_ACCOUNTS ? undefined : () => setReconcileOpen(true)}
+        onTransfer={multi ? newTransfer : undefined}
         onPull={() => { const n = store.pullRecurring(month); show(fmt(t.pulled, { n })); }}
         onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
         onImportCsv={() => statementInput.current?.click()}
@@ -1368,6 +1482,7 @@ export default function App() {
       />
       <StatementImportSheet
         state={statement}
+        accountLabel={multi ? nameOf(target) : undefined}
         categories={data.categories}
         language={language}
         t={t}

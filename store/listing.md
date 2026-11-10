@@ -256,6 +256,12 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** جديد: تقرير الشهر ومراجعة السنة كملف PDF – للمشاركة أو الطباعة، مع كل البنود إن شئت.
 
+**DE:** Neu: Bargeld und Sparkonto, wenn du willst. Umbuchungen zwischen deinen Konten zählen nie als Einnahme oder Ausgabe, und „Alle Konten“ zeigt, was du insgesamt hast.
+
+**EN:** New: cash and savings accounts, if you want them. Transfers between your accounts never count as income or spending, and "All accounts" shows what you have in total.
+
+**AR:** جديد: النقد وحساب التوفير، إن شئت. التحويلات بين حساباتك لا تُحتسب أبدًا دخلًا أو مصروفًا، و«كل الحسابات» يعرض ما لديك إجمالًا.
+
 ### 1.2.0
 
 **DE:** Ein farbenfroheres Design: Wähle in den Einstellungen die Farbe der App – der Kontostand steht auf einer Karte in dieser Farbe. Jede Kategorie zeigt mit einem Balken, wie viel schon bezahlt ist, und Beträge laufen beim Abhaken zum neuen Wert.

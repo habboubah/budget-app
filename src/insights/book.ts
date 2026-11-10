@@ -118,6 +118,8 @@ export function buildBook(data: AppData, balances: MonthBalance[] = computeBalan
   const byMonth = new Map<MonthKey, MonthBook>(months.map(k => [k, emptyMonth(k, true)]));
   const names = new Map<string, NameStat>();
   for (const e of data.entries) {
+    // A transfer between accounts is neither income nor spending (plan 30).
+    if (e.transfer) continue;
     let m = byMonth.get(e.month);
     if (!m) byMonth.set(e.month, m = emptyMonth(e.month, false));
     m.entries.push(e);

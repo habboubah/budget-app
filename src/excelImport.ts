@@ -266,10 +266,13 @@ export function planExcelImport(sheets: Sheet[], categories: Category[], lang: s
   };
 }
 
+/** What an import replaces in a month: the main account's own entries — other accounts and transfers stay (plan 30). */
+const replaceable = (e: Entry) => !e.accountId && !e.transfer;
+
 /** Months in the plan that already have entries in the app — they get replaced. */
 export function replacedMonths(data: AppData, plan: ImportPlan): MonthKey[] {
   const keys = new Set(plan.months.map(m => m.key));
-  return [...new Set(data.entries.filter(e => keys.has(e.month)).map(e => e.month))].sort();
+  return [...new Set(data.entries.filter(e => keys.has(e.month) && replaceable(e)).map(e => e.month))].sort();
 }
 
 /**
@@ -280,12 +283,17 @@ export function applyExcelImport(data: AppData, plan: ImportPlan, now = Date.now
   const keys = new Set(plan.months.map(m => m.key));
   const months: MonthRecord[] = [
     ...data.months.filter(m => !keys.has(m.key)),
-    ...plan.months.map(m => (m.opening !== undefined ? { key: m.key, opening: m.opening, startedAt: now } : { key: m.key, startedAt: now })),
+    ...plan.months.map(m => {
+      const record: MonthRecord = m.opening !== undefined ? { key: m.key, opening: m.opening, startedAt: now } : { key: m.key, startedAt: now };
+      // The other accounts' opening balances stay (plan 30).
+      const openings = data.months.find(x => x.key === m.key)?.openings;
+      return openings ? { ...record, openings } : record;
+    }),
   ].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
   return {
     ...data,
     categories: [...data.categories, ...plan.newCategories],
-    entries: [...data.entries.filter(e => !keys.has(e.month)), ...plan.months.flatMap(m => m.entries)],
+    entries: [...data.entries.filter(e => !keys.has(e.month) || !replaceable(e)), ...plan.months.flatMap(m => m.entries)],
     months,
   };
 }

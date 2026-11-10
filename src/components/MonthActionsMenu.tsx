@@ -1,4 +1,4 @@
-import { BarChart3, Camera, ChevronsDownUp, ChevronsUpDown, FileSpreadsheet, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, Camera, ChevronsDownUp, ChevronsUpDown, FileSpreadsheet, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
 import { MonthKey } from '../types';
 import { monthLabel } from '../logic';
 import { Strings, fmt } from '../translations';
@@ -6,10 +6,10 @@ import { Menu, MenuItem } from '../ui/Menu';
 
 /**
  * The month's "⋯", as an iOS pull-down menu: correct the opening balance,
- * fetch missing recurring entries, fold all categories; import bank
- * transactions; delete the month.
+ * fetch missing recurring entries, fold all categories; move money between
+ * accounts (plan 30); import bank transactions; delete the month.
  */
-export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onReconcile, onPull, onCollapseAll, onImportCsv, onImportPhoto, onDelete, onReport }: {
+export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onReconcile, onPull, onCollapseAll, onImportCsv, onImportPhoto, onDelete, onReport, onTransfer }: {
   /** The "⋯" button it opens from; null while closed. */
   anchor: HTMLElement | null;
   month: MonthKey;
@@ -21,8 +21,9 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
   allCollapsed: boolean;
   t: Strings;
   onClose: () => void;
-  onOpening: () => void;
-  onReconcile: () => void;
+  /** The opening balance and the bank match are one account's: not offered for "Alle Konten" (plan 30). */
+  onOpening?: () => void;
+  onReconcile?: () => void;
   onPull: () => void;
   onCollapseAll: (collapse: boolean) => void;
   /** Bank transactions from a CSV export, or from a photo / screenshot. */
@@ -31,11 +32,14 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
   onDelete: () => void;
   /** The month's report (plan 13); only for a started month. */
   onReport?: () => void;
+  /** Umbuchen (plan 30): once there is more than one account. */
+  onTransfer?: () => void;
 }) {
   const month1: MenuItem[] = [
     ...(started && onReport ? [{ key: 'report', label: t.reportTitle, sub: t.monthReportSub, icon: BarChart3, onSelect: onReport }] : []),
-    { key: 'opening', label: prevKey ? t.openingTitle : t.startingBalance, icon: Wallet, onSelect: onOpening },
-    ...(started ? [{ key: 'reconcile', label: t.reconcileMenuItem, icon: Scale, onSelect: onReconcile }] : []),
+    ...(onOpening ? [{ key: 'opening', label: prevKey ? t.openingTitle : t.startingBalance, icon: Wallet, onSelect: onOpening }] : []),
+    ...(started && onReconcile ? [{ key: 'reconcile', label: t.reconcileMenuItem, icon: Scale, onSelect: onReconcile }] : []),
+    ...(started && onTransfer ? [{ key: 'transfer', label: t.transferNew, sub: t.transferNewSub, icon: ArrowLeftRight, onSelect: onTransfer }] : []),
   ];
   if (started && prevKey) {
     month1.push({

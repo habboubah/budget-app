@@ -8,7 +8,8 @@ the product concept and the money rules, `README.md` for running and installing,
 Spartopf: a client-only React + Capacitor household budget book, modelled on
 Ahmad's monthly Excel sheet. One month per page, entries per category, each
 entry paid or still open, recurring entries carried into the next month, and
-two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account.
+two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account by
+default; cash and savings accounts only once the user adds them (plan 30).
 **No backend, no account — everything stays on the device** (a file in the
 iPhone app, `localStorage` on the web; `src/storage.ts`).
 
@@ -229,7 +230,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   category; `set` reclassifies/renames, `skip` drops a transfer); **schema 16**
   `Entry.splitId` (plan 21: a split payment's parts are normal entries sharing
   it; `splitParts`); **schema 17** `AppData.demo` (the test data's record,
-  `src/demo.ts`) — all optional, nothing to migrate, all in backups. What
+  `src/demo.ts`); **schema 20** accounts and transfers (plan 30, below) — all
+  optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
   `backup-schema-*.json`; `compat.test.ts`: they load, keep what they held,
@@ -341,6 +343,36 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (a Vite plugin runs it for dev and every build; generated, gitignored, not
   precached by the PWA). Never commit a real bank export or screenshot.
   iOS needs `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription`.
+- **Accounts and transfers (plan 30).** A book has its main account (id
+  `main`, `MAIN_ACCOUNT`) and nothing else until the user adds cash, a savings
+  account or another under *Optionen › Konten*; `AppData.accounts` (schema 20)
+  is unset until then, and `hasAccounts()` is what every screen asks before
+  showing anything about accounts. With the first extra account the main one
+  is written down too (unnamed, so it reads *Girokonto* in every language;
+  `accountName`). `Entry.accountId` unset = main; `MonthRecord.openings` holds
+  the other accounts' opening balances (`opening` stays the main one's). A
+  **transfer** is two entries sharing `transfer.pairId` (`direction` out / in),
+  filed under `TRANSFER_CATEGORY` — not a real category, so `normalizeState`
+  never moves it to *Sonstiges*; it is neither income nor expense:
+  `monthTotals`, `buildBook`, `topNames` and `suggestNames` skip it, and
+  `computeBalances(data, account)` adds it to its account as `transferPaid` /
+  `transferOpen`. `computeBalances(data)` is the main account's;
+  `'all'` (`ALL_ACCOUNTS`) sums every account month by month, where transfers
+  come to nothing. App keeps the shown account (`store.accountView`, view
+  preference `spartopf-account`): the month page reads `accountView(data,
+  account)` (its entries, transfers left out) and the account's balances;
+  Statistik, Planen, reports, budgets and *Demnächst fällig* read every
+  account (`accountView(data, 'all')`, a budget is the category's wherever it
+  was paid from). The balance card gets a switch (*Alle Konten* too), the
+  month a `TransfersCard`, the "⋯" *Umbuchen* (`TransferSheet`), the entry
+  sheet an account pill, Planen a *Vermögen* row (`accountTotals`). An opening
+  and the bank match are one account's, so *Alle Konten* offers neither. Bank
+  imports go into the shown account (`intoAccount`, matched against it); an
+  Excel import replaces only the main account's own entries. Carry-over keeps
+  the account, and a carried transfer gets a new shared pair id
+  (`carryOver`, `laterTransferCopies`). An account can be deleted only once
+  nothing is booked on it (`canDeleteAccount`); the main one stays. With
+  accounts the CSV gets a *Konto* column, and a transfer's sign is its side.
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
 - **Currency (plan 07, `src/currency.ts`).** `AppData.currency` (ISO 4217,

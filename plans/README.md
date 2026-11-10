@@ -238,7 +238,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 27 Receipts and documents
 - [x] 28 PDF report — built, `npm run check` passes. *Bericht teilen* under the Monatsbericht and the Jahresrückblick: `PrintReport` (the shared report bodies, an optional entries table, a footer; light, with amounts even when hidden on screen), the print stylesheet, `SpartopfShared.makePdf` (UIPrintPageRenderer → share sheet) and `window.print()` on the web. Checked through Chromium's print-to-PDF in DE, AR and a long year. Still to do on an iPhone: the PDF from the share sheet and a paper print
 - [x] 29 Periods and year comparison — core built, `npm run check` passes; `periodSeries`/`compareYears`/`bookYears` tested, a year picker + a "Mit Vorjahr vergleichen" line in Statistik. The faint last-year chart outlines and the Wofür change-vs-last-year chips are a noted follow-up (Charts.tsx surgery); ui-review on device still to do
-- [ ] 30 Cash and savings accounts
+- [x] 30 Cash and savings accounts — built, `npm run check` passes; schema 20 (`AppData.accounts`, `Entry.accountId`, `Entry.transfer`, `MonthRecord.openings`), balances per account and for all, transfers as linked pairs outside every total, *Optionen › Konten*, the balance card's switch, *Umbuchen*, the entry sheet's account pill, Planen's *Vermögen*, imports into the shown account. Goals pointing at a savings account are a noted follow-up; device check still to do
 - [ ] 31 Debts and loans
 - [ ] 32 Month from payday
 - [ ] 33 Device-to-device transfer

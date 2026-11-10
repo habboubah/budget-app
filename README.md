@@ -1,7 +1,7 @@
 # Spartopf – Haushaltsbuch 🪙
 
-A simple, private budget book for iPhone and the browser: one bank account, one
-page per month, and the two numbers that matter — **what is on the account now**
+A simple, private budget book for iPhone and the browser: one bank account (cash
+and savings accounts when you add them), one page per month, and the two numbers that matter — **what is on the account now**
 and **what will be left at the end of the month**. No sign-up, no server, no
 ads; everything stays on the device.
 

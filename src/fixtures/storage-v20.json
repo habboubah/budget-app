@@ -1,0 +1,190 @@
+{
+ "_about": "What version 20 keeps in localStorage (synthetic): a cash account beside the main one (renamed), an opening balance for each, 100 € taken out as a transfer, groceries paid in cash.",
+ "spartopf-meta": {
+  "seeded": true,
+  "schemaVersion": 20
+ },
+ "spartopf-categories": [
+  {
+   "id": "income",
+   "names": {
+    "de": "Einkommen",
+    "en": "Income",
+    "ar": "الدخل"
+   },
+   "emoji": "💰",
+   "hue": "leaf",
+   "kind": "income",
+   "repeat": "monthly",
+   "builtin": true
+  },
+  {
+   "id": "fixed",
+   "names": {
+    "de": "Wohnen",
+    "en": "Home",
+    "ar": "المنزل"
+   },
+   "emoji": "🏠",
+   "hue": "sky",
+   "kind": "expense",
+   "repeat": "monthly",
+   "budget": "need",
+   "builtin": true
+  },
+  {
+   "id": "groceries",
+   "names": {
+    "de": "Lebensmittel und Drogerie",
+    "en": "Groceries & drugstore",
+    "ar": "البقالة والعناية الشخصية"
+   },
+   "emoji": "🛒",
+   "hue": "lime",
+   "kind": "expense",
+   "repeat": "none",
+   "budget": "need",
+   "builtin": true,
+   "keywords": [
+    "Habibi Markt",
+    "Lidl",
+    "Rewe"
+   ]
+  }
+ ],
+ "spartopf-months": [
+  {
+   "key": "2026-11",
+   "startedAt": 1793000000000,
+   "opening": 200000,
+   "openings": {
+    "a-cash": 8000
+   },
+   "categories": [
+    "income",
+    "fixed",
+    "groceries"
+   ]
+  }
+ ],
+ "spartopf-entries": [
+  {
+   "id": "v1",
+   "month": "2026-11",
+   "categoryId": "income",
+   "name": "Gehalt",
+   "amount": 150000,
+   "paid": true,
+   "repeat": "monthly",
+   "seriesId": "v1",
+   "createdAt": 1793000000001,
+   "date": "2026-11-01"
+  },
+  {
+   "id": "v2",
+   "month": "2026-11",
+   "categoryId": "fixed",
+   "name": "Miete",
+   "amount": 100000,
+   "paid": true,
+   "repeat": "monthly",
+   "seriesId": "v2",
+   "createdAt": 1793000000002,
+   "date": "2026-11-01"
+  },
+  {
+   "id": "v3",
+   "month": "2026-11",
+   "categoryId": "fixed",
+   "name": "Strom",
+   "amount": 10000,
+   "paid": false,
+   "repeat": "monthly",
+   "seriesId": "v3",
+   "createdAt": 1793000000003,
+   "dueDay": 28
+  },
+  {
+   "id": "v4",
+   "month": "2026-11",
+   "categoryId": "groceries",
+   "name": "Kaffee",
+   "amount": 500,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "v4",
+   "createdAt": 1793000000004,
+   "date": "2026-11-04"
+  },
+  {
+   "id": "v5",
+   "month": "2026-11",
+   "categoryId": "transfer",
+   "name": "Abheben",
+   "amount": 10000,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "v5",
+   "createdAt": 1793000000005,
+   "date": "2026-11-05",
+   "transfer": {
+    "pairId": "t1",
+    "direction": "out"
+   }
+  },
+  {
+   "id": "v6",
+   "month": "2026-11",
+   "categoryId": "transfer",
+   "name": "Abheben",
+   "amount": 10000,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "v6",
+   "createdAt": 1793000000006,
+   "date": "2026-11-05",
+   "accountId": "a-cash",
+   "transfer": {
+    "pairId": "t1",
+    "direction": "in"
+   }
+  },
+  {
+   "id": "v7",
+   "month": "2026-11",
+   "categoryId": "groceries",
+   "name": "Wochenmarkt",
+   "amount": 1300,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "v7",
+   "createdAt": 1793000000007,
+   "date": "2026-11-07",
+   "accountId": "a-cash"
+  }
+ ],
+ "spartopf-contracts": {},
+ "spartopf-currency": null,
+ "spartopf-favorites": [],
+ "spartopf-goals": [],
+ "spartopf-rules": [],
+ "spartopf-demo": null,
+ "spartopf-accounts": [
+  {
+   "id": "main",
+   "name": "Giro",
+   "kind": "bank",
+   "emoji": "🏦",
+   "hue": "blue",
+   "createdAt": 0
+  },
+  {
+   "id": "a-cash",
+   "name": "Bargeld",
+   "kind": "cash",
+   "emoji": "💶",
+   "hue": "leaf",
+   "createdAt": 1793000000000
+  }
+ ]
+}

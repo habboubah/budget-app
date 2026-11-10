@@ -1,6 +1,6 @@
 # Product: Spartopf – Haushaltsbuch
 
-A private household budget book for iPhone (Capacitor app, bundle id `com.habboubah.spartopf`) and the browser (installable, offline PWA). It digitises Ahmad's monthly Excel sheet (`My_expense.xlsx`): one bank account, one page per month, and two numbers that matter. Concept and money rules: `PLAN.md`. Features in full: `README.md`.
+A private household budget book for iPhone (Capacitor app, bundle id `com.habboubah.spartopf`) and the browser (installable, offline PWA). It digitises Ahmad's monthly Excel sheet (`My_expense.xlsx`): one bank account (more only if the user adds them, plan 30), one page per month, and two numbers that matter. Concept and money rules: `PLAN.md`. Features in full: `README.md`.
 
 ## Core model
 - Month (`MonthKey`, `YYYY-MM`): one page each. Entries only live in started months; a new month carries the recurring entries in as open copies.

@@ -174,4 +174,26 @@ describe('planning the import', () => {
     expect(b.find(x => x.key === '2026-09')?.now).toBe(277950);
     expect(b.find(x => x.key === '2026-10')?.now).toBe(487050);
   });
+
+  it('leaves the other accounts and transfers in a replaced month alone (plan 30)', () => {
+    const entry = (id: string, extra: object) => ({ id, month: '2026-11', categoryId: 'fixed', name: id, amount: 100, paid: true, repeat: 'none' as const, seriesId: id, createdAt: 0, ...extra });
+    const before = {
+      categories: cats,
+      entries: [
+        entry('cash', { accountId: 'cash', categoryId: 'groceries' }),
+        entry('out', { categoryId: 'transfer', transfer: { pairId: 'p', direction: 'out' as const } }),
+        entry('in', { categoryId: 'transfer', accountId: 'cash', transfer: { pairId: 'p', direction: 'in' as const } }),
+      ],
+      months: [{ key: '2026-11', startedAt: 0, openings: { cash: 5000 } }],
+      accounts: [
+        { id: 'main', name: '', kind: 'bank' as const, emoji: '🏦', hue: 'blue' as const, createdAt: 0 },
+        { id: 'cash', name: 'Bargeld', kind: 'cash' as const, emoji: '💶', hue: 'leaf' as const, createdAt: 1 },
+      ],
+    };
+    expect(replacedMonths(before, plan)).toEqual([]);
+    const after = applyExcelImport(before, plan, 5);
+    expect(after.entries.filter(e => ['cash', 'out', 'in'].includes(e.id))).toHaveLength(3);
+    expect(after.months.find(m => m.key === '2026-11')?.openings).toEqual({ cash: 5000 });
+    expect(computeBalances(after, 'cash').find(x => x.key === '2026-11')?.now).toBe(5000 - 100 + 100);
+  });
 });

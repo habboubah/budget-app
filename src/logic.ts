@@ -1,5 +1,5 @@
 import {
-  AppData, Backup, Category, CategoryKind, Contract, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
+  ACCOUNT_KINDS, Account, AccountKind, AppData, Backup, Category, CategoryKind, Contract, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -16,8 +16,10 @@ import { isSupportedCurrency } from './currency';
  *  17: the test data's record (`AppData.demo`) — optional, unset = none.
  *  18: category keywords (`Category.keywords`) — optional, unset = what a built-in ships with.
  *  19: no new field — built-ins still named as shipped get their names in the
- *      eleven languages added then (tr, pl, cs, sv, nb, da, fr, it, es, nl, pt). */
-export const SCHEMA_VERSION = 19;
+ *      eleven languages added then (tr, pl, cs, sv, nb, da, fr, it, es, nl, pt).
+ *  20: accounts and transfers (`AppData.accounts`, `Entry.accountId`, `Entry.transfer`,
+ *      `MonthRecord.openings`, plan 30) — optional, unset = one account, as before. */
+export const SCHEMA_VERSION = 20;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -520,7 +522,8 @@ export function monthTotals(entries: Entry[], categories: Category[], month: Mon
   const kind = kindLookup(categories);
   const t: Totals = { incomePaid: 0, incomeOpen: 0, expensePaid: 0, expenseOpen: 0, count: 0, openCount: 0, expenseCount: 0, expensePaidCount: 0 };
   for (const e of entries) {
-    if (e.month !== month) continue;
+    // A transfer between two accounts is neither income nor expense (plan 30).
+    if (e.month !== month || e.transfer) continue;
     t.count++;
     if (!e.paid) t.openCount++;
     if (kind(e.categoryId) === 'income') {
@@ -639,6 +642,9 @@ export interface MonthBalance extends Totals {
   now: number;
   /** Am Monatsende — once every open entry is paid / received. */
   end: number;
+  /** Transfers in less transfers out, ticked / still open (plan 30) — only when the month has any. */
+  transferPaid?: number;
+  transferOpen?: number;
 }
 
 /**
@@ -648,23 +654,45 @@ export interface MonthBalance extends Totals {
  * still lowers November's end-of-month balance (it has to be paid sometime),
  * but not the account balance — until it is ticked. A month with a manual
  * opening uses it for "now" and keeps the outstanding difference for "end".
+ *
+ * Per account (plan 30): the main account's by default — a book with one
+ * account has only that — another's by its id, or every account's together
+ * (`'all'`). Transfers move their account's balance but are neither income
+ * nor expense; they show as `transferPaid` / `transferOpen`.
  */
-export function computeBalances(data: AppData): MonthBalance[] {
+export function computeBalances(data: AppData, account: AccountView = MAIN_ACCOUNT): MonthBalance[] {
+  if (account === ALL_ACCOUNTS) {
+    const ids = accountIds(data);
+    return ids.length === 1 ? computeBalances(data, ids[0]) : sumBalances(ids.map(id => computeBalances(data, id)));
+  }
   const months = [...data.months].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  const single = !data.accounts?.length;
   // Every month's entries in one pass (ten years would otherwise be read once per month).
   const byMonth = new Map<MonthKey, Entry[]>();
   for (const e of data.entries) {
+    if (!single && (e.accountId ?? MAIN_ACCOUNT) !== account) continue;
     const list = byMonth.get(e.month);
     if (list) list.push(e); else byMonth.set(e.month, [e]);
   }
   const out: MonthBalance[] = [];
   let prev: MonthBalance | undefined;
   for (const m of months) {
-    const totals = monthTotals(byMonth.get(m.key) ?? [], data.categories, m.key);
+    const list = byMonth.get(m.key) ?? [];
+    const totals = monthTotals(list, data.categories, m.key);
+    let transferPaid = 0;
+    let transferOpen = 0;
+    let transfers = false;
+    for (const e of list) {
+      if (!e.transfer) continue;
+      transfers = true;
+      const v = e.transfer.direction === 'in' ? e.amount : -e.amount;
+      if (e.paid) transferPaid += v; else transferOpen += v;
+    }
     const outstanding = prev ? prev.end - prev.now : 0;
-    const overridden = m.opening !== undefined;
-    const openingNow = overridden ? m.opening! : prev?.now ?? 0;
-    const openingEnd = overridden ? m.opening! + outstanding : prev?.end ?? 0;
+    const opening = account === MAIN_ACCOUNT ? m.opening : m.openings?.[account];
+    const overridden = opening !== undefined;
+    const openingNow = overridden ? opening : prev?.now ?? 0;
+    const openingEnd = overridden ? opening + outstanding : prev?.end ?? 0;
     const b: MonthBalance = {
       key: m.key,
       started: true,
@@ -673,14 +701,34 @@ export function computeBalances(data: AppData): MonthBalance[] {
       openingNow,
       openingEnd,
       ...totals,
-      now: openingNow + totals.incomePaid - totals.expensePaid,
-      end: openingEnd + totals.incomePaid + totals.incomeOpen - totals.expensePaid - totals.expenseOpen,
+      now: openingNow + totals.incomePaid - totals.expensePaid + transferPaid,
+      end: openingEnd + totals.incomePaid + totals.incomeOpen - totals.expensePaid - totals.expenseOpen + transferPaid + transferOpen,
     };
+    if (transfers) { b.transferPaid = transferPaid; b.transferOpen = transferOpen; }
     out.push(b);
     prev = b;
   }
   return out;
 }
+
+/** Several accounts' balances, month by month, added up (they share the book's months). */
+function sumBalances(lists: MonthBalance[][]): MonthBalance[] {
+  const [first, ...rest] = lists;
+  return first.map((b, i) => {
+    const sum: MonthBalance = { ...b };
+    for (const other of rest) {
+      const o = other[i];
+      sum.overridden ||= o.overridden;
+      for (const k of SUMMED) sum[k] += o[k];
+      if (o.transferPaid !== undefined || o.transferOpen !== undefined) {
+        sum.transferPaid = (sum.transferPaid ?? 0) + (o.transferPaid ?? 0);
+        sum.transferOpen = (sum.transferOpen ?? 0) + (o.transferOpen ?? 0);
+      }
+    }
+    return sum;
+  });
+}
+const SUMMED = ['openingNow', 'openingEnd', 'incomePaid', 'incomeOpen', 'expensePaid', 'expenseOpen', 'count', 'openCount', 'expenseCount', 'expensePaidCount', 'now', 'end'] as const;
 
 /**
  * The balance of any month: a started one from the chain, or — for a month
@@ -709,6 +757,127 @@ export function previousStarted(months: MonthRecord[], key: MonthKey): MonthKey 
 /** Open entries left behind in started months before `key` — "2 offen aus Oktober". */
 export function openBefore(data: AppData, key: MonthKey): Entry[] {
   return data.entries.filter(e => !e.paid && e.month < key);
+}
+
+/* ---------------------------------------------------------- accounts (30) */
+
+/** The account every book has; entries without `accountId` are in it. */
+export const MAIN_ACCOUNT = 'main';
+/** The balance card's "Alle Konten": every account together. */
+export const ALL_ACCOUNTS = 'all';
+/** Which account's money is shown: an account's id, or every account's. */
+export type AccountView = string;
+/** The category every transfer is filed under. Not a real category: it has no row, budget or share. */
+export const TRANSFER_CATEGORY = 'transfer';
+export const MAX_ACCOUNTS = 12;
+
+const ACCOUNT_LOOK: Record<AccountKind, { emoji: string; hue: Hue }> = {
+  bank: { emoji: '🏦', hue: 'blue' },
+  cash: { emoji: '💶', hue: 'leaf' },
+  savings: { emoji: '🐷', hue: 'berry' },
+};
+/** What a new account of a kind looks like until the user changes it. */
+export const accountLook = (kind: AccountKind) => ACCOUNT_LOOK[kind];
+
+/** The main account as a book with one account has it: unnamed, so it reads "Girokonto" in any language. */
+export function mainAccount(): Account {
+  return { id: MAIN_ACCOUNT, name: '', kind: 'bank', ...ACCOUNT_LOOK.bank, createdAt: 0 };
+}
+
+/** The book's accounts, the main one first — just the main one until another is added. */
+export function accountsOf(data: AppData): Account[] {
+  return data.accounts?.length ? data.accounts : [mainAccount()];
+}
+
+export const accountIds = (data: AppData): string[] => accountsOf(data).map(a => a.id);
+
+/** Whether the book has more than its main account — only then does anything about accounts show. */
+export const hasAccounts = (data: AppData): boolean => (data.accounts?.length ?? 0) > 1;
+
+/** The account an entry is in. */
+export const accountOf = (e: Entry): string => e.accountId ?? MAIN_ACCOUNT;
+
+/** An account's name; the main account's own until the user renames it. */
+export function accountName(a: Account, mainName: string): string {
+  return a.name || (a.id === MAIN_ACCOUNT ? mainName : '?');
+}
+
+/** An account may go only once nothing is booked on it; the main account stays. */
+export function canDeleteAccount(data: AppData, id: string): boolean {
+  return id !== MAIN_ACCOUNT && !data.entries.some(e => e.accountId === id);
+}
+
+/**
+ * The book as one account sees it, transfers left out — what the month's
+ * list, Statistik, budgets and the insights read. `'all'` keeps every
+ * account's entries. A book with one account and no transfers comes back as
+ * it is.
+ */
+export function accountView(data: AppData, account: AccountView): AppData {
+  const every = account === ALL_ACCOUNTS || !hasAccounts(data);
+  if (every && !data.entries.some(e => e.transfer)) return data;
+  return { ...data, entries: data.entries.filter(e => !e.transfer && (every || accountOf(e) === account)) };
+}
+
+/** The transfers of a month an account takes part in (both sides for `'all'`), as entered. */
+export function monthTransfers(data: AppData, month: MonthKey, account: AccountView): Entry[] {
+  return data.entries
+    .filter(e => e.transfer && e.month === month && (account === ALL_ACCOUNTS || accountOf(e) === account))
+    .sort((a, b) => (a.date ?? '').localeCompare(b.date ?? '') || a.createdAt - b.createdAt);
+}
+
+/** Both sides of a transfer, out first; a side can be missing in a book edited by hand. */
+export function transferPair(entries: Entry[], pairId: string): { out?: Entry; in?: Entry } {
+  const pair: { out?: Entry; in?: Entry } = {};
+  for (const e of entries) if (e.transfer?.pairId === pairId) pair[e.transfer.direction] = e;
+  return pair;
+}
+
+export interface TransferDraft {
+  from: string;
+  to: string;
+  amount: number;
+  name: string;
+  month: MonthKey;
+  date?: string;
+  paid: boolean;
+  repeat: Repeat;
+  note?: string;
+}
+
+/** A transfer as its two entries: out of `from`, into `to` (plan 30). */
+export function makeTransfer(d: TransferDraft, now: number, newId: () => string = uid): [Entry, Entry] {
+  const pairId = newId();
+  const side = (direction: 'out' | 'in', account: string, i: number): Entry => {
+    const id = newId();
+    const e: Entry = {
+      id, month: d.month, categoryId: TRANSFER_CATEGORY, name: cleanText(d.name) || '?', amount: Math.min(Math.round(Math.abs(d.amount)), MAX_CENTS),
+      paid: d.paid, repeat: d.repeat, seriesId: id, createdAt: now + i, transfer: { pairId, direction },
+    };
+    if (account !== MAIN_ACCOUNT) e.accountId = account;
+    if (d.date) e.date = d.date;
+    if (d.paid) e.paidAt = now;
+    const note = cleanText(d.note ?? '', 200);
+    if (note) e.note = note;
+    return e;
+  };
+  return [side('out', d.from, 0), side('in', d.to, 1)];
+}
+
+/** Entries from an import, into the account they were imported for (plan 30). */
+export function intoAccount(entries: Entry[], account: string): Entry[] {
+  return account === MAIN_ACCOUNT ? entries : entries.map(e => ({ ...e, accountId: account }));
+}
+
+export interface AccountTotal { account: Account; now: number; end: number }
+
+/** Every account's two balances in a month, and all of them together — "Vermögen" (plan 30). */
+export function accountTotals(data: AppData, month: MonthKey): { accounts: AccountTotal[]; now: number; end: number } {
+  const accounts = accountsOf(data).map(account => {
+    const b = balanceFor(computeBalances(data, account.id), month);
+    return { account, now: b.now, end: b.end };
+  });
+  return { accounts, now: accounts.reduce((s, a) => s + a.now, 0), end: accounts.reduce((s, a) => s + a.end, 0) };
 }
 
 /* -------------------------------------------------------------- carry-over */
@@ -749,8 +918,21 @@ export function laterCopies(data: AppData, entry: Entry, now: number, newId: () 
   return targets.flatMap((k, i) => carryOver([entry], k, now + i, newId));
 }
 
+/** `laterCopies` for a recurring transfer's two sides, so each later month gets one transfer of its own (plan 30). */
+export function laterTransferCopies(data: AppData, pair: Entry[], now: number, newId: () => string = uid): Entry[] {
+  const [first] = pair;
+  if (!first || first.repeat === 'none') return [];
+  const targets = data.months
+    .map(m => m.key)
+    .filter(k => (first.repeat === 'monthly' ? k > first.month : k === addMonths(first.month, 12)))
+    .filter(k => !data.entries.some(e => e.month === k && e.seriesId === first.seriesId));
+  return targets.flatMap((k, i) => carryOver(pair, k, now + i * pair.length, newId));
+}
+
 /** Copies of `sources` for month `key`: open, same amount, same due day, same series. */
 export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: () => string = uid): Entry[] {
+  // A carried transfer's two sides share a new pair id, so they stay one transfer (plan 30).
+  const pairs = new Map<string, string>();
   return sources.map((e, i) => {
     const copy: Entry = {
       id: newId(),
@@ -773,6 +955,13 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
     if (e.tags?.length) copy.tags = [...e.tags];
     // A split payment carries all its parts; they keep their shared splitId (plan 21).
     if (e.splitId) copy.splitId = e.splitId;
+    // The account stays (plan 30).
+    if (e.accountId) copy.accountId = e.accountId;
+    if (e.transfer) {
+      let pairId = pairs.get(e.transfer.pairId);
+      if (!pairId) pairs.set(e.transfer.pairId, pairId = newId());
+      copy.transfer = { pairId, direction: e.transfer.direction };
+    }
     return copy;
   });
 }
@@ -810,6 +999,7 @@ export function suggestNames({ entries, categoryId, query = '', lang, limit = 12
   const newer = (a: Entry, b: Entry) => a.month > b.month || (a.month === b.month && a.createdAt > b.createdAt);
   const groups = new Map<string, { name: string; count: number; here: number; latest: Entry; latestHere?: Entry }>();
   for (const e of entries) {
+    if (e.transfer) continue;
     const k = normalizeName(e.name);
     if (!k) continue;
     const isHere = e.categoryId === categoryId;
@@ -1092,7 +1282,7 @@ export function topNames(entries: Entry[], categories: Category[], months: Month
   const inRange = new Set(months);
   const groups = new Map<string, NameTotal>();
   for (const e of entries) {
-    if (!inRange.has(e.month) || kind(e.categoryId) !== 'expense' || e.amount === 0) continue;
+    if (e.transfer || !inRange.has(e.month) || kind(e.categoryId) !== 'expense' || e.amount === 0) continue;
     const k = normalizeName(e.name);
     const g = groups.get(k);
     if (g) { g.total += e.amount; g.count++; } else groups.set(k, { name: e.name, categoryId: e.categoryId, total: e.amount, count: 1 });
@@ -1201,6 +1391,13 @@ function normalizeEntry(v: unknown): Entry | null {
   if (tags.length) e.tags = tags;
   const splitId = str(v.splitId);
   if (splitId) e.splitId = splitId.slice(0, 80);
+  const accountId = str(v.accountId);
+  if (accountId && accountId !== MAIN_ACCOUNT) e.accountId = accountId.slice(0, 80);
+  const t = v.transfer;
+  if (isObj(t) && str(t.pairId) && (t.direction === 'out' || t.direction === 'in')) {
+    e.transfer = { pairId: (t.pairId as string).slice(0, 80), direction: t.direction };
+    e.categoryId = TRANSFER_CATEGORY;
+  }
   return e;
 }
 
@@ -1210,7 +1407,35 @@ function normalizeMonth(v: unknown): MonthRecord | null {
   if (Array.isArray(v.categories)) m.categories = [...new Set(v.categories.filter((x): x is string => typeof x === 'string'))];
   if (typeof v.opening === 'number' && Number.isFinite(v.opening)) m.opening = Math.round(Math.max(-MAX_CENTS, Math.min(MAX_CENTS, v.opening)));
   if (typeof v.reconciledAt === 'number' && Number.isFinite(v.reconciledAt)) m.reconciledAt = v.reconciledAt;
+  if (isObj(v.openings)) {
+    const openings: Record<string, number> = {};
+    for (const [id, cents] of Object.entries(v.openings)) {
+      if (id && id.length <= 80 && id !== MAIN_ACCOUNT && typeof cents === 'number' && Number.isFinite(cents)) openings[id] = Math.round(Math.max(-MAX_CENTS, Math.min(MAX_CENTS, cents)));
+    }
+    if (Object.keys(openings).length) m.openings = openings;
+  }
   return m;
+}
+
+/** The accounts (schema 20): known kinds and colours, short names, the main account first. Unset when there are none. */
+function normalizeAccounts(v: unknown): Account[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const list = dedupe(v.map((a): Account | null => {
+    if (!isObj(a) || !str(a.id)) return null;
+    const kind: AccountKind = ACCOUNT_KINDS.includes(a.kind as AccountKind) ? (a.kind as AccountKind) : 'bank';
+    const emoji = typeof a.emoji === 'string' && a.emoji.trim() && a.emoji.length <= 16 ? a.emoji.trim() : ACCOUNT_LOOK[kind].emoji;
+    return {
+      id: (a.id as string).slice(0, 80),
+      name: cleanText(str(a.name) ?? '', 40),
+      kind,
+      emoji,
+      hue: isHue(a.hue) ? a.hue : ACCOUNT_LOOK[kind].hue,
+      createdAt: typeof a.createdAt === 'number' && Number.isFinite(a.createdAt) ? a.createdAt : 0,
+    };
+  }).filter((a): a is Account => a !== null), a => a.id).slice(0, MAX_ACCOUNTS);
+  if (!list.length) return undefined;
+  const main = list.find(a => a.id === MAIN_ACCOUNT) ?? mainAccount();
+  return [main, ...list.filter(a => a.id !== MAIN_ACCOUNT)];
 }
 
 function dedupe<T>(xs: T[], key: (x: T) => string): T[] {
@@ -1232,9 +1457,20 @@ export function normalizeState(raw: unknown): AppData {
   const months = dedupe(arr(v.months).map(normalizeMonth).filter((m): m is MonthRecord => m !== null), m => m.key);
 
   const known = new Set(categories.map(c => c.id));
-  if (entries.some(e => !known.has(e.categoryId))) {
+  // A transfer is filed under no real category (plan 30); anything else in a gone category moves to "Sonstiges".
+  const orphan = (e: Entry) => !e.transfer && !known.has(e.categoryId);
+  if (entries.some(orphan)) {
     if (!known.has(OTHER_CATEGORY.id)) categories.push({ ...OTHER_CATEGORY, names: { ...OTHER_CATEGORY.names } });
-    for (const e of entries) if (!known.has(e.categoryId)) e.categoryId = OTHER_CATEGORY.id;
+    for (const e of entries) if (orphan(e)) e.categoryId = OTHER_CATEGORY.id;
+  }
+  // Accounts (schema 20): an entry or opening on an account that isn't there is the main account's.
+  const accounts = normalizeAccounts(v.accounts);
+  const accountSet = new Set((accounts ?? []).map(a => a.id));
+  for (const e of entries) if (e.accountId && !accountSet.has(e.accountId)) delete e.accountId;
+  for (const m of months) {
+    if (!m.openings) continue;
+    for (const id of Object.keys(m.openings)) if (!accountSet.has(id)) delete m.openings[id];
+    if (!Object.keys(m.openings).length) delete m.openings;
   }
   const started = new Set(months.map(m => m.key));
   for (const e of entries) {
@@ -1256,6 +1492,7 @@ export function normalizeState(raw: unknown): AppData {
     ...(goals ? { goals } : {}),
     ...(rules ? { rules } : {}),
     ...(demo ? { demo } : {}),
+    ...(accounts ? { accounts } : {}),
   };
 }
 
@@ -1557,6 +1794,12 @@ export interface CsvLabels {
   currency: string;
   /** The header for the appended tags column ("Tags", plan 26). */
   tags: string;
+  /** What a transfer's category and kind cells say ("Umbuchung", plan 30). */
+  transfer: string;
+  /** The header for the appended account column ("Konto"), there only when the book has more than one (plan 30). */
+  account: string;
+  /** The main account's name until the user renames it ("Girokonto"). */
+  mainAccount: string;
 }
 
 /**
@@ -1578,18 +1821,24 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
   const rows = [...data.entries].sort((a, b) =>
     a.month < b.month ? -1 : a.month > b.month ? 1
       : (order.get(a.categoryId) ?? 0) - (order.get(b.categoryId) ?? 0) || a.createdAt - b.createdAt);
-  const lines = [[...labels.header, labels.currency, labels.tags].map(cell).join(';')];
+  // An account column only once there is more than one account (plan 30), so other books' files stay as they were.
+  const accounts = hasAccounts(data) ? new Map(accountsOf(data).map(a => [a.id, accountName(a, labels.mainAccount)])) : null;
+  const lines = [[...labels.header, labels.currency, labels.tags, ...(accounts ? [labels.account] : [])].map(cell).join(';')];
   for (const e of rows) {
     const c = byId.get(e.categoryId);
     const kind = c?.kind ?? 'expense';
-    const value = (signedAmount(e.amount, kind) / 100).toFixed(2).replace('.', ',');
+    // A transfer: out of its account negative, into it positive.
+    const signed = e.transfer ? (e.transfer.direction === 'in' ? e.amount : -e.amount) : signedAmount(e.amount, kind);
+    const value = (signed / 100).toFixed(2).replace('.', ',');
     lines.push([
-      cell(e.month), textCell(displayName(c?.names, lang)), cell(kind === 'income' ? labels.income : labels.expense),
+      cell(e.month), textCell(e.transfer ? labels.transfer : displayName(c?.names, lang)),
+      cell(e.transfer ? labels.transfer : kind === 'income' ? labels.income : labels.expense),
       textCell(e.name), cell(value), cell(e.paid ? labels.paid : labels.open), cell(labels.repeat[e.repeat]),
       cell(e.dueDay ? String(e.dueDay) : ''), textCell(e.note ?? ''),
       cell(e.date ? `${e.date.slice(8, 10)}.${e.date.slice(5, 7)}.${e.date.slice(0, 4)}` : ''),
       cell(activeCurrency), // the book's currency, appended so the old column order is kept
       textCell((e.tags ?? []).map(x => `#${x}`).join(' ')), // tags, injection-guarded (plan 26)
+      ...(accounts ? [textCell(accounts.get(accountOf(e)) ?? '')] : []),
     ].join(';'));
   }
   // BOM, so Excel reads the umlauts as UTF-8.

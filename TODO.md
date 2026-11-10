@@ -30,6 +30,16 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
+**Plan 30 — cash and savings accounts**
+- [ ] *Optionen › Konten › Bargeld hinzufügen* with today's cash: the balance
+  card gets the switch; Giro, Bargeld and *Alle Konten* each show the right
+  balance.
+- [ ] *Umbuchen* 100 € from Giro to Bargeld: both balances move, Statistik and
+  the budgets don't. Tick it open and back, edit it, delete it (undo).
+- [ ] A bank CSV imported while Bargeld is shown lands in Bargeld.
+- [ ] VoiceOver on the switch, the transfers card and the account pill, and an
+  Arabic look at the month with accounts.
+
 **Plan 28 — PDF report**
 - [ ] Monatsbericht › *Bericht teilen*, with and without every entry, in
   German and Arabic: the share sheet opens and the PDF looks right

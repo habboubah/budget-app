@@ -107,6 +107,15 @@ describe('what each version stored still loads', () => {
     expect(Object.keys(cat('income').names)).toHaveLength(14);
     expect(cat('u-pets').names).toEqual({ de: 'Hund' });
   });
+  it('version 20: accounts, transfers and opening balances come back from localStorage', () => {
+    const { data: d } = stored('storage-v20.json');
+    expect(d.accounts?.map(a => a.id)).toEqual(['main', 'a-cash']);
+    expect(d.months.find(m => m.key === '2026-11')?.openings).toEqual({ 'a-cash': 8000 });
+    expect(d.entries.filter(x => x.transfer)).toHaveLength(2);
+    expect(computeBalances(d).map(b => [b.key, b.now, b.end])).toEqual([['2026-11', 239500, 229500]]);
+    expect(computeBalances(d, 'a-cash').map(b => [b.key, b.now, b.end])).toEqual([['2026-11', 16700, 16700]]);
+    expect(computeBalances(d, 'all').map(b => b.now)).toEqual([256200]);
+  });
 });
 
 describe('a backup from schema 8 (before budgets)', () => {

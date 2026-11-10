@@ -1,18 +1,19 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
-import { ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { MonthBalance } from '../logic';
 import { formatMoney, formatMoneyApprox, leftPerDay, monthKeyOf, monthLabel, monthLeft, monthSettled, spoken } from '../logic';
 import { Strings, fmt, plural } from '../translations';
 import { tapLight } from '../ui/haptics';
 import { useCountUp } from '../ui/useCountUp';
+import { Menu } from '../ui/Menu';
 import { CountingMoney } from '../ui/CountingMoney';
 
 interface Props {
   balance: MonthBalance;
   t: Strings;
-  /** Opens the opening-balance sheet. */
-  onOpening: () => void;
+  /** Opens the opening-balance sheet. Unset for "Alle Konten": an opening is one account's (plan 30). */
+  onOpening?: () => void;
   /** Swiped sideways: one month on (1) or back (−1). */
   onSwipe?: (delta: 1 | -1) => void;
   /** When this month was last matched against the bank (ms epoch, plan 10). */
@@ -22,6 +23,20 @@ interface Props {
    * which shows them for a while (`shown`) and hides them again.
    */
   peek?: { shown: boolean; onToggle: () => void };
+  /**
+   * Once the book has more than one account (plan 30): which one the card
+   * shows, as a small switch above the balance ("🏦 Giro ▾"), and the others
+   * — with "Alle Konten" — to switch to.
+   */
+  account?: AccountSwitch;
+}
+
+export interface AccountSwitch {
+  label: string;
+  emoji: string;
+  options: { id: string; label: string; emoji: string }[];
+  selected: string;
+  onSelect: (id: string) => void;
 }
 
 /** How far (px) or how fast (px/s) a swipe has to go to turn the month. */
@@ -55,11 +70,12 @@ type Note = { text: string; tone: string };
  * figures run to their new values). The ‹ › in the bar do the same for
  * everyone else; the list below keeps its own swipes (paid, delete).
  */
-export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, peek }: Props) {
+export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, peek, account }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   /** What VoiceOver reads for an amount: the amount, or "Betrag verborgen". */
   const say = (text: string) => spoken(text, t.amountHidden);
   const [details, setDetails] = useState(false);
+  const [accountMenu, setAccountMenu] = useState<HTMLElement | null>(null);
   const detailsId = useId();
   const swipe = useMonthSwipe(t.dir === 'rtl', onSwipe);
   const today = new Date();
@@ -89,6 +105,22 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, p
             beside it (the basis is in rem), it moves under the balance. */}
         <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
           <div className="min-w-0 flex-1 basis-[10rem]">
+            {account && (
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-label={fmt(t.accountSwitchLabel, { account: account.label })}
+                onClick={e => { tapLight(); setAccountMenu(e.currentTarget); }}
+                // A full tap target; the pill inside is what shows.
+                className="-ms-1 -mt-2 max-w-full min-h-tap inline-flex items-center rounded-full active:opacity-60 transition-opacity focus-visible:ring-focus"
+              >
+                <span className="max-w-full min-h-[30px] ps-1.5 pe-2.5 rounded-full inline-flex items-center gap-1.5 bg-on-hero/15 text-label font-semibold text-on-hero">
+                  <span className="emoji text-[15px]" aria-hidden="true">{account.emoji}</span>
+                  <span className="min-w-0 truncate">{account.label}</span>
+                  <ChevronDown className="w-4 h-4 shrink-0 text-on-hero-mute" strokeWidth={2.5} aria-hidden="true" />
+                </span>
+              </button>
+            )}
             <div className="flex items-center gap-0.5">
               <p className="eyebrow text-on-hero-mute">{t.balanceNow}</p>
               {peek && (
@@ -161,6 +193,15 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, p
             >
               <CarryRow balance={b} t={t} money={money} onOpening={onOpening} />
               <Workings balance={b} t={t} money={money} />
+              {b.transferPaid !== undefined && (b.transferPaid !== 0 || b.transferOpen !== 0) && (
+                <p className="px-3.5 py-2 border-t border-on-hero/15 text-label text-on-hero-mute flex flex-wrap items-baseline gap-x-3">
+                  <span className="wrap-prose">{t.transfers}</span>
+                  <span className="ms-auto"><span className="block num font-semibold whitespace-nowrap text-on-hero">{money(b.transferPaid, 'exceptZero')}</span></span>
+                  {!!b.transferOpen && (
+                    <span className="basis-full text-caption font-medium text-on-hero-warn tabular-nums">{fmt(t.transfersOpen, { amount: money(b.transferOpen, 'exceptZero') })}</span>
+                  )}
+                </p>
+              )}
               {reconciledAt && (
                 <p className="px-4 py-2 text-caption text-on-hero-mute">
                   {fmt(t.reconciledOn, { date: new Date(reconciledAt).toLocaleDateString(t.locale, { day: 'numeric', month: 'short' }) })}
@@ -173,6 +214,16 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, p
         <div className="mx-2 mb-2 rounded-md hero-panel overflow-hidden">
           <CarryRow balance={b} t={t} money={money} onOpening={onOpening} />
         </div>
+      )}
+      {account && (
+        <Menu
+          anchor={accountMenu}
+          label={t.accountSwitch}
+          groups={[account.options.map(o => ({
+            key: o.id, label: `${o.emoji} ${o.label}`, icon: o.id === account.selected ? Check : undefined, onSelect: () => account.onSelect(o.id),
+          }))]}
+          onClose={() => setAccountMenu(null)}
+        />
       )}
     </motion.section>
   );
@@ -287,7 +338,7 @@ function CarryRow({ balance: b, t, money, onOpening }: {
   balance: MonthBalance;
   t: Strings;
   money: (c: number) => string;
-  onOpening: () => void;
+  onOpening?: () => void;
 }) {
   // Open bills of earlier months still to settle.
   const carryOpen = b.openingEnd - b.openingNow;
@@ -299,12 +350,8 @@ function CarryRow({ balance: b, t, money, onOpening }: {
         ? new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(Number(b.prevKey.slice(0, 4)), Number(b.prevKey.slice(5, 7)) - 1, 1))
         : monthLabel(b.prevKey, t.locale, 'long') })
       : t.startingBalance;
-  return (
-    <button
-      type="button"
-      onClick={() => { tapLight(); onOpening(); }}
-      className="w-full min-h-tap ps-3.5 pe-2.5 py-2 flex items-center gap-2 text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
-    >
+  const body = (
+    <>
       {/* The amount wraps under the label when both don't fit (large text). */}
       <span className="min-w-0 flex-1 flex flex-wrap items-baseline gap-x-3">
         <span className="text-label text-on-hero-soft wrap-prose">{label}</span>
@@ -317,7 +364,18 @@ function CarryRow({ balance: b, t, money, onOpening }: {
           <span className="basis-full text-caption font-medium text-on-hero-warn tabular-nums">{fmt(t.inclOpen, { amount: money(carryOpen) })}</span>
         )}
       </span>
-      <ChevronRight className="w-4 h-4 shrink-0 text-on-hero-soft rtl:rotate-180" strokeWidth={2.5} aria-hidden="true" />
+      {onOpening && <ChevronRight className="w-4 h-4 shrink-0 text-on-hero-soft rtl:rotate-180" strokeWidth={2.5} aria-hidden="true" />}
+    </>
+  );
+  // "Alle Konten" (plan 30): only what it adds up to — an opening is set per account.
+  if (!onOpening) return <div className="w-full min-h-tap ps-3.5 pe-2.5 py-2 flex items-center gap-2">{body}</div>;
+  return (
+    <button
+      type="button"
+      onClick={() => { tapLight(); onOpening(); }}
+      className="w-full min-h-tap ps-3.5 pe-2.5 py-2 flex items-center gap-2 text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
+    >
+      {body}
     </button>
   );
 }

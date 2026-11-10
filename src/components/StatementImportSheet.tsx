@@ -22,6 +22,8 @@ interface Props {
   onConfirm: (rows: PlannedRow[]) => void;
   /** A row's category was changed — offer to make it an import rule (plan 20). */
   onReclassified?: (row: PlannedRow, categoryId: string, anchor: HTMLElement) => void;
+  /** The account the rows go into, once there is more than one (plan 30). */
+  accountLabel?: string;
 }
 
 /**
@@ -31,7 +33,7 @@ interface Props {
  * new entry, already entered (left out unless ticked), or an open entry that
  * gets ticked off. Grouped by month; nothing changes until the button.
  */
-export function StatementImportSheet({ state, categories, language, t, onClose, onConfirm, onReclassified }: Props) {
+export function StatementImportSheet({ state, categories, language, t, onClose, onConfirm, onReclassified, accountLabel }: Props) {
   const [rows, setRows] = useState<PlannedRow[]>([]);
   useEffect(() => { if (state?.phase === 'review') setRows(state.rows); }, [state]);
   const money = (c: number, income: boolean) => formatMoney(income ? c : -c, t.locale, 'exceptZero');
@@ -78,6 +80,7 @@ export function StatementImportSheet({ state, categories, language, t, onClose, 
             <p className="min-w-0 flex-1 text-label text-fg-mute tabular-nums wrap-prose">
               {fmt(t.importFound, { n: rows.length })}
               {' · '}{fmt(t.importCounts, { fresh: counts.fresh, exists: counts.exists, pay: counts.pay })}
+              {accountLabel && <span className="block mt-0.5 font-medium text-fg">{fmt(t.importIntoAccount, { account: accountLabel })}</span>}
             </p>
             <button
               type="button"

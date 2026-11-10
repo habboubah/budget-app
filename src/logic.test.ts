@@ -105,7 +105,7 @@ describe('hidden amounts (plan 06)', () => {
     const csv = toCsv(book, 'de', {
       header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
       income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
-      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags',
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags', transfer: 'Umbuchung', account: 'Konto', mainAccount: 'Girokonto',
     });
     expect(csv).toContain('-1050,00');
     expect(csv).not.toContain(MASK);
@@ -584,7 +584,7 @@ describe('CSV export', () => {
     const csv = toCsv(d, 'de', {
       header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
       income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
-      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags',
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags', transfer: 'Umbuchung', account: 'Konto', mainAccount: 'Girokonto',
     });
     const lines = csv.replace('﻿', '').trim().split('\r\n');
     // A trailing currency column (EUR) is appended after the date (plan 07).
@@ -602,7 +602,7 @@ describe('CSV export', () => {
     const csv = toCsv(d, 'de', {
       header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
       income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
-      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags',
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags', transfer: 'Umbuchung', account: 'Konto', mainAccount: 'Girokonto',
     });
     const lines = csv.replace('', '').trim().split('\r\n');
     // Each dangerous text cell gets a leading apostrophe; the cell is then quoted only if it needs it.
@@ -1060,7 +1060,7 @@ describe('tags (plan 26)', () => {
     const csv = toCsv(d, 'de', {
       header: ['Monat', 'Kategorie', 'Art', 'Name', 'Betrag', 'Status', 'Wiederholung', 'Fällig am', 'Notiz', 'Datum'],
       income: 'Einnahme', expense: 'Ausgabe', paid: 'bezahlt', open: 'offen',
-      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags',
+      repeat: { none: 'einmalig', monthly: 'monatlich', yearly: 'jährlich' }, currency: 'Währung', tags: 'Tags', transfer: 'Umbuchung', account: 'Konto', mainAccount: 'Girokonto',
     });
     const lines = csv.replace('', '').trim().split('\r\n');
     expect(lines[0].endsWith(';Tags')).toBe(true);

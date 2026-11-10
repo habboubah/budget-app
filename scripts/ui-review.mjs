@@ -67,6 +67,7 @@ const LANGS = {
       ins: 'Haftpflicht', gym: 'Fitnessstudio', fuel: 'Tanken', carIns: 'Kfz-Versicherung', carTax: 'Kfz-Steuer',
       shops: ['Lidl', 'Rewe', 'dm', 'Aldi', 'Edeka'], extras: ['Amazon', 'Apotheke', 'Restaurant', 'Kleidung'], kita: 'Kita',
     },
+    accounts: { title: 'Konten', cash: 'Bargeld', savings: 'Tagesgeld', atm: 'Abheben', save: 'Sparrate', market: 'Wochenmarkt', bakery: 'Bäcker' },
   },
   ar: {
     locale: 'ar',
@@ -81,6 +82,7 @@ const LANGS = {
       ins: 'تأمين المسؤولية', gym: 'النادي الرياضي', fuel: 'وقود', carIns: 'تأمين السيارة', carTax: 'ضريبة السيارة',
       shops: ['Lidl', 'Rewe', 'dm', 'Aldi', 'Edeka'], extras: ['Amazon', 'الصيدلية', 'مطعم', 'ملابس'], kita: 'الحضانة',
     },
+    accounts: { title: 'الحسابات', cash: 'النقد', savings: 'التوفير', atm: 'سحب نقدي', save: 'ادخار شهري', market: 'سوق الخضار', bakery: 'المخبز' },
   },
 };
 
@@ -126,6 +128,45 @@ function sampleData(n) {
   }
   return { entries, months };
 }
+
+/**
+ * The same book with a cash and a savings account (plan 30): money taken out
+ * and a monthly savings transfer in each month, a few cash payments.
+ */
+function withAccounts(data, a) {
+  const entries = [...data.entries];
+  let id = 0;
+  const add = (e, account) => entries.push({ repeat: 'none', createdAt: 9000 + ++id, ...e, id: `x${id}`, seriesId: e.seriesId ?? `x${id}`, ...(account ? { accountId: account } : {}) });
+  const today = new Date().getDate();
+  data.months.forEach((m, i) => {
+    const cur = i === data.months.length - 1;
+    const day = d => `${m.key}-${String(d).padStart(2, '0')}`;
+    const pair = (name, cents, d, to, paid, repeat = 'none') => {
+      const p = `p${i}-${to}`;
+      add({ month: m.key, categoryId: 'transfer', name, amount: cents, paid, repeat, date: day(d), seriesId: `t-${to}-out`, transfer: { pairId: p, direction: 'out' } });
+      add({ month: m.key, categoryId: 'transfer', name, amount: cents, paid, repeat, date: day(d), seriesId: `t-${to}-in`, transfer: { pairId: p, direction: 'in' } }, to);
+    };
+    pair(a.atm, 20000, 2, 'a-cash', true);
+    pair(a.save, 30000, 27, 'a-sav', !cur || today >= 27, 'monthly');
+    add({ month: m.key, categoryId: 'groceries', name: a.market, amount: 2340 + i * 110, paid: true, date: day(Math.min(6, today)) }, 'a-cash');
+    add({ month: m.key, categoryId: 'groceries', name: a.bakery, amount: 680, paid: true, date: day(Math.min(2, today)) }, 'a-cash');
+  });
+  const months = data.months.map((m, i) => (i === 0 ? { ...m, openings: { 'a-cash': 6000, 'a-sav': 450000 } } : m));
+  return { ...data, entries, months };
+}
+const ACCOUNTS = l => ({
+  'spartopf-accounts': JSON.stringify([
+    { id: 'main', name: '', kind: 'bank', emoji: '🏦', hue: 'blue', createdAt: 0 },
+    { id: 'a-cash', name: l.accounts.cash, kind: 'cash', emoji: '💶', hue: 'leaf', createdAt: 1 },
+    { id: 'a-sav', name: l.accounts.savings, kind: 'savings', emoji: '🐷', hue: 'berry', createdAt: 2 },
+  ]),
+});
+/** Optionen → Konten. */
+const openAccounts = async (page, l) => {
+  await tab(3)(page);
+  await page.locator('main button', { hasText: l.accounts.title }).first().click();
+  await page.waitForTimeout(500);
+};
 
 const dialog = '[role="dialog"], [role="alertdialog"]';
 const tab = n => async page => { await page.locator('nav button:not(.hero)').nth(n).click(); await page.waitForTimeout(450); };
@@ -312,6 +353,25 @@ const SCREENS = [
   // After the setup: the gestures card on the running month.
   { name: 'tips', storage: { 'spartopf-tips-done': '0' }, run: page => page.evaluate(() => window.scrollTo(0, 560)), audit: 'page' },
   { name: 'stats-empty', fresh: true, run: tab(1) },
+  // Cash and savings accounts (plan 30): the switch on the balance card, the transfers card, Konten, the sheets.
+  { name: 'accounts-month', accounts: true, audit: 'page' },
+  { name: 'accounts-month-full', accounts: true, full: true },
+  { name: 'accounts-details', accounts: true, run: openDetails, audit: 'page' },
+  { name: 'accounts-switch', accounts: true, run: page => page.locator('section.hero button[aria-haspopup="menu"]').first().click(), wait: '[role="menu"]', audit: 'menu' },
+  { name: 'accounts-cash', accounts: true, storage: { 'spartopf-account': 'a-cash' }, full: true, audit: 'page' },
+  { name: 'accounts-all', accounts: true, storage: { 'spartopf-account': 'all' }, run: openDetails, audit: 'page' },
+  { name: 'accounts-transfers', accounts: true, run: page => page.evaluate(() => document.querySelector('#transfers-title')?.scrollIntoView({ block: 'center' })), audit: 'page' },
+  { name: 'accounts-screen', accounts: true, run: openAccounts, audit: 'page' },
+  { name: 'account-sheet', accounts: true, run: async (page, l) => { await openAccounts(page, l); await page.locator('main button[aria-label]').nth(3).click(); }, wait: dialog, audit: 'dialog' },
+  { name: 'accounts-first', run: async (page, l) => { await openAccounts(page, l); }, audit: 'page' },
+  { name: 'transfer-sheet', accounts: true, run: async page => {
+    await page.locator('header button').last().click();
+    await page.waitForSelector('[role="menu"]');
+    await page.waitForTimeout(300);
+    await page.locator('[role="menuitem"]').nth(3).click();
+  }, wait: dialog, audit: 'dialog' },
+  { name: 'entry-account', accounts: true, run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
+  { name: 'insights-accounts', accounts: true, run: tab(2), full: true },
 ];
 // Snapshotted as static HTML with --dom (mockups start from these).
 const DOM_SCREENS = ['month', 'entry-new', 'stats', 'insights', 'settings', 'category', 'month-report'];
@@ -425,7 +485,7 @@ async function runContext(browser, c, report, safeAreaMode) {
         localStorage.setItem('spartopf-meta', JSON.stringify({ schemaVersion: seed.schema, seeded: true }));
       }
       for (const [k, v] of Object.entries(extra)) localStorage.setItem(k, v);
-    }, [data, c.lang, !!s.fresh, TEXT_SCALE, s.storage ?? {}]);
+    }, [s.accounts ? withAccounts(data, l.accounts) : data, c.lang, !!s.fresh, TEXT_SCALE, { ...(s.accounts ? ACCOUNTS(l) : {}), ...(s.storage ?? {}) }]);
     const mode = await applySafeArea(page, d);
     safeAreaMode.add(mode);
     await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' });

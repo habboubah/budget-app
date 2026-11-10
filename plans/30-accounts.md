@@ -51,6 +51,18 @@ Nobody sees accounts until they add one. Single-account books look and behave ex
 
 ## Done when
 
-- [ ] Single-account books are unchanged.
-- [ ] Multi-account books balance per account and in total.
-- [ ] Transfers never count as income or expense.
+- [x] Single-account books are unchanged. (The golden year and every older fixture come to the same values; `accountView` hands such a book back as it is.)
+- [x] Multi-account books balance per account and in total. (`accounts.test.ts`, the v20 fixture in `compat.test.ts`.)
+- [x] Transfers never count as income or expense. (`monthTotals`, `buildBook`, `topNames`, budgets — all tested.)
+
+## Notes (built)
+
+- **Data (schema 20):** `Account { id, name, kind, emoji, hue, createdAt }` in `AppData.accounts`, the main account (id `main`) first. It is written down only with the first extra account, unnamed so that it reads *Girokonto* in every language. Deleting the last extra account takes the list away again, unless the main one was renamed. `Entry.accountId` (unset = main), `Entry.transfer { pairId, direction }`, `MonthRecord.openings` (the other accounts' openings). The plan's `main?: true` flag became the fixed id. `normalizeState` moves entries and openings on an unknown account to the main one. It never sends a transfer to *Sonstiges*. Fixture `storage-v20.json`.
+- **Balances:** `computeBalances(data, account)`, with transfers as `transferPaid` / `transferOpen`. `'all'` adds the accounts up month by month. Old callers get the main account, so nothing else changed.
+- **Who reads what:** the month page shows the account picked on the balance card (a view preference, `spartopf-account`). Statistik, Planen, the reports, budgets and *Demnächst fällig* count every account: a budget belongs to the category, wherever the money was paid from. On a side account, a category with only a budget gets no card.
+- **Screens:** *Optionen › Haushaltsbuch › Konten* (each account with today's balance, *Vermögen* under them, *Bargeld / Sparkonto / Anderes Konto hinzufügen*). `AccountSheet` asks a new account for today's balance, which becomes this month's opening for it; delete appears only once the account is empty. The balance card's switch (with *Alle Konten*, where opening and bank match aren't offered). `TransfersCard` under the categories. *Umbuchen* in the month's "⋯" and on the card (`TransferSheet`: amount, from, to, name, day, done or not, every month). The account pill in the entry sheet. Planen's *Vermögen* row.
+- **Imports:** a bank CSV or photo goes into the account shown (the main one for *Alle Konten*), matched against that account; the review sheet names it. An Excel import replaces only the main account's own entries in its months. Rules can already `skip` the bank's side of a transfer (plan 20).
+- **CSV:** a *Konto* column only once there are accounts; a transfer is negative on its outgoing side.
+- **Not done yet:** goals pointing to a savings account (plan 12's pots stay as they are), and a transfer's day moving it to another month (the sheet keeps it in its month). The reconciled date stays per month, not per account.
+- **Bundle:** 321.8 kB gzip (310 kB recorded, 341 kB allowed). No baseline change.
+- **Still to do on an iPhone:** see TODO.md.

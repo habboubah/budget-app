@@ -100,6 +100,37 @@ export interface Entry {
   tags?: string[];
   /** Shared by the parts of a split payment (schema 16, plan 21). */
   splitId?: string;
+  /** The account it was paid from or into (schema 20, plan 30). Unset = the main account. */
+  accountId?: string;
+  /**
+   * One side of a transfer between two accounts (plan 30): money leaving one
+   * account (`out`) and arriving in another (`in`), two entries sharing a
+   * `pairId`. Its category is `TRANSFER_CATEGORY`; it is neither income nor
+   * expense, so it moves only its account's balance.
+   */
+  transfer?: Transfer;
+}
+
+export interface Transfer {
+  pairId: string;
+  direction: 'out' | 'in';
+}
+
+/** Where money is kept (plan 30): the bank account every book has, cash, a savings account. */
+export type AccountKind = 'bank' | 'cash' | 'savings';
+export const ACCOUNT_KINDS: readonly AccountKind[] = ['bank', 'cash', 'savings'];
+
+/**
+ * An account (schema 20, plan 30). A book has one, the main account (id
+ * `main`), until the user adds another; only then are they stored.
+ */
+export interface Account {
+  id: string;
+  name: string;
+  kind: AccountKind;
+  emoji: string;
+  hue: Hue;
+  createdAt: number;
 }
 
 /** A month the user has started. Entries only live in started months. */
@@ -115,6 +146,8 @@ export interface MonthRecord {
   startedAt: number;
   /** When the month was last matched against the bank (ms epoch, plan 10). Unset = never. */
   reconciledAt?: number;
+  /** The other accounts' opening balances in cents, by account id (plan 30) — `opening` is the main account's. */
+  openings?: Record<string, number>;
 }
 
 export type ThemeMode = 'system' | 'light' | 'dark';
@@ -140,6 +173,8 @@ export interface AppData {
   rules?: Rule[];
   /** What the test data (Optionen → Testdaten) added, so removing it leaves the rest as it was (schema 17). Unset = none. */
   demo?: DemoInfo;
+  /** The accounts, the main one first, once there is more than one (schema 20, plan 30). Unset = only the main account. */
+  accounts?: Account[];
 }
 
 /**
@@ -216,4 +251,6 @@ export interface EntryDraft {
   goalId?: string;
   /** Free tags (plan 26). */
   tags?: string[];
+  /** The account (plan 30). Unset = the main account. */
+  accountId?: string;
 }
