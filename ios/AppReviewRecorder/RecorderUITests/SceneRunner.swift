@@ -74,6 +74,8 @@ struct RecordingSpec {
     let scenes: [SceneSpec]
     let system: [String: [String]]
     let mustSeeFirst: [String]
+    /// preflight.reset: steps that empty the app when it isn't (never filmed).
+    let resetSteps: [Step]
 
     init(json data: Data) throws {
         guard case .object(let root) = try JSONDecoder().decode(JSONValue.self, from: data),
@@ -92,6 +94,7 @@ struct RecordingSpec {
         if case .object(let sys)? = root["system"] { for (k, v) in sys { system[k] = v.strings ?? [] } }
         self.system = system
         if case .object(let pre)? = root["preflight"], let must = pre["mustSee"]?.strings { mustSeeFirst = must } else { mustSeeFirst = [] }
+        if case .object(let pre)? = root["preflight"] { resetSteps = Step(raw: pre).steps("reset") ?? [] } else { resetSteps = [] }
     }
 }
 
@@ -110,12 +113,15 @@ final class SceneRunner {
     let pace: Double
     /// Skip starting and stopping the screen recording (a dry run).
     let noVideo: Bool
+    /// Empty the app with preflight.reset when it isn't (the script asked first).
+    let reset: Bool
     private(set) var recording = false
 
-    init(spec: RecordingSpec, pace: Double, noVideo: Bool) {
+    init(spec: RecordingSpec, pace: Double, noVideo: Bool, reset: Bool = false) {
         self.spec = spec
         self.pace = pace
         self.noVideo = noVideo
+        self.reset = reset
         app = XCUIApplication(bundleIdentifier: spec.bundleId)
     }
 
@@ -132,19 +138,37 @@ final class SceneRunner {
 
     // MARK: Running
 
-    /// Before recording: the app must be freshly installed (its welcome card
-    /// showing), so the video starts empty and no real data is ever filmed.
+    /// Before recording: the app must be empty (its welcome card showing), so
+    /// the video starts from scratch. When it isn't and resetting is allowed,
+    /// preflight.reset empties it first — before the screen recording starts.
     func preflight() throws {
         log("Preflight: is \(spec.bundleId) installed and empty?")
+        app.terminate()
         app.activate()
         guard app.wait(for: .runningForeground, timeout: 20) else {
             throw StepFailure("\(spec.bundleId) didn't start. Is it installed from TestFlight on this iPhone?")
         }
         rest(2)
-        if !spec.mustSeeFirst.isEmpty {
-            guard (try? seen(spec.mustSeeFirst, timeout: 12)) != nil else {
-                throw StepFailure("The app isn't empty on this iPhone (no welcome card). Back up your own data, delete the app, install it again from TestFlight, and run this again. Nothing was recorded.")
+        if !spec.mustSeeFirst.isEmpty && (try? seen(spec.mustSeeFirst, timeout: reset ? 5 : 12)) == nil {
+            guard reset && !spec.resetSteps.isEmpty else {
+                throw StepFailure("The app isn't empty on this iPhone (no welcome card). Run it again and answer y to reset it, or delete the app and install it again from TestFlight. Nothing was recorded.")
             }
+            log("Resetting the app (not recorded) …")
+            for (n, step) in spec.resetSteps.enumerated() {
+                do { try perform(step) } catch {
+                    if step.bool("soft") { continue }
+                    throw StepFailure("Resetting the app, step \(n + 1) (\(step.summary)): \(error). Nothing was recorded.")
+                }
+            }
+            app.terminate()
+            rest(1)
+            app.activate()
+            _ = app.wait(for: .runningForeground, timeout: 20)
+            rest(2)
+            guard (try? seen(spec.mustSeeFirst, timeout: 12)) != nil else {
+                throw StepFailure("The app was reset but its welcome card doesn't show. Nothing was recorded.")
+            }
+            log("App reset – it's empty now.")
         }
         app.terminate()
         XCUIDevice.shared.press(.home)

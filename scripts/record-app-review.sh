@@ -11,6 +11,10 @@
 #   FROM=5 TO=8 DRY_RUN=1 npm run record:app-review only scenes 5–8, no preflight
 #   PACE=1.4 npm run record:app-review              slower (0.7 = faster)
 #   DEVICE=<udid> npm run record:app-review         if several iPhones are connected
+#   RESET=1 npm run record:app-review               reset the app without asking first
+#
+# The app must start empty. If it isn't, the recorder resets it in the app
+# (Settings › Reset app) before the screen recording starts – after asking here.
 #
 # Before: ios/AppReviewRecorder/README.md, "Once" and "Every recording".
 set -euo pipefail
@@ -57,6 +61,19 @@ if [ -z "${DEVICE:-}" ]; then
 fi
 
 echo "iPhone: $DEVICE"
+
+# Resetting erases everything in Spartopf on the iPhone, so ask once (only
+# the full run checks the app; FROM=n starts from the state the phone is in).
+if [ "${FROM:-1}" = "1" ] && [ "${RESET:-}" != "1" ]; then
+  echo
+  echo "If Spartopf isn't empty, it is reset before recording: every entry, setting"
+  echo "and automatic backup in it is erased. Back up your own data first."
+  read -r -p "Reset Spartopf on the iPhone if needed? [y/N] " answer
+  case "$answer" in
+    [yYjJ]*) RESET=1 ;;
+    *) echo "Not resetting. If the app isn't empty the recorder stops before recording." ;;
+  esac
+fi
 [ "${DRY_RUN:-}" = "1" ] && echo "Dry run: nothing is recorded."
 echo "Keep the iPhone unlocked and facing you (Face ID is needed twice). Don't touch it until the test ends."
 mkdir -p build
@@ -66,6 +83,7 @@ TEST_RUNNER_RECORDER_PACE="${PACE:-1}" \
 TEST_RUNNER_RECORDER_FROM="${FROM:-1}" \
 TEST_RUNNER_RECORDER_TO="${TO:-}" \
 TEST_RUNNER_RECORDER_NO_VIDEO="${DRY_RUN:-0}" \
+TEST_RUNNER_RECORDER_RESET="${RESET:-0}" \
 xcodebuild test \
   -project "$PROJECT" \
   -scheme AppReviewRecorder \

@@ -40,13 +40,14 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
 3. **AirDrop the four demo files** to the iPhone (they land in Files ›
    Downloads): `spartopf-demo-history.xlsx`, `spartopf-demo-bank.csv`,
    `spartopf-demo-banking-app.png`, `spartopf-demo-backup.spartopf`.
-4. **Delete Spartopf** and install the build you submit from **TestFlight**.
-   Don't open it — the recorder refuses an app that isn't empty, so no real
-   data can end up in the video.
+4. Make sure the build you submit is the one installed from **TestFlight**
+   (install it once when there is a new build). No need to delete it before
+   each run: when the app isn't empty, the recorder resets it in the app
+   (Settings › Reset app) before the screen recording starts. The script
+   asks first (`RESET=1` skips the question); answer no and it stops instead.
 5. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
 6. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
-   screen recording. If it gets through, delete Spartopf and install it from
-   TestFlight again (the dry run filled it).
+   screen recording. The real run resets what the dry run filled.
 7. **Record:** `npm run record:app-review`. Keep the phone unlocked, on a
    stand facing you: Face ID is needed twice (turning the lock on, and the
    last scene). Don't touch it.
