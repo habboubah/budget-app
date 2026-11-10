@@ -23,17 +23,21 @@ On the phone: *Settings › About phone › tap "Build number" seven times*, the
 ## Once: the upload key
 
 Google signs the app for users (Play App Signing); you sign what you upload
-with your own **upload key**. Make it once and keep it — with its password —
-somewhere safe outside the repository. Lose it and Google has to reset it.
+with your own **upload key**. Make it once:
 
 ```
-keytool -genkeypair -v -keystore ~/keys/spartopf-upload.jks -alias spartopf \
-  -keyalg RSA -keysize 4096 -validity 10000
+npm run android:key
 ```
 
-Then copy the Android lines from `.env.release.example` into `.env.release`
-(gitignored) and fill them in. Never commit the keystore, the passwords or
-`.env.release`.
+`keytool` asks for a password and your name. The key goes to
+`~/.android-keys/spartopf-upload.jks`; its path and alias are written into
+`.env.release` (gitignored), the password is not. Keep a copy of the file and
+the password somewhere safe outside the computer — lose them and Google has
+to reset the key. Never commit the keystore, the password or `.env.release`.
+
+`npm run release:android` asks for the password each time; to skip the
+question, add `ANDROID_KEYSTORE_PASSWORD=…` to `.env.release`. An existing
+keystore works too: set `ANDROID_KEYSTORE_PATH` and `ANDROID_KEY_ALIAS` there.
 
 ## Once: the Play Console
 

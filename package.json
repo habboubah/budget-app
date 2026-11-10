@@ -16,6 +16,7 @@
     "release": "node scripts/release.js",
     "release:ios": "node scripts/release.js",
     "release:android": "node scripts/release-android.js",
+    "android:key": "node scripts/release-android.js --make-key",
     "release:first": "node scripts/release.js --keep-version",
     "release:dry": "node scripts/release.js --dry-run",
     "preview": "vite preview --port=3002 --host=0.0.0.0",

@@ -11,6 +11,7 @@ Bundle id `com.habboubah.spartopf` · Team Ahmad Habboubah (HZVBBHBAJN)
 
 - [docs/features.md](docs/features.md) — what the app does
 - [docs/project-layout.md](docs/project-layout.md) — where the code lives
+- [docs/ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md) — Android: run it, sign it, Google Play
 - [APP_STORE_RELEASE.md](APP_STORE_RELEASE.md) — full first-time App Store checklist and troubleshooting
 - [CLAUDE.md](CLAUDE.md) — conventions · [PLAN.md](PLAN.md) — concept and money rules
 
@@ -18,7 +19,8 @@ Bundle id `com.habboubah.spartopf` · Team Ahmad Habboubah (HZVBBHBAJN)
 
 - A Mac with **Xcode** (opened once, signed in under *Xcode → Settings → Accounts*)
 - **Node.js 22** (the version CI uses)
-- For releases: the App Store Connect API key (see [Build a release](#build-a-release))
+- For Android: **Android Studio** (it brings the SDK and Java)
+- For releases: the App Store Connect API key, and for Android the upload key (see [Build a release](#build-a-release))
 
 ```bash
 cd ~/repos/budget-app
@@ -58,6 +60,15 @@ After changing web code, run `npm run build:ios` again (or
 App icon and splash screen come from `assets/` — regenerate them with
 `npm run assets:generate`.
 
+### Android app
+
+```bash
+npm run build:android      # web build → sync into android/ → opens Android Studio
+```
+
+In Android Studio: pick your phone (USB debugging on) or an emulator at the
+top → **▶ Run**. `npm run android:debug` builds the APK without opening it.
+
 ### Web app
 
 ```bash
@@ -71,6 +82,8 @@ Screen**. The web app and the iPhone app keep separate data; move it with
 *Optionen → Sichern und übertragen*.
 
 ## Build a release
+
+### iPhone (App Store)
 
 One command does the whole release: lint + tests → raise version and build
 number → web build → `cap sync` → `xcodebuild` archive → upload to App Store
@@ -100,6 +113,51 @@ No key yet? Step 2 in [APP_STORE_RELEASE.md](APP_STORE_RELEASE.md#2-reuse-the-ap
 It ends with `Done: Spartopf vX.Y.Z (build N) uploaded to App Store Connect.`
 Apple needs 5–30 minutes to process the build (you get an email); then it shows
 up in TestFlight.
+
+### Android (Google Play)
+
+`npm run release:android` runs the checks, builds the web app, syncs it into
+`android/` and makes a **signed bundle**:
+`android/app/build/outputs/bundle/release/app-release.aab`. The version is
+`package.json`'s — the iPhone release raises it, Android ships the same number.
+
+**Once per Mac**
+
+1. Install [Android Studio](https://developer.android.com/studio) and open the
+   `android/` folder in it once (it installs the SDK). The script finds
+   Android Studio's Java and SDK by itself.
+2. Make the upload key:
+
+   ```bash
+   npm run android:key
+   ```
+
+   `keytool` asks for a password and your name. The key is saved to
+   `~/.android-keys/spartopf-upload.jks`, and its path and alias are written
+   into `.env.release`. **Keep a copy of that file and the password somewhere
+   safe** — without them Google has to reset the key. Neither is ever
+   committed.
+
+   Already have a keystore? Put `ANDROID_KEYSTORE_PATH` and
+   `ANDROID_KEY_ALIAS` into `.env.release` instead.
+
+**Every release**
+
+| Command | What it does |
+|---|---|
+| `npm run release:android -- --dry-run` | Shows the version and version code. Nothing is built. |
+| `npm run release:android` | Checks, builds and signs the bundle. Asks for the keystore password (or reads `ANDROID_KEYSTORE_PASSWORD` from `.env.release`). |
+| `npm run release:android -- --build 1` | The same version again with a higher version code — to re-upload after a rejection. |
+| `npm run release:android -- --skip-check` | Skips `npm run check` (when it just ran). |
+| `npm run android:debug` | An unsigned debug APK for your own phone: `android/app/build/outputs/apk/debug/app-debug.apk`. |
+
+Then upload the `.aab` in the Play Console under *Testing › Internal testing ›
+Create new release*. The first upload of a new app has to be done by hand.
+`--upload` sends it through the Play API instead (needs
+`PLAY_SERVICE_ACCOUNT_JSON`); that step has not been tried yet.
+
+Everything else — the Play Console setup, the listing, what differs from the
+iPhone — is in [docs/ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md).
 
 ## Publish on the App Store
 
