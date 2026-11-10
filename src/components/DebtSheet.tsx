@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChevronDown, Check, Trash2 } from 'lucide-react';
 import { Debt, MonthKey } from '../types';
-import { amountToInput, cleanText, formatMoney, isMonthKey, monthKeyOf, normalizeDigits, parseAmount } from '../logic';
+import { amountToInput, cleanText, formatMoney, isMonthKey, monthKeyOf, normalizeDigits, parseAmount, currencySymbol } from '../logic';
 import { DebtPlan, PaymentSeries } from '../insights';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
@@ -113,7 +113,7 @@ export function DebtSheet({ mode, series, t, onClose, onCreate, onSave, onDelete
           onChange={v => setPrincipal(normalizeDigits(v))}
           inputMode="decimal"
           enterKeyHint="done"
-          trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+          trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
         />
         <div>
           <Label htmlFor="debt-start">{t.debtStart}</Label>
@@ -142,7 +142,7 @@ export function DebtSheet({ mode, series, t, onClose, onCreate, onSave, onDelete
             placeholder={chosen ? amountToInput(chosen.amount, t.locale) : ''}
             inputMode="decimal"
             enterKeyHint="done"
-            trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+            trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
           />
           <p className="text-caption text-fg-mute mt-1.5 px-1 wrap-prose">{t.debtPaymentHint}</p>
         </div>

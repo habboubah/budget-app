@@ -1115,7 +1115,7 @@ export default function App() {
             hasDemo={store.hasDemo}
             onAddDemo={addDemo}
             onRemoveDemo={removeDemo}
-            onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); }}
+            onDeleteAll={() => { setSetupNow(null); store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); }}
             lockKind={lockKind}
             lockOn={store.lockOn}
             onLock={on => void setLock(on)}

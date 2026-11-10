@@ -9,8 +9,7 @@ import { ReceiptViewer } from './ReceiptViewer';
 import { budgetOf } from '../data/defaults';
 import {
   amountToInput, cleanText, dayLabel, periodRange, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
-  normalizeDigits, topCategories, MAIN_ACCOUNT, MAX_ATTACHMENTS,
-} from '../logic';
+  normalizeDigits, topCategories, MAIN_ACCOUNT, MAX_ATTACHMENTS, currencySymbol } from '../logic';
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
@@ -480,7 +479,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               style={{ width: `${Math.max(4, amountText.length || 4) + 0.6}ch` }}
               className="min-w-0 max-w-full bg-transparent rounded-num text-[clamp(40px,13vw,52px)] leading-[1.15] font-bold text-center text-fg placeholder:text-fg-faint/60 caret-accent outline-none"
             />
-            <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">€</span>
+            <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">{currencySymbol()}</span>
           </div>
           {/* The running sum, announced politely — "= 17,30 €" (plan 08). What is
               being typed, so shown even while amounts are hidden (plan 06). */}

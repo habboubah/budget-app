@@ -880,10 +880,10 @@ const de = {
   restoreDefaultsTitle: 'Standard-Kategorien wiederherstellen?',
   restoreDefaultsBody: 'Umbenannte oder gelöschte Standard-Kategorien kommen zurück. Deine eigenen Kategorien und alle Einträge bleiben.',
   restoreDefaultsDone: 'Standard-Kategorien wiederhergestellt',
-  deleteAll: 'Alle Daten löschen',
-  deleteAllTitle: 'Wirklich alles löschen?',
-  deleteAllBody: 'Alle Monate, Einträge, Kategorien und automatischen Sicherungen werden von diesem Gerät gelöscht. Das lässt sich nicht rückgängig machen.',
-  deleteAllDone: 'Alle Daten gelöscht',
+  deleteAll: 'App zurücksetzen',
+  deleteAllTitle: 'App wirklich zurücksetzen?',
+  deleteAllBody: 'Alle Monate, Einträge, Kategorien und automatischen Sicherungen werden von diesem Gerät gelöscht. Die App startet danach auf Englisch mit Euro. Das lässt sich nicht rückgängig machen.',
+  deleteAllDone: 'App zurückgesetzt',
   demoSection: 'Ausprobieren',
   demoAdd: 'Testdaten hinzufügen',
   demoAddSub: 'Ein Jahr Beispieleinträge, um alles auszuprobieren',
@@ -1979,10 +1979,10 @@ const en: Strings = {
   restoreDefaultsTitle: 'Restore the default categories?',
   restoreDefaultsBody: 'Renamed or deleted built-in categories come back. Your own categories and all entries stay.',
   restoreDefaultsDone: 'Default categories restored',
-  deleteAll: 'Delete all data',
-  deleteAllTitle: 'Really delete everything?',
-  deleteAllBody: 'All months, entries, categories and automatic backups are deleted from this device. This cannot be undone.',
-  deleteAllDone: 'All data deleted',
+  deleteAll: 'Reset app',
+  deleteAllTitle: 'Reset the app?',
+  deleteAllBody: 'All months, entries, categories and automatic backups are deleted from this device. The app starts over in English with euros. This cannot be undone.',
+  deleteAllDone: 'App reset',
   demoSection: 'Try it out',
   demoAdd: 'Add test data',
   demoAddSub: 'A year of sample entries to try every feature',
@@ -3088,10 +3088,10 @@ const ar: Strings = {
   restoreDefaultsTitle: 'استعادة الفئات الافتراضية؟',
   restoreDefaultsBody: 'ستعود الفئات الافتراضية التي غيّرت اسمها أو حذفتها. فئاتك الخاصة وكل البنود تبقى كما هي.',
   restoreDefaultsDone: 'تمت استعادة الفئات الافتراضية',
-  deleteAll: 'حذف كل البيانات',
-  deleteAllTitle: 'حذف كل شيء فعلًا؟',
-  deleteAllBody: 'ستُحذف كل الأشهر والبنود والفئات والنسخ الاحتياطية التلقائية من هذا الجهاز. لا يمكن التراجع عن ذلك.',
-  deleteAllDone: 'تم حذف كل البيانات',
+  deleteAll: 'إعادة ضبط التطبيق',
+  deleteAllTitle: 'إعادة ضبط التطبيق فعلًا؟',
+  deleteAllBody: 'ستُحذف كل الأشهر والبنود والفئات والنسخ الاحتياطية التلقائية من هذا الجهاز. يبدأ التطبيق من جديد بالإنجليزية وباليورو. لا يمكن التراجع عن ذلك.',
+  deleteAllDone: 'تمت إعادة ضبط التطبيق',
   demoSection: 'التجربة',
   demoAdd: 'إضافة بيانات تجريبية',
   demoAddSub: 'سنة من البنود التجريبية لتجربة كل الميزات',
@@ -3344,7 +3344,7 @@ export const languages = ['cs', 'da', 'de', 'en', 'es', 'fr', 'it', 'nl', 'nb', 
 export type Language = (typeof languages)[number];
 export const isLanguage = (v: unknown): v is Language =>
   typeof v === 'string' && (languages as readonly string[]).includes(v);
-export const DEFAULT_LANGUAGE: Language = 'de';
+export const DEFAULT_LANGUAGE: Language = 'en';
 
 /** Each language's name in itself — for the picker, before its strings are loaded. */
 export const LANGUAGE_NAMES: Record<Language, string> = {

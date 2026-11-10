@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { EntryDraft, MonthKey } from '../types';
-import { amountToInput, formatMoney, isoDay, monthLabel, normalizeDigits, parseAmount, reconcile, withAmounts } from '../logic';
+import { amountToInput, formatMoney, isoDay, monthLabel, normalizeDigits, parseAmount, reconcile, withAmounts, currencySymbol } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
@@ -72,7 +72,7 @@ export function ReconcileSheet({ open, month, now, currentOpening, extraId, inco
           inputMode="decimal"
           autoFocus
           enterKeyHint="done"
-          trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+          trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
         />
         {diffLine()}
         {result && result.diff !== 0 && (

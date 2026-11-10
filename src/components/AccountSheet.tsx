@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { ACCOUNT_KINDS, Account, AccountKind, Hue } from '../types';
-import { MAIN_ACCOUNT, accountLook, cleanText, normalizeDigits, parseAmount } from '../logic';
+import { MAIN_ACCOUNT, accountLook, cleanText, normalizeDigits, parseAmount, currencySymbol } from '../logic';
 import { Strings } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field, Label } from '../ui/Field';
@@ -121,7 +121,7 @@ export function AccountSheet({ mode, t, onClose, onCreate, onSave, onDelete }: {
               placeholder="0,00"
               inputMode="decimal"
               enterKeyHint="done"
-              trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+              trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
             />
             <p className="text-caption text-fg-mute mt-1.5 px-1 wrap-prose">{t.accountStartHint}</p>
           </div>

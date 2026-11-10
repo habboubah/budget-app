@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { MonthKey } from '../types';
-import { amountToInput, formatMoney, monthLabel, parseAmount, normalizeDigits } from '../logic';
+import { amountToInput, formatMoney, monthLabel, parseAmount, normalizeDigits, currencySymbol } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
@@ -60,7 +60,7 @@ export function OpeningSheet({ open, month, current, overridden, prevKey, carrie
           inputMode="decimal"
           autoFocus
           enterKeyHint="done"
-          trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+          trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
         />
         <div className="grid gap-2">
           <Button type="submit" full size="lg" disabled={value === null}>{t.save}</Button>

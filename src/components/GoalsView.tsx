@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MoreHorizontal, Pencil, PiggyBank, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import { AppData, Goal } from '../types';
-import { formatMoneyShort, monthLabel, normalizeDigits, parseAmount } from '../logic';
+import { formatMoneyShort, monthLabel, normalizeDigits, parseAmount, currencySymbol } from '../logic';
 import { GoalProgress, goalProgress } from '../insights';
 import { Strings, fmt } from '../translations';
 import { Screen, Empty, Dock } from '../ui/Screen';
@@ -153,7 +153,7 @@ function WithdrawSheet({ goal, t, onClose, onWithdraw }: {
           inputMode="decimal"
           autoFocus
           enterKeyHint="done"
-          trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+          trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
         />
       </form>
     </Sheet>

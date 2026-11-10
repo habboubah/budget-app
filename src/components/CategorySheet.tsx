@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { AppData, Budget, Category, CategoryKind, Hue, Repeat } from '../types';
-import { amountToInput, cleanText, displayName, normalizeDigits, parseAmount, uid } from '../logic';
+import { amountToInput, cleanText, displayName, normalizeDigits, parseAmount, uid, currencySymbol } from '../logic';
 import { suggestLimit } from '../budgets';
 import { CATEGORY_EMOJIS, budgetOf } from '../data/defaults';
 import { Strings } from '../translations';
@@ -133,7 +133,7 @@ export function CategorySheet({ mode, data, language, t, onClose, onCreate, onSa
               inputMode="decimal"
               enterKeyHint="done"
               aria-invalid={limitInvalid || undefined}
-              trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+              trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
             />
             {suggestion && suggestion.amount !== limitValue && (
               <BudgetSuggestion suggestion={suggestion} t={t} onTake={() => setLimit(amountToInput(suggestion.amount, t.locale))} />

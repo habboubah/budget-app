@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
-import { amountToInput, cleanText, displayName, formatMoney, normalizeDigits, parseAmount, withAmounts } from '../logic';
+import { amountToInput, cleanText, displayName, formatMoney, normalizeDigits, parseAmount, withAmounts, currencySymbol } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
@@ -82,7 +82,7 @@ export function SplitSheet({ entry, categories, language, t, onClose, onSplit }:
                   <Field label={t.whatFor} hideLabel value={p.name} onChange={v => setPart(i, { name: v })} placeholder={entry?.name} maxLength={80} />
                   <div className="w-[9rem] shrink-0">
                     <Field label={t.amount} hideLabel value={p.amount} onChange={v => setPart(i, { amount: normalizeDigits(v) })} inputMode="decimal"
-                      trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>} />
+                      trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>} />
                   </div>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { AppData, Category } from '../types';
-import { amountToInput, displayName, formatMoneyShort, normalizeDigits, parseAmount } from '../logic';
+import { amountToInput, displayName, formatMoneyShort, normalizeDigits, parseAmount, currencySymbol } from '../logic';
 import { suggestLimit } from '../budgets';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
@@ -83,7 +83,7 @@ export function BudgetSheet({ category, data, language, t, onClose, onSave, onHi
             inputMode="decimal"
             autoFocus
             enterKeyHint="done"
-            trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+            trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
           />
           {suggestion && suggestion.amount !== value && (
             <BudgetSuggestion suggestion={suggestion} t={t} onTake={() => setText(amountToInput(suggestion.amount, t.locale))} />

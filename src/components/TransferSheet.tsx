@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { CalendarDays, Check, Trash2 } from 'lucide-react';
 import { Account, Entry, MonthKey, Repeat } from '../types';
 import {
-  MAIN_ACCOUNT, TransferDraft, accountName, amountToInput, cleanText, dayLabel, periodOf, periodRange, defaultEntryDate, isIsoDay, normalizeDigits, parseAmount,
-} from '../logic';
+  MAIN_ACCOUNT, TransferDraft, accountName, amountToInput, cleanText, dayLabel, periodOf, periodRange, defaultEntryDate, isIsoDay, normalizeDigits, parseAmount, currencySymbol } from '../logic';
 import { Strings } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field, Label } from '../ui/Field';
@@ -127,7 +126,7 @@ export function TransferSheet({ mode, accounts, t, onClose, onCreate, onSave, on
           inputMode="decimal"
           autoFocus={!editing}
           enterKeyHint="done"
-          trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+          trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
         />
         {picker(t.transferFrom, from, setFrom)}
         {picker(t.transferTo, to, setTo)}

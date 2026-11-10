@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Goal, Hue, MonthKey } from '../types';
-import { amountToInput, cleanText, isMonthKey, normalizeDigits, parseAmount } from '../logic';
+import { amountToInput, cleanText, isMonthKey, normalizeDigits, parseAmount, currencySymbol } from '../logic';
 import { CATEGORY_EMOJIS } from '../data/defaults';
 import { Strings } from '../translations';
 import { Sheet } from '../ui/Sheet';
@@ -85,7 +85,7 @@ export function GoalSheet({ mode, t, onClose, onCreate, onSave, onDelete }: {
           onChange={v => setTarget(normalizeDigits(v))}
           inputMode="decimal"
           enterKeyHint="done"
-          trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+          trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
         />
         <div>
           <Label htmlFor="goal-due">{t.goalDue}</Label>
@@ -106,7 +106,7 @@ export function GoalSheet({ mode, t, onClose, onCreate, onSave, onDelete }: {
           onChange={v => setStart(normalizeDigits(v))}
           inputMode="decimal"
           enterKeyHint="done"
-          trailing={<span className="text-body text-fg-mute" aria-hidden="true">€</span>}
+          trailing={<span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>}
         />
         <div>
           <Label>{t.picture}</Label>

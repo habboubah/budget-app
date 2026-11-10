@@ -223,6 +223,19 @@ export function setActiveCurrency(code: string): void {
   if (code !== activeCurrency) { activeCurrency = code; formatters.clear(); }
 }
 export const getActiveCurrency = (): string => activeCurrency;
+/**
+ * The book's currency sign for an amount field ("€", "$", "£", "CHF"), so a
+ * field never shows € once another currency is picked.
+ */
+export function currencySymbol(locale: string = (typeof document !== 'undefined' && document.documentElement.lang) || 'en'): string {
+  try {
+    const part = new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, currencyDisplay: 'narrowSymbol' })
+      .formatToParts(0).find(x => x.type === 'currency');
+    return part?.value ?? activeCurrency;
+  } catch {
+    return activeCurrency;
+  }
+}
 
 const formatters = new Map<string, Intl.NumberFormat>();
 function moneyFormat(locale: string, sign: 'auto' | 'always' | 'exceptZero'): Intl.NumberFormat {

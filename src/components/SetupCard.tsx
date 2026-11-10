@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from 'react';
 import { ArrowLeftRight, Check, ChevronRight, Circle, FileUp, Hand, X } from 'lucide-react';
-import { amountToInput, formatMoney, normalizeDigits, parseAmount } from '../logic';
+import { amountToInput, formatMoney, normalizeDigits, parseAmount, currencySymbol } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Button, IconButton } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
@@ -48,7 +48,7 @@ export function SetupCard({ t, balance, salaryDone, fixedCount, canSalary, canFi
   const given = balance !== undefined;
   const [editing, setEditing] = useState(!given);
   const [text, setText] = useState('');
-  useEffect(() => { if (!given) setEditing(true); }, [given]);
+  useEffect(() => { if (!given) { setEditing(true); setText(''); } }, [given]);
 
   // Like the opening sheet: an overdrawn account starts with a minus.
   const negative = /^\s*[-−]/.test(text);
@@ -111,7 +111,7 @@ export function SetupCard({ t, balance, salaryDone, fixedCount, canSalary, canFi
                       aria-describedby={hintId}
                       className="flex-1 min-w-0 bg-transparent py-3 text-body text-fg tabular-nums placeholder:text-fg-faint outline-none"
                     />
-                    <span className="text-body text-fg-mute" aria-hidden="true">€</span>
+                    <span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>
                   </div>
                   <Button type="submit" disabled={value === null}>{t.setupBalanceSave}</Button>
                 </form>
