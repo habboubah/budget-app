@@ -17,6 +17,9 @@ export async function lockKind(): Promise<LockKind | null> {
     const info = await BiometricAuth.checkBiometry();
     if (info.isAvailable && info.biometryType === BiometryType.faceId) return 'faceId';
     if (info.isAvailable && info.biometryType === BiometryType.touchId) return 'touchId';
+    // Android (plan 23): fingerprint, or face / iris unlock — worded the Android way (i18n/android.ts).
+    if (info.isAvailable && info.biometryType === BiometryType.fingerprintAuthentication) return 'touchId';
+    if (info.isAvailable && (info.biometryType === BiometryType.faceAuthentication || info.biometryType === BiometryType.irisAuthentication)) return 'faceId';
     return info.deviceIsSecure ? 'code' : null;
   } catch {
     return null;

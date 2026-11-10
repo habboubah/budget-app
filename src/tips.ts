@@ -27,8 +27,10 @@ export type Tip =
 
 export interface TipContext {
   today?: Date;
-  /** The iPhone app: automatic capture and the device backup exist only there. */
+  /** An installed app (iPhone or Android): the device backup switch exists only there. */
   native: boolean;
+  /** Automatic capture can be set up here (the iPhone app: Shortcuts). */
+  capture?: boolean;
   /** Days since the last exported backup; null = never. */
   daysSinceExport: number | null;
   /** The iPhone backup switch (plan 06); null = unknown. */
@@ -62,7 +64,7 @@ export function nextTip(data: AppData, state: TipState, ctx: TipContext): Tip | 
   const expense = (id: string) => kinds.get(id) === 'expense';
 
   // Three payments typed by hand in two weeks, and nothing captured yet.
-  if (open('capture') && ctx.native && !data.entries.some(e => e.ref?.startsWith('inbox:'))) {
+  if (open('capture') && ctx.capture && !data.entries.some(e => e.ref?.startsWith('inbox:'))) {
     const recent = data.entries.filter(e => typed(e, expense) && now - when(e) < 14 * DAY && now >= when(e));
     if (recent.length >= 3) return { id: 'capture' };
   }

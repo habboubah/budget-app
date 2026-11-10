@@ -1,5 +1,5 @@
 import { registerPlugin } from '@capacitor/core';
-import { isNative } from '../platform';
+import { isAndroid, isNative } from '../platform';
 import { onWipe } from '../storage';
 import { SiriAmounts, Snapshot } from './snapshot';
 import { systemFromAgent } from '../links';
@@ -21,6 +21,8 @@ interface SharedPlugin {
   makePdf(options: { name: string }): Promise<void>;
   writeAmounts(options: { json: string }): Promise<void>;
   removeAmounts(): Promise<void>;
+  /** Android only (plan 23): FLAG_SECURE on the window. */
+  setSecure(options: { on: boolean }): Promise<void>;
 }
 
 const Shared = registerPlugin<SharedPlugin>('SpartopfShared');
@@ -107,6 +109,17 @@ export async function systemVersion(): Promise<string> {
 export async function makePdf(name: string): Promise<boolean> {
   if (!isNative()) return false;
   try { await Shared.makePdf({ name }); return true; } catch { return false; }
+}
+
+/**
+ * Plan 23, Android: while the app lock is on, the window is marked secure —
+ * no screenshots, and a blank card in Recents. (The iPhone covers itself:
+ * PrivacyCover.) The choice is kept natively, so it holds from the next cold
+ * start before any of this has run.
+ */
+export async function setSecure(on: boolean): Promise<void> {
+  if (!isAndroid()) return;
+  try { await Shared.setSecure({ on }); } catch { /* the next change sets it again */ }
 }
 
 // "Alle Daten löschen" erases the snapshot and the inbox too (plan 05's wipeAll).

@@ -53,5 +53,28 @@ The same app and the same flows, with Android conventions where users expect the
 
 ## Done when
 
-- [ ] The Android app passes the gates on both phones.
+- [ ] The Android app passes the gates on both phones. (It compiles and packages; it has never run on a phone or an emulator.)
 - [ ] It's on an internal Play test track.
+
+## Notes (built: steps 1 and 2, and the script of step 4)
+
+**What was checked, and what was not.** `./gradlew assembleDebug bundleRelease` builds a debug APK (12 MB) and an unsigned release bundle (9 MB) from this project; the APK was opened and its version (1.2.7 / 1020700), permissions, backup rules, font and OCR files checked. `npm run check` passes. **Nothing has run on a device or an emulator** — every behaviour below that needs Android itself (insets, back, the lock, sharing, notifications, the camera, the print dialog, the backup rules) is written from the documentation and the plugins' source, and is on TODO.md to try.
+
+Where the build differs from the plan above:
+
+- **Backup folders.** The plan put the not-backed-up copy in `no_backup/`. The file plugin can't reach that folder — and on Android its `Library` and `LibraryNoCloud` are both `files/`, so the iPhone's two folders would have been one and the same. So: `files/spartopf/` when the switch is on, `files/no-backup/spartopf/` when it is off, and the rules include `files/spartopf/` only. Same effect.
+- **Lock.** The plugin of plan 00 supports Android. Fingerprint shows as "Mit Fingerabdruck sperren", face or iris unlock as "Mit Gesichtserkennung sperren"; the screen lock is the way back.
+- **Wording.** Thirteen strings name the iPhone, iOS, iCloud, Face ID or Touch ID. Android has its own for each, in all 14 languages (`src/i18n/android.ts`, a chunk only the Android app loads); a test fails when a new Apple-named string has no Android twin.
+- **Not on Android:** Siri, the Shortcuts capture and its tip (iPhone only; plan 24), the in-app rating prompt (it needs Google's Play library — *Spartopf bewerten* opens the Play page instead).
+- **PDF:** Android's print dialog (*Als PDF speichern*) instead of a share sheet.
+- **Exact alarms:** the notifications plugin asks for `SCHEDULE_EXACT_ALARM`; Google Play allows that only for alarm clocks and calendars, so the manifest removes it and reminders are scheduled inexactly.
+- **`INTERNET` stays** in the manifest. The app makes no request, but whether Capacitor's web view loads its local pages without the permission could not be tried here. If it does, removing it would be the strongest privacy statement Android has — TODO.md.
+- **The OCR model:** Android's packaging unpacks `.gz` assets and drops the ending (`deu.traineddata.gz` is `deu.traineddata` in the APK), so the app loads it un-gzipped there. Found by reading the APK; reading a photo still has to be tried.
+- **Font:** Nunito's Latin part (39 kB, SIL OFL, licence beside it in `src/assets/fonts/`) for amounts, only on Android.
+- **Icon:** the adaptive icon is the iPhone artwork at 90 % on its own background colour — check it in a round and a squircle mask.
+- **Version code:** `major·1 000 000 + minor·10 000 + patch·100 + build` from `package.json` (1.2.7 → 1020700), so a rejected upload can go again as `--build 1`.
+- **Portrait only**, as on the iPhone.
+- **Charts on a 360-wide phone:** Statistik's six month columns are 42 px wide there, 2 under the 44 px tap size (ui-review `android360`). Left as it is.
+- **`release-android.js --upload`** (the Play Developer API) is written but has not run: the first upload of an app is by hand in the Console anyway.
+- **CI** builds a debug APK on every push (`.github/workflows/ci.yml`, job `android`).
+- **Steps 3 and 4** — two real phones, the upload key, the Play Console — are yours: `docs/ANDROID_RELEASE.md`.

@@ -14,6 +14,8 @@ export const APP_STORE_ID = '6829541731';
  * bundle's URLs as text.
  */
 export const REVIEW_URL = 'https://apps.apple.com/app/id6829541731?action=write-review';
+/** The app's page on Google Play (plan 23): where Android users rate it. */
+export const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.habboubah.spartopf';
 const PRIVACY_URL = 'https://habboubah.github.io/privacy-policy/spartopf/';
 const PRIVACY_URL_DE = 'https://habboubah.github.io/privacy-policy/spartopf/de/';
 /** The published privacy policy: German, and English for every other language. */

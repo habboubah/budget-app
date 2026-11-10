@@ -6,7 +6,7 @@ import { closeTip, nextTip, readTipState, TipContext, TipState } from './tips';
 const today = new Date(2026, 10, 20, 12);
 const none: TipState = { done: [] };
 const web: TipContext = { today, native: false, daysSinceExport: null, inDeviceBackup: null };
-const phone: TipContext = { today, native: true, daysSinceExport: 3, inDeviceBackup: true };
+const phone: TipContext = { today, native: true, capture: true, daysSinceExport: 3, inDeviceBackup: true };
 let n = 0;
 const entry = (over: Partial<Entry>): Entry => ({
   id: `e${++n}`, month: '2026-11', categoryId: 'groceries', name: 'Markt', amount: 1000, paid: true, repeat: 'none', seriesId: `s${n}`,
@@ -25,6 +25,7 @@ describe('tips (plan 37)', () => {
     const typed = [entry({ name: 'Rewe' }), entry({ name: 'Aral', categoryId: 'car' }), entry({ name: 'Kiosk' })];
     expect(nextTip(book(typed), none, phone)).toEqual({ id: 'capture' });
     expect(nextTip(book(typed), none, web)).toBeNull();
+    expect(nextTip(book(typed), none, { ...phone, capture: false })).toBeNull(); // Android: no Shortcuts
     expect(nextTip(book([...typed, entry({ name: 'Lidl', ref: 'inbox:w1' })]), none, phone)).toBeNull();
     const old = typed.map(e => ({ ...e, date: '2026-10-01', month: '2026-10' }));
     expect(nextTip(book(old), none, phone)).toBeNull();

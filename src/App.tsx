@@ -60,7 +60,7 @@ import { LockScreen, PrivacyCover } from './components/LockScreen';
 import { reminderPlan } from './reminders';
 import { onReminderTap, remindersAvailable, syncReminders } from './notify';
 import { LockKind, authenticate, lockKind as findLockKind } from './lock';
-import { devNative, isNative } from './platform';
+import { devNative, isAndroid, isIos, isNative } from './platform';
 import { SAVE_DEBOUNCE_MS, inDeviceBackup, saver, setInDeviceBackup } from './storage';
 import { buildAmounts, buildSnapshot } from './native/snapshot';
 import { inboxReview, inboxToEntries } from './native/inbox';
@@ -68,9 +68,9 @@ import { CaptureView } from './components/CaptureView';
 import { HintCard } from './components/HintCard';
 import { nextTip } from './tips';
 import { DeepLink, parseDeepLink } from './native/deepLink';
-import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
+import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, setSecure, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
 import { PrintReport, PrintSpec, ReportPdfSheet, reportFileName } from './components/PrintReport';
-import { REVIEW_URL, feedbackMail, privacyUrl } from './links';
+import { PLAY_URL, REVIEW_URL, feedbackMail, privacyUrl } from './links';
 import { isDemoEntry } from './demo';
 import { ExcelImportSheet } from './components/ExcelImportSheet';
 import { readXlsx } from './xlsx';
@@ -217,6 +217,8 @@ export default function App() {
   const [lockKind, setLockKind] = useState<LockKind | null>(null);
   useEffect(() => { void findLockKind().then(setLockKind); }, []);
   const lockOn = useRef(store.lockOn);
+  // Android: no screenshots and a blank card in Recents while the lock is on (plan 23).
+  useEffect(() => { void setSecure(store.lockOn); }, [store.lockOn]);
   lockOn.current = store.lockOn;
   const authBusy = useRef(false);
   const unlock = async () => {
@@ -351,6 +353,12 @@ export default function App() {
 
   useEffect(() => {
     const handle = CapacitorApp.addListener('backButton', () => {
+      // Android's back (plan 23): first whatever is open on top — a sheet, a
+      // menu, a confirmation, the receipt — the way Escape closes it.
+      if (document.querySelector('[role="dialog"], [role="alertdialog"], [role="menu"]')) {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+        return;
+      }
       if (pushed) popTo(tab);
       else if (tab !== 'month') setTab('month');
       else void CapacitorApp.minimizeApp();
@@ -911,6 +919,7 @@ export default function App() {
   /** Plan 37: at most one tip, on the running month, once the setup and the gestures card are gone. */
   const tip = useMemo(() => nextTip(data, store.tipState, {
     native: native || devNative(),
+    capture: isIos() || devNative(),
     inDeviceBackup: deviceBackup,
     daysSinceExport: store.lastExport ? Math.floor((Date.now() - new Date(`${store.lastExport}T00:00:00`).getTime()) / 86_400_000) : null,
   }), [data, store.tipState, deviceBackup, store.lastExport]);
@@ -1117,8 +1126,8 @@ export default function App() {
             deviceBackupBusy={backupMoving}
             reminders={remindersAvailable() ? store.reminders : null}
             onReminders={() => push('reminders')}
-            onCapture={native || devNative() ? () => push('capture') : undefined}
-            onRate={native || devNative() ? () => void openExternal(REVIEW_URL) : undefined}
+            onCapture={isIos() || devNative() ? () => push('capture') : undefined}
+            onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
             onFeedback={() => void sendFeedback()}
             onPrivacy={() => void openExternal(privacyUrl(language))}
           />
@@ -1263,7 +1272,7 @@ export default function App() {
       {/* The leading edge of a pushed screen: where the back swipe starts. Below
           the bar, so the back button stays whole; touch-action none, so the
           page doesn't scroll while the finger moves sideways. */}
-      {pushed && (
+      {pushed && !isAndroid() && (
         <div
           aria-hidden="true"
           className="fixed start-0 bottom-0 w-5 z-40 touch-none top-[calc(env(safe-area-inset-top)+60px)]"

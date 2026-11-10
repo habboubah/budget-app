@@ -9,6 +9,8 @@
  * contrast stretched — the recogniser reads black on white best.
  */
 
+import { isAndroid, isNative } from './platform';
+
 const MAX_SIDE = 4000;
 const MIN_WIDTH = 2800;
 
@@ -63,7 +65,8 @@ export async function readImageText(file: Blob, onProgress?: (p: number) => void
     langPath: base.replace(/\/$/, ''),
     // Same-origin worker file: a blob: worker can't load scripts from the app's own scheme in a WebView.
     workerBlobURL: false,
-    gzip: true,
+    // Android's packaging unpacks .gz assets and drops the ending: the model is ocr/deu.traineddata there (plan 23).
+    gzip: !(isNative() && isAndroid()),
     cacheMethod: 'none',
     logger: m => { if (m.status === 'recognizing text') onProgress?.(m.progress); },
   });

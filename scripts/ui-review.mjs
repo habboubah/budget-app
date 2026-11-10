@@ -46,6 +46,11 @@ const DEVICES = {
   16: { width: 393, height: 852, top: 59, bottom: 34, kb: 336, label: 'iPhone 16 · 393 × 852' },
   '17pro': { width: 402, height: 874, top: 62, bottom: 34, kb: 336, label: 'iPhone 17 Pro · 402 × 874' },
   '17promax': { width: 440, height: 956, top: 62, bottom: 34, kb: 346, label: 'iPhone 17 Pro Max · 440 × 956' },
+  // Android (plan 23), not in the default set: `--devices pixel,android360`. The app runs as on
+  // Android there (its wording and its rounded face, `spartopf-dev-platform`); the insets are
+  // the status bar's and the gesture bar's.
+  pixel: { width: 412, height: 915, top: 28, bottom: 24, kb: 300, label: 'Pixel · 412 × 915', storage: { 'spartopf-dev-platform': 'android' } },
+  android360: { width: 360, height: 800, top: 24, bottom: 24, kb: 290, label: 'Android · 360 × 800', storage: { 'spartopf-dev-platform': 'android' } },
   // Not in the default set: `--devices desktop` (mouse, no safe areas).
   desktop: { width: 1280, height: 820, top: 0, bottom: 0, kb: 0, label: 'Desktop · 1280 × 820', desktop: true },
 };
@@ -519,7 +524,7 @@ async function runContext(browser, c, report, safeAreaMode) {
         localStorage.setItem('spartopf-meta', JSON.stringify({ schemaVersion: seed.schema, seeded: true }));
       }
       for (const [k, v] of Object.entries(extra)) localStorage.setItem(k, v);
-    }, [s.accounts ? withAccounts(data, l.accounts) : data, c.lang, !!s.fresh, TEXT_SCALE, { ...(s.accounts ? ACCOUNTS(l) : {}), ...(s.debts ? DEBTS(l) : {}), ...(s.storage ?? {}) }]);
+    }, [s.accounts ? withAccounts(data, l.accounts) : data, c.lang, !!s.fresh, TEXT_SCALE, { ...(s.accounts ? ACCOUNTS(l) : {}), ...(s.debts ? DEBTS(l) : {}), ...(d.storage ?? {}), ...(s.storage ?? {}) }]);
     const mode = await applySafeArea(page, d);
     safeAreaMode.add(mode);
     await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' });

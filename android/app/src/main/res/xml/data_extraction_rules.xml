@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  What may leave the phone in a backup (Android 12+; plan 23, as plan 06 on
+  the iPhone). Only files/spartopf/ — the book, its automatic backups and its
+  receipts — and only while "Im Gerätebackup sichern" is on: switched off, the
+  app keeps them in files/no-backup/ instead (src/storage.ts), which nothing
+  here includes. The web view's own storage, the caches and the preferences
+  are never backed up.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="file" path="spartopf/" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="file" path="spartopf/" />
+    </device-transfer>
+</data-extraction-rules>

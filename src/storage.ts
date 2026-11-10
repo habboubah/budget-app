@@ -3,7 +3,7 @@ import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { AppData } from './types';
 import { SCHEMA_VERSION, monthKeyOf, normalizeState, standardCategoryIds, upgradeData } from './logic';
 import { defaultCategories } from './data/defaults';
-import { isNative } from './platform';
+import { isAndroid, isNative } from './platform';
 
 /*
  * The only module that reads or writes the user's data (plan 02).
@@ -173,29 +173,30 @@ export function writeLocal(data: AppData, write: (key: string, value: string) =>
 
 /* ----------------------------------------------------------------- the file */
 
-/** Capacitor's file system, in one of the app's folders. */
-function capacitorFsIn(directory: Directory): FsLike {
+/** Capacitor's file system, in one of the app's folders (`under`: a folder inside it, ending in "/"). */
+function capacitorFsIn(directory: Directory, under = ''): FsLike {
+  const at = (path: string) => under + path;
   return {
     read: async path => {
       try {
-        const { data } = await Filesystem.readFile({ path, directory, encoding: Encoding.UTF8 });
+        const { data } = await Filesystem.readFile({ path: at(path), directory, encoding: Encoding.UTF8 });
         return typeof data === 'string' ? data : await data.text();
       } catch {
         return null;
       }
     },
     write: async (path, text) => {
-      await Filesystem.writeFile({ path, data: text, directory, encoding: Encoding.UTF8, recursive: true });
+      await Filesystem.writeFile({ path: at(path), data: text, directory, encoding: Encoding.UTF8, recursive: true });
     },
     rename: async (from, to) => {
-      await Filesystem.rename({ from, to, directory, toDirectory: directory });
+      await Filesystem.rename({ from: at(from), to: at(to), directory, toDirectory: directory });
     },
     remove: async path => {
-      try { await Filesystem.deleteFile({ path, directory }); } catch { /* not there */ }
+      try { await Filesystem.deleteFile({ path: at(path), directory }); } catch { /* not there */ }
     },
     list: async dir => {
       try {
-        const { files } = await Filesystem.readdir({ path: dir, directory });
+        const { files } = await Filesystem.readdir({ path: at(dir), directory });
         return files.map(f => (typeof f === 'string' ? f : f.name));
       } catch {
         return []; // the folder isn't there yet
@@ -211,7 +212,13 @@ export const capacitorFs: FsLike = capacitorFsIn(Directory.Library);
  * backup each time it's used, so neither iCloud nor a computer backup holds
  * what is in it. The book lives here while *Im iPhone-Backup sichern* is off.
  */
-export const capacitorFsNoBackup: FsLike = capacitorFsIn(Directory.LibraryNoCloud);
+export const capacitorFsNoBackup: FsLike = isAndroid()
+  // Android (plan 23) has no such folder in the plugin — there Library and
+  // LibraryNoCloud are both `files/`. So the book moves to `files/no-backup/`,
+  // and the backup rules (res/xml/data_extraction_rules.xml, backup_rules.xml)
+  // let Google's backup and a device transfer take `files/spartopf/` only.
+  ? capacitorFsIn(Directory.Library, 'no-backup/')
+  : capacitorFsIn(Directory.LibraryNoCloud);
 
 export type HydrateSource = 'file' | 'tmp' | 'prev' | 'mirror' | 'migrated' | 'local';
 

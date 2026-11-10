@@ -73,6 +73,11 @@ Everything the app can do. Build and release steps are in the
   the entry shows it full screen. *Betrag vom Beleg lesen* suggests the total
   and the shop, read on the device. Photos are saved without their location
   data; receipts are part of the backup and are erased with the book.
+- **Android.** The same app for Android phones: fingerprint or face unlock,
+  no screenshots while the lock is on, *Im Gerätebackup sichern* decides
+  whether the book may go into Google's backup, reports through the print
+  dialog as PDF, no Google services. Siri and the Shortcuts capture are
+  iPhone only.
 - **Tips at the right moment.** One small card on the month page, never more
   than one a week: after the same entry three times "Als Favorit merken",
   after the first yearly bill the reserve, after a month over budget "Budget

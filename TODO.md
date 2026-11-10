@@ -30,6 +30,30 @@ items off, or delete them once done. The details are in each plan's notes.
 TestFlight builds never show the rating prompt, so use a development build
 for plan 15.
 
+**Plan 23 — Android** (`docs/ANDROID_RELEASE.md` has every step)
+- [ ] Install Android Studio, then `npm run build:android` and press Run on a
+  phone or the emulator. **The app has never run on Android** — if it doesn't
+  start, give Claude what Logcat says.
+- [ ] Go through: the first entry; the status bar and the gesture bar don't
+  cover anything (also with three-button navigation); the system back closes
+  a sheet, then goes back a screen, then leaves the app; export a backup and
+  share it; import it again; a CSV import; a photo of a statement (the text
+  reader) and a receipt from the camera; a reminder arrives; the lock with
+  your fingerprint — and with it on, no screenshot and a blank card in
+  Recents; *Bericht teilen* opens the print dialog; Arabic.
+- [ ] *Im Gerätebackup sichern* off and on again: the data is still there
+  each time.
+- [ ] Look at the icon on the home screen (round and squircle).
+- [ ] Try once: remove the `INTERNET` permission from
+  `android/app/src/main/AndroidManifest.xml` and see whether the app still
+  starts. If it does, tell Claude — then it stays out.
+- [ ] Make the upload key and fill `.env.release`; create the app in the Play
+  Console; `npm run release:android`; upload the bundle to *Internal testing*.
+  A new personal developer account needs a closed test with 12 testers for
+  14 days before production.
+- [ ] Add a sentence about Android to the privacy policy (device backup, no
+  Google services).
+
 **Plan 37 — simplicity review** (needs people and devices)
 - [ ] Hand the app, freshly installed, to three people who don't know it:
   the first entry in under 30 seconds, with at most three decisions before.

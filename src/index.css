@@ -702,3 +702,19 @@ input[type="search"]::-webkit-search-results-button {
   .print-root .print-entries tr { break-inside: avoid; }
   .print-root .print-foot { margin-top: 6mm; }
 }
+
+/* Android (plan 23) has no rounded system face: amounts are set in Nunito
+   (SIL Open Font License, assets/fonts/Nunito-OFL.txt), bundled — never
+   fetched from a font service. Only its Latin part, which holds the digits
+   and the currency signs; only the Android app asks for it (main.tsx sets
+   data-platform), so the iPhone and the web keep their own. */
+@font-face {
+  font-family: "Spartopf Rounded";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("./assets/fonts/nunito-latin-wght-normal.woff2") format("woff2-variations");
+}
+html[data-platform="android"] {
+  --font-rounded: "Spartopf Rounded", system-ui, Roboto, sans-serif;
+}

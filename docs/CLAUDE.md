@@ -400,6 +400,33 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (`backupFiles`, `keepAttachments`). Daily snapshots hold the list, not the
   files. Carry-over doesn't copy receipts. `privacy-check.mjs` attaches a
   photo with EXIF and fails if any of it is stored.
+- **Android (plan 23, `android/`, `docs/ANDROID_RELEASE.md`).** The same
+  web app in Capacitor's Android shell. `platform.ts`: `isNative()` is either
+  app, `isIos()` / `isAndroid()` tell them apart — **anything that needs Siri,
+  Shortcuts or the App Group is `isIos()`** (the capture guide and its tip).
+  What differs:
+  - *Storage:* on Android the file plugin's `Library` and `LibraryNoCloud` are
+    the same folder, so `capacitorFsNoBackup` is `files/no-backup/` there;
+    `res/xml/data_extraction_rules.xml` and `backup_rules.xml` let a backup
+    take `files/spartopf/` only. Keep every data path under `spartopf/`.
+  - *Wording:* `src/i18n/android.ts` (its own chunk, loaded in `main.tsx`
+    only on Android) lays Android's wording over every string that names
+    the iPhone, iOS, iCloud, Face ID or Touch ID, in all 14 languages
+    (`setPlatformStrings`). **A new string that names an Apple thing needs
+    its Android twin there** — `android.test.ts` fails otherwise.
+  - *Native:* `SpartopfSharedPlugin.java` answers the same bridge as the
+    Swift plugin: `open`, `system`, `makePdf` (the print dialog), and
+    `setSecure` (FLAG_SECURE while the lock is on, re-applied by
+    `MainActivity` at a cold start); the snapshot, inbox and Siri calls are
+    no-ops until plan 24.
+  - *Lock:* fingerprint maps to the `touchId` kind, face / iris to `faceId`.
+  - *Look:* amounts in bundled Nunito (`html[data-platform="android"]`,
+    `assets/fonts/`); no iOS edge swipe; the system back closes the topmost
+    sheet or menu first, then pops, then leaves.
+  - *No Google services*, no exact alarms, portrait only. Version name and
+    code come from `package.json` (`android/app/build.gradle`).
+  - `localStorage['spartopf-dev-platform'] = 'android'` (dev only) gives the
+    browser Android's wording and face: `ui-review.mjs --devices pixel,android360`.
 - **Tips (plan 37, `src/tips.ts`, pure and tested).** `nextTip(data, state,
   ctx)` gives at most one tip — capture, favourite, reserve, budget, backup,
   in that order — shown as `HintCard` in the month page's setup slot, only on
@@ -650,8 +677,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `AppDelegate.swift`), copied from shopping-list. Built with the iOS 27 SDK,
   an app without it is killed at launch. Never remove it; `scripts/release.js`
   refuses to ship without it.
-- Keep `@capacitor/core`, `@capacitor/ios` and `@capacitor/cli` on the same
-  version, ≥ 8.5.
+- Keep `@capacitor/core`, `@capacitor/ios`, `@capacitor/android` and
+  `@capacitor/cli` on the same version, ≥ 8.5.
 - Native plugins are pinned to an exact version. After adding one, run
   `npx cap update ios` (it rewrites `ios/App/CapApp-SPM/Package.swift`; works
   on Windows too) and commit that file.

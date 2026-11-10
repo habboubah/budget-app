@@ -3397,9 +3397,25 @@ export async function loadAllLanguages(): Promise<void> {
   await Promise.all(languages.map(loadLanguage));
 }
 
+/**
+ * A platform's own wording, laid over every language (the Android app:
+ * i18n/android.ts). Set once, before the first render.
+ */
+let platformStrings: Partial<Record<Language, Partial<Strings>>> = {};
+const merged = new Map<Language, Strings>();
+export function setPlatformStrings(strings: Partial<Record<Language, Partial<Strings>>>): void {
+  platformStrings = strings;
+  merged.clear();
+}
+
 /** A language's strings, or English while it is still loading (or failed to). */
 export function stringsFor(lang: Language): Strings {
-  return isLoaded(lang) ? translations[lang] : en;
+  const shown = isLoaded(lang) ? lang : 'en';
+  const over = platformStrings[shown];
+  if (!over) return translations[shown];
+  let all = merged.get(shown);
+  if (!all) { all = { ...translations[shown], ...over }; merged.set(shown, all); }
+  return all;
 }
 
 /**
