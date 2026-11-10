@@ -26,6 +26,22 @@ export async function lockKind(): Promise<LockKind | null> {
   }
 }
 
+/**
+ * True only when the device answered that it has no biometrics and no
+ * passcode: then nothing can ever unlock the app, and a lock left on would
+ * shut the owner out of their own book for good (reinstalling deletes it).
+ * False on any error, so a hiccup never opens the lock.
+ */
+export async function deviceUnsecured(): Promise<boolean> {
+  if (!isNative()) return false;
+  try {
+    const info = await BiometricAuth.checkBiometry();
+    return !info.isAvailable && info.deviceIsSecure === false;
+  } catch {
+    return false;
+  }
+}
+
 /** Face ID / Touch ID, falling back to the passcode. True once it went through; false when cancelled or failed. */
 export async function authenticate(reason: string, cancelTitle: string): Promise<boolean> {
   if (!isNative()) return devNative();

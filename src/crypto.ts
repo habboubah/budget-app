@@ -15,6 +15,12 @@
 
 /** OWASP's current guidance for PBKDF2-HMAC-SHA-256. Stored in the file, so a later version can raise it. */
 export const PBKDF2_ITERATIONS = 600_000;
+/**
+ * The most a file may ask for. The count is read from the file, so without a
+ * ceiling a crafted backup could ask for billions and freeze the app the
+ * moment someone types a password. 10M is ~16x today's count: room to raise it.
+ */
+export const MAX_PBKDF2_ITERATIONS = 10_000_000;
 const SALT_BYTES = 16;
 const IV_BYTES = 12;
 export const ENCRYPTED_FORMAT = 'spartopf-encrypted';
@@ -105,7 +111,7 @@ export async function decryptBackup(text: string, password: string): Promise<str
     throw new BackupLockedError();
   }
   const iterations = Number(env.kdf.iterations);
-  if (!Number.isFinite(iterations) || iterations < 1) throw new BackupLockedError();
+  if (!Number.isInteger(iterations) || iterations < 1 || iterations > MAX_PBKDF2_ITERATIONS) throw new BackupLockedError();
   const { data, ...header } = env;
   try {
     const key = await deriveKey(password, fromBase64(env.kdf.salt), iterations);

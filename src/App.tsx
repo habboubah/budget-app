@@ -59,7 +59,7 @@ import { RemindersView } from './components/RemindersView';
 import { LockScreen, PrivacyCover } from './components/LockScreen';
 import { reminderPlan } from './reminders';
 import { onReminderTap, remindersAvailable, syncReminders } from './notify';
-import { LockKind, authenticate, lockKind as findLockKind } from './lock';
+import { LockKind, authenticate, deviceUnsecured, lockKind as findLockKind } from './lock';
 import { devNative, isAndroid, isIos, isNative } from './platform';
 import { SAVE_DEBOUNCE_MS, inDeviceBackup, saver, setInDeviceBackup } from './storage';
 import { buildAmounts, buildSnapshot } from './native/snapshot';
@@ -224,6 +224,16 @@ export default function App() {
   const unlock = async () => {
     if (authBusy.current) return;
     authBusy.current = true;
+    // The passcode was removed since the lock went on: nothing can check
+    // anyone any more, so the lock goes off rather than locking the owner out.
+    // (Removing a passcode needs the passcode, so this opens nothing to a stranger.)
+    if (await deviceUnsecured()) {
+      authBusy.current = false;
+      store.setLockOn(false);
+      setLocked(false);
+      show(t.lockUnavailable);
+      return;
+    }
     const ok = await authenticate(t.lockReason, t.cancel);
     authBusy.current = false;
     if (ok) setLocked(false);

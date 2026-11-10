@@ -905,7 +905,7 @@ export function useAppStore() {
     rules, addRule, updateRule, removeRule, restoreRule,
     debts, addDebt, updateDebt, removeDebt, restoreDebt,
     monthStart, changeStart,
-    lastExport, markExported: () => setLastExport(new Date().toISOString().slice(0, 10)),
+    lastExport, markExported: () => setLastExport(isoDay()),
     copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),
     newId: uid,
   };

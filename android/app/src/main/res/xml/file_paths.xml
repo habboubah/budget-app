@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  What the FileProvider may hand to another app: only the cache, where
+  src/export.ts writes the file being shared (a backup, a CSV, a receipt,
+  the year picture). The template's external-path "." exposed all of shared
+  storage; the app never shares from there.
+-->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path name="my_images" path="." />
     <cache-path name="my_cache_images" path="." />
 </paths>

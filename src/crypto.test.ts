@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BackupLockedError, ENCRYPTED_FORMAT, decryptBackup, encryptBackup, isEncryptedBackup } from './crypto';
+import { BackupLockedError, ENCRYPTED_FORMAT, MAX_PBKDF2_ITERATIONS, decryptBackup, encryptBackup, isEncryptedBackup } from './crypto';
 
 // A low iteration count keeps the tests quick; the real default is 600,000.
 const FAST = 1000;
@@ -56,5 +56,13 @@ describe('encrypted backups', () => {
   it('fails cleanly on a garbled file', async () => {
     await expect(decryptBackup('not json', 'pw')).rejects.toBeInstanceOf(BackupLockedError);
     await expect(decryptBackup('{"app":"spartopf"}', 'pw')).rejects.toBeInstanceOf(BackupLockedError);
+  });
+
+  it('refuses a file that asks for an absurd iteration count instead of freezing', async () => {
+    const file = JSON.parse(await encryptBackup(json, 'pw', FAST));
+    for (const iterations of [MAX_PBKDF2_ITERATIONS + 1, 1e12, 1.5, -1, 'many']) {
+      const forged = JSON.stringify({ ...file, kdf: { ...file.kdf, iterations } });
+      await expect(decryptBackup(forged, 'pw')).rejects.toBeInstanceOf(BackupLockedError);
+    }
   });
 });

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { MotionConfig } from 'motion/react';
 import App from './App.tsx';
 import { applyDynamicType } from './dynamicType.ts';
-import { downloadFile } from './export.ts';
+import { clearShared, downloadFile } from './export.ts';
 import { attachmentIds, isoDay } from './logic.ts';
 import { KEY_PREFIX, hydrate, installFlushTriggers, rawFiles, restoreLatestToData, setHydrated, sweepFiles } from './storage.ts';
 import { isAndroid, isNative } from './platform.ts';
@@ -105,6 +105,8 @@ Promise.all([hydrate(), loadLanguage(initialLanguage()).catch(() => undefined), 
     installFlushTriggers();
     // Receipts no entry points to any more (plan 27): gone once undo is out of reach — now.
     void sweepFiles(attachmentIds(data)).catch(() => undefined);
+    // What an earlier share left in the cache (a CSV, a plain backup) goes too.
+    void clearShared();
     render(<App />);
   })
   .catch(error => render(<Unreadable error={error} />));
