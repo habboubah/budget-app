@@ -83,7 +83,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `ios/App/` | The Capacitor iOS project (Swift Package Manager, UIScene); our Swift: `SpartopfShared.swift` (the plugin), `SpartopfIntents.swift` (Siri and Shortcuts) |
 | `ios/AppReviewRecorder/` | The UI test that records the App Review video, and its `scenes.json` |
 | `android/` | The Capacitor Android project; our plugin `SpartopfSharedPlugin.java` |
-| `scripts/` | `release.js` / `release-android.js` (store builds), `screenshots.mjs`, `ui-review.mjs`, the checks (`privacy-check`, `perf-check`, `contrast-audit`, `no-console`), the App Review rehearsal and recording |
+| `scripts/` | `release.js` / `release-android.js` (store builds and uploads), `screenshots.mjs`, `ui-review.mjs`, the checks (`privacy-check`, `perf-check`, `contrast-audit`, `no-console`), the App Review rehearsal and recording |
 | `store/` | App Store and Google Play texts (`listing.md`, `listing-languages.md`, `play-listing.md`) and the privacy policy pages (`privacy/`) |
 | `docs/` | All documentation (see the table above) |
 | `.claude/skills/` | Design, UX, animation, screenshot and release skills |
@@ -1084,7 +1084,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | App Store screenshots: raw captures (DE + EN) / the framed 6.3-inch set | `npm run screenshots` / `npm run store-screenshots` |
 | Rewrite `docs/plans/glossary.md` from the app's strings | `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts` |
 | Upload to App Store Connect / TestFlight | `npm run release` (first time: `npm run release:first`; preview: `npm run release:dry`) |
-| Signed Android bundle for Google Play | `npm run release:android` (once: `npm run android:key`) |
+| Build, sign and upload to Google Play's internal test track | `npm run release:android` (once: `npm run android:key`; only the bundle: `-- --no-upload`; preview: `-- --dry-run`) |
 | App Review screen recording: check the scenes against the code / record on the connected iPhone | `npm run rehearse:app-review` / `npm run record:app-review` (`ios/AppReviewRecorder/README.md`) |
 
 A change to a screen, a label or a flow that the App Review recording passes
@@ -1100,8 +1100,11 @@ commits and tags. Credentials live in the gitignored `.env.release` — never
 print or commit them. Submitting for review is manual. Full checklist:
 `docs/APP_STORE_RELEASE.md`; skill: `.claude/skills/app-store-release`.
 Android: `scripts/release-android.js` runs the same checks, builds and signs
-the bundle with the version from `package.json`; the upload is by hand
-(`docs/ANDROID_RELEASE.md`).
+the bundle with the version from `package.json` and uploads it to Play's
+internal test track through the Play Developer API (the service account in
+`PLAY_SERVICE_ACCOUNT_JSON`, release notes from `release-notes/`), taking the
+next free version code when Play already has one. It never touches
+production. `--no-upload` only builds (`docs/ANDROID_RELEASE.md`).
 
 ## Before calling a change done
 1. `npm run check` — it runs, in order:

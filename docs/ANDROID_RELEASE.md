@@ -50,26 +50,58 @@ keystore works too: set `ANDROID_KEYSTORE_PATH` and `ANDROID_KEY_ALIAS` there.
 3. Fill in *Store listing*, *Data safety*, *App content* from
    `store/play-listing.md`. Screenshots: plan 38.
 
+## Once: the service account (so the upload needs no Play Console)
+
+`npm run release:android` uploads through the Play Developer API as a
+**service account**. A service account belongs to the developer account, not
+to one app — the one that ships pizza-driver-log (Fahrtwerk) ships Spartopf
+too:
+
+1. *Play Console › Users and permissions*: open the service account (its
+   address ends in `.iam.gserviceaccount.com`), *App permissions › Add app ›
+   Spartopf*, and tick *Release apps to testing tracks*. (No service account
+   yet: create one in Google Cloud, turn on the *Google Play Android
+   Developer API*, download its JSON key and invite its address here.)
+2. In `.env.release`, `PLAY_SERVICE_ACCOUNT_JSON` is the path of that JSON
+   key — the same line as in pizza-driver-log's `.env.release`. The key stays
+   outside the repository.
+3. The **first** AAB of a new app has to be uploaded in the Play Console by
+   hand (*Testing › Internal testing › Create new release*); the API only
+   knows the app after that.
+
 ## Every release
 
 ```
-npm run release:android                 # check, build, sign -> app-release.aab
-npm run release:android -- --build 1    # the same version again (a rejected upload)
-npm run release:android -- --dry-run
+npm run release:android                   # check, build, sign, upload -> internal test track
+npm run release:android -- --dry-run      # what would happen; nothing built or sent
+npm run release:android -- --no-upload    # only the signed app-release.aab
+npm run release:android -- --track alpha  # the closed test instead (beta: the open test)
 ```
 
-The version is `package.json`'s — the iPhone release bumps it — and the
-version code follows from it (1.2.7 → 1020700, `--build 1` → 1020701).
+One command, nothing to click: it asks Play what it already has, runs the
+checks, builds and signs the bundle, uploads it, puts it on the **internal
+test track** as a finished release and attaches the release notes. Testers get
+it as an update a few minutes later.
 
-Upload `android/app/build/outputs/bundle/release/app-release.aab` under
-*Testing › Internal testing › Create new release*. The first upload of a new
-app has to be done by hand like this.
+- **Version.** `package.json`'s — the iPhone release bumps it. The version
+  code follows from it (1.2.7 → 1020700). When Play already has that code
+  (a second Android upload of the same version), the script takes the next
+  free one by itself (1020701, …); `--build N` forces a number.
+- **Release notes.** `release-notes/<version>/<language>.txt`, else
+  `release-notes/default/`. The file name is Play's language code (`de-DE`,
+  `en-GB`, `ar`); only the languages the store listing has are sent. 500
+  characters at most.
+- **Track.** `internal` unless `--track` or `PLAY_TRACK` in `.env.release`
+  says `alpha` or `beta`. **Production is never touched** — promote a release
+  there by hand in the Play Console.
+- **An app that was never published** only takes a *draft* from the API. The
+  script then uploads the release as a draft and says so; roll it out once in
+  the Play Console. After the app is live the command does that too.
+- **When Play refuses** (no permission, the app not there yet), the script
+  stops *before* building and says what to check.
 
-Later uploads can go through the API: create a service account (*Play Console
-› Setup › API access*), give it *Release to testing tracks*, save its JSON key
-outside the repository, set `PLAY_SERVICE_ACCOUNT_JSON`, and run
-`npm run release:android -- --upload`. **That step has not been run against
-Google Play yet.**
+The upload step is checked against a stand-in for the Play API (every branch
+above); **its first run against Google Play itself is still to come.**
 
 ## What is different from the iPhone
 

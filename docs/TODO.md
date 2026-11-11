@@ -61,9 +61,12 @@ for plan 15.
   `android/app/src/main/AndroidManifest.xml` and see whether the app still
   starts. If it does, tell Claude — then it stays out.
 - [ ] Make the upload key and fill `.env.release`; create the app in the Play
-  Console; `npm run release:android`; upload the bundle to *Internal testing*.
-  A new personal developer account needs a closed test with 12 testers for
-  14 days before production.
+  Console and upload the first bundle to *Internal testing* by hand
+  (`npm run release:android -- --no-upload` builds it). From then on
+  `npm run release:android` uploads by itself — give the Play service account
+  *Release apps to testing tracks* for Spartopf first
+  (`docs/ANDROID_RELEASE.md`). A new personal developer account needs a
+  closed test with 12 testers for 14 days before production.
 - [ ] Publish the updated privacy policy: `store/privacy/index.html` and
   `store/privacy/de/index.html` now cover Android, receipts and Siri /
   Shortcuts — copy them to the `privacy-policy` repository and push it.

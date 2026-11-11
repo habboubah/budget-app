@@ -129,9 +129,11 @@ up in TestFlight.
 ### Android (Google Play)
 
 `npm run release:android` runs the checks, builds the web app, syncs it into
-`android/` and makes a **signed bundle**:
-`android/app/build/outputs/bundle/release/app-release.aab`. The version is
-`package.json`'s — the iPhone release raises it, Android ships the same number.
+`android/`, makes a **signed bundle**
+(`android/app/build/outputs/bundle/release/app-release.aab`) and **uploads it
+to Google Play's internal test track** — nothing to click in the Play Console.
+The version is `package.json`'s — the iPhone release raises it, Android ships
+the same number.
 
 **Once per Mac**
 
@@ -152,21 +154,27 @@ up in TestFlight.
 
    Already have a keystore? Put `ANDROID_KEYSTORE_PATH` and
    `ANDROID_KEY_ALIAS` into `.env.release` instead.
+3. For the upload: `PLAY_SERVICE_ACCOUNT_JSON` in `.env.release` is the path
+   of the Play service account's JSON key (the same one pizza-driver-log
+   uses), and that service account needs *Release apps to testing tracks* for
+   Spartopf in the Play Console (*Users and permissions*).
 
 **Every release**
 
 | Command | What it does |
 |---|---|
 | `npm run release:android -- --dry-run` | Shows the version and version code. Nothing is built. |
-| `npm run release:android` | Checks, builds and signs the bundle. Asks for the keystore password (or reads `ANDROID_KEYSTORE_PASSWORD` from `.env.release`). |
-| `npm run release:android -- --build 1` | The same version again with a higher version code — to re-upload after a rejection. |
+| `npm run release:android` | Checks, builds, signs and uploads the bundle to the internal test track, with the release notes from `release-notes/`. Asks for the keystore password (or reads `ANDROID_KEYSTORE_PASSWORD` from `.env.release`). The same version a second time gets the next free version code by itself. |
+| `npm run release:android -- --no-upload` | Only builds and signs the bundle; nothing is sent to Google Play. |
+| `npm run release:android -- --track alpha` | Releases to the closed test instead (`beta`: the open test). |
+| `npm run release:android -- --build 1` | Forces the build number that is added to the version code. |
 | `npm run release:android -- --skip-check` | Skips `npm run check` (when it just ran). |
 | `npm run android:debug` | An unsigned debug APK for your own phone: `android/app/build/outputs/apk/debug/app-debug.apk`. |
 
-Then upload the `.aab` in the Play Console under *Testing › Internal testing ›
-Create new release*. The first upload of a new app has to be done by hand.
-`--upload` sends it through the Play API instead (needs
-`PLAY_SERVICE_ACCOUNT_JSON`); that step has not been tried yet.
+It ends with `Done: Spartopf X.Y.Z (version code N) is released on Google
+Play's internal track`. Promoting a release to production stays a manual step
+in the Play Console, and the very first upload of a new app has to be done
+there by hand (*Testing › Internal testing › Create new release*).
 
 Everything else — the Play Console setup, the listing, what differs from the
 iPhone — is in [docs/ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md).
