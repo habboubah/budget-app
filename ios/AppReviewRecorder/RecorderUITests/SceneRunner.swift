@@ -222,7 +222,7 @@ final class SceneRunner {
         }
         if let labels = step.strings("fill") {
             let el = try element(labels, nth: nth, role: "textbox", timeout: timeout)
-            try replaceText(in: el, with: step.string("text") ?? "")
+            try replaceText(in: el, with: step.string("text") ?? "", check: true)
             settle(); return
         }
         if let text = step.string("type") { try typeIntoFocused(text); settle(); return }
@@ -378,20 +378,63 @@ final class SceneRunner {
 
     private var window: CGRect { app.windows.firstMatch.exists ? app.windows.firstMatch.frame : app.frame }
 
-    /// The part of the screen not under the keyboard.
-    private var visible: CGRect {
-        var w = window
+    private var keyboardTopCache: (keys: CGRect, top: CGFloat, at: Date)?
+
+    /// Where the keyboard really starts, or nil without one. Its own frame is
+    /// only the rows of keys: the suggestions bar and the ‹ › ✓ bar a web form
+    /// gets sit above it, cover the page and swallow taps (a tap meant for a
+    /// button hidden there once typed a space instead). So: the highest native
+    /// element – anything outside the web view – that starts just above the keys.
+    private func keyboardTop() -> CGFloat? {
         let keyboard = app.keyboards.firstMatch
-        if keyboard.exists, keyboard.frame.minY > w.minY { w.size.height = keyboard.frame.minY - w.minY }
-        return w
+        guard keyboard.exists else { return nil }
+        let keys = keyboard.frame
+        guard keys.height > 0 else { return nil }
+        if let cached = keyboardTopCache, cached.keys == keys, Date().timeIntervalSince(cached.at) < 3 { return cached.top }
+        var top = keys.minY
+        if let snap = try? app.snapshot() {
+            var bars: [CGRect] = [], native: [CGRect] = []
+            var hasWebView = false
+            func walk(_ s: XCUIElementSnapshot, web inWeb: Bool, bar inBar: Bool) {
+                let type = s.elementType
+                if type == .webView { hasWebView = true }
+                let web = inWeb || type == .webView
+                let bar = inBar || (!web && (type == .toolbar || type == .keyboard))
+                let f = s.frame
+                if !web, f.width > 0, f.height > 0, f.minY < keys.minY, f.minY >= keys.minY - 130 {
+                    if bar { bars.append(f) } else { native.append(f) }
+                }
+                for child in s.children { walk(child, web: web, bar: bar) }
+            }
+            walk(snap, web: false, bar: false)
+            // Without a web view in the tree nothing tells page from keyboard: trust only the bars.
+            for f in bars + (hasWebView ? native : []) { top = min(top, f.minY) }
+        }
+        keyboardTopCache = (keys: keys, top: top, at: Date())
+        return top
     }
+
+    /// The part of the screen a finger can reach: not under the keyboard or its bars.
+    private func visibleArea() -> (rect: CGRect, keyboard: Bool) {
+        var w = window
+        guard let top = keyboardTop(), top - 6 > w.minY else { return (rect: w, keyboard: false) }
+        w.size.height = top - 6 - w.minY
+        return (rect: w, keyboard: true)
+    }
+
+    private var visible: CGRect { visibleArea().rect }
 
     func tap(_ el: XCUIElement) throws {
         try scrollIntoView(el)
-        let f = el.frame
+        let f = el.frame, area = visibleArea()
+        let middle = CGPoint(x: f.midX, y: f.midY)
+        // WebKit calls an element behind the keyboard hittable; the tap would land on a key.
+        if area.keyboard && !f.isEmpty && middle.y > area.rect.maxY {
+            throw StepFailure("“\(el.label)” is behind the keyboard and didn't scroll above it")
+        }
         if el.isHittable {
             el.tap()
-        } else if !f.isEmpty && visible.contains(CGPoint(x: f.midX, y: f.midY)) {
+        } else if !f.isEmpty && area.rect.contains(middle) {
             // WebKit sometimes calls a visible element not hittable: tap its middle.
             el.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         } else {
@@ -403,11 +446,13 @@ final class SceneRunner {
         guard el.exists else { throw StepFailure("gone: \(el.label)") }
         var tries = 0
         while tries < 8 {
-            let f = el.frame, v = visible
+            let f = el.frame, area = visibleArea(), v = area.rect
             let middle = CGPoint(x: f.midX, y: f.midY)
-            if el.isHittable && v.contains(middle) { return }
+            if v.contains(middle) && el.isHittable { return }
             // On screen, away from the bars: close enough, whatever WebKit says about hittability.
-            if v.contains(middle) && f.midY > v.minY + 90 && f.midY < v.maxY - 100 { return }
+            // (Above a keyboard the tab bar is covered, so only a small margin is needed there.)
+            let below: CGFloat = area.keyboard ? 20 : 100
+            if v.contains(middle) && f.midY > v.minY + 90 && f.midY < v.maxY - below { return }
             scroll(down: f.midY > v.midY)
             tries += 1
         }
@@ -437,13 +482,22 @@ final class SceneRunner {
         app.keyboards.firstMatch.waitForExistence(timeout: seconds)
     }
 
-    func typeIntoFocused(_ text: String) throws {
-        guard waitForKeyboard() else { throw StepFailure("no keyboard – nothing has focus") }
-        app.typeText(text)
+    /// Types the way a person does: one key after another, not the whole text at once.
+    private func typeByHand(_ text: String) {
+        for character in text {
+            app.typeText(String(character))
+            rest(Double.random(in: 0.02...0.1) * pace)
+        }
     }
 
-    /// Focuses the field with the caret at its end, deletes what is there, types the text.
-    func replaceText(in el: XCUIElement, with text: String) throws {
+    func typeIntoFocused(_ text: String) throws {
+        guard waitForKeyboard() else { throw StepFailure("no keyboard – nothing has focus") }
+        typeByHand(text)
+    }
+
+    /// Focuses the field with the caret at its end, deletes what is there, types the text
+    /// key by key. `check`: for words – if autocorrection changed them, type them again.
+    func replaceText(in el: XCUIElement, with text: String, check: Bool = false) throws {
         try scrollIntoView(el)
         el.coordinate(withNormalizedOffset: CGVector(dx: 0.96, dy: 0.5)).tap()
         if !waitForKeyboard(2) { el.tap() }
@@ -452,6 +506,12 @@ final class SceneRunner {
         if !current.isEmpty && current != el.placeholderValue {
             el.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count + 2))
         }
+        typeByHand(text)
+        guard check, el.exists, el.elementType != .secureTextField, let now = el.value as? String else { return }
+        let typed = now.trimmingCharacters(in: .whitespaces)
+        if typed.isEmpty || typed == text || now == el.placeholderValue || typed.allSatisfy({ $0 == "•" }) { return }
+        log("  the keyboard turned “\(text)” into “\(typed)” – typing it again")
+        el.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: max(now.count, text.count) + 4))
         el.typeText(text)
     }
 

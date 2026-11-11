@@ -26,7 +26,11 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
 4. iPhone language **English or German** — the system buttons the recorder
    taps (Screen Recording, Choose File, Allow …) are listed in those two in
    `scenes.json` › `system`; add your language there to use another.
-5. **Mac:** Xcode signed in with the developer account (it already is, you
+5. **Keyboard:** Settings › General › Keyboard › **Auto-Correction** and
+   **Predictive Text** off. The recorder types key by key, so a German
+   keyboard has time to "correct" the English demo words (and later steps
+   look for those words); without the suggestions bar the video is cleaner too.
+6. **Mac:** Xcode signed in with the developer account (it already is, you
    archive from it). The first run creates the signing for the recorder's
    two bundle ids by itself.
 
@@ -87,8 +91,8 @@ counts from 0 in screen order.
 |---|---|
 | `{"tap": "Save"}` | Taps it (scrolls to it first). `nth`, `role` (`button`, `switch`, `textbox`), `timeout` |
 | `{"tap": "Import from Excel", "pickFile": "x.xlsx"}` | Taps, then picks the file in the Files picker (searches its name) |
-| `{"fill": "What for?", "text": "Lidl"}` | Replaces a field's text |
-| `{"amount": "12.50", "into": "Amount"}` | An amount, typed with the iPhone's decimal separator |
+| `{"fill": "What for?", "text": "Lidl"}` | Replaces a field's text, typed key by key like a person does |
+| `{"amount": "12.50", "into": "Amount"}` | An amount, typed digit by digit with the iPhone's decimal separator |
 | `{"placeholderMinus": 20, "into": "…"}` | Types the field's placeholder minus 20 (the app's own figure) |
 | `{"select": "English", "in": "Language"}` | Opens a `<select>` and taps the option |
 | `{"pickDay": 3, "on": "Date:"}` | The system date picker: that day of the shown month |
