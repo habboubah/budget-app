@@ -26,8 +26,9 @@ import { isSupportedCurrency } from './currency';
  *  24: `Entry.every` (a yearly entry that comes back every 2, 3 or 6 months) and
  *      `Entry.until` (a recurring entry's last month) — optional, unset = yearly / no end.
  *  25: `Category.limitPer` (a budget for the year) and `Category.rollover` / `rolloverFrom`
- *      (a monthly budget whose rest moves on) — optional, unset = a plain monthly budget. */
-export const SCHEMA_VERSION = 25;
+ *      (a monthly budget whose rest moves on) — optional, unset = a plain monthly budget.
+ *  26: `Entry.refund` (money back in an expense category; its amount is negative) — optional. */
+export const SCHEMA_VERSION = 26;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1171,6 +1172,7 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
     };
     if (e.repeat === 'yearly' && e.every) copy.every = e.every;
     if (e.until) copy.until = e.until;
+    if (e.refund) copy.refund = true;
     if (e.dueDay !== undefined) copy.dueDay = e.dueDay;
     // The same day of the new month (rent on the 1st stays on the 1st).
     if (e.date) copy.date = dayInMonth(key, Number(e.date.slice(8, 10)));
@@ -1227,7 +1229,8 @@ export function suggestNames({ entries, categoryId, query = '', lang, limit = 12
   const newer = (a: Entry, b: Entry) => a.month > b.month || (a.month === b.month && a.createdAt > b.createdAt);
   const groups = new Map<string, { name: string; count: number; here: number; latest: Entry; latestHere?: Entry }>();
   for (const e of entries) {
-    if (e.transfer) continue;
+    // A refund's amount is no hint for what the next purchase costs.
+    if (e.transfer || e.refund) continue;
     const k = normalizeName(e.name);
     if (!k) continue;
     const isHere = e.categoryId === categoryId;
@@ -1597,7 +1600,10 @@ function normalizeCategory(v: unknown): Category | null {
 
 function normalizeEntry(v: unknown, start = 1): Entry | null {
   if (!isObj(v) || !str(v.id) || !isMonthKey(v.month) || !str(v.categoryId)) return null;
-  const amount = typeof v.amount === 'number' && Number.isFinite(v.amount) ? Math.min(Math.round(Math.abs(v.amount)), MAX_CENTS) : 0;
+  const size = typeof v.amount === 'number' && Number.isFinite(v.amount) ? Math.min(Math.round(Math.abs(v.amount)), MAX_CENTS) : 0;
+  // Only a refund is negative (schema 26); any other minus sign in stored data is dropped, as before.
+  const refund = v.refund === true && size > 0 && !isObj(v.transfer);
+  const amount = refund ? -size : size;
   const due = typeof v.dueDay === 'number' && Number.isInteger(v.dueDay) && v.dueDay >= 1 && v.dueDay <= 31 ? v.dueDay : undefined;
   const e: Entry = {
     id: v.id as string,
@@ -1610,6 +1616,7 @@ function normalizeEntry(v: unknown, start = 1): Entry | null {
     seriesId: str(v.seriesId) || (v.id as string),
     createdAt: typeof v.createdAt === 'number' && Number.isFinite(v.createdAt) ? v.createdAt : 0,
   };
+  if (refund) e.refund = true;
   if (due !== undefined) e.dueDay = due;
   if (e.repeat === 'yearly' && (INTERVALS as readonly unknown[]).includes(v.every)) e.every = v.every as Interval;
   // A last month only on a recurring entry, and never before the entry itself.
@@ -1709,6 +1716,9 @@ export function normalizeState(raw: unknown): AppData {
   const accounts = normalizeAccounts(v.accounts);
   const accountSet = new Set((accounts ?? []).map(a => a.id));
   for (const e of entries) if (e.accountId && !accountSet.has(e.accountId)) delete e.accountId;
+  // A refund lives in an expense category; in an income category it is plain income (schema 26).
+  const incomeIds = new Set(categories.filter(c => c.kind === 'income').map(c => c.id));
+  for (const e of entries) if (e.refund && incomeIds.has(e.categoryId)) { delete e.refund; e.amount = Math.abs(e.amount); }
   // Debts (schema 21): an entry's link to a debt that isn't there is dropped.
   const debts = normalizeDebts(v.debts);
   const debtSet = new Set((debts ?? []).map(d => d.id));

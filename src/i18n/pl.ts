@@ -1121,6 +1121,9 @@ const pl: Strings = {
   budgetLineYear: 'Budżet roczny {amount}',
   budgetCarriedPlus: 'w tym {amount} z przeniesienia',
   budgetCarriedMinus: 'minus {amount} z przeniesienia',
+  // Refunds (schema 26)
+  refund: 'Zwrot',
+  refundHint: 'Zwrot pieniędzy: trafia na konto i zmniejsza wydatki w tej kategorii – nie liczy się jako przychód.',
 };
 
 export default pl;

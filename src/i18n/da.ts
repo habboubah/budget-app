@@ -1118,6 +1118,9 @@ const da: Strings = {
   budgetLineYear: 'Årsbudget {amount}',
   budgetCarriedPlus: 'inkl. {amount} overført',
   budgetCarriedMinus: 'minus {amount} overført',
+  // Refunds (schema 26)
+  refund: 'Refusion',
+  refundHint: 'Penge tilbage: de går ind på kontoen og sænker udgifterne i denne kategori – de tæller ikke som indtægt.',
 };
 
 export default da;

@@ -241,3 +241,12 @@ describe('version 25 (yearly budgets and rollover)', () => {
     expect(balances(data)).toEqual(balances(stored('storage-v24.json').data));
   });
 });
+
+describe('version 26 (refunds)', () => {
+  it('keeps a refund negative, so the account ends 19,99 € higher', () => {
+    const { data } = stored('storage-v26.json');
+    expect(data.entries.find(e => e.id === 'x3')).toMatchObject({ amount: -1999, refund: true });
+    const now = (d: AppData) => computeBalances(d).at(-1)!.now;
+    expect(now(data)).toBe(now(stored('storage-v25.json').data) + 1999);
+  });
+});

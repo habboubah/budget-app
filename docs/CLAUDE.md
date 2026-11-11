@@ -235,7 +235,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   **schema 22** `Entry.files` (plan 27, below);
   **schema 23** `AppData.monthStart` (plan 32, below);
   **schema 24** `Entry.every` and `Entry.until` (below);
-  **schema 25** `Category.limitPer`, `rollover`, `rolloverFrom` (below) — all
+  **schema 25** `Category.limitPer`, `rollover`, `rolloverFrom` (below);
+  **schema 26** `Entry.refund` (below) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
@@ -513,6 +514,19 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (undoable).
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
+- **Refunds (schema 26).** `Entry.refund` marks money back in an expense
+  category; its `amount` is then **negative** — the one case — so every sum
+  over a category, a month or a budget goes down by it without knowing about
+  refunds, and the account goes up. Hence: sum amounts as they are, never
+  `Math.abs` them in a total; where one entry's amount is *shown*, a refund
+  reads "+12,50 €" in `text-pos` with *erwartet / erhalten* (`CategorySection`,
+  `DueSoonRail`); the entry sheet types it positive and negates on save.
+  `normalizeEntry` keeps a minus sign only with the flag, and `normalizeState`
+  turns a refund in an income category into plain income. Bank import: money
+  in from a payee known under an expense category stays there and
+  `applyStatement(…, categories)` books it as a refund; matching compares
+  `Math.abs(amount)` with income-or-refund. Refunds are left out of name
+  suggestions' "last amount", favourites and splits.
 - **Currency (plan 07, `src/currency.ts`).** `AppData.currency` (ISO 4217,
   schema 11, optional, unset = EUR, in backups). Only two-minor-digit currencies
   are offered (`CURRENCIES`). `logic.ts` holds a module-level active currency

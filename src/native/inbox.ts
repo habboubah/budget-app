@@ -95,7 +95,7 @@ export function inboxToEntries(
   { language = 'de', today = new Date(), now = Date.now(), newId = uid, hold = false }: { language?: string; today?: Date; now?: number; newId?: () => string; hold?: boolean } = {},
 ): InboxResult {
   const { rows, asked, done, held } = planInbox(raw, data, { language, today, only: hold ? 'direct' : 'all' });
-  const { add, pay } = applyStatement(rows, now, newId, today);
+  const { add, pay } = applyStatement(rows, now, newId, today, data.categories);
   const open = new Set(asked.filter(i => i.paid === false).map(i => `inbox:${i.id}`));
   const entries = add.map(e => {
     if (!e.ref || !open.has(e.ref)) return e;

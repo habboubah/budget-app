@@ -1119,6 +1119,9 @@ const sv: Strings = {
   budgetLineYear: 'Årsbudget {amount}',
   budgetCarriedPlus: 'inkl. {amount} överfört',
   budgetCarriedMinus: 'minus {amount} överfört',
+  // Refunds (schema 26)
+  refund: 'Återbetalning',
+  refundHint: 'Pengar tillbaka: de går in på kontot och minskar utgifterna i den här kategorin – de räknas inte som inkomst.',
 };
 
 export default sv;

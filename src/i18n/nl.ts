@@ -1118,6 +1118,9 @@ const nl: Strings = {
   budgetLineYear: 'Jaarbudget {amount}',
   budgetCarriedPlus: 'incl. {amount} meegenomen',
   budgetCarriedMinus: 'min {amount} meegenomen',
+  // Refunds (schema 26)
+  refund: 'Terugbetaling',
+  refundHint: 'Geld terug: het komt op de rekening en verlaagt de uitgaven in deze categorie – het telt niet als inkomen.',
 };
 
 export default nl;

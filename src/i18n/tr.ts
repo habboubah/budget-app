@@ -1121,6 +1121,9 @@ const tr: Strings = {
   budgetLineYear: 'Yıllık bütçe {amount}',
   budgetCarriedPlus: '{amount} devir dahil',
   budgetCarriedMinus: '{amount} devir düşüldü',
+  // Refunds (schema 26)
+  refund: 'İade',
+  refundHint: 'Geri gelen para: hesaba eklenir ve bu kategorinin harcamasını azaltır; gelir sayılmaz.',
 };
 
 export default tr;

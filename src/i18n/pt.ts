@@ -1119,6 +1119,9 @@ const pt: Strings = {
   budgetLineYear: 'Orçamento anual {amount}',
   budgetCarriedPlus: 'incl. {amount} transitados',
   budgetCarriedMinus: 'menos {amount} transitados',
+  // Refunds (schema 26)
+  refund: 'Reembolso',
+  refundHint: 'Dinheiro devolvido: volta à conta e reduz a despesa desta categoria – não conta como rendimento.',
 };
 
 export default pt;

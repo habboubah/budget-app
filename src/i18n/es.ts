@@ -1118,6 +1118,9 @@ const es: Strings = {
   budgetLineYear: 'Presupuesto anual {amount}',
   budgetCarriedPlus: 'incl. {amount} de arrastre',
   budgetCarriedMinus: 'menos {amount} de arrastre',
+  // Refunds (schema 26)
+  refund: 'Reembolso',
+  refundHint: 'Dinero devuelto: vuelve a la cuenta y reduce el gasto de esta categoría; no cuenta como ingreso.',
 };
 
 export default es;

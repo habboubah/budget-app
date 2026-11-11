@@ -1119,6 +1119,9 @@ const nb: Strings = {
   budgetLineYear: 'Årsbudsjett {amount}',
   budgetCarriedPlus: 'inkl. {amount} overført',
   budgetCarriedMinus: 'minus {amount} overført',
+  // Refunds (schema 26)
+  refund: 'Refusjon',
+  refundHint: 'Penger tilbake: de går inn på kontoen og reduserer utgiftene i denne kategorien – de teller ikke som inntekt.',
 };
 
 export default nb;

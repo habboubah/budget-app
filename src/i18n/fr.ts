@@ -1119,6 +1119,9 @@ const fr: Strings = {
   budgetLineYear: 'Budget annuel {amount}',
   budgetCarriedPlus: 'dont {amount} reportés',
   budgetCarriedMinus: 'moins {amount} reportés',
+  // Refunds (schema 26)
+  refund: 'Remboursement',
+  refundHint: 'Argent rendu : il revient sur le compte et réduit les dépenses de cette catégorie – ce n’est pas un revenu.',
 };
 
 export default fr;

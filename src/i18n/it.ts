@@ -1118,6 +1118,9 @@ const it: Strings = {
   budgetLineYear: 'Budget annuale {amount}',
   budgetCarriedPlus: 'incl. {amount} riportati',
   budgetCarriedMinus: 'meno {amount} riportati',
+  // Refunds (schema 26)
+  refund: 'Rimborso',
+  refundHint: 'Soldi restituiti: tornano sul conto e riducono le spese di questa categoria – non contano come entrata.',
 };
 
 export default it;

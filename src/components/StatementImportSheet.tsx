@@ -139,6 +139,7 @@ export function StatementImportSheet({ state, categories, language, t, onClose, 
                               {categories.map(x => <option key={x.id} value={x.id}>{displayName(x.names, language)}</option>)}
                             </select>
                           </label>
+                          {r.found.income && c?.kind === 'expense' && r.status !== 'pay' && <span className="text-pos font-medium">{t.refund}</span>}
                           {r.status === 'exists' && <span>{t.importStatusExists}</span>}
                           {r.status === 'pay' && <span className="text-warn font-medium wrap-prose">{fmt(t.importStatusPay, { name: r.match?.name ?? '' })}</span>}
                           {r.found.foreignCurrency && <span className="text-warn font-medium wrap-prose">{fmt(t.importForeignCurrency, { currency: r.found.foreignCurrency })}</span>}

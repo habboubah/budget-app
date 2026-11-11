@@ -1122,6 +1122,9 @@ const cs: Strings = {
   budgetLineYear: 'Roční rozpočet {amount}',
   budgetCarriedPlus: 'vč. {amount} převodu',
   budgetCarriedMinus: 'po odečtení {amount} převodu',
+  // Refunds (schema 26)
+  refund: 'Vratka',
+  refundHint: 'Vrácené peníze: přijdou na účet a sníží výdaje v této kategorii – nepočítají se jako příjem.',
 };
 
 export default cs;

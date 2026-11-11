@@ -346,6 +346,8 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   onToggle: () => void;
   onMoveBy: (delta: -1 | 1) => void;
 }) {
+  // A refund reads like income on its row: "+12,50 €", erwartet / erhalten (schema 26).
+  const gain = income || !!e.refund;
   const meta: React.ReactNode[] = [];
   // The date first — it is also when an open entry is due; then, while open,
   // the status in words, coloured — never colour or shape alone. How often it
@@ -354,10 +356,11 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   if (!e.paid) {
     meta.push(
       <span key="state" className={`font-medium ${overdue ? 'text-neg' : 'text-warn'}`}>
-        {overdue ? t.overdue : income ? t.expected : t.open}
+        {overdue ? t.overdue : gain ? t.expected : t.open}
       </span>,
     );
   }
+  if (e.refund) meta.push(<span key="refund" className="text-fg-mute">{t.refund}</span>);
   if (e.note) meta.push(<span key="note" className="wrap-compound"><Highlight text={e.note} query={search} /></span>);
   // A part of a split payment (plan 21): a quiet marker; tapping the row opens its editor.
   if (e.splitId) meta.push(<span key="split" className="text-fg-mute">{t.splitPayPart}</span>);
@@ -418,7 +421,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
         }}
         aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
         aria-label={`${fmt(t.editNamed, { name: e.name })}, ${spoken(formatMoney(e.amount, t.locale), t.amountHidden)}, ${
-          e.paid ? (income ? t.receivedState : t.paidState) : overdue ? t.overdue : income ? t.expected : t.open}`}
+          e.paid ? (gain ? t.receivedState : t.paidState) : overdue ? t.overdue : gain ? t.expected : t.open}${e.refund ? `, ${t.refund}` : ''}`}
         className="flex-1 min-w-0 py-2.5 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         <span className="min-w-0 flex-1">
@@ -432,8 +435,8 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
           )}
         </span>
         {/* Open money is grey, like a pending card payment; it turns solid once paid. */}
-        <span className={`shrink-0 text-body font-medium num ${e.paid ? (income ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
-          <Highlight text={formatMoney(e.amount, t.locale)} query={search} />
+        <span className={`shrink-0 text-body font-medium num ${e.paid ? (gain ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
+          <Highlight text={e.refund ? formatMoney(-e.amount, t.locale, 'always') : formatMoney(e.amount, t.locale)} query={search} />
         </span>
       </button>
     </div>

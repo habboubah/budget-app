@@ -88,8 +88,14 @@ export interface Entry {
   month: MonthKey;
   categoryId: string;
   name: string;
-  /** Integer cents, never negative — the category's kind gives the sign. */
+  /** Integer cents — the category's kind gives the sign. Negative only for a `refund`. */
   amount: number;
+  /**
+   * Money that came back in an expense category (schema 26): a return, a
+   * reimbursement. Its `amount` is negative, so every sum over the category
+   * goes down by it and the account up — it is never income.
+   */
+  refund?: true;
   /** Expense paid / income received. False = still open (planned / expected). */
   paid: boolean;
   repeat: Repeat;
@@ -302,6 +308,8 @@ export interface EntryDraft {
   amount: number;
   paid: boolean;
   repeat: Repeat;
+  /** A refund in an expense category: `amount` is then negative (schema 26). */
+  refund?: true;
   /** The interval of a `yearly` entry that isn't twelve months, and a recurring entry's last month (schema 24). */
   every?: Interval;
   until?: MonthKey;

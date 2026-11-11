@@ -413,6 +413,7 @@ export default function App() {
     if (!entry.accountId) delete entry.accountId;
     if (!entry.debtId) delete entry.debtId;
     if (!entry.files?.length) delete entry.files;
+    if (!entry.refund) delete entry.refund;
     if (!entry.every) delete entry.every;
     if (!entry.until) delete entry.until;
     store.addEntry(entry);
@@ -585,7 +586,7 @@ export default function App() {
   };
 
   const confirmStatement = (rows: PlannedRow[]) => {
-    const { add, pay } = applyStatement(rows, Date.now());
+    const { add, pay } = applyStatement(rows, Date.now(), undefined, undefined, categories);
     const done = store.importEntries(intoAccount(add, target), pay);
     // Looked through (plan 19): taken over or left out, the captured payments leave the inbox once the book is saved.
     const ids = reviewIds.current;

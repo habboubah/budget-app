@@ -108,6 +108,14 @@ Everything the app can do. Build and release steps are in the
   August 2028"), with the interest still to come; an extra payment, or money
   paid back, is linked from the entry sheet's *Zu einer Schuld* pill. Planen
   gets a *Schulden* card once there is one.
+- **Refunds.** Money that comes back — a return, a deposit, something the
+  employer reimburses — is entered where the purchase was: the *Erstattung*
+  pill in the entry sheet turns "−" into "+". It goes into the account and
+  lowers that category's spending (its total, its budget, the statistics);
+  it never counts as income, so the savings rate stays honest. A refund can
+  be *erwartet* until it arrives. In a bank import, money coming in from a
+  shop you buy from is offered as a refund in that shop's category, and an
+  awaited refund is ticked off instead of entered twice.
 - **Split a payment.** In an entry's editor, *Aufteilen* turns one receipt
   ("Lidl 48,20 €") into parts in different categories ("Lebensmittel 35,10 € ·
   Drogerie 13,10 €") that must add up to the original. The parts are normal

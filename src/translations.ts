@@ -1148,6 +1148,9 @@ const de = {
   budgetLineYear: 'Jahresbudget {amount}',
   budgetCarriedPlus: 'inkl. {amount} Übertrag',
   budgetCarriedMinus: 'abzgl. {amount} Übertrag',
+  // Refunds (schema 26)
+  refund: 'Erstattung',
+  refundHint: 'Geld zurück: Es kommt aufs Konto und verringert die Ausgaben dieser Kategorie – es zählt nicht als Einkommen.',
 };
 
 export type Strings = { [K in keyof typeof de]: string };
@@ -2267,6 +2270,9 @@ const en: Strings = {
   budgetLineYear: 'Yearly budget {amount}',
   budgetCarriedPlus: 'incl. {amount} carried over',
   budgetCarriedMinus: 'less {amount} carried over',
+  // Refunds (schema 26)
+  refund: 'Refund',
+  refundHint: 'Money back: it goes into the account and lowers this category’s spending – it doesn’t count as income.',
 };
 
 /*
@@ -3400,6 +3406,9 @@ const ar: Strings = {
   budgetLineYear: 'الميزانية السنوية {amount}',
   budgetCarriedPlus: 'يشمل {amount} مرحّلة',
   budgetCarriedMinus: 'بعد خصم {amount} مرحّلة',
+  // Refunds (schema 26)
+  refund: 'استرداد',
+  refundHint: 'مبلغ مُسترد: يعود إلى الحساب ويخفّض مصروفات هذه الفئة، ولا يُحتسب دخلًا.',
 };
 
 /**

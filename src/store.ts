@@ -375,6 +375,7 @@ export function useAppStore() {
       if (next.dueDay === undefined) delete next.dueDay;
       if (!next.note) delete next.note;
       // The interval belongs to a yearly entry, the last month to a recurring one (schema 24).
+      if (!next.refund) delete next.refund;
       if (!next.every || next.repeat !== 'yearly') delete next.every;
       if (!next.until || next.repeat === 'none') delete next.until;
       // Back on the main account: no account is stored (plan 30).
