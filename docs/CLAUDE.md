@@ -382,6 +382,18 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (a Vite plugin runs it for dev and every build; generated, gitignored, not
   precached by the PWA). Never commit a real bank export or screenshot.
   iOS needs `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription`.
+- **Invoice QR codes (`src/girocode.ts`, `src/qrScan.ts`).** The month's "⋯"
+  → *Rechnung scannen*: `readQrCode(file)` draws the picture onto a canvas at
+  up to three sizes and hands the pixels to the **`qr`** package's
+  `decodeQR` (0.7.2, pinned; MIT / Apache-2.0, no dependencies, pure
+  JavaScript, one maintainer — paulmillr, of the noble-* libraries —
+  released September 2026; chosen over jsQR, last released in 2021, and over
+  a wasm build of ZXing; `BarcodeDetector` isn't in WKWebView). It is its own
+  chunk, loaded on the first scan. `parseGiroCode` (pure, tested) reads the
+  EPC text — BCD / 001|002 / SCT, payee, IBAN, `EUR12.34`, reference — and
+  `giroCodeEntry` gives the entry sheet's preset: open, the payee cleaned by
+  `cleanPayee`, the reference and IBAN as the note. An amount in another
+  currency than the book's is left out. Never commit a real invoice or code.
 - **Accounts and transfers (plan 30).** A book has its main account (id
   `main`, `MAIN_ACCOUNT`) and nothing else until the user adds cash, a savings
   account or another under *Optionen › Konten*; `AppData.accounts` (schema 20)

@@ -1156,6 +1156,11 @@ const it: Strings = {
   whatIfDebtNoEnd: 'Senza debiti a {after}',
   whatIfInterest: '{amount} di interessi in meno',
   whatIfDebtNever: 'Nemmeno così la rata copre gli interessi.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'Scansiona una fattura (codice QR)',
+  scanInvoiceSub: 'Una foto del codice di pagamento – diventa una voce da pagare con importo e causale',
+  qrNone: 'Nessun codice QR trovato. Scatta la foto più da vicino, dritta e con buona luce.',
+  qrNotInvoice: 'Non è il codice QR di pagamento di una fattura (EPC / GiroCode).',
 };
 
 export default it;

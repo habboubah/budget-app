@@ -1159,6 +1159,11 @@ const tr: Strings = {
   whatIfDebtNoEnd: 'Borç bitişi {after}',
   whatIfInterest: '{amount} daha az faiz',
   whatIfDebtNever: 'Bu durumda bile taksit faizi karşılamıyor.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'Fatura tara (QR kodu)',
+  scanInvoiceSub: 'Ödeme QR kodunun fotoğrafı – tutar ve açıklamayla açık bir kayıt olur',
+  qrNone: 'QR kodu bulunamadı. Fotoğrafı daha yakından, düz ve iyi ışıkta çek.',
+  qrNotInvoice: 'Bu bir faturanın ödeme QR kodu değil (EPC / GiroCode).',
 };
 
 export default tr;

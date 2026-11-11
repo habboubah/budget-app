@@ -1160,6 +1160,11 @@ const cs: Strings = {
   whatIfDebtNoEnd: 'Bez dluhu: {after}',
   whatIfInterest: 'o {amount} méně na úrocích',
   whatIfDebtNever: 'Ani tak splátka nepokryje úroky.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'Naskenovat fakturu (QR kód)',
+  scanInvoiceSub: 'Fotka platebního kódu – vznikne otevřená položka s částkou a zprávou',
+  qrNone: 'QR kód nenalezen. Vyfoť ho zblízka, rovně a při dobrém světle.',
+  qrNotInvoice: 'To není platební QR kód faktury (EPC / GiroCode).',
 };
 
 export default cs;

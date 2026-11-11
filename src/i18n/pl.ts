@@ -1159,6 +1159,11 @@ const pl: Strings = {
   whatIfDebtNoEnd: 'Bez długu: {after}',
   whatIfInterest: '{amount} mniej odsetek',
   whatIfDebtNever: 'Nawet wtedy rata nie pokrywa odsetek.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'Skanuj fakturę (kod QR)',
+  scanInvoiceSub: 'Zdjęcie kodu płatności – powstaje otwarta pozycja z kwotą i tytułem',
+  qrNone: 'Nie znaleziono kodu QR. Zrób zdjęcie z bliska, na wprost i przy dobrym świetle.',
+  qrNotInvoice: 'To nie jest kod QR płatności z faktury (EPC / GiroCode).',
 };
 
 export default pl;

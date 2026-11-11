@@ -1157,6 +1157,11 @@ const nb: Strings = {
   whatIfDebtNoEnd: 'Gjeldfri {after}',
   whatIfInterest: '{amount} mindre i renter',
   whatIfDebtNever: 'Selv da dekker ikke betalingen rentene.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'Skann en faktura (QR-kode)',
+  scanInvoiceSub: 'Et bilde av betalingskoden – blir en åpen post med beløp og referanse',
+  qrNone: 'Fant ingen QR-kode. Ta bildet nærmere, rett på og i godt lys.',
+  qrNotInvoice: 'Dette er ikke en betalings-QR-kode fra en faktura (EPC / GiroCode).',
 };
 
 export default nb;

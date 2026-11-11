@@ -1157,6 +1157,11 @@ const sv: Strings = {
   whatIfDebtNoEnd: 'Skuldfri {after}',
   whatIfInterest: '{amount} mindre i ränta',
   whatIfDebtNever: 'Inte ens då täcker betalningen räntan.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'Skanna en faktura (QR-kod)',
+  scanInvoiceSub: 'Ett foto av betalkoden – blir en obetald post med belopp och referens',
+  qrNone: 'Ingen QR-kod hittades. Ta bilden närmare, rakt framifrån och i bra ljus.',
+  qrNotInvoice: 'Det är ingen betal-QR-kod från en faktura (EPC / GiroCode).',
 };
 
 export default sv;

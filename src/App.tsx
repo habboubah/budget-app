@@ -80,6 +80,8 @@ import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonth
 import { StatementImportSheet, ImportState } from './components/StatementImportSheet';
 import { PlannedRow, allCategoryNames, applyStatement, csvForMapping, parseBankCsv, parseMappedCsv, parseStatementText, planStatement } from './statementImport';
 import { readImageText, readTextFile } from './ocr';
+import { readQrCode } from './qrScan';
+import { giroCodeEntry, parseGiroCode } from './girocode';
 import { FileTooLargeError, LIMITS } from './limits';
 import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
@@ -180,6 +182,7 @@ export default function App() {
   // Bank transactions: a CSV export or a photo, read, then checked in a sheet.
   const statementInput = useRef<HTMLInputElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
+  const invoiceInput = useRef<HTMLInputElement>(null);
   const [statement, setStatement] = useState<ImportState>(null);
   /** A category with entries waiting for "really delete?". */
   const [confirmCategory, setConfirmCategory] = useState<Category | null>(null);
@@ -570,6 +573,27 @@ export default function App() {
     } catch (e) {
       trouble.current = true;
       show(e instanceof FileTooLargeError ? t[e.key] : t.excelInvalid);
+    }
+  };
+
+  /**
+   * An invoice's QR code (GiroCode) from a photo or a screenshot, read on the
+   * device: the entry sheet opens with the payee, the amount and — as the note
+   * — the reference and IBAN, still open. Nothing is saved before *Sichern*.
+   */
+  const onInvoiceFile = async (f: File | undefined) => {
+    if (invoiceInput.current) invoiceInput.current.value = '';
+    if (!f || !quickAddCategory) return;
+    try {
+      const text = await readQrCode(f);
+      const code = text ? parseGiroCode(text) : null;
+      if (!code) { show(text ? t.qrNotInvoice : t.qrNone); return; }
+      const { name, amount, note } = giroCodeEntry(code);
+      // An amount in another currency than the book's is left for the user to type.
+      const mine = !code.currency || code.currency === (data.currency ?? 'EUR');
+      setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory, preset: { name, paid: false, note, ...(amount && mine ? { amount } : {}) } });
+    } catch (e) {
+      show(e instanceof FileTooLargeError ? t[e.key] : t.qrNone);
     }
   };
 
@@ -1614,6 +1638,7 @@ export default function App() {
         onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
         onImportCsv={() => statementInput.current?.click()}
         onImportPhoto={() => photoInput.current?.click()}
+        onScanInvoice={() => invoiceInput.current?.click()}
         onDelete={deleteMonth}
         onReport={() => openReport(month)}
       />
@@ -1667,6 +1692,13 @@ export default function App() {
         accept="image/*"
         className="sr-only" tabIndex={-1} aria-hidden="true"
         onChange={e => void onStatementFile(e.target.files?.[0], 'photo')}
+      />
+      <input
+        ref={invoiceInput}
+        type="file"
+        accept="image/*"
+        className="sr-only" tabIndex={-1} aria-hidden="true"
+        onChange={e => void onInvoiceFile(e.target.files?.[0])}
       />
       <StatementImportSheet
         state={statement}

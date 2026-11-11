@@ -1156,6 +1156,11 @@ const nl: Strings = {
   whatIfDebtNoEnd: 'Schuldenvrij {after}',
   whatIfInterest: '{amount} minder rente',
   whatIfDebtNever: 'Zelfs dan dekt de betaling de rente niet.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'Factuur scannen (QR-code)',
+  scanInvoiceSub: 'Een foto van de betaalcode – wordt een open post met bedrag en kenmerk',
+  qrNone: 'Geen QR-code gevonden. Maak de foto dichterbij, recht van voren en bij goed licht.',
+  qrNotInvoice: 'Dit is geen betaal-QR-code van een factuur (EPC / GiroCode).',
 };
 
 export default nl;

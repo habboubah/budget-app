@@ -15,6 +15,12 @@ Everything the app can do. Build and release steps are in the
   banking app — the text is read on the phone itself. Every transaction is
   shown to check first: new ones, ones already entered, and open bills they
   pay (those get ticked off).
+- **Scan an invoice.** "⋯" → *Rechnung scannen (QR-Code)*: take a photo (or
+  pick a screenshot) of the payment QR code many invoices carry — the
+  GiroCode. The entry sheet opens with the payee, the amount and, as the
+  note, the reference and the IBAN: an open bill, ready to tick off once it
+  is paid from the banking app. Read on the phone itself; the picture isn't
+  kept, and nothing is saved before *Sichern*.
 - **One month per page.** ‹ › switch months, or tap the month's name to pick
   any month (each shown with what it ended on); "Zum aktuellen Monat" jumps
   back.

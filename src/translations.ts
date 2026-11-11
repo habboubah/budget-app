@@ -1186,6 +1186,11 @@ const de = {
   whatIfDebtNoEnd: 'Schuldenfrei {after}',
   whatIfInterest: '{amount} weniger Zinsen',
   whatIfDebtNever: 'Auch damit deckt die Rate die Zinsen nicht.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'Rechnung scannen (QR-Code)',
+  scanInvoiceSub: 'Foto vom GiroCode – wird ein offener Eintrag mit Betrag und Verwendungszweck',
+  qrNone: 'Kein QR-Code erkannt. Fotografier ihn näher, gerade und bei gutem Licht.',
+  qrNotInvoice: 'Das ist kein Zahlungs-QR-Code einer Rechnung (GiroCode).',
 };
 
 export type Strings = { [K in keyof typeof de]: string };
@@ -2343,6 +2348,11 @@ const en: Strings = {
   whatIfDebtNoEnd: 'Debt-free {after}',
   whatIfInterest: '{amount} less interest',
   whatIfDebtNever: 'Even then the payment doesn’t cover the interest.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'Scan an invoice (QR code)',
+  scanInvoiceSub: 'A photo of its payment QR code – becomes a pending entry with amount and reference',
+  qrNone: 'No QR code found. Take the photo closer, straight on and in good light.',
+  qrNotInvoice: 'That isn’t an invoice’s payment QR code (EPC / GiroCode).',
 };
 
 /*
@@ -3514,6 +3524,11 @@ const ar: Strings = {
   whatIfDebtNoEnd: 'سداد كامل في {after}',
   whatIfInterest: 'فوائد أقل بمقدار {amount}',
   whatIfDebtNever: 'حتى مع ذلك لا يغطي القسط الفوائد.',
+  // Invoice QR code (GiroCode)
+  scanInvoice: 'مسح فاتورة (رمز QR)',
+  scanInvoiceSub: 'صورة لرمز الدفع – تصبح بندًا مفتوحًا بالمبلغ والمرجع',
+  qrNone: 'لم يُعثر على رمز QR. التقط الصورة من مسافة أقرب وبشكل مستقيم وفي إضاءة جيدة.',
+  qrNotInvoice: 'هذا ليس رمز دفع لفاتورة (EPC / GiroCode).',
 };
 
 /**
