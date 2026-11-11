@@ -1100,6 +1100,17 @@ const cs: Strings = {
   crashBody: 'Tvá data jsou bezpečně uložená. Načti aplikaci znovu – nebo nejdřív exportuj data.',
   crashReload: 'Načíst znovu',
   crashExport: 'Exportovat data',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: 'Každé 2 měsíce',
+  repeatQuarterly: 'Čtvrtletně',
+  repeatHalfYearly: 'Pololetně',
+  repeatHintEvery: 'Vrací se každé {n} měs. jako otevřená.',
+  repeatEnds: 'Končí',
+  repeatNoEnd: 'Bez konce',
+  repeatUntil: 'do: {month}',
+  per2MonthsShort: 'každé 2 měs.',
+  perQuarterShort: 'čtvrtletně',
+  perHalfYearShort: 'pololetně',
 };
 
 export default cs;

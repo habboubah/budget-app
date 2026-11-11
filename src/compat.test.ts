@@ -223,3 +223,12 @@ describe('a backup from schema 9 (budgets)', () => {
     expect([nov.now, nov.end]).toEqual([474030, 794030]);
   });
 });
+
+describe('version 24 (repeat intervals and an end)', () => {
+  it('keeps a quarterly bill and an instalment with its last month', () => {
+    const { data } = stored('storage-v24.json');
+    expect(data.entries.find(e => e.id === 'x1')).toMatchObject({ repeat: 'yearly', every: 3 });
+    expect(data.entries.find(e => e.id === 'x2')).toMatchObject({ repeat: 'monthly', until: '2027-01' });
+    expect(total(data)).toBe(total(stored('storage-v22.json').data) + 5508 + 5000);
+  });
+});

@@ -374,6 +374,9 @@ export function useAppStore() {
       // Optional fields set to undefined are dropped, not stored as null.
       if (next.dueDay === undefined) delete next.dueDay;
       if (!next.note) delete next.note;
+      // The interval belongs to a yearly entry, the last month to a recurring one (schema 24).
+      if (!next.every || next.repeat !== 'yearly') delete next.every;
+      if (!next.until || next.repeat === 'none') delete next.until;
       // Back on the main account: no account is stored (plan 30).
       if (!next.accountId || next.accountId === MAIN_ACCOUNT) delete next.accountId;
       if (!next.debtId) delete next.debtId;
@@ -383,7 +386,7 @@ export function useAppStore() {
       return next;
     }));
     // Made recurring in the editor: it goes into the months already started after it, too.
-    if (before && before.repeat === 'none' && patch.repeat && patch.repeat !== 'none') {
+    if (before && patch.repeat && patch.repeat !== 'none' && (before.repeat === 'none' || before.every !== patch.every)) {
       const later = laterCopies(data, { ...before, ...patch }, Date.now());
       if (later.length) setEntries(prev => [...prev, ...later]);
     }

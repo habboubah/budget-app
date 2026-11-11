@@ -1099,6 +1099,17 @@ const tr: Strings = {
   crashBody: 'Verilerin güvenle saklanıyor. Uygulamayı yeniden yükle – ya da önce verilerini dışa aktar.',
   crashReload: 'Yeniden yükle',
   crashExport: 'Verileri dışa aktar',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: '2 ayda bir',
+  repeatQuarterly: 'Üç ayda bir',
+  repeatHalfYearly: 'Altı ayda bir',
+  repeatHintEvery: 'Her {n} ayda bir açık olarak geri gelir.',
+  repeatEnds: 'Bitiş',
+  repeatNoEnd: 'Bitiş yok',
+  repeatUntil: 'Bitiş: {month}',
+  per2MonthsShort: '2 ayda bir',
+  perQuarterShort: 'üç ayda bir',
+  perHalfYearShort: 'altı ayda bir',
 };
 
 export default tr;

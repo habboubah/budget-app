@@ -233,7 +233,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `src/demo.ts`); **schema 20** accounts and transfers (plan 30, below);
   **schema 21** `AppData.debts` + `Entry.debtId` (plan 31, below);
   **schema 22** `Entry.files` (plan 27, below);
-  **schema 23** `AppData.monthStart` (plan 32, below) — all
+  **schema 23** `AppData.monthStart` (plan 32, below);
+  **schema 24** `Entry.every` and `Entry.until` (below) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
@@ -252,6 +253,18 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   balance put into it — `ensureMonth`) carries them too. A recurring entry
   added to, or made recurring in, an earlier month is copied into the months
   already started after it (`laterCopies`).
+- **Intervals and an end (schema 24).** There are still three repeats; a
+  `yearly` entry may carry `every` (2, 3 or 6 months, `INTERVALS`) and any
+  recurring entry `until` (its last month). **Never compare a repeat with
+  twelve months by hand:** `intervalOf(e)` is the distance in months,
+  `comesBackIn(e, key)` whether it returns in a later month (interval and end
+  both), `seriesEnded(e, key)` the end alone, `latestPeriodic(entries)` the
+  newest entry of every yearly-kind series — what the outlook and the month
+  report project from. A quarterly bill stays "yearly" for every insight (out
+  of trends, in the reserve); `commitments` and `contractItems` spread it by
+  its interval. Labels come from `src/repeatLabel.ts` (`repeatName`,
+  `perShort`, `REPEAT_CHOICES` for the entry sheet's menu). Weekly isn't
+  offered: a series has one entry a month everywhere.
 - **Entry order:** `Entry.order` is set once the user drags entries in a
   category (`moveEntry()` renumbers the source and target category of that
   month); `sortEntries()` puts ordered entries first, the rest by due day, then

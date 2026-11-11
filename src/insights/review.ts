@@ -1,5 +1,5 @@
 import { Category, Entry, MonthKey } from '../types';
-import { addMonths, monthKeyOf, normalizeName } from '../logic';
+import { addMonths, comesBackIn, latestPeriodic, monthKeyOf, normalizeName, seriesEnded } from '../logic';
 import { monthBudgets, roundBudget } from '../budgets';
 import { Book, finishedKeys, monthOf } from './book';
 import { mean, median } from './baseline';
@@ -69,9 +69,9 @@ export function monthReview(book: Book, month: MonthKey, today = new Date()): Mo
       if (e.repeat === 'monthly') fixed += e.amount; else yearly.push({ name: e.name, categoryId: e.categoryId, amount: e.amount });
     }
   } else {
-    for (const e of m.entries) if (e.repeat === 'monthly' && book.partOf(e.categoryId) !== 'income') fixed += e.amount;
-    for (const e of monthOf(book, addMonths(nextKey, -12)).entries) {
-      if (e.repeat === 'yearly' && book.partOf(e.categoryId) !== 'income') yearly.push({ name: e.name, categoryId: e.categoryId, amount: e.amount });
+    for (const e of m.entries) if (e.repeat === 'monthly' && !seriesEnded(e, nextKey) && book.partOf(e.categoryId) !== 'income') fixed += e.amount;
+    for (const e of latestPeriodic(book.data.entries)) {
+      if (comesBackIn(e, nextKey) && book.partOf(e.categoryId) !== 'income') yearly.push({ name: e.name, categoryId: e.categoryId, amount: e.amount });
     }
   }
 

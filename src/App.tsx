@@ -413,6 +413,8 @@ export default function App() {
     if (!entry.accountId) delete entry.accountId;
     if (!entry.debtId) delete entry.debtId;
     if (!entry.files?.length) delete entry.files;
+    if (!entry.every) delete entry.every;
+    if (!entry.until) delete entry.until;
     store.addEntry(entry);
     // The category stays in the month even if this entry is deleted again.
     store.showCategory(m, d.categoryId);

@@ -19,6 +19,16 @@ export type CategoryKind = 'income' | 'expense';
 export const REPEATS = ['none', 'monthly', 'yearly'] as const;
 export type Repeat = (typeof REPEATS)[number];
 
+/**
+ * A `yearly` entry that comes back sooner than a year on (schema 24): every
+ * two months, every quarter or every half year. It stays a `yearly` entry in
+ * every other respect — a bill outside the monthly run, kept out of trends,
+ * counted in the reserve — only its distance in months differs (`Entry.every`,
+ * unset = 12; read it with `intervalOf`).
+ */
+export const INTERVALS = [2, 3, 6] as const;
+export type Interval = (typeof INTERVALS)[number];
+
 export interface Category {
   id: string;
   names: Names;
@@ -78,6 +88,10 @@ export interface Entry {
   /** Expense paid / income received. False = still open (planned / expected). */
   paid: boolean;
   repeat: Repeat;
+  /** With `repeat: 'yearly'`: how many months until it comes back, when not twelve (schema 24). */
+  every?: Interval;
+  /** The last month a recurring entry runs — nothing is carried over past it (schema 24: an instalment plan, a contract that ends). */
+  until?: MonthKey;
   /** Day of the month it is due, 1–31. */
   dueDay?: number;
   /** The day it belongs to, YYYY-MM-DD, inside `month` — today when entered,
@@ -283,6 +297,9 @@ export interface EntryDraft {
   amount: number;
   paid: boolean;
   repeat: Repeat;
+  /** The interval of a `yearly` entry that isn't twelve months, and a recurring entry's last month (schema 24). */
+  every?: Interval;
+  until?: MonthKey;
   dueDay?: number;
   date?: string;
   note?: string;

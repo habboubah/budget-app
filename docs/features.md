@@ -138,7 +138,14 @@ Everything the app can do. Build and release steps are in the
   Each category has **keywords** — the built-ins come with the usual German
   shops, brands and words in German, English and Arabic — to see, change,
   delete or add in its sheet, with ideas from what you often enter there.
-- **Carry-over.** Mark entries **monatlich** or **jährlich**. Starting the next
+- **Carry-over.** Mark entries **monatlich**, **alle 2 Monate**,
+  **vierteljährlich**, **halbjährlich** or **jährlich** — the Rundfunkbeitrag
+  every quarter, an insurance twice a year. A recurring entry can also **end**
+  (*Ohne Ende* → "bis März 2027"): an instalment plan or a contract that runs
+  out is carried up to that month and no further, and the *Ausblick* stops
+  counting it from then. Quarterly and half-yearly bills count like yearly
+  ones everywhere — in the reserve, the contracts ("viertelj.") and the
+  outlook — spread over the year by how often they come. Starting the next
   month shows exactly which ones come along and copies them in as *open*. The
   balance is carried over automatically — set it by hand for the first month or
   when the real account has drifted ("⋯" → Kontostand am Monatsanfang). Open

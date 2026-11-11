@@ -1096,6 +1096,17 @@ const da: Strings = {
   crashBody: 'Dine data er gemt sikkert. Genindlæs appen – eller eksportér dine data først.',
   crashReload: 'Genindlæs',
   crashExport: 'Eksportér data',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: 'Hver 2. måned',
+  repeatQuarterly: 'Kvartalsvis',
+  repeatHalfYearly: 'Halvårligt',
+  repeatHintEvery: 'Kommer igen hver {n}. måned som åben.',
+  repeatEnds: 'Slutter',
+  repeatNoEnd: 'Uden slut',
+  repeatUntil: 'til {month}',
+  per2MonthsShort: 'hver 2. md.',
+  perQuarterShort: 'pr. kvartal',
+  perHalfYearShort: 'pr. halvår',
 };
 
 export default da;

@@ -1,3 +1,4 @@
+import { perShort } from '../repeatLabel';
 import { useEffect, useState } from 'react';
 import { Category, Contract } from '../types';
 import { formatMoney, isIsoDay } from '../logic';
@@ -65,8 +66,8 @@ export function ContractSheet({ item, category, t, onClose, onSave }: Props) {
         <div className="flex items-center gap-3">
           <Picture emoji={category?.emoji} name={it.name} hue={category?.hue} size="md" />
           <p className="min-w-0 flex-1 text-label text-fg-mute wrap-prose tabular-nums">
-            {it.repeat === 'monthly'
-              ? `${money(it.amount)} ${t.perMonthShort} · ${fmt(t.perYear, { amount: money(it.yearly) })}`
+            {it.repeat === 'monthly' || it.every
+              ? `${money(it.amount)} ${perShort(t, it)} · ${fmt(t.perYear, { amount: money(it.yearly) })}`
               : fmt(t.perYear, { amount: money(it.amount) })}
           </p>
         </div>

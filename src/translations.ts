@@ -1126,6 +1126,17 @@ const de = {
   crashBody: 'Deine Daten sind sicher gespeichert. Lade die App neu – oder exportiere sie vorher.',
   crashReload: 'Neu laden',
   crashExport: 'Daten exportieren',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: 'Alle 2 Monate',
+  repeatQuarterly: 'Vierteljährlich',
+  repeatHalfYearly: 'Halbjährlich',
+  repeatHintEvery: 'Kommt alle {n} Monate als offen wieder.',
+  repeatEnds: 'Endet',
+  repeatNoEnd: 'Ohne Ende',
+  repeatUntil: 'bis {month}',
+  per2MonthsShort: 'alle 2 Mon.',
+  perQuarterShort: 'viertelj.',
+  perHalfYearShort: 'halbj.',
 };
 
 export type Strings = { [K in keyof typeof de]: string };
@@ -2223,6 +2234,17 @@ const en: Strings = {
   crashBody: 'Your data is stored safely. Reload the app – or export your data first.',
   crashReload: 'Reload',
   crashExport: 'Export data',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: 'Every 2 months',
+  repeatQuarterly: 'Quarterly',
+  repeatHalfYearly: 'Every 6 months',
+  repeatHintEvery: 'Comes back every {n} months, as pending.',
+  repeatEnds: 'Ends',
+  repeatNoEnd: 'No end',
+  repeatUntil: 'until {month}',
+  per2MonthsShort: 'every 2 months',
+  perQuarterShort: 'a quarter',
+  perHalfYearShort: 'every 6 months',
 };
 
 /*
@@ -3334,6 +3356,17 @@ const ar: Strings = {
   crashBody: 'بياناتك محفوظة بأمان. أعد تحميل التطبيق – أو صدّر بياناتك أولًا.',
   crashReload: 'إعادة التحميل',
   crashExport: 'تصدير البيانات',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: 'كل شهرين',
+  repeatQuarterly: 'كل ثلاثة أشهر',
+  repeatHalfYearly: 'كل ستة أشهر',
+  repeatHintEvery: 'يعود كل {n} أشهر كبند مفتوح.',
+  repeatEnds: 'ينتهي',
+  repeatNoEnd: 'بلا نهاية',
+  repeatUntil: 'حتى {month}',
+  per2MonthsShort: 'كل شهرين',
+  perQuarterShort: 'كل ربع سنة',
+  perHalfYearShort: 'كل نصف سنة',
 };
 
 /**

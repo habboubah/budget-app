@@ -1,14 +1,15 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, Star, Trash2 } from 'lucide-react';
-import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
+import { CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, Star, Trash2 } from 'lucide-react';
+import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, Interval, MonthKey, Repeat } from '../types';
+import { REPEAT_CHOICES, repeatName } from '../repeatLabel';
 import { NotAReceiptError, addAttachment, attachmentBlob, dropAttachment, readReceipt } from '../receipts';
 import { readImageText } from '../ocr';
 import { FileTooLargeError } from '../limits';
 import { ReceiptViewer } from './ReceiptViewer';
 import { budgetOf } from '../data/defaults';
 import {
-  amountToInput, cleanText, dayLabel, periodRange, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
+  amountToInput, cleanText, dayLabel, isMonthKey, monthLabel, periodRange, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
   normalizeDigits, topCategories, MAIN_ACCOUNT, MAX_ATTACHMENTS, currencySymbol } from '../logic';
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
 import { Strings, fmt } from '../translations';
@@ -92,6 +93,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [name, setName] = useState('');
   const [paid, setPaid] = useState(true);
   const [repeat, setRepeat] = useState<Repeat>('none');
+  // A yearly entry's interval when it isn't twelve months, and a recurring entry's last month (schema 24).
+  const [every, setEvery] = useState<Interval | undefined>(undefined);
+  const [until, setUntil] = useState('');
   const [dueText, setDueText] = useState('');
   const [dateText, setDateText] = useState('');
   const [note, setNote] = useState('');
@@ -172,6 +176,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     // A new entry: paid, once — the way most receipts are.
     setPaid(true);
     setRepeat(mode?.kind === 'new' ? mode.preset?.repeat ?? 'none' : 'none');
+    setEvery(undefined);
+    setUntil('');
     setDueText('');
     setDateText(defaultEntryDate(month));
     setNote('');
@@ -197,6 +203,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setName(e.name);
       setPaid(e.paid);
       setRepeat(e.repeat);
+      setEvery(e.repeat === 'yearly' ? e.every : undefined);
+      setUntil(e.until ?? '');
       setDueText(e.dueDay ? String(e.dueDay) : '');
       setDateText(e.date ?? '');
       setNote(e.note ?? '');
@@ -318,6 +326,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setNameTyped(false);
     setAllSuggestions(false);
     setRepeat(f.repeat ?? 'none');
+    setEvery(undefined);
     setAmountText(f.amount !== undefined ? amountToInput(f.amount, t.locale) : '');
     setShowError(false);
     requestAnimationFrame(() => {
@@ -336,6 +345,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       amount,
       paid,
       repeat,
+      // Always said, so an edit can take the interval or the end off again (schema 24).
+      every: repeat === 'yearly' ? every : undefined,
+      until: repeat !== 'none' && isMonthKey(until) && until >= month ? until : undefined,
     };
     if (due !== undefined) d.dueDay = due;
     if (dateText) d.date = dateText;
@@ -422,11 +434,13 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const title = editing ? t.editEntry : income ? t.newIncome : t.newExpense;
   const dateLabel = !dateText ? t.dateNone : dateText === isoDay() ? t.dateToday : dayLabel(dateText, t.locale);
   const statusLabel = paid ? (income ? t.statusReceived : t.statusPaid) : (income ? t.statusExpected : t.statusOpen);
-  const repeats: { value: Repeat; label: string; sub: string }[] = [
-    { value: 'none', label: t.repeatNone, sub: t.repeatHintNone },
-    { value: 'monthly', label: t.repeatMonthly, sub: t.repeatHintMonthly },
-    { value: 'yearly', label: t.repeatYearly, sub: t.repeatHintYearly },
-  ];
+  const repeats = REPEAT_CHOICES.map(c => ({
+    ...c,
+    label: repeatName(t, c),
+    sub: c.repeat === 'none' ? t.repeatHintNone : c.repeat === 'monthly' ? t.repeatHintMonthly : c.every ? fmt(t.repeatHintEvery, { n: c.every }) : t.repeatHintYearly,
+  }));
+  const repeatLabel = repeatName(t, { repeat, every });
+  const untilLabel = isMonthKey(until) ? fmt(t.repeatUntil, { month: monthLabel(until, t.locale) }) : t.repeatNoEnd;
 
   return (
     <Sheet open={!!mode} title={title} closeLabel={t.cancel} onClose={onClose}
@@ -688,14 +702,30 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           <button
             type="button"
             aria-haspopup="menu"
-            aria-label={`${t.repeat}: ${repeats.find(r => r.value === repeat)!.label}`}
+            aria-label={`${t.repeat}: ${repeatLabel}`}
             onMouseDown={e => e.preventDefault()}
             onClick={e => { tapLight(); setRepeatAt(e.currentTarget); }}
             className={`${PILL} focus-visible:ring-focus`}
           >
             <RepeatIcon className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
-            <span aria-hidden="true">{repeats.find(r => r.value === repeat)!.label}</span>
+            <span aria-hidden="true">{repeatLabel}</span>
           </button>
+          {/* A recurring entry may end: the last month it comes back in (an instalment plan, a contract that runs out). */}
+          {repeat !== 'none' && (
+            <label className={`${PILL} focus-within:ring-focus`}>
+              <CalendarOff className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+              <span aria-hidden="true">{untilLabel}</span>
+              <input
+                type="month"
+                value={until}
+                min={month}
+                onChange={e => setUntil(e.target.value)}
+                onClick={e => { try { e.currentTarget.showPicker?.(); } catch { /* not allowed here: the tap still focuses it */ } }}
+                aria-label={`${t.repeatEnds}: ${untilLabel}`}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </label>
+          )}
           {accounts && (() => {
             const a = accounts.find(x => x.id === accountId) ?? accounts[0];
             return (
@@ -766,7 +796,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           anchor={repeatAt}
           label={t.repeat}
           groups={[repeats.map(r => ({
-            key: r.value, label: r.label, sub: r.sub, icon: r.value === repeat ? Check : undefined, onSelect: () => setRepeat(r.value),
+            key: `${r.repeat}${r.every ?? ''}`, label: r.label, sub: r.sub,
+            icon: r.repeat === repeat && (r.repeat !== 'yearly' || r.every === every) ? Check : undefined,
+            onSelect: () => { setRepeat(r.repeat); setEvery(r.every); },
           }))]}
           onClose={() => setRepeatAt(null)}
         />

@@ -1,5 +1,5 @@
 import {
-  ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
+  ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, INTERVALS, Interval, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -22,8 +22,10 @@ import { isSupportedCurrency } from './currency';
  *  21: debts and loans (`AppData.debts`, `Entry.debtId`, plan 31) — optional, unset = none.
  *  22: receipts (`Entry.files`, plan 27) — optional; a backup may carry the files themselves (`files`).
  *  23: `AppData.monthStart` (plan 32: months from payday) — optional, unset = the 1st; with it an
- *      entry's `month` is the period its date falls in. */
-export const SCHEMA_VERSION = 23;
+ *      entry's `month` is the period its date falls in.
+ *  24: `Entry.every` (a yearly entry that comes back every 2, 3 or 6 months) and
+ *      `Entry.until` (a recurring entry's last month) — optional, unset = yearly / no end. */
+export const SCHEMA_VERSION = 24;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1070,6 +1072,36 @@ export function accountTotals(data: AppData, month: MonthKey): { accounts: Accou
 
 /* -------------------------------------------------------------- carry-over */
 
+/** How many months lie between a recurring entry and its next copy: 1, 12 — or 2, 3, 6 for a yearly entry with `every` (schema 24). 0 = it doesn't repeat. */
+export function intervalOf(e: Pick<Entry, 'repeat' | 'every'>): number {
+  return e.repeat === 'none' ? 0 : e.repeat === 'monthly' ? 1 : e.every ?? 12;
+}
+
+/** The series has run out by `key`: its last month (`until`) lies before it. */
+export const seriesEnded = (e: Pick<Entry, 'until'>, key: MonthKey): boolean => !!e.until && key > e.until;
+
+/** Whether a recurring entry comes back in the later month `key`: every month, or a whole number of its intervals on — and not past its end. */
+export function comesBackIn(e: Pick<Entry, 'repeat' | 'every' | 'until' | 'month'>, key: MonthKey): boolean {
+  const n = intervalOf(e);
+  if (!n || key <= e.month || seriesEnded(e, key)) return false;
+  return n === 1 || e.repeat === 'yearly' && (e.every ? monthsBetween(e.month, key) % n === 0 : key === addMonths(e.month, 12));
+}
+
+/**
+ * The newest entry of every `yearly` series (the ones outside the monthly
+ * run: yearly, half-yearly, quarterly, every two months) — what a forecast
+ * projects from. One pass; ask `comesBackIn(entry, key)` for a month ahead.
+ */
+export function latestPeriodic(entries: readonly Entry[]): Entry[] {
+  const latest = new Map<string, Entry>();
+  for (const e of entries) {
+    if (e.transfer || e.repeat !== 'yearly') continue;
+    const have = latest.get(e.seriesId);
+    if (!have || e.month > have.month || (e.month === have.month && e.createdAt > have.createdAt)) latest.set(e.seriesId, e);
+  }
+  return [...latest.values()];
+}
+
 /**
  * What starting `key` would carry in: every monthly entry of the last started
  * month before it, every yearly entry of the same month a year earlier —
@@ -1078,12 +1110,14 @@ export function accountTotals(data: AppData, month: MonthKey): { accounts: Accou
 export function carryCandidates(data: AppData, key: MonthKey): Entry[] {
   const present = new Set(data.entries.filter(e => e.month === key).map(e => e.seriesId));
   const prev = previousStarted(data.months, key);
-  const yearAgo = addMonths(key, -12);
+  // A yearly entry of the same month a year earlier — a quarterly one three months earlier, and so on.
+  const back = new Map<number, MonthKey>();
+  const ago = (n: number) => back.get(n) ?? (back.set(n, addMonths(key, -n)), back.get(n)!);
   const out: Entry[] = [];
   const seen = new Set<string>();
   for (const e of data.entries) {
-    const take = (e.month === prev && e.repeat === 'monthly') || (e.month === yearAgo && e.repeat === 'yearly');
-    if (!take || present.has(e.seriesId) || seen.has(e.seriesId)) continue;
+    const take = (e.month === prev && e.repeat === 'monthly') || (e.repeat === 'yearly' && e.month === ago(intervalOf(e)));
+    if (!take || seriesEnded(e, key) || present.has(e.seriesId) || seen.has(e.seriesId)) continue;
     seen.add(e.seriesId);
     out.push(e);
   }
@@ -1101,7 +1135,7 @@ export function laterCopies(data: AppData, entry: Entry, now: number, newId: () 
   if (entry.repeat === 'none') return [];
   const targets = data.months
     .map(m => m.key)
-    .filter(k => (entry.repeat === 'monthly' ? k > entry.month : k === addMonths(entry.month, 12)))
+    .filter(k => comesBackIn(entry, k))
     .filter(k => !data.entries.some(e => e.month === k && e.seriesId === entry.seriesId));
   return targets.flatMap((k, i) => carryOver([entry], k, now + i, newId));
 }
@@ -1112,7 +1146,7 @@ export function laterTransferCopies(data: AppData, pair: Entry[], now: number, n
   if (!first || first.repeat === 'none') return [];
   const targets = data.months
     .map(m => m.key)
-    .filter(k => (first.repeat === 'monthly' ? k > first.month : k === addMonths(first.month, 12)))
+    .filter(k => comesBackIn(first, k))
     .filter(k => !data.entries.some(e => e.month === k && e.seriesId === first.seriesId));
   return targets.flatMap((k, i) => carryOver(pair, k, now + i * pair.length, newId));
 }
@@ -1133,6 +1167,8 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
       seriesId: e.seriesId,
       createdAt: now + i,
     };
+    if (e.repeat === 'yearly' && e.every) copy.every = e.every;
+    if (e.until) copy.until = e.until;
     if (e.dueDay !== undefined) copy.dueDay = e.dueDay;
     // The same day of the new month (rent on the 1st stays on the 1st).
     if (e.date) copy.date = dayInMonth(key, Number(e.date.slice(8, 10)));
@@ -1568,6 +1604,9 @@ function normalizeEntry(v: unknown, start = 1): Entry | null {
     createdAt: typeof v.createdAt === 'number' && Number.isFinite(v.createdAt) ? v.createdAt : 0,
   };
   if (due !== undefined) e.dueDay = due;
+  if (e.repeat === 'yearly' && (INTERVALS as readonly unknown[]).includes(v.every)) e.every = v.every as Interval;
+  // A last month only on a recurring entry, and never before the entry itself.
+  if (e.repeat !== 'none' && isMonthKey(v.until) && v.until >= e.month) e.until = v.until;
   // A date is always inside its month — the period, when months start on another day (plan 32).
   if (isIsoDay(v.date) && periodOf(v.date, start) === e.month) e.date = v.date;
   const note = cleanText(str(v.note) ?? '', 200);
@@ -2083,6 +2122,8 @@ export interface CsvLabels {
   paid: string;
   open: string;
   repeat: Record<Repeat, string>;
+  /** What the repeat cell says for a yearly entry with another interval (2, 3, 6 months; schema 24). */
+  every?: Record<number, string>;
   /** The header for the appended currency column ("Währung"). */
   currency: string;
   /** The header for the appended tags column ("Tags", plan 26). */
@@ -2126,7 +2167,7 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
     lines.push([
       cell(e.month), textCell(e.transfer ? labels.transfer : displayName(c?.names, lang)),
       cell(e.transfer ? labels.transfer : kind === 'income' ? labels.income : labels.expense),
-      textCell(e.name), cell(value), cell(e.paid ? labels.paid : labels.open), cell(labels.repeat[e.repeat]),
+      textCell(e.name), cell(value), cell(e.paid ? labels.paid : labels.open), cell((e.repeat === 'yearly' && e.every && labels.every?.[e.every]) || labels.repeat[e.repeat]),
       cell(e.dueDay ? String(e.dueDay) : ''), textCell(e.note ?? ''),
       cell(e.date ? `${e.date.slice(8, 10)}.${e.date.slice(5, 7)}.${e.date.slice(0, 4)}` : ''),
       cell(activeCurrency), // the book's currency, appended so the old column order is kept

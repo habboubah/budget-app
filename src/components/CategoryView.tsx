@@ -1,3 +1,4 @@
+import { perShort } from '../repeatLabel';
 import { CSSProperties, ReactNode, useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Category, Entry, MonthKey } from '../types';
@@ -207,7 +208,7 @@ export function CategoryView({ book, categoryId, months, language, t, onBack, on
                 {d.fixed.map(e => (
                   <li key={e.seriesId} className="min-h-tap px-4 py-2.5 flex items-center gap-3">
                     <span className="min-w-0 flex-1 text-body text-fg wrap-compound">{e.name}</span>
-                    <span className="shrink-0 text-caption text-fg-mute">{e.repeat === 'monthly' ? t.perMonthShort : t.perYearShort}</span>
+                    <span className="shrink-0 text-caption text-fg-mute">{perShort(t, e)}</span>
                     <span className="shrink-0 rounded-num text-body font-semibold text-fg">{money(e.amount)}</span>
                   </li>
                 ))}

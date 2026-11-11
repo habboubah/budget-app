@@ -1096,6 +1096,17 @@ const nl: Strings = {
   crashBody: 'Je gegevens zijn veilig bewaard. Laad de app opnieuw – of exporteer eerst je gegevens.',
   crashReload: 'Opnieuw laden',
   crashExport: 'Gegevens exporteren',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: 'Elke 2 maanden',
+  repeatQuarterly: 'Per kwartaal',
+  repeatHalfYearly: 'Halfjaarlijks',
+  repeatHintEvery: 'Komt elke {n} maanden terug als open.',
+  repeatEnds: 'Eindigt',
+  repeatNoEnd: 'Geen einde',
+  repeatUntil: 't/m {month}',
+  per2MonthsShort: 'per 2 mnd.',
+  perQuarterShort: 'per kwartaal',
+  perHalfYearShort: 'per halfjaar',
 };
 
 export default nl;

@@ -1097,6 +1097,17 @@ const nb: Strings = {
   crashBody: 'Dataene dine er trygt lagret. Last inn appen på nytt – eller eksporter dataene dine først.',
   crashReload: 'Last inn på nytt',
   crashExport: 'Eksporter data',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: 'Annenhver måned',
+  repeatQuarterly: 'Kvartalsvis',
+  repeatHalfYearly: 'Halvårlig',
+  repeatHintEvery: 'Kommer tilbake hver {n}. måned som åpen.',
+  repeatEnds: 'Slutter',
+  repeatNoEnd: 'Uten slutt',
+  repeatUntil: 'til {month}',
+  per2MonthsShort: 'annenhver md.',
+  perQuarterShort: 'per kvartal',
+  perHalfYearShort: 'per halvår',
 };
 
 export default nb;

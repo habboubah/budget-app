@@ -1097,6 +1097,17 @@ const pt: Strings = {
   crashBody: 'Os teus dados estão guardados em segurança. Recarrega a app – ou exporta primeiro os teus dados.',
   crashReload: 'Recarregar',
   crashExport: 'Exportar dados',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: 'A cada 2 meses',
+  repeatQuarterly: 'Trimestral',
+  repeatHalfYearly: 'Semestral',
+  repeatHintEvery: 'Volta a cada {n} meses, como pendente.',
+  repeatEnds: 'Termina',
+  repeatNoEnd: 'Sem fim',
+  repeatUntil: 'até {month}',
+  per2MonthsShort: 'a cada 2 meses',
+  perQuarterShort: 'por trimestre',
+  perHalfYearShort: 'por semestre',
 };
 
 export default pt;

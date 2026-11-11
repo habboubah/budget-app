@@ -1,3 +1,4 @@
+import { perShort } from '../repeatLabel';
 import { CSSProperties } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Category } from '../types';
@@ -42,9 +43,9 @@ export function ContractRow({ item, category, t, onOpen }: {
   // A new price says what it does in a year too (P3): +12 € a month is +144 € a year.
   const change = item.change && fmt(t.contractChangeYear, {
     amount: formatMoney(item.change.by, t.locale, 'always'), month: monthLabel(item.change.since, t.locale, 'month'),
-    yearly: formatMoneyWhole(item.repeat === 'monthly' ? item.change.by * 12 : item.change.by, t.locale, 'exceptZero'),
+    yearly: formatMoneyWhole(item.repeat === 'monthly' ? item.change.by * 12 : Math.round(item.change.by * 12 / (item.every ?? 12)), t.locale, 'exceptZero'),
   });
-  const per = item.repeat === 'monthly' ? t.perMonthShort : t.perYearShort;
+  const per = perShort(t, item);
   return (
     <button
       type="button"

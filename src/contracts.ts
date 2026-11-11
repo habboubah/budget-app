@@ -1,5 +1,5 @@
 import { AppData, Contract, Entry, MonthKey } from './types';
-import { addMonths, dayInCalendarMonth, dayInMonth, isoDay } from './logic';
+import { addMonths, dayInCalendarMonth, dayInMonth, intervalOf, isoDay } from './logic';
 
 /*
  * "Abos & Verträge": the recurring costs grown into a list of contracts.
@@ -15,6 +15,8 @@ export interface ContractItem {
   name: string;
   categoryId: string;
   repeat: 'monthly' | 'yearly';
+  /** A yearly one's interval in months when it isn't twelve (schema 24). */
+  every?: number;
   /** What one payment costs now. */
   amount: number;
   monthly: number;
@@ -81,7 +83,8 @@ export function contractItems(data: AppData, month: MonthKey, today = new Date()
     if (latest.repeat === 'none') continue;
     if (latest.repeat === 'monthly' ? latest.month !== month : latest.month < from) continue;
     const repeat = latest.repeat;
-    const nextMonth = latest.paid ? addMonths(latest.month, repeat === 'monthly' ? 1 : 12) : latest.month;
+    const every = intervalOf(latest);
+    const nextMonth = latest.paid ? addMonths(latest.month, every) : latest.month;
     const day = dayOf(latest);
     let change: ContractItem['change'];
     for (let i = list.length - 1; i > 0; i--) {
@@ -93,8 +96,9 @@ export function contractItems(data: AppData, month: MonthKey, today = new Date()
     const deadline = contract ? nextDeadline(contract, today) : null;
     items.push({
       seriesId, name: latest.name, categoryId: latest.categoryId, repeat, amount: latest.amount,
-      monthly: repeat === 'monthly' ? latest.amount : Math.round(latest.amount / 12),
-      yearly: repeat === 'monthly' ? latest.amount * 12 : latest.amount,
+      ...(latest.repeat === 'yearly' && latest.every ? { every: latest.every } : {}),
+      monthly: Math.round(latest.amount / every),
+      yearly: Math.round(latest.amount * 12 / every),
       next: { month: nextMonth, open: !latest.paid, ...(day ? { date: dayInMonth(nextMonth, day) } : {}) },
       ...(change ? { change } : {}),
       ...(contract ? { contract } : {}),

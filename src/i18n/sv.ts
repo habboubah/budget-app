@@ -1097,6 +1097,17 @@ const sv: Strings = {
   crashBody: 'Dina data är säkert sparade. Ladda om appen – eller exportera dina data först.',
   crashReload: 'Ladda om',
   crashExport: 'Exportera data',
+  // Repeat intervals and an end (schema 24)
+  repeatEvery2: 'Varannan månad',
+  repeatQuarterly: 'Kvartalsvis',
+  repeatHalfYearly: 'Halvårsvis',
+  repeatHintEvery: 'Kommer tillbaka var {n}:e månad som obetald.',
+  repeatEnds: 'Slutar',
+  repeatNoEnd: 'Utan slut',
+  repeatUntil: 'till {month}',
+  per2MonthsShort: 'varannan mån.',
+  perQuarterShort: 'per kvartal',
+  perHalfYearShort: 'per halvår',
 };
 
 export default sv;
