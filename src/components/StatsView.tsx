@@ -1,5 +1,5 @@
 import { CSSProperties, useMemo, useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, ChevronRight, X } from 'lucide-react';
+import { ArrowDownLeft, ArrowDownRight, ArrowUpRight, ChevronRight, PiggyBank, X } from 'lucide-react';
 import { Category, MonthKey } from '../types';
 import {
   NameTotal, displayName, formatMoney, formatMoneyApprox, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding,
@@ -116,7 +116,7 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
       <section className="space-y-5" aria-labelledby="history-title">
         <div className="px-1">
           <p className="eyebrow text-fg-mute">{monthSpanLabel(keys, t.locale)}</p>
-          <h2 id="history-title" className="display text-title2 font-bold text-fg wrap-compound">{t.historySection}</h2>
+          <h2 id="history-title" className="display text-title2 font-extrabold text-fg wrap-compound tracking-[-0.02em]">{t.historySection}</h2>
         </div>
         <div className="flex items-center gap-2">
           {/* Five segments beside the year: short labels ("3 M"), read out in full. */}
@@ -247,9 +247,9 @@ function Averages({ done, running, t, onExplain }: { done: MonthPoint[]; running
   const span = monthSpanLabel(done.map(p => p.key), t.locale);
   const approx = (c: number) => formatMoneyApprox(c, t.locale);
   const items = [
-    { label: t.kpiIncome, value: approx(s.averageIncome), tone: 'text-fg' },
-    { label: t.kpiExpenses, value: approx(s.averageExpense), tone: 'text-fg' },
-    { label: t.kpiSaved, value: `${s.averageSaved > 0 ? '+' : ''}${approx(s.averageSaved)}`, tone: s.averageSaved < 0 ? 'text-neg' : 'text-pos' },
+    { label: t.kpiIncome, value: approx(s.averageIncome), tone: 'text-fg', icon: ArrowDownLeft, chip: 'bg-pos-dim text-pos' },
+    { label: t.kpiExpenses, value: approx(s.averageExpense), tone: 'text-fg', icon: ArrowUpRight, chip: 'bg-surface-2 text-fg-mute' },
+    { label: t.kpiSaved, value: `${s.averageSaved > 0 ? '+' : ''}${approx(s.averageSaved)}`, tone: s.averageSaved < 0 ? 'text-neg' : 'text-pos', icon: PiggyBank, chip: 'bg-accent-dim text-accent' },
   ];
   const explain = (): Explain => ({
     title: t.explainKpi,
@@ -266,9 +266,15 @@ function Averages({ done, running, t, onExplain }: { done: MonthPoint[]; running
       <dl className="flex flex-wrap gap-2">
         {items.map(i => (
           // The amounts line up at the bottom even where a label wraps.
-          <div key={i.label} className="flex-1 basis-[6.5rem] min-w-0 flex flex-col justify-between rounded-md bg-surface card-edge px-3 py-2.5">
-            <dt className="text-caption text-fg-mute wrap-compound">{i.label}</dt>
-            <dd className={`mt-0.5 rounded-num text-heading font-semibold ${i.tone}`}>{i.value}</dd>
+          <div key={i.label} className="flex-1 basis-[6.5rem] flex flex-col justify-between rounded-md bg-surface card-edge px-3.5 pt-3 pb-3">
+            <dt className="text-caption text-fg-mute wrap-compound">
+              {/* A small sign of its own for each figure: in, out, kept. */}
+              <span className={`mb-2 w-7 h-7 rounded-full flex items-center justify-center ${i.chip}`} aria-hidden="true">
+                <i.icon className="w-4 h-4" strokeWidth={2.4} />
+              </span>
+              {i.label}
+            </dt>
+            <dd className={`mt-0.5 rounded-num text-heading font-bold ${i.tone}`}>{i.value}</dd>
           </div>
         ))}
       </dl>
@@ -418,7 +424,7 @@ function WhereRowButton({ row: r, scale, language, t, onOpen }: {
           <ChevronRight className="w-4 h-4 shrink-0 self-center text-fg-faint rtl:rotate-180" strokeWidth={2.4} />
         </span>
         <span className="relative mt-1.5 block h-3" aria-hidden="true">
-          <span className="absolute inset-y-0 start-0 rounded-e-[4px] bg-hue-chart" style={{ width: `${Math.max(1, (r.average / scale) * 100)}%` }} />
+          <span className="bar-grow absolute inset-y-0 start-0 rounded-full bg-hue-chart" style={{ width: `${Math.max(1, (r.average / scale) * 100)}%` }} />
           {!!c.limit && <span className="absolute -top-0.5 -bottom-0.5 w-[2px] rounded-full bg-fg" style={{ insetInlineStart: `calc(${(c.limit / scale) * 100}% - 1px)` }} />}
         </span>
       </button>

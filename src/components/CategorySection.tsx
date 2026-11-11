@@ -178,7 +178,8 @@ export function CategorySection({
         incoming ? 'outline-2 outline-accent -outline-offset-2' : 'outline-transparent'}`}
       aria-label={name}
     >
-      <h2 className="flex items-center">
+      {/* The header stands in the category's own light. */}
+      <h2 className="flex items-center hue-wash">
         <HeaderShell
           search={!!search}
           onClick={() => { tapLight(); onCollapse(); }}
@@ -186,18 +187,18 @@ export function CategorySection({
           aria-controls={bodyId}
           title={collapsed ? t.expand : t.collapse}
         >
-          <Picture emoji={category.emoji} name={name} size="sm" />
+          <Picture emoji={category.emoji} name={name} size="sm" plain />
           <span className="min-w-0 flex-1">
             {/* The name and what is paid, then the bar, then what is still to come.
                 (No amount on a search result: the hits are summed above the cards.) */}
             {/* The amount wraps under the name once the name would get narrower
                 than its basis (in rem: large text stacks them, as iOS lists do). */}
             <span className="flex flex-wrap items-baseline gap-x-2">
-              <span className="min-w-0 flex-1 basis-[7rem] text-body font-semibold text-fg wrap-compound">{name}</span>
+              <span className="min-w-0 flex-1 basis-[7rem] display text-body font-bold text-fg wrap-compound">{name}</span>
               {!search && (
                 // The margin on a wrapper: rounded-num turns its own box left to right (Arabic).
                 <span className="ms-auto shrink-0">
-                  <span className={`block rounded-num text-body font-semibold ${income && paid ? 'text-pos' : paid ? 'text-fg' : 'text-fg-mute'}`}>
+                  <span className={`block rounded-num text-body font-bold ${income && paid ? 'text-pos' : paid ? 'text-fg' : 'text-fg-mute'}`}>
                     {money(paid)}
                   </span>
                 </span>
@@ -205,12 +206,15 @@ export function CategorySection({
             </span>
             {!search && !budget && <>
               {/* How much of it is paid, in the category's colour. The amounts say it in numbers. */}
-              <span aria-hidden="true" className="mt-2 block h-[5px] rounded-full bg-surface-2 overflow-hidden">
+              <span aria-hidden="true" className="mt-2 block h-[6px] rounded-full bg-fg/10 overflow-hidden">
+                {/* Fills from empty as the card comes in, then follows each tick: a
+                    full-width bar slid in under the track's round mask — a
+                    transform, so a month of cards lays nothing out again. */}
                 <motion.span
-                  className="block h-full rounded-full bg-hue-chart"
-                  initial={false}
-                  animate={{ width: `${total > 0 ? Math.max(0, Math.min(1, paid / total)) * 100 : 0}%` }}
-                  transition={{ type: 'spring', duration: 0.5, bounce: 0 }}
+                  className="block h-full w-full rounded-full bg-hue-chart"
+                  initial={{ x: `${-100 * (t.dir === 'rtl' ? -1 : 1)}%` }}
+                  animate={{ x: `${-(1 - (total > 0 ? Math.max(0, Math.min(1, paid / total)) : 0)) * 100 * (t.dir === 'rtl' ? -1 : 1)}%` }}
+                  transition={{ type: 'spring', duration: 0.7, bounce: 0 }}
                 />
               </span>
               <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-caption">
@@ -279,7 +283,7 @@ export function CategorySection({
               <p className="hairline-t px-4 py-3 text-label text-fg-mute">{t.nothingOpen}</p>
             )}
             {rows.length > 0 && (
-              <ul className="hairline-t divide-hairline-inset" style={{ '--sep': '52px' } as React.CSSProperties}>
+              <ul className="pb-1">
                 <AnimatePresence initial={false}>{rows}</AnimatePresence>
               </ul>
             )}
@@ -288,7 +292,7 @@ export function CategorySection({
               <button
                 type="button"
                 onClick={() => { tapLight(); onOpenOnly(); }}
-                className="w-full min-h-tap hairline-t ps-[52px] pe-4 py-2 flex flex-wrap items-center gap-x-1.5 text-caption text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+                className="w-full min-h-tap ps-[68px] pe-4 py-2 flex flex-wrap items-center gap-x-1.5 text-caption text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
               >
                 <span className="text-fg-mute tabular-nums">{plural(hidden, t.hiddenOne, t.hiddenMany)}</span>
                 <span className="text-fg-mute" aria-hidden="true">·</span>
@@ -300,12 +304,12 @@ export function CategorySection({
               type="button"
               onClick={() => { tapLight(); onAdd(); }}
               aria-label={fmt(t.addTo, { name })}
-              className="w-full min-h-[48px] ps-[14px] pe-4 flex items-center gap-3 hairline-t text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus"
+              className={`w-full min-h-[52px] ps-[21px] pe-4 flex items-center gap-[21px] text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus`}
             >
-              <span className="w-6 h-6 rounded-full bg-accent-fill text-accent-fill-ink inline-flex items-center justify-center shrink-0" aria-hidden="true">
-                <Plus className="w-4 h-4" strokeWidth={3} />
+              <span className="w-[26px] h-[26px] rounded-full bg-accent-dim text-accent inline-flex items-center justify-center shrink-0" aria-hidden="true">
+                <Plus className="w-4 h-4" strokeWidth={2.8} />
               </span>
-              <span className="text-body">{all.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
+              <span className="min-w-0 text-body font-medium text-start wrap-prose">{all.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
             </button>}
           </motion.div>
       )}
@@ -318,7 +322,7 @@ export function CategorySection({
  * fold — the same layout, not interactive.
  */
 function HeaderShell({ search, children, ...button }: { search: boolean; children: React.ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const layout = 'flex-1 min-w-0 flex items-center gap-2.5 ps-3.5 pe-2 py-3 text-start';
+  const layout = 'flex-1 min-w-0 flex items-center gap-3 ps-4 pe-2 pt-4 pb-3.5 text-start';
   if (search) return <div className={layout}>{children}</div>;
   return (
     <button type="button" {...button} className={`${layout} active:bg-surface-2 transition-colors focus-visible:ring-focus`}>
@@ -373,7 +377,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;
 
   return (
-    <div className={`flex items-stretch min-h-[56px] transition-opacity duration-150 ${lifted ? 'opacity-35' : ''}`}>
+    <div className={`flex items-stretch min-h-[54px] transition-opacity duration-150 ${lifted ? 'opacity-35' : ''}`}>
       <button
         type="button"
         role="checkbox"
@@ -381,12 +385,12 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
         aria-label={toggleLabel}
         title={toggleLabel}
         onClick={onToggle}
-        className="w-[52px] shrink-0 flex items-center justify-center active:bg-surface-2 transition-colors focus-visible:ring-focus"
+        className="w-[68px] shrink-0 flex items-center justify-center active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
-        {/* Ticked in the category's colour, with a small pop as it fills. */}
+        {/* Ticked in the category's colour, with a small pop as it fills and a ring that spreads out of it. */}
         <motion.span
-          className={`w-[24px] h-[24px] rounded-full inline-flex items-center justify-center transition-colors duration-200 ${
-            e.paid ? 'bg-hue-chart text-chart-label' : `border-[1.75px] ${overdue ? 'border-neg' : 'border-fg-faint'}`}`}
+          className={`relative w-[26px] h-[26px] rounded-full inline-flex items-center justify-center transition-colors duration-200 ${
+            e.paid ? 'bg-hue-chart text-chart-label' : `border-2 ${overdue ? 'border-neg' : 'border-fg-faint'}`}`}
           initial={false}
           animate={{ scale: e.paid ? [1, 1.22, 1] : 1 }}
           transition={{ duration: 0.38, ease: [0.23, 1, 0.32, 1] }}
@@ -395,6 +399,15 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
           <AnimatePresence initial={false}>
             {e.paid && (
               <motion.span
+                key="burst"
+                className="absolute inset-0 rounded-full bg-hue-chart"
+                initial={{ scale: 1, opacity: 0.45 }} animate={{ scale: 2.3, opacity: 0 }} exit={{ opacity: 0, transition: { duration: 0 } }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              />
+            )}
+            {e.paid && (
+              <motion.span
+                key="check"
                 initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.4, opacity: 0 }}
                 transition={{ type: 'spring', duration: 0.3, bounce: 0.4 }}
                 className="inline-flex"
@@ -418,7 +431,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
         aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
         aria-label={`${fmt(t.editNamed, { name: e.name })}, ${spoken(formatMoney(e.amount, t.locale), t.amountHidden)}, ${
           e.paid ? (income ? t.receivedState : t.paidState) : overdue ? t.overdue : income ? t.expected : t.open}`}
-        className="flex-1 min-w-0 py-2.5 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
+        className="flex-1 min-w-0 py-2 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         <span className="min-w-0 flex-1">
           <span className="block text-body text-fg wrap-compound"><Highlight text={e.name} query={search} /></span>
@@ -431,7 +444,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
           )}
         </span>
         {/* Open money is grey, like a pending card payment; it turns solid once paid. */}
-        <span className={`shrink-0 text-body font-medium num ${e.paid ? (income ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
+        <span className={`shrink-0 rounded-num text-body font-semibold ${e.paid ? (income ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
           <Highlight text={formatMoney(e.amount, t.locale)} query={search} />
         </span>
       </button>

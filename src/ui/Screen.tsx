@@ -22,6 +22,8 @@ interface Props {
   titleSlot?: React.ReactNode;
   /** Under the large title, scrolling with it — the search field, as on iOS. */
   accessory?: React.ReactNode;
+  /** The screen brings its cards in itself (the month page, keyed by month): no rise of the shell's own. */
+  still?: boolean;
   children: React.ReactNode;
 }
 
@@ -33,7 +35,7 @@ interface Props {
  * (a gradient, never a blur — backdrop-filter over a scrolling list is too
  * expensive in a WebView).
  */
-export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, docked, tabbed, titleSlot, accessory, children }: Props) {
+export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, docked, tabbed, titleSlot, accessory, still, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
   // At the very top the bar is see-through, so the page's accent light shows
   // behind it; once anything scrolls under it, it turns solid (as iOS does).
@@ -52,7 +54,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
           Wider than the column so it never shows an edge (App clips the overflow). */}
       <div
         aria-hidden="true"
-        className={`absolute -z-10 top-0 h-[380px] inset-x-[-50vw] accent-wash pointer-events-none transition-opacity duration-200 ${atTop ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute -z-10 top-0 h-[420px] inset-x-[-50vw] accent-wash pointer-events-none transition-opacity duration-200 ${atTop ? 'opacity-100' : 'opacity-0'}`}
       />
       <header className={`sticky top-0 z-30 safe-top transition-[background-color] duration-200 ${atTop ? 'bg-transparent' : 'bg-bg'}`}>
         {/* Sides size to their content and the title takes what is left, so a
@@ -89,13 +91,14 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
         {leading}
         <div className="min-w-0 flex-1">
           {eyebrow && <p className="eyebrow text-fg-mute mb-0.5">{eyebrow}</p>}
-          {titleSlot ?? <h1 className="display text-title font-bold text-fg wrap-compound tracking-[-0.025em]">{title}</h1>}
+          {titleSlot ?? <h1 className="display text-title font-extrabold text-fg wrap-compound tracking-[-0.03em]">{title}</h1>}
           {subtitle && <div className="text-label text-fg-mute mt-1 wrap-prose">{subtitle}</div>}
         </div>
       </div>
       {accessory && <div className="px-[16px] pb-5">{accessory}</div>}
 
-      <main className="px-[16px] space-y-6">{children}</main>
+      {/* Its cards rise into place one after another as the screen appears (index.css: rise-children). */}
+      <main className={`px-[16px] space-y-6 ${still ? '' : 'rise-children'}`}>{children}</main>
     </div>
   );
 }
@@ -121,7 +124,7 @@ export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger 
   ariaLabel?: string;
   danger?: boolean;
 }) {
-  const sep = { '--sep': leading ? '58px' : '1rem' } as React.CSSProperties;
+  const sep = { '--sep': leading ? '60px' : '1rem' } as React.CSSProperties;
   const body = (
     <>
       {leading}
@@ -132,7 +135,7 @@ export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger 
       {trailing}
     </>
   );
-  const shell = 'relative w-full min-h-[52px] px-[16px] py-2.5 flex items-center gap-[12px]';
+  const shell = 'relative w-full min-h-[56px] px-[16px] py-3 flex items-center gap-[12px]';
   if (!onClick) return <div className={shell} style={sep}>{body}</div>;
   return (
     <button
@@ -157,9 +160,9 @@ export function MenuRow<V extends string>({ label, leading, value, options, onCh
   options: { value: V; label: string }[];
   onChange: (value: V) => void;
 }) {
-  const sep = { '--sep': leading ? '58px' : '1rem' } as React.CSSProperties;
+  const sep = { '--sep': leading ? '60px' : '1rem' } as React.CSSProperties;
   return (
-    <label className="relative w-full min-h-[52px] px-[16px] py-2.5 flex items-center gap-[12px] transition-colors active:bg-surface-2 focus-within:ring-focus" style={sep}>
+    <label className="relative w-full min-h-[56px] px-[16px] py-3 flex items-center gap-[12px] transition-colors active:bg-surface-2 focus-within:ring-focus" style={sep}>
       {leading}
       {/* Side by side while both fit; with large text the choice moves under the label. */}
       <span className="min-w-0 flex-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -202,7 +205,7 @@ export function BarButton({ children, onClick, strong }: { children: React.React
  */
 export function IconTile({ icon: Icon, hue }: { icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string }) {
   return (
-    <span data-hue={hue} aria-hidden="true" className="w-[30px] h-[30px] rounded-[8px] bg-hue-chart text-on-color inline-flex items-center justify-center shrink-0">
+    <span data-hue={hue} aria-hidden="true" className="w-[32px] h-[32px] rounded-[10px] bg-hue-chart text-on-color inline-flex items-center justify-center shrink-0 shadow-[inset_0_1px_0_rgb(255_255_255/0.25)]">
       <Icon className="w-[18px] h-[18px]" strokeWidth={2.2} />
     </span>
   );
@@ -235,10 +238,10 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions }: 
 }) {
   const sep = { '--sep': leading ? '60px' : '1rem' } as React.CSSProperties;
   return (
-    <div className="relative w-full min-h-[52px] flex items-center pe-1" style={sep}>
+    <div className="relative w-full min-h-[56px] flex items-center pe-1" style={sep}>
       <button
         type="button" onClick={() => { tapLight(); onClick(); }} aria-label={ariaLabel}
-        className="flex-1 min-w-0 self-stretch px-[16px] py-2.5 flex items-center gap-[12px] text-start transition-colors active:bg-surface-2 focus-visible:ring-focus"
+        className="flex-1 min-w-0 self-stretch px-[16px] py-3 flex items-center gap-[12px] text-start transition-colors active:bg-surface-2 focus-visible:ring-focus"
       >
         {leading}
         <span className="min-w-0 flex-1">
@@ -260,7 +263,8 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions }: 
 export function Dock({ children }: { children: React.ReactNode }) {
   return createPortal(
     <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none">
-      <div className="mx-auto w-full max-w-xl px-4 pt-8 pb-[calc(1.25rem+env(safe-area-inset-bottom))] dock-fade">
+      {/* Above the tab bar, which stays on every screen: the button used to lie half under it. */}
+      <div className="mx-auto w-full max-w-xl px-4 pt-8 pb-above-tabs dock-fade">
         <div className="pointer-events-auto">{children}</div>
       </div>
     </div>,

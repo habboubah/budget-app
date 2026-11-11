@@ -59,7 +59,16 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
                       transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
                     />
                   )}
-                  <Icon className="relative w-[22px] h-[22px]" strokeWidth={on ? 2.3 : 1.9} />
+                  {/* The chosen tab's symbol lands with a small bounce. */}
+                  <motion.span
+                    key={on ? 'on' : 'off'}
+                    className="relative inline-flex"
+                    initial={on ? { scale: 0.72, y: 2 } : false}
+                    animate={{ scale: 1, y: 0 }}
+                    transition={{ type: 'spring', duration: 0.45, bounce: 0.5 }}
+                  >
+                    <Icon className="w-[22px] h-[22px]" strokeWidth={on ? 2.4 : 1.9} />
+                  </motion.span>
                   {/* Barely grows with large text, as iOS tab labels don't: four labels have ~65 px each. */}
                   <span className={`relative text-[clamp(11px,0.6875rem,12px)] leading-tight truncate max-w-full px-[4px] ${on ? 'font-semibold' : 'font-medium'}`}>{name}</span>
                 </button>
@@ -77,7 +86,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.5, opacity: 0 }}
-                whileTap={{ scale: 0.92 }}
+                whileTap={{ scale: 0.9, rotate: 90 }}
                 transition={{ type: 'spring', duration: 0.35, bounce: 0.25 }}
                 className="pointer-events-auto shrink-0 w-[62px] h-[62px] rounded-full hero hero-glow text-on-hero inline-flex items-center justify-center focus-visible:ring-focus"
               >

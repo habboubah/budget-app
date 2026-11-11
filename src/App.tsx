@@ -1256,7 +1256,7 @@ export default function App() {
       {/* While a pushed screen is swiped away: its parent underneath, sliding
           in from a little behind and coming out of a light shade. */}
       {pushed && swipe.swiping && (
-        <div className="fixed inset-0 overflow-hidden pointer-events-none" aria-hidden="true" inert>
+        <div className="no-rise fixed inset-0 overflow-hidden pointer-events-none" aria-hidden="true" inert>
           <motion.div style={{ x: swipeUnder }}>{screenFor(tab)}</motion.div>
           <motion.div className="absolute inset-0 scrim" style={{ opacity: swipeShade }} />
         </div>
@@ -1267,9 +1267,11 @@ export default function App() {
         // Enter-only: the old screen leaves on the spot and the new one comes
         // in over it. Fixed chrome (sheets, toasts, the tab bar) is portalled
         // to <body>, so this transform can never capture it.
-        initial={nav.current.still ? false : dir === 0 ? { opacity: 0 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={dir === 0 ? { duration: 0.18 } : { duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+        // A tab comes forward out of a slight depth; a pushed screen slides.
+        initial={nav.current.still ? false : dir === 0 ? { opacity: 0, scale: 0.975 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
+        animate={{ x: 0, scale: 1, opacity: 1 }}
+        transition={dir === 0 ? { duration: 0.28, ease: [0.22, 1, 0.36, 1] } : { duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+        style={{ transformOrigin: '50% 30vh' }}
       >
         <motion.div
           style={pushed ? { x: swipe.x } : undefined}

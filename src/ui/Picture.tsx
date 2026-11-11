@@ -6,13 +6,13 @@ type Size = 'xs' | 'sm' | 'md' | 'lg';
 // outgrows its tile when the user enlarges text.
 const box: Record<Size, string> = {
   xs: 'w-8 h-8 rounded-full',
-  sm: 'w-9 h-9 rounded-[10px]',
+  sm: 'w-10 h-10 rounded-[12px]',
   md: 'w-11 h-11 rounded-sm',
   lg: 'w-[60px] h-[60px] rounded-md',
 };
 const glyph: Record<Size, string> = {
   xs: 'text-[17px]',
-  sm: 'text-[20px]',
+  sm: 'text-[21px]',
   md: 'text-[24px]',
   lg: 'text-[34px]',
 };
@@ -29,15 +29,17 @@ const initialSize: Record<Size, string> = {
  *
  * Decorative: the name always sits next to it, so it is hidden from VoiceOver.
  */
-export function Picture({ emoji, name, size = 'md', hue, className = '' }: {
+export function Picture({ emoji, name, size = 'md', hue, plain, className = '' }: {
   emoji?: string;
   name: string;
   size?: Size;
   /** Paint the tile in this hue; otherwise it inherits from the nearest `data-hue`. */
   hue?: Hue;
+  /** On a surface already in the category's colour (hue-wash, hue-tint): a white tile that stands out of it. */
+  plain?: boolean;
   className?: string;
 }) {
-  const shell = `${box[size]} shrink-0 inline-flex items-center justify-center overflow-hidden select-none bg-hue-bg ${className}`;
+  const shell = `${box[size]} shrink-0 inline-flex items-center justify-center overflow-hidden select-none ${plain ? 'bg-surface shadow-e1' : 'bg-hue-bg'} ${className}`;
   if (emoji) {
     return (
       <span data-hue={hue} className={shell} aria-hidden="true">

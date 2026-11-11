@@ -186,6 +186,30 @@ for (const theme of ['light', 'dark']) {
     hues.map(h => [`tick on ${h}`, c('--t-chart-label'), c(`--t-${h}-chart`), ICON]));
 }
 
+// A category's colour as light on its card (hue-wash at its top, hue-tint):
+// the text that can stand on it, against every hue at its strongest.
+for (const theme of ['light', 'dark']) {
+  for (const [name, accent] of accents) {
+    const scope = scopeOf(theme, accent);
+    audit(`${name} · ${theme} hue wash`, scope, c => {
+      const alpha = parseFloat(resolve('var(--t-hue-wash)', scope));
+      return hues.flatMap(h => {
+        const tint = c(`--t-${h}-bg`);
+        const card = over([tint[0], tint[1], tint[2], alpha], c('--t-surface'));
+        return [
+          [`text on ${h} wash`, c('--t-fg'), card, TEXT],
+          [`mute text on ${h} wash`, c('--t-fg-mute'), card, TEXT],
+          [`income on ${h} wash`, c('--t-pos'), card, TEXT],
+          [`open on ${h} wash`, c('--t-warn'), card, TEXT],
+          [`overdue on ${h} wash`, c('--t-neg'), card, TEXT],
+          [`accent on ${h} wash`, c('--t-accent'), card, TEXT],
+          [`bar on ${h} wash`, c(`--t-${h}-chart`), card, ICON],
+        ];
+      });
+    });
+  }
+}
+
 /* --------------------------------------------------------------- report */
 
 const pad = (s, n) => String(s).padEnd(n);

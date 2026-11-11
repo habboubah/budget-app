@@ -450,8 +450,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             })}
           </div>
         )}
-        {/* Amount — the one thing every entry needs, so it comes first. */}
-        <div className="text-center">
+        {/* Amount — the one thing every entry needs, so it comes first: on a
+            panel in the chosen category's colour, which follows the category. */}
+        <div data-hue={category?.hue} className="-mt-2 text-center rounded-md hue-tint px-3 pt-2 pb-2">
           <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
           {/* Written the way amounts are shown everywhere: "−45,12 €", left to right. */}
           <div dir="ltr" className="mt-0.5 flex items-baseline justify-center gap-1.5">
@@ -477,7 +478,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               aria-invalid={showError && amount === null}
               aria-describedby={showError && amount === null ? `${amountId}-err` : undefined}
               style={{ width: `${Math.max(4, amountText.length || 4) + 0.6}ch` }}
-              className="min-w-0 max-w-full bg-transparent rounded-num text-[clamp(40px,13vw,52px)] leading-[1.15] font-bold text-center text-fg placeholder:text-fg-faint/60 caret-accent outline-none"
+              className="min-w-0 max-w-full bg-transparent rounded-num text-[clamp(40px,13vw,52px)] leading-[1.15] font-extrabold tracking-[-0.02em] text-center text-fg placeholder:text-fg-faint/60 caret-accent outline-none"
             />
             <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">{currencySymbol()}</span>
           </div>

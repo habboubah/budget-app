@@ -753,3 +753,71 @@ category for every month (no rollover), reminders without amounts by default.
   paid rent is entered and the opening derived (2.284,56 €), *Fertig* → tips,
   ticking afterwards moves the balance, tips gone for good, *Später*,
   *Ändern* and a negative balance, an upgrade from the old intro shows no tips.
+
+## 11. Second redesign — a look of its own (November 2026)
+
+Asked for after the redesign above was built: "modern, fresh, the latest
+elements other apps use" — a new visual identity, the whole app, built
+directly (no mockup round). What bothered: plain and flat, crowded, the
+charts, how it moves. Features, flows, labels and data are untouched; the App
+Review rehearsal passes all 14 scenes as before.
+
+**What changed**
+- **Depth instead of flat grey.** A cool, light canvas (`--t-bg #F2F4F8`)
+  with a two-point accent glow at the top of each page; cards float on a
+  soft shadow (`card-edge` = `--t-card`), radii grew to 14 / 24 / 32. Night is
+  ink-blue (`#07080B`), cards edged by a highlight from above.
+- **The category's colour comes alive.** A category card's header stands in
+  its colour (`hue-wash`), a *Demnächst fällig* card and the entry sheet's
+  amount are tinted in it (`hue-tint`); pictures on them are white tiles.
+  The contrast audit gained a "hue wash" block: text, muted text, the three
+  money colours, the accent and the bar against all 13 hues, both themes
+  (2,114 checks, up from 658). Income green went from `#1E7F3B` to `#177536`
+  to keep 4.5:1 on the washes.
+- **Less on the page.** No dividers between a category's entries; ticks,
+  names and the add row line up under the header (a 68 px column); the add
+  row is quiet (a tinted plus, not a filled one); due cards lead with the
+  picture and say date and status on one line.
+- **The hero.** A deeper gradient with a rim of light, fine rings in the far
+  corner (`hero-art`), one band of light when it appears (`hero-shine`), the
+  balance heavier and larger, the two panels with a small sign each.
+- **Charts.** Round-ended columns that grow from the baseline one after
+  another, a dotted grid on a solid floor, the balance as a smooth line
+  (monotone — it never invents a value) over a wash that thins out, its
+  newest point in a halo, line charts uncovered from the left, horizontal
+  bars that run out. Statistik's three averages got a sign each.
+- **Motion.** Every screen's cards rise in (`rise-children`), a tab comes
+  forward out of a slight depth, bars fill from empty, a tick pops with a
+  ring, the tab's symbol lands with a bounce, the add button turns under the
+  finger. Transform and opacity only; all of it off under reduced motion.
+
+**Fixed on the way**
+- The docked button on *Schulden und Kredite*, *Spartöpfe* and *Regeln* lay
+  half under the tab bar; it now sits above it (`pb-above-tabs`).
+- The figure tiles on a category's screen let a long amount ("1.224,38 €")
+  run out of its tile; a tile now grows with its amount.
+
+**Checked** (cloud machine, Chromium, Inter instead of SF Pro):
+- `lint`, `test` (636 pass), `vite build`, `check:security`,
+  `check:privacy`, `audit:contrast` (2,114 pass), `rehearse:app-review`
+  (14 scenes pass).
+- `scripts/ui-review.mjs` before and after. Its audit over 4 iPhone sizes ×
+  DE / AR is unchanged: no horizontal overflow, no truncated text, no text
+  under 11 px, the same 120 small-target notes as before. Looked at by eye:
+  the month page, entry sheet, Statistik, Planen, Optionen, the pushed
+  screens and the menus on iPhone 16 in light and dark, and the month page,
+  Statistik and the entry sheet in Arabic, on iPhone SE, at 200 % text and
+  on the desktop. The other captures were made but not inspected one by one.
+
+**Not checked — needs the Mac and the iPhone**
+- Type: the captures render Inter, not SF Pro and SF Rounded.
+- The shadows and the tinted headers while scrolling a long month in
+  WKWebView (Safari Web Inspector timeline) — they are static, but only the
+  device says what they cost.
+- `check:perf`'s month switch (budget 150 ms): on the cloud machine the
+  worst of five switches was 122–158 ms over five runs, and 117–161 ms for
+  the code before — the same within its noise, and both over the budget now
+  and then there. Run it on the Mac, where the budget was recorded.
+- The App Store screenshots (`npm run screenshots`, `npm run
+  store-screenshots`) show the old look until they are made again.
+

@@ -103,7 +103,7 @@ export function YearReviewBody({ y, year, language, t, onApplyBudgets }: {
   const name = (c: Category) => displayName(c.names, language);
   return (
     <>
-      <section className="rounded-md hero hero-glow text-on-hero p-[16px]">
+      <section className="rounded-lg hero hero-glow hero-art overflow-hidden text-on-hero p-[18px]">
         <h2 className="display text-heading font-semibold tabular-nums wrap-prose">{headline}</h2>
         <dl className="mt-3 grid grid-cols-3 gap-2 rounded-sm hero-panel p-3">
           {tiles.map(x => (
