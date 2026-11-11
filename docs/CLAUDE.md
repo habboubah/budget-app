@@ -204,7 +204,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     one leads by `WEEKDAY_LEAD` and each came up `WEEKDAY_MIN_DAYS` times —
     `heatLevel`, `firstWeekday(locale)`), `series.ts`'s `periodChange` (a
     period's averages against as many finished months before; null with
-    fewer), `health.ts` (Grundbedarf, Finanz-Check), `highlights.ts`
+    fewer), `track.ts` (`monthTrack`: a month's balance day by day for the
+    balance card's line — paid entries on their day but never after today,
+    open ones never before tomorrow), `health.ts` (Grundbedarf,
+    Finanz-Check), `highlights.ts`
     (hints as `Insight` data: ranked by impact × confidence × kind weight, one
     per category, `rank`; `highlights` for Statistik, `contractHints` for
     Planen, `monthHints` for a report), `detail.ts` (category screen, payee
@@ -838,7 +841,18 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   statistics' month summary, the add button and primary `Button`s. The big
   hero cards add `hero-art` (fine rings in the far corner) and the balance
   card `hero-shine` (one band of light when it appears); both stay under
-  `--hero-sheen`, which the audit reads — keep it that way. Ink on it: `text-on-hero`,
+  `--hero-sheen`, which the audit reads — keep it that way. The balance card
+  (`BalanceCard.tsx`) draws the month as a line straight on the gradient
+  (`MonthLine`, from `monthTrack(data, balance, account)` in
+  `insights/track.ts`, built in App: `values[0]` the opening, `values[today]`
+  = *Jetzt auf dem Konto*, the last = *Am Monatsende* — tested against
+  `computeBalances` for every account view): white ink only, solid up to
+  today's dot, dashed ahead; one image for VoiceOver and **not scrubbed** —
+  the card's sideways swipe owns the finger. Its details are meters, not a
+  table (`Workings`): the paid part in `bg-on-hero-pos` (income) or
+  `bg-on-hero`, the open part in `bg-on-hero-warn`, label-and-amount pairs
+  that wrap by themselves (the amount in its own box, so `num` holds in
+  Arabic). Ink on it: `text-on-hero`,
   `text-on-hero-mute` (captions on the gradient); on its frosted `hero-panel`
   also `text-on-hero-soft` / `-pos` / `-warn` / `-neg` — those four only on the
   panel. Never `text-pos` / `text-neg` / `text-fg` on the hero.
@@ -881,7 +895,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   other screen's cards rise in by themselves (`rise-children` on `Screen`'s
   `<main>`; `no-rise` holds the copy under a back swipe still). A tab comes
   forward out of a slight depth, a pushed screen slides. A category's paid
-  bar slides in from empty (a transform under the track's round mask), a paid tick pops with a ring spreading out of it, the chosen tab's
+  bar slides in from empty (a transform under the track's round mask), the balance card's line is drawn in once per month (its svg is keyed by the month) and its meters run out when the details open, a paid tick pops with a ring spreading out of it, the chosen tab's
   symbol lands with a bounce. Charts come in once: columns grow from the
   baseline (`chart-grow`, via `grow()` in Charts.tsx; `col-grow` outside an
   SVG), a line chart is drawn from the left (`ChartFrame reveal`: a clip

@@ -12,7 +12,7 @@ import {
   shouldAskForReview, transferPair, uid,
   changeMonthStart,
 } from './logic';
-import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, isActiveProject, monthReview, outlook, paymentSeries, projectsOverview, taxYear, taxYears, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
+import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, isActiveProject, monthReview, monthTrack, outlook, paymentSeries, projectsOverview, taxYear, taxYears, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
 import { CategoryView } from './components/CategoryView';
@@ -322,6 +322,8 @@ export default function App() {
   }, [native]);
 
   const balance = balanceFor(balances, month);
+  // The balance card's line: the shown account's month, day by day.
+  const track = useMemo(() => monthTrack(data, balance, account), [data, balance, account]);
   const prevBalance = balance.prevKey ? balances.find(b => b.key === balance.prevKey) : undefined;
   const candidates = useMemo(() => carryCandidates(data, month), [data, month]);
   /** The categories this month shows (its own list, plus any with entries). */
@@ -1277,6 +1279,7 @@ export default function App() {
           <MonthView
             month={month}
             balance={balance}
+            track={track}
             categories={shownCategories}
             entries={view.entries}
             candidates={candidates}
