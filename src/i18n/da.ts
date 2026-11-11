@@ -1121,6 +1121,14 @@ const da: Strings = {
   // Refunds (schema 26)
   refund: 'Refusion',
   refundHint: 'Penge tilbage: de går ind på kontoen og sænker udgifterne i denne kategori – de tæller ikke som indtægt.',
+  // The daily nudge and budget notes
+  nudgeRow: 'Mind mig om at skrive ind',
+  nudgeHint: 'Én gang om dagen på det tidspunkt, du vælger – kun de dage, hvor du ikke har skrevet noget ind endnu, og uden beløb. Åbner du ikke Spartopf i fem dage, stopper påmindelsen af sig selv.',
+  nudgeTitle: 'Har du brugt noget i dag?',
+  nudgeBody: 'Skriv det ind nu – det tager kun få sekunder.',
+  budgetNotes: 'Sig til, når et budget er ved at være brugt',
+  budgetNote80: '{name}: {p} af budgettet brugt',
+  budgetNoteOver: '{name}: budgettet er overskredet',
 };
 
 export default da;

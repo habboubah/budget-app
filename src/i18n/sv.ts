@@ -1122,6 +1122,14 @@ const sv: Strings = {
   // Refunds (schema 26)
   refund: 'Återbetalning',
   refundHint: 'Pengar tillbaka: de går in på kontot och minskar utgifterna i den här kategorin – de räknas inte som inkomst.',
+  // The daily nudge and budget notes
+  nudgeRow: 'Påminn mig att föra in',
+  nudgeHint: 'En gång om dagen vid den tid du väljer – bara de dagar du inte har fört in något ännu, och utan belopp. Öppnar du inte Spartopf på fem dagar slutar påminnelsen av sig själv.',
+  nudgeTitle: 'Har du handlat något i dag?',
+  nudgeBody: 'För in det direkt – det tar bara några sekunder.',
+  budgetNotes: 'Säg till när en budget tar slut',
+  budgetNote80: '{name}: {p} av budgeten använd',
+  budgetNoteOver: '{name}: budgeten överskriden',
 };
 
 export default sv;

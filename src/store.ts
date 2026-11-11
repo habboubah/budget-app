@@ -32,6 +32,7 @@ const K = {
   lastExport: 'spartopf-last-export',
   copyCardDismissed: 'spartopf-copy-card-dismissed',
   autoCategory: 'spartopf-auto-category',
+  budgetNotes: 'spartopf-budget-notes',
   captureReview: 'spartopf-capture-review',
   tipState: 'spartopf-tip-state',
   account: 'spartopf-account',
@@ -151,6 +152,8 @@ export function useAppStore() {
   const [reviewAsked, setReviewAsked] = useState(() => { const v = readString(K.reviewAsked); return isIsoDay(v) ? v : ''; });
   /** The entry sheet picks the category the typed name points to (plan 32) — on unless switched off. A view preference. */
   const [autoCategory, setAutoCategory] = useState(() => readString(K.autoCategory) !== '0');
+  /** A word when an entry takes a budget to 80 % or over it — on unless switched off. A view preference. */
+  const [budgetNotes, setBudgetNotes] = useState(() => readString(K.budgetNotes) !== '0');
   /** Categories folded down on the month page — a view preference, not data, so not in a backup. */
   const [collapsed, setCollapsed] = useState<string[]>(() => {
     const saved = readJson(K.collapsed);
@@ -182,6 +185,7 @@ export function useAppStore() {
   useEffect(() => { persist(K.firstUse, firstUse); }, [firstUse]);
   useEffect(() => { if (reviewAsked) persist(K.reviewAsked, reviewAsked); }, [reviewAsked]);
   useEffect(() => { persist(K.autoCategory, autoCategory ? '1' : '0'); }, [autoCategory]);
+  useEffect(() => { persist(K.budgetNotes, budgetNotes ? '1' : '0'); }, [budgetNotes]);
   /** Plan 37: which tips are done, and when the last one was put away. */
   const [tipState, setTipState] = useState<TipState>(() => readTipState(readJson(K.tipState)));
   useEffect(() => { persist(K.tipState, JSON.stringify(tipState)); }, [tipState]);
@@ -888,6 +892,7 @@ export function useAppStore() {
     hideAmounts, setHideAmounts,
     firstUse, reviewAsked, markReviewAsked: () => setReviewAsked(isoDay()),
     autoCategory, setAutoCategory,
+    budgetNotes, setBudgetNotes,
     captureReview, setCaptureReview,
     tipState, closeTip: (id: TipId) => setTipState(s => closeTip(s, id)),
     collapsed,

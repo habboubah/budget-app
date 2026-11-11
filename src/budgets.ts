@@ -93,6 +93,20 @@ export function budgetStatus(entries: Entry[], category: Category, month: MonthK
   };
 }
 
+/**
+ * Whether a change took a budget across a mark worth a word: 80 % used, or
+ * over. `before` and `after` are the same budget around the change; the
+ * higher mark wins, and a budget already past a mark says nothing again.
+ */
+export function budgetCrossing(before: BudgetStatus | null, after: BudgetStatus | null): 80 | 100 | null {
+  if (!after || after.limit <= 0) return null;
+  const was = before && before.limit > 0 ? before.spent / before.limit : 0;
+  const is = after.spent / after.limit;
+  if (is > 1 && was <= 1) return 100;
+  if (is >= 0.8 && is <= 1 && was < 0.8) return 80;
+  return null;
+}
+
 /** Every budget of a month, in the categories' order, and how many are within it. */
 export function monthBudgets(data: AppData, month: MonthKey, categories: Category[] = data.categories, today = new Date()): {
   items: { category: Category; status: BudgetStatus }[];

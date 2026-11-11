@@ -177,6 +177,14 @@ Everything the app can do. Build and release steps are in the
 - **Reminders and a lock** (iPhone app): a notification before an open bill is
   due and a week before a contract's last day to cancel — without amounts
   unless you want them; Face ID (or the passcode) when opening Spartopf.
+  *Ans Eintragen erinnern* is a switch of its own: once a day at a time you
+  choose ("Heute schon etwas ausgegeben?"), only on days without an entry of
+  your own, never with an amount — and it falls silent by itself when the app
+  isn't opened for five days.
+- **A word when a budget runs low.** The entry that takes a category to 80 %
+  of its budget, or over it, says so in its confirmation ("Restaurants: 83 %
+  des Budgets verbraucht") — once per mark, no amounts. Switch it off in
+  *Kategorien und Budgets*.
 - **PDF report:** *Bericht teilen* under a month's report or the year review
   makes a PDF — totals, budgets, categories, open items, and every entry if
   you like — to share or print, with amounts even when they're hidden in the

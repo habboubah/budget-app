@@ -1124,6 +1124,14 @@ const tr: Strings = {
   // Refunds (schema 26)
   refund: 'İade',
   refundHint: 'Geri gelen para: hesaba eklenir ve bu kategorinin harcamasını azaltır; gelir sayılmaz.',
+  // The daily nudge and budget notes
+  nudgeRow: 'Harcama girmeyi hatırlat',
+  nudgeHint: 'Günde bir kez, seçtiğin saatte – yalnızca henüz bir şey girmediğin günlerde ve tutar göstermeden. Spartopf’u beş gün açmazsan hatırlatma kendiliğinden durur.',
+  nudgeTitle: 'Bugün bir şey harcadın mı?',
+  nudgeBody: 'Hemen gir – yalnızca birkaç saniye sürer.',
+  budgetNotes: 'Bütçe azalınca haber ver',
+  budgetNote80: '{name}: bütçenin {p} kadarı kullanıldı',
+  budgetNoteOver: '{name}: bütçe aşıldı',
 };
 
 export default tr;

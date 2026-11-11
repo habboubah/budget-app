@@ -8,7 +8,7 @@ import { fmt, plural, stringsFor } from './translations';
 import { AccountKind, Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import {
   ALL_ACCOUNTS, MAIN_ACCOUNT, REVIEW_RULE, ReviewMoment, accountName, accountTotals, accountView, accountsOf, addMonths, balanceFor, canDeleteAccount, carryCandidates,
-  computeBalances, displayName, formatMoneyShort, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
+  computeBalances, displayName, formatMoneyShort, formatPercent, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
   shouldAskForReview, transferPair, uid,
   changeMonthStart,
 } from './logic';
@@ -58,6 +58,7 @@ import { RuleSheet, RuleSheetMode } from './components/RuleSheet';
 import { RemindersView } from './components/RemindersView';
 import { LockScreen, PrivacyCover } from './components/LockScreen';
 import { reminderPlan } from './reminders';
+import { budgetCrossing, budgetStatus } from './budgets';
 import { onReminderTap, remindersAvailable, syncReminders } from './notify';
 import { LockKind, authenticate, deviceUnsecured, lockKind as findLockKind } from './lock';
 import { devNative, isAndroid, isIos, isNative } from './platform';
@@ -406,6 +407,21 @@ export default function App() {
     void StatusBar.setStyle({ style: resolved === 'dark' ? Style.Dark : Style.Light }).catch(() => {});
   }, [themeMode]);
 
+  /**
+   * A word when a change takes a category's budget to 80 % or over it — in
+   * the running month or a later one, and without an amount. `after`: the
+   * entries as they are once the change is in.
+   */
+  const budgetNote = (after: Entry[], categoryId: string, m: MonthKey): string | null => {
+    const c = categories.find(x => x.id === categoryId);
+    if (!store.budgetNotes || !c || m < monthKeyOf(new Date())) return null;
+    const now = budgetStatus(after, c, m);
+    const mark = budgetCrossing(budgetStatus(data.entries, c, m), now);
+    if (!mark || !now) return null;
+    const name = displayName(c.names, language);
+    return mark === 100 ? fmt(t.budgetNoteOver, { name }) : fmt(t.budgetNote80, { name, p: formatPercent(Math.round((now.spent / now.limit) * 100), t.locale) });
+  };
+
   const createEntry = (m: MonthKey, d: EntryDraft) => {
     const id = uid();
     const now = Date.now();
@@ -422,7 +438,7 @@ export default function App() {
     // A new entry in a folded category unfolds it, so it can be seen landing.
     store.expand(d.categoryId);
     setLastCategory(d.categoryId);
-    show(fmt(t.entryAdded, { name: d.name }));
+    show(budgetNote([...data.entries, entry], d.categoryId, m) ?? fmt(t.entryAdded, { name: d.name }));
   };
 
   /**
@@ -1035,6 +1051,8 @@ export default function App() {
             onRestoreDefaults={restoreDefaults}
             autoCategory={store.autoCategory}
             onAutoCategory={store.setAutoCategory}
+            budgetNotes={store.budgetNotes}
+            onBudgetNotes={store.setBudgetNotes}
           />
         ) : id === 'capture' ? (
           <CaptureView review={store.captureReview} t={t} onBack={back} onReview={store.setCaptureReview} />
@@ -1336,7 +1354,13 @@ export default function App() {
         t={t}
         onClose={() => setEntrySheet(null)}
         onCreate={createEntry}
-        onSave={(id, d) => { store.updateEntry(id, d); setLastCategory(d.categoryId); }}
+        onSave={(id, d) => {
+          const was = data.entries.find(e => e.id === id);
+          const note = was ? budgetNote(data.entries.map(e => (e.id === id ? { ...e, ...d } : e)), d.categoryId, was.month) : null;
+          store.updateEntry(id, d);
+          setLastCategory(d.categoryId);
+          if (note) show(note);
+        }}
         onDelete={deleteEntry}
         favorites={store.favorites}
         onPinFavorite={fav => {

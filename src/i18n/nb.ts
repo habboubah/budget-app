@@ -1122,6 +1122,14 @@ const nb: Strings = {
   // Refunds (schema 26)
   refund: 'Refusjon',
   refundHint: 'Penger tilbake: de går inn på kontoen og reduserer utgiftene i denne kategorien – de teller ikke som inntekt.',
+  // The daily nudge and budget notes
+  nudgeRow: 'Minn meg på å føre inn',
+  nudgeHint: 'Én gang om dagen på tidspunktet du velger – bare de dagene du ikke har ført inn noe ennå, og uten beløp. Åpner du ikke Spartopf på fem dager, stopper påminnelsen av seg selv.',
+  nudgeTitle: 'Har du brukt noe i dag?',
+  nudgeBody: 'Før det inn nå – det tar bare noen sekunder.',
+  budgetNotes: 'Si fra når et budsjett går mot slutten',
+  budgetNote80: '{name}: {p} av budsjettet brukt',
+  budgetNoteOver: '{name}: over budsjett',
 };
 
 export default nb;

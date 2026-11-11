@@ -1125,6 +1125,14 @@ const cs: Strings = {
   // Refunds (schema 26)
   refund: 'Vratka',
   refundHint: 'Vrácené peníze: přijdou na účet a sníží výdaje v této kategorii – nepočítají se jako příjem.',
+  // The daily nudge and budget notes
+  nudgeRow: 'Připomínat zapisování',
+  nudgeHint: 'Jednou denně ve zvolený čas – jen ve dnech, kdy ještě nic není zapsáno, a bez částek. Když Spartopf pět dní neotevřeš, připomínka sama skončí.',
+  nudgeTitle: 'Utratilo se dnes něco?',
+  nudgeBody: 'Zapiš to hned – zabere to pár vteřin.',
+  budgetNotes: 'Upozornit, když rozpočet dochází',
+  budgetNote80: '{name}: vyčerpáno {p} rozpočtu',
+  budgetNoteOver: '{name}: rozpočet překročen',
 };
 
 export default cs;

@@ -192,7 +192,8 @@ export function SettingsView(p: Props) {
           <Row
             label={t.remindersRow}
             // The setting as a line under it: long in German, and text in Arabic (no `num`).
-            sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}` : t.remindersOff}
+            sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}`
+              : p.reminders.nudge ? `${t.nudgeRow} · ${timeLabel(p.reminders.nudgeTime, t.locale)}` : t.remindersOff}
             leading={<IconTile icon={Bell} hue="tomato" />}
             trailing={<Next />}
             onClick={p.onReminders}

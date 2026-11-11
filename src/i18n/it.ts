@@ -1121,6 +1121,14 @@ const it: Strings = {
   // Refunds (schema 26)
   refund: 'Rimborso',
   refundHint: 'Soldi restituiti: tornano sul conto e riducono le spese di questa categoria – non contano come entrata.',
+  // The daily nudge and budget notes
+  nudgeRow: 'Ricordami di registrare',
+  nudgeHint: 'Una volta al giorno all’ora scelta – solo nei giorni in cui non hai ancora registrato nulla, e senza importi. Se non apri Spartopf per cinque giorni, il promemoria si ferma da solo.',
+  nudgeTitle: 'Hai speso qualcosa oggi?',
+  nudgeBody: 'Segnalo subito: bastano pochi secondi.',
+  budgetNotes: 'Avvisami quando un budget sta finendo',
+  budgetNote80: '{name}: usato il {p} del budget',
+  budgetNoteOver: '{name}: budget superato',
 };
 
 export default it;

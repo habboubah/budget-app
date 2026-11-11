@@ -1151,6 +1151,14 @@ const de = {
   // Refunds (schema 26)
   refund: 'Erstattung',
   refundHint: 'Geld zurück: Es kommt aufs Konto und verringert die Ausgaben dieser Kategorie – es zählt nicht als Einkommen.',
+  // The daily nudge and budget notes
+  nudgeRow: 'Ans Eintragen erinnern',
+  nudgeHint: 'Einmal am Tag zur gewählten Zeit – nur an Tagen, an denen du noch nichts eingetragen hast, und ohne Beträge. Öffnest du Spartopf fünf Tage nicht, hört die Erinnerung von selbst auf.',
+  nudgeTitle: 'Heute schon etwas ausgegeben?',
+  nudgeBody: 'Kurz eintragen – dauert nur ein paar Sekunden.',
+  budgetNotes: 'Hinweis, wenn ein Budget knapp wird',
+  budgetNote80: '{name}: {p} des Budgets verbraucht',
+  budgetNoteOver: '{name}: Budget überschritten',
 };
 
 export type Strings = { [K in keyof typeof de]: string };
@@ -2273,6 +2281,14 @@ const en: Strings = {
   // Refunds (schema 26)
   refund: 'Refund',
   refundHint: 'Money back: it goes into the account and lowers this category’s spending – it doesn’t count as income.',
+  // The daily nudge and budget notes
+  nudgeRow: 'Remind me to enter spending',
+  nudgeHint: 'Once a day at the time you choose – only on days when you haven’t entered anything yet, and without amounts. If you don’t open Spartopf for five days, the reminder stops by itself.',
+  nudgeTitle: 'Spent anything today?',
+  nudgeBody: 'Note it down – it only takes a few seconds.',
+  budgetNotes: 'Tell me when a budget runs low',
+  budgetNote80: '{name}: {p} of the budget used',
+  budgetNoteOver: '{name}: over budget',
 };
 
 /*
@@ -3409,6 +3425,14 @@ const ar: Strings = {
   // Refunds (schema 26)
   refund: 'استرداد',
   refundHint: 'مبلغ مُسترد: يعود إلى الحساب ويخفّض مصروفات هذه الفئة، ولا يُحتسب دخلًا.',
+  // The daily nudge and budget notes
+  nudgeRow: 'ذكّرني بتسجيل المصروفات',
+  nudgeHint: 'مرة في اليوم في الوقت الذي تختاره – فقط في الأيام التي لم تسجّل فيها شيئًا بعد، وبدون مبالغ. إذا لم تفتح Spartopf خمسة أيام يتوقف التذكير من تلقاء نفسه.',
+  nudgeTitle: 'هل أنفقت شيئًا اليوم؟',
+  nudgeBody: 'سجّله الآن – لن يستغرق سوى ثوانٍ.',
+  budgetNotes: 'نبّهني عندما تقترب ميزانية من النفاد',
+  budgetNote80: '{name}: تم استخدام {p} من الميزانية',
+  budgetNoteOver: '{name}: تم تجاوز الميزانية',
 };
 
 /**

@@ -21,21 +21,30 @@ export interface ReminderPrefs {
   lead: number;
   /** Amounts in the text. Off by default: notifications show on the lock screen. */
   amounts: boolean;
+  /** A daily nudge to enter the day's spending — its own switch and time, never with an amount. */
+  nudge: boolean;
+  nudgeTime: string;
 }
 
 export const REMINDER_LEADS = [0, 1, 2, 3, 7] as const;
-export const DEFAULT_REMINDERS: ReminderPrefs = { on: false, time: '09:00', lead: 1, amounts: false };
+export const DEFAULT_REMINDERS: ReminderPrefs = { on: false, time: '09:00', lead: 1, amounts: false, nudge: false, nudgeTime: '20:00' };
+/** The nudge is planned this many days ahead: an app left unopened for longer falls silent by itself. */
+export const NUDGE_DAYS = 5;
 /** iOS keeps 64 pending notifications per app; leave a few for whatever comes next. */
 export const REMINDER_LIMIT = 60;
+
+const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 /** Whatever was stored, as valid preferences. */
 export function normalizeReminderPrefs(raw: unknown): ReminderPrefs {
   const r = (raw && typeof raw === 'object' ? raw : {}) as Partial<Record<keyof ReminderPrefs, unknown>>;
   return {
     on: r.on === true,
-    time: typeof r.time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(r.time) ? r.time : DEFAULT_REMINDERS.time,
+    time: typeof r.time === 'string' && TIME.test(r.time) ? r.time : DEFAULT_REMINDERS.time,
     lead: typeof r.lead === 'number' && (REMINDER_LEADS as readonly number[]).includes(r.lead) ? r.lead : DEFAULT_REMINDERS.lead,
     amounts: r.amounts === true,
+    nudge: r.nudge === true,
+    nudgeTime: typeof r.nudgeTime === 'string' && TIME.test(r.nudgeTime) ? r.nudgeTime : DEFAULT_REMINDERS.nudgeTime,
   };
 }
 
@@ -81,7 +90,8 @@ export const billSource: ReminderSource = {
     const todayKey = isoDay(today);
     const out: ReminderItem[] = [];
     const add = (e: Entry) => {
-      if (e.paid || kind.get(e.categoryId) !== 'expense') return;
+      // An awaited refund is money coming in, not a bill (schema 26).
+      if (e.paid || e.refund || kind.get(e.categoryId) !== 'expense') return;
       const day = dueDay(e);
       if (day && day >= todayKey) out.push({ day, name: e.name, amount: e.amount, month: e.month });
     };
@@ -163,8 +173,10 @@ export function reminderPlan(
   data: AppData, prefs: ReminderPrefs, t: Strings, now = new Date(),
   sources: ReminderSource[] = REMINDER_SOURCES, limit = REMINDER_LIMIT,
 ): PlannedReminder[] {
-  if (!prefs.on) return [];
+  if (!prefs.on && !prefs.nudge) return [];
   const today = isoDay(now);
+  const nudges = prefs.nudge ? nudgePlan(data, prefs, t, now) : [];
+  if (!prefs.on) return nudges.slice(0, limit);
   const [hh, mm] = prefs.time.split(':').map(Number);
   // The first slot that is still to come: today at the time, or tomorrow.
   const firstDay = now.getHours() * 60 + now.getMinutes() < hh * 60 + mm ? today : addDays(today, 1);
@@ -189,5 +201,27 @@ export function reminderPlan(
       });
     }
   }
-  return planned.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : a.id - b.id)).slice(0, limit);
+  return [...planned, ...nudges].sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : a.id - b.id)).slice(0, limit);
+}
+
+/**
+ * The daily nudge: one notification a day at `nudgeTime` for the next
+ * `NUDGE_DAYS` days — today's only while its time is still to come and
+ * nothing was entered today. The plan is made again after every change, so
+ * entering something takes today's away; later days stay until their own
+ * day. What counts as entered: an entry the user made today (typed or
+ * imported), not the copies a new month brings along.
+ */
+export function nudgePlan(data: AppData, prefs: ReminderPrefs, t: Strings, now = new Date(), days = NUDGE_DAYS): PlannedReminder[] {
+  const today = isoDay(now);
+  const [hh, mm] = prefs.nudgeTime.split(':').map(Number);
+  const stillToCome = now.getHours() * 60 + now.getMinutes() < hh * 60 + mm;
+  const enteredToday = data.entries.some(e => e.seriesId === e.id && isoDay(new Date(e.createdAt)) === today);
+  const out: PlannedReminder[] = [];
+  for (let i = 0; i < days; i++) {
+    if (i === 0 && (!stillToCome || enteredToday)) continue;
+    const day = addDays(today, i);
+    out.push({ id: reminderId(`nudge:${day}`), at: `${day}T${prefs.nudgeTime}`, title: t.nudgeTitle, body: t.nudgeBody, month: monthKeyOf(now) });
+  }
+  return out;
 }

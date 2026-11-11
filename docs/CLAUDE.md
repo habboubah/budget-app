@@ -725,6 +725,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     `src/reminders.ts` plans (pure, tested), `src/notify.ts` swaps what is
     pending for the plan. Every pending notification is a reminder: syncing
     cancels them all first. Texts carry no amounts unless the user turns them on.
+    The daily nudge (`nudgePlan`, `prefs.nudge` / `nudgeTime`) is planned
+    `NUDGE_DAYS` ahead beside the sources and independent of `prefs.on`;
+    today's goes once an entry of the user's own (`seriesId === id`) was
+    made today. The in-app budget note is `budgetCrossing` (budgets.ts) +
+    `budgetNote` in App, behind the view preference `spartopf-budget-notes`.
   - **Face ID lock:** `@aparajita/capacitor-biometric-auth` (MIT), chosen over
     `@capgo/capacitor-native-biometric` (MPL-2.0): its iOS side is one small
     file using only LocalAuthentication (`.deviceOwnerAuthentication` with

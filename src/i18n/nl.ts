@@ -1121,6 +1121,14 @@ const nl: Strings = {
   // Refunds (schema 26)
   refund: 'Terugbetaling',
   refundHint: 'Geld terug: het komt op de rekening en verlaagt de uitgaven in deze categorie – het telt niet als inkomen.',
+  // The daily nudge and budget notes
+  nudgeRow: 'Herinner me aan invoeren',
+  nudgeHint: 'Eén keer per dag op het gekozen tijdstip – alleen op dagen waarop je nog niets hebt ingevoerd, en zonder bedragen. Open je Spartopf vijf dagen niet, dan stopt de herinnering vanzelf.',
+  nudgeTitle: 'Vandaag iets uitgegeven?',
+  nudgeBody: 'Voer het even in – het duurt maar een paar seconden.',
+  budgetNotes: 'Meld het als een budget opraakt',
+  budgetNote80: '{name}: {p} van het budget gebruikt',
+  budgetNoteOver: '{name}: budget overschreden',
 };
 
 export default nl;

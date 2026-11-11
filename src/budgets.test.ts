@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { budgetStatus, monthBudgets, monthlyLimit, roundBudget, suggestLimit } from './budgets';
+import { budgetCrossing, budgetStatus, monthBudgets, monthlyLimit, roundBudget, suggestLimit } from './budgets';
 import { formatMoneyShort, makeBackup, normalizeState, parseBackup, restoreDefaultCategories, upgradeData } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -199,5 +199,25 @@ describe('a budget for the year (schema 25)', () => {
     expect(back.find(c => c.id === 'groceries')).toMatchObject({ rollover: true, rolloverFrom: '2026-09' });
     const car = back.find(c => c.id === 'car')!;
     expect([car.limitPer, car.rollover, car.rolloverFrom]).toEqual([undefined, undefined, undefined]);
+  });
+});
+
+describe('a budget crossing a mark', () => {
+  const groceries: Category = { ...defaultCategories().find(c => c.id === 'groceries')!, limit: 10000 };
+  const at = (euros: number) => budgetStatus([e('2026-11', 'groceries', euros)], groceries, '2026-11', nov7);
+
+  it('says 80 once, and over once', () => {
+    expect(budgetCrossing(at(70), at(79.99))).toBeNull();
+    expect(budgetCrossing(at(70), at(80))).toBe(80);
+    expect(budgetCrossing(at(85), at(95))).toBeNull();
+    expect(budgetCrossing(at(95), at(100))).toBeNull();
+    expect(budgetCrossing(at(95), at(100.01))).toBe(100);
+    expect(budgetCrossing(at(50), at(130))).toBe(100);
+    expect(budgetCrossing(at(120), at(130))).toBeNull();
+  });
+
+  it('has nothing to say without a budget, and speaks up for a first entry that is already past the mark', () => {
+    expect(budgetCrossing(null, null)).toBeNull();
+    expect(budgetCrossing(null, at(90))).toBe(80);
   });
 });
