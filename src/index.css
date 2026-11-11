@@ -1,12 +1,13 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Spartopf design tokens — native iOS, vivid
+   Spartopf design tokens — native iOS, vivid, with depth
    ----------------------------------------------------------------------------
-   Built like an iPhone app of today: the grouped grey background with white
-   cards (true black with graphite cards at night), Apple's system font — SF
-   Pro, with SF Rounded for the money amounts — and generous radii. Colour
-   comes from two places: the user's accent (petrol, the app icon's, by
+   Built like a finance app of today: a cool, light canvas lit by the accent
+   at the top of every page, white cards that float on a soft shadow (ink-blue
+   night with cards edged by a highlight), Apple's system font — SF Pro, with
+   SF Rounded for the money amounts — and large, soft radii. Colour comes from
+   two places: the user's accent (petrol, the app icon's, by
    default; eight to choose from), which also paints the gradient hero — the
    balance card, the add button, primary buttons — and each category's hue
    (its tile, its progress bar, its ticks).
@@ -92,13 +93,13 @@
   --color-chart-save: var(--t-chart-save);
   --color-chart-label: var(--t-chart-label);
 
-  --radius-sm: 12px;
-  --radius-md: 20px;
-  --radius-lg: 28px;
+  --radius-sm: 14px;
+  --radius-md: 24px;
+  --radius-lg: 32px;
 
   --shadow-e1: 0 1px 2px var(--t-shadow-1), 0 2px 10px var(--t-shadow-1);
-  --shadow-e2: 0 8px 30px var(--t-shadow-2), 0 1px 4px var(--t-shadow-1);
-  --shadow-e3: 0 -10px 36px var(--t-shadow-2);
+  --shadow-e2: 0 12px 34px -6px var(--t-shadow-2), 0 2px 6px var(--t-shadow-1);
+  --shadow-e3: 0 -12px 44px var(--t-shadow-2);
 
   /* Type scale in rem so it follows Dynamic Type (see dynamicType.ts), on
      Apple's text styles: micro 11 (caption 2) · caption 13 (footnote) ·
@@ -185,28 +186,31 @@
 /* ============ Day ========================================================= */
 :root,
 [data-theme="light"] {
-  --t-bg:        #F2F2F7;
+  --t-bg:        #F2F4F8;
   --t-surface:   #FFFFFF;
-  --t-surface-2: #EFEFF2;
-  --t-hairline:  #E2E2E7;
+  --t-surface-2: #EEF0F5;
+  --t-hairline:  #E4E7EE;
   --t-raised:    #FFFFFF;
-  /* The barely-there edge of a card on the grouped background. */
-  --t-card-line: rgba(0, 0, 0, 0.04);
+  /* A card floats: a hairline edge, a contact shadow and a soft, low one. */
+  --t-card-line: rgba(15, 23, 42, 0.05);
+  --t-card: 0 0 0 0.5px var(--t-card-line), 0 1px 2px rgba(15, 23, 42, 0.04), 0 14px 30px -18px rgba(15, 23, 42, 0.22);
 
-  --t-fg:        #111114;
-  --t-fg-mute:   #626267;
-  --t-fg-faint:  #8E8E93;
+  --t-fg:        #0D1017;
+  --t-fg-mute:   #5A606D;
+  --t-fg-faint:  #8B909C;
 
   --t-accent:          var(--acc-l);
   --t-accent-rgb:      var(--acc-l-rgb);
   --t-accent-dim:      rgb(var(--acc-l-rgb) / 0.10);
   --t-accent-fill:     var(--acc-l);
   --t-accent-fill-ink: #FFFFFF;
-  /* The accent light at the top of a page (see accent-wash). */
-  --t-wash: 0.10;
+  /* The accent light at the top of a page (see accent-wash): its strongest point. */
+  --t-wash: 0.12;
+  /* How much of a category's colour its card's header and a due card take on (hue-wash, hue-tint). */
+  --t-hue-wash: 0.7;
   --t-mark: rgb(var(--acc-l-rgb) / 0.22);
 
-  --t-pos:      #1E7F3B;
+  --t-pos:      #177536;
   --t-pos-dim:  rgba(52, 199, 89, 0.14);
   --t-neg:      #C8231B;
   --t-neg-dim:  rgba(255, 59, 48, 0.10);
@@ -226,9 +230,9 @@
   /* Text inside a filled chart block: white on the darker day fills, near-black on the lighter night fills. */
   --t-chart-label: #FFFFFF;
 
-  --t-scrim:    rgba(0, 0, 0, 0.32);
-  --t-shadow-1: rgba(0, 0, 0, 0.04);
-  --t-shadow-2: rgba(0, 0, 0, 0.12);
+  --t-scrim:    rgba(9, 12, 20, 0.38);
+  --t-shadow-1: rgba(15, 23, 42, 0.05);
+  --t-shadow-2: rgba(15, 23, 42, 0.14);
 
   /* Liquid Glass for the floating chrome (glass-chrome) and menus (glass-menu):
      a tint over the blurred page, a bright rim on top, a hairline edge. */
@@ -273,23 +277,26 @@
 
 /* ============ Night ======================================================= */
 [data-theme="dark"] {
-  --t-bg:        #000000;
-  --t-surface:   #1C1C1E;
-  --t-surface-2: #2C2C2E;
-  --t-hairline:  #38383A;
-  --t-raised:    #636366;
-  --t-card-line: transparent;
+  --t-bg:        #07080B;
+  --t-surface:   #14161B;
+  --t-surface-2: #22252C;
+  --t-hairline:  #2B2F37;
+  --t-raised:    #5C6170;
+  /* At night a card is edged by light from above instead of a shadow. */
+  --t-card-line: rgba(255, 255, 255, 0.06);
+  --t-card: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 0 0.5px var(--t-card-line);
 
   --t-fg:        #FFFFFF;
-  --t-fg-mute:   #AEAEB2;
-  --t-fg-faint:  #8E8E93;
+  --t-fg-mute:   #A9AEBB;
+  --t-fg-faint:  #8B909C;
 
   --t-accent:          var(--acc-d);
   --t-accent-rgb:      var(--acc-d-rgb);
   --t-accent-dim:      rgb(var(--acc-d-rgb) / 0.16);
   --t-accent-fill:     var(--acc-d);
   --t-accent-fill-ink: var(--acc-ink-d);
-  --t-wash: 0.18;
+  --t-wash: 0.19;
+  --t-hue-wash: 0.8;
   --t-mark: rgb(var(--acc-d-rgb) / 0.30);
 
   --t-pos:      #4CD07D;
@@ -314,9 +321,9 @@
   --t-shadow-1: rgba(0, 0, 0, 0.3);
   --t-shadow-2: rgba(0, 0, 0, 0.5);
 
-  --t-glass:      rgb(52 52 56 / 0.58);
-  --t-glass-menu: rgb(40 40 43 / 0.88);
-  --t-menu-solid: #2C2C2E;
+  --t-glass:      rgb(46 49 58 / 0.58);
+  --t-glass-menu: rgb(34 37 44 / 0.88);
+  --t-menu-solid: #22252C;
   --t-glass-rim:  rgb(255 255 255 / 0.16);
   --t-glass-edge: rgb(255 255 255 / 0.08);
 
@@ -332,7 +339,7 @@
   --t-plum-bg: #36233A;     --t-plum-ink: #EBB2EC;
   --t-berry-bg: #3A1F2A;    --t-berry-ink: #FFADC8;
   --t-sand-bg: #332B1F;     --t-sand-ink: #E6D1AC;
-  --t-stone-bg: #2C2C2E;    --t-stone-ink: #D1D1D6;
+  --t-stone-bg: #2A2D34;    --t-stone-ink: #D1D4DC;
 
   --t-tomato-chart: #DB6D60;
   --t-carrot-chart: #D27830;
@@ -381,8 +388,10 @@
 
 @utility pb-safe-8 { padding-bottom: calc(2rem + env(safe-area-inset-bottom)); }
 @utility inset-safe-bottom-6 { bottom: calc(24px + env(safe-area-inset-bottom)); }
-/* Clears a bottom bar that floats above the home indicator. */
-@utility pb-safe-dock { padding-bottom: calc(132px + env(safe-area-inset-bottom)); }
+/* Clears a docked button (ui/Screen Dock), which sits above the tab bar. */
+@utility pb-safe-dock { padding-bottom: calc(196px + env(safe-area-inset-bottom)); }
+/* A docked button's own padding: the tab bar (62px above its gap over the home indicator) and a breath. */
+@utility pb-above-tabs { padding-bottom: calc(max(env(safe-area-inset-bottom) - 6px, 14px) + 62px + 12px); }
 /* Clears the floating tab bar (62px + its gap above the home indicator). */
 @utility pb-safe-tabs { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
 /* Just above the floating tab bar. */
@@ -456,7 +465,12 @@
 }
 
 @utility card-edge {
-  box-shadow: 0 0 0 0.5px var(--t-card-line);
+  box-shadow: var(--t-card);
+}
+/* A card that is one button: it gives a little under the finger. */
+@utility press {
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms;
+  &:active { transform: scale(0.975); }
 }
 
 /* Solid floating surface: what glass falls back to, and the look of floating
@@ -513,22 +527,77 @@
    ink on it passes 4.5:1 for every accent (scripts/contrast-audit.mjs). */
 @utility hero {
   background:
-    radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / var(--hero-sheen)), transparent 60%),
-    linear-gradient(140deg, var(--hero-1), var(--hero-2) 55%, var(--hero-3));
+    radial-gradient(110% 95% at 100% 0%, rgb(255 255 255 / var(--hero-sheen)), transparent 58%),
+    radial-gradient(90% 110% at 0% 100%, var(--hero-1), transparent 72%),
+    linear-gradient(150deg, var(--hero-1), var(--hero-2) 52%, var(--hero-3));
   color: #FFFFFF;
 }
-/* A glow of the hero's own colour beneath it, instead of a grey shadow. */
+/* A glow of the hero's own colour beneath it, instead of a grey shadow, and
+   a rim of light along its upper edge. */
 @utility hero-glow {
-  box-shadow: 0 14px 30px -12px rgb(var(--hero-glow) / 0.7);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 0 0 0.5px rgb(255 255 255 / 0.12), 0 18px 36px -14px rgb(var(--hero-glow) / 0.75), 0 4px 10px -4px rgb(var(--hero-glow) / 0.4);
+}
+/* The big hero cards only (the balance, a report's summary): fine rings in
+   the far corner, like the guilloche of a bank card. Each line is lighter
+   than the sheen the audit already allows for, so the ink over it holds. */
+@utility hero-art {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 100% 0%, transparent 0 118px, rgb(255 255 255 / 0.06) 118px 119px, transparent 119px 168px, rgb(255 255 255 / 0.05) 168px 169px, transparent 169px 228px, rgb(255 255 255 / 0.035) 228px 229px, transparent 229px);
+  }
+  [dir="rtl"] &::before { transform: scaleX(-1); }
+  & > * { position: relative; }
 }
 /* The frosted panel inside the hero (the paid / open table, the carry-over
    chip): darker, never blurred. */
 @utility hero-panel {
   background: rgb(0 0 0 / var(--hero-panel));
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.14);
+}
+/* A category's colour as light on its card: fading down from the top
+   (hue-wash, a card's header) or even (hue-tint, a small card). Needs
+   data-hue on the element or above it. Text on it: fg, fg-mute and the money
+   colours — the audit checks each against every hue at --t-hue-wash. */
+@utility hue-wash {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--hue-bg, transparent), transparent);
+    opacity: var(--t-hue-wash);
+  }
+}
+@utility hue-tint {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background: var(--hue-bg, transparent);
+    opacity: var(--t-hue-wash);
+  }
 }
 /* The top of a page, lit in the accent and fading out by the first card. */
+/* Two lights, off-centre, so it reads as a glow rather than a spotlight;
+   where they overlap they stay under --t-wash, which is what the audit reads. */
 @utility accent-wash {
-  background: radial-gradient(460px 340px at 50% 0%, rgb(var(--t-accent-rgb) / var(--t-wash)), transparent);
+  background:
+    radial-gradient(440px 320px at calc(50% - 130px) 0%, rgb(var(--t-accent-rgb) / calc(var(--t-wash) * 0.85)), transparent),
+    radial-gradient(360px 240px at calc(50% + 170px) 30px, rgb(var(--t-accent-rgb) / calc(var(--t-wash) * 0.5)), transparent);
 }
 
 /* Search fields draw their own magnifier and clear button (ui/SearchField). */
@@ -561,6 +630,56 @@ input[type="search"]::-webkit-search-results-button {
   100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
 }
 @utility suggest-pop { animation: suggest-pop 600ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+/* Charts coming in (components/Charts.tsx): a column grows from its
+   baseline (the origin is set per chart, in the plot's own pixels), a label
+   fades in after it, a horizontal bar runs out from its start. Once, when
+   they appear; the reduced-motion rule below switches all three off. */
+@keyframes chart-grow { from { transform: scaleY(0); } }
+@utility chart-grow {
+  transform-box: view-box;
+  animation: chart-grow 640ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@keyframes chart-fade { from { opacity: 0; } }
+@utility chart-fade { animation: chart-fade 420ms ease-out 360ms backwards; }
+@keyframes bar-grow { from { transform: scaleX(0); } }
+@utility bar-grow {
+  transform-origin: left center;
+  animation: bar-grow 640ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  [dir="rtl"] & { transform-origin: right center; }
+}
+
+/* A screen's cards coming in: each child of <main> rises into place, the
+   next a moment later (ui/Screen). Only when it appears — a card added later
+   rises on its own. `no-rise` (the copy of a screen under a back swipe)
+   holds everything still. */
+@keyframes rise-in { from { opacity: 0; transform: translateY(14px); } }
+@utility rise-children {
+  & > * { animation: rise-in 460ms cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+  & > :nth-child(2) { animation-delay: 45ms; }
+  & > :nth-child(3) { animation-delay: 90ms; }
+  & > :nth-child(4) { animation-delay: 135ms; }
+  & > :nth-child(5) { animation-delay: 180ms; }
+  & > :nth-child(n + 6) { animation-delay: 225ms; }
+}
+.no-rise *, .no-rise *::before, .no-rise *::after { animation: none !important; }
+
+/* A band of light crossing the hero once, when it appears: never brighter
+   than the sheen the audit allows for, and gone in under a second. */
+@keyframes hero-shine { from { transform: translateX(-130%) skewX(-18deg); } to { transform: translateX(330%) skewX(-18deg); } }
+@utility hero-shine {
+  &::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 38%;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / var(--hero-sheen)), transparent);
+    transform: translateX(-130%) skewX(-18deg);
+    animation: hero-shine 1100ms cubic-bezier(0.4, 0, 0.2, 1) 350ms 1 both;
+  }
+}
 
 @utility ring-focus {
   outline: 2px solid var(--t-accent);

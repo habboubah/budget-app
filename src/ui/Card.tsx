@@ -18,7 +18,7 @@ export function Card({ title, sub, action, className = '', children }: {
     <section className={`rounded-md bg-surface card-edge p-[16px] ${className}`}>
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="text-label font-semibold text-fg wrap-compound">{title}</h3>
+          <h3 className="display text-body font-bold text-fg wrap-compound">{title}</h3>
           {sub && <p className="text-caption text-fg-mute mt-0.5 tabular-nums wrap-prose">{sub}</p>}
         </div>
         {action}

@@ -1,4 +1,5 @@
 import { CSSProperties, ReactNode, useId, useLayoutEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import { Category, Hue, MonthKey } from '../types';
 import { MonthPoint, BudgetSplit, Outlook, OutlookItem, Pace, RulePart } from '../insights';
 import {
@@ -11,16 +12,54 @@ import { tapLight } from '../ui/haptics';
 
 /*
  * The statistics charts, hand-drawn in SVG and following the dataviz skill:
- * thin marks (columns ≤ 12px here, a 4px rounded end, square on the
- * baseline; a 2px line), a 2px surface gap between touching columns, a
- * hairline solid grid, one y-axis, text in text tokens — never a series
+ * slim marks (columns ≤ 16px here with a round data end, square on the
+ * baseline; a 2.5px line, smoothed without ever overshooting a value), a
+ * surface gap between touching columns, a dotted hairline grid on a solid
+ * baseline, one y-axis, text in text tokens — never a series
  * colour — a legend for two or more series and none for one, and a tooltip on
  * hover, tap and keyboard focus that never gates a value: the table under the
  * charts has every number.
  *
  * With many months a plot scrolls sideways under a fixed y-axis and opens on
  * the newest month.
+ *
+ * Charts come in moving: columns grow from the baseline one after another
+ * (`chart-grow`), a line is uncovered from the left (`reveal`). Once, when
+ * they appear — never on a tap — and not at all under reduced motion.
  */
+
+/** How a column grows from the baseline at `base` (px in the plot), the i-th a little later. */
+function grow(base: number, i: number): { className: string; style: CSSProperties } {
+  return { className: 'chart-grow', style: { transformOrigin: `0px ${base}px`, animationDelay: `${Math.min(i * 28, 420)}ms` } };
+}
+
+/**
+ * A smooth line through the points that never overshoots one (monotone cubic,
+ * Fritsch–Carlson): between two months it stays between their values, so the
+ * curve claims nothing the numbers don't. The tangents come from the whole
+ * series, so a stretch of it (`from`…`to`) joins the next one without a kink.
+ */
+export function smoothPath(pts: { x: number; y: number }[], from = 0, to = pts.length - 1): string {
+  const n = pts.length;
+  if (n < 2 || to <= from) return '';
+  const d: number[] = [];
+  for (let i = 0; i < n - 1; i++) d.push((pts[i + 1].y - pts[i].y) / ((pts[i + 1].x - pts[i].x) || 1));
+  const m = pts.map((_, i) => (i === 0 ? d[0] : i === n - 1 ? d[n - 2] : d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2));
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+    const a = m[i] / d[i];
+    const b = m[i + 1] / d[i];
+    const s = a * a + b * b;
+    if (s > 9) { const k = 3 / Math.sqrt(s); m[i] = k * a * d[i]; m[i + 1] = k * b * d[i]; }
+  }
+  const f = (v: number) => v.toFixed(1);
+  let out = `M${f(pts[from].x)},${f(pts[from].y)}`;
+  for (let i = from; i < to; i++) {
+    const h = (pts[i + 1].x - pts[i].x) / 3;
+    out += `C${f(pts[i].x + h)},${f(pts[i].y + m[i] * h)} ${f(pts[i + 1].x - h)},${f(pts[i + 1].y - m[i + 1] * h)} ${f(pts[i + 1].x)},${f(pts[i + 1].y)}`;
+  }
+  return out;
+}
 
 const PLOT_H = 150;
 const AXIS_H = 34;
@@ -54,11 +93,11 @@ function plotLabel(template: string, amount: string, t: Strings, key = 'amount')
   return t.dir === 'rtl' ? `\u2067${text}\u2069` : text;
 }
 
-/** A column with a 4px rounded data end and a square foot on the baseline. */
+/** A column with a round data end and a square foot on the baseline. */
 function columnPath(x: number, w: number, top: number, base: number): string {
   const h = base - top;
   if (h <= 0.5) return '';
-  const r = Math.min(4, w / 2, h);
+  const r = Math.min(6, w / 2, h);
   return `M${x},${base}V${top + r}Q${x},${top} ${x + r},${top}H${x + w - r}Q${x + w},${top} ${x + w},${top + r}V${base}Z`;
 }
 
@@ -66,7 +105,7 @@ function columnPath(x: number, w: number, top: number, base: number): string {
 function columnPathDown(x: number, w: number, bottom: number, base: number): string {
   const h = bottom - base;
   if (h <= 0.5) return '';
-  const r = Math.min(4, w / 2, h);
+  const r = Math.min(6, w / 2, h);
   return `M${x},${base}V${bottom - r}Q${x},${bottom} ${x + r},${bottom}H${x + w - r}Q${x + w},${bottom} ${x + w},${bottom - r}V${base}Z`;
 }
 
@@ -107,6 +146,8 @@ interface FrameProps {
    * buttons. Without it, every slot is its own target.
    */
   groups?: { from: number; to: number; label: string }[];
+  /** A line chart: the plot is uncovered from the left when it appears. */
+  reveal?: boolean;
 }
 
 /**
@@ -115,7 +156,7 @@ interface FrameProps {
  * group's, with scrubbing in between), and the tooltip stays inside the
  * visible part. Months and days share it.
  */
-function ChartFrame({ slots, minSlot, ticks, y, selected, t, label, onPick, marks, tooltip, zero, tickLabel, axis, tipTitle, groups }: FrameProps) {
+function ChartFrame({ slots, minSlot, ticks, y, selected, t, label, onPick, marks, tooltip, zero, tickLabel, axis, tipTitle, groups, reveal }: FrameProps) {
   const months = slots;
   const box = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
@@ -182,9 +223,16 @@ function ChartFrame({ slots, minSlot, ticks, y, selected, t, label, onPick, mark
       >
         <div className="relative" style={{ width: plotW, height: H }}>
           <svg width={plotW} height={H} className="block" aria-hidden="true">
-            {ticks.map(v => <line key={v} x1={0} x2={plotW} y1={y(v)} y2={y(v)} className="stroke-hairline" strokeWidth={1} />)}
+            {/* A dotted grid over a solid floor: the lines guide the eye without caging the marks. */}
+            {ticks.map((v, i) => (
+              <line key={v} x1={0} x2={plotW} y1={y(v)} y2={y(v)} className="stroke-hairline" strokeWidth={1}
+                strokeDasharray={i === 0 ? undefined : '1.5 4.5'} strokeLinecap="round" />
+            ))}
             {zero && <line x1={0} x2={plotW} y1={y(0)} y2={y(0)} className="stroke-fg-faint" strokeWidth={1} />}
-            {active !== null && <line x1={cx(active)} x2={cx(active)} y1={PAD_T} y2={PAD_T + PLOT_H} className="stroke-hairline" strokeWidth={slot} opacity={0.5} />}
+            {active !== null && (
+              <rect x={cx(active) - Math.max(3, slot / 2 - 2)} width={Math.max(6, slot - 4)} y={PAD_T - 4} height={PLOT_H + 4}
+                rx={Math.min(10, Math.max(3, slot / 2 - 2))} className="fill-fg" opacity={0.06} />
+            )}
             {marks(cx, slot, active)}
             {months.map((m, i) => {
               const on = m === selected;
@@ -202,6 +250,17 @@ function ChartFrame({ slots, minSlot, ticks, y, selected, t, label, onPick, mark
               );
             })}
           </svg>
+          {reveal && (
+            // The curtain a line chart comes out from under: the card's own colour, drawn aside once.
+            <motion.div
+              aria-hidden="true"
+              className="pointer-events-none absolute right-0 top-0 w-full bg-surface"
+              style={{ height: PAD_T + PLOT_H + 2, originX: 1 }}
+              initial={{ scaleX: 1 }}
+              animate={{ scaleX: 0 }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
+            />
+          )}
           {targets ? (
             // Runs of slots as targets; between them a finger (or the mouse) scrubs slot by slot.
             <div
@@ -376,7 +435,7 @@ export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps)
         slots={points.map(p => p.key)} minSlot={30} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
         label={i => `${monthLabel(points[i].key, t.locale)}: ${parts(points[i])}`}
         marks={(cx, slot, active) => {
-          const w = Math.max(4, Math.min(12, (slot - 12) / 2));
+          const w = Math.max(4, Math.min(14, (slot - 14) / 2));
           // Written over the columns only where a month has room for it; the tooltip and table have them always.
           const labelled = both && slot >= 40;
           return (
@@ -390,7 +449,7 @@ export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps)
                 ))}
               </defs>
               {points.map((p, i) => {
-                const x0 = cx(i) - (k * w + (k - 1) * 2) / 2;
+                const x0 = cx(i) - (k * w + (k - 1) * 3) / 2;
                 const running = p.key === now;
                 return (
                   <g key={p.key} opacity={active === null || active === i ? 1 : 0.45}>
@@ -399,9 +458,9 @@ export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps)
                       const total = s.total(p);
                       const open = Math.min(total, s.open(p));
                       const paid = total - open;
-                      const x = x0 + j * (w + 2);
+                      const x = x0 + j * (w + 3);
                       return (
-                        <g key={kind}>
+                        <g key={kind} {...grow(base, i * 2 + j)}>
                           {paid > 0 && <path d={open > 0 ? rectPath(x, w, y(paid), base) : columnPath(x, w, y(paid), base)} className={s.fill} />}
                           {open > 0 && <path d={columnPath(x, w, y(total), y(paid))} fill={`url(#${hatch}-${kind})`} />}
                         </g>
@@ -410,7 +469,7 @@ export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps)
                     {labelled && (p.income || p.expense) ? (
                       <text
                         x={cx(i)} y={y(Math.max(p.income, p.expense)) - 6} textAnchor="middle"
-                        className={`text-micro font-bold num ${running ? 'fill-fg-mute' : p.saved < 0 ? 'fill-neg' : 'fill-fg'}`}
+                        className={`chart-fade text-micro font-bold num ${running ? 'fill-fg-mute' : p.saved < 0 ? 'fill-neg' : 'fill-fg'}`}
                       >
                         {/* The running month is an estimate: muted, and "≈" where there is room for it. */}
                         {`${running && slot >= 56 ? '≈ ' : ''}${savedLabel(p.saved, t.locale)}`}
@@ -476,17 +535,17 @@ export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
   return (
     <ChartFrame
       slots={points.map(p => p.key)} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
-      zero={yLo < 0 && yHi > 0}
+      zero={yLo < 0 && yHi > 0} reveal
       label={i => `${monthLabel(points[i].key, t.locale)}: ${t.balanceOverTime} ${money(points[i].end)}`}
       marks={(cx, _slot, active) => {
-        const path = (from: number, to: number) => points.slice(from, to + 1)
-          .map((p, j) => `${j ? 'L' : 'M'}${cx(from + j).toFixed(1)},${y(p.end).toFixed(1)}`).join('');
+        const pts = points.map((p, i) => ({ x: cx(i), y: y(p.end) }));
+        const path = (from: number, to: number) => smoothPath(pts, from, to);
         const line = path(0, last);
         const solid = running > 0 ? path(0, running - 1) : running === 0 ? '' : line;
         const dashed = running > 0 ? path(running - 1, running) : '';
-        const area = `${line}L${cx(last).toFixed(1)},${base.toFixed(1)}L${cx(0).toFixed(1)},${base.toFixed(1)}Z`;
+        const area = line && `${line}L${cx(last).toFixed(1)},${base.toFixed(1)}L${cx(0).toFixed(1)},${base.toFixed(1)}Z`;
         const stroke = (d: string, className: string, side: 'up' | 'down', dash?: string) => d && (
-          <path d={d} fill="none" className={className} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round"
+          <path d={d} fill="none" className={className} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round"
             strokeDasharray={dash} clipPath={`url(#${clip}-${side})`} />
         );
         return (
@@ -494,16 +553,27 @@ export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
             <defs>
               <clipPath id={`${clip}-up`}><rect x={0} y={0} width="100%" height={base} /></clipPath>
               <clipPath id={`${clip}-down`}><rect x={0} y={base} width="100%" height={H - base} /></clipPath>
+              {/* The wash under the line thins out towards the floor (and, below zero, towards the bottom). */}
+              <linearGradient id={`${clip}-wash`} gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={PAD_T} y2={base} className="text-chart-line">
+                <stop offset="0" stopColor="currentColor" stopOpacity={0.3} />
+                <stop offset="1" stopColor="currentColor" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id={`${clip}-under`} gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={base} y2={PAD_T + PLOT_H} className="text-neg">
+                <stop offset="0" stopColor="currentColor" stopOpacity={0.04} />
+                <stop offset="1" stopColor="currentColor" stopOpacity={0.3} />
+              </linearGradient>
             </defs>
-            <path d={area} className="fill-chart-line" opacity={0.13} clipPath={`url(#${clip}-up)`} />
-            <path d={area} className="fill-neg" opacity={0.14} clipPath={`url(#${clip}-down)`} />
+            {area && <path d={area} fill={`url(#${clip}-wash)`} clipPath={`url(#${clip}-up)`} />}
+            {area && <path d={area} fill={`url(#${clip}-under)`} clipPath={`url(#${clip}-down)`} />}
             {stroke(solid, 'stroke-chart-line', 'up')}
             {stroke(solid, 'stroke-neg', 'down')}
             {stroke(dashed, 'stroke-chart-line', 'up', '4 4')}
             {stroke(dashed, 'stroke-neg', 'down', '4 4')}
+            {/* A soft halo marks the newest point — where the line stands today. */}
+            <circle cx={cx(last)} cy={y(points[last].end)} r={11} className={points[last].end < 0 ? 'fill-neg' : 'fill-chart-line'} opacity={0.16} />
             {[...new Set([last, active ?? last])].map(i => (
               <circle
-                key={i} cx={cx(i)} cy={y(points[i].end)} r={4.5} strokeWidth={projected(i) ? 2.5 : 2}
+                key={i} cx={cx(i)} cy={y(points[i].end)} r={5} strokeWidth={projected(i) ? 2.5 : 2}
                 className={projected(i)
                   ? `fill-surface ${points[i].end < 0 ? 'stroke-neg' : 'stroke-chart-line'}`
                   : `${points[i].end < 0 ? 'fill-neg' : 'fill-chart-line'} stroke-surface`}
@@ -511,7 +581,7 @@ export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
             ))}
             {active === null && (
               // The newest value, labelled directly — the one the reader came for.
-              <text x={cx(last) - 8} y={y(points[last].end) - 11} textAnchor="end" className="fill-fg text-caption font-bold num chart-halo">
+              <text x={cx(last) - 10} y={y(points[last].end) - 14} textAnchor="end" className="fill-fg text-caption font-bold num chart-halo">
                 {money(points[last].end)}
               </text>
             )}
@@ -569,7 +639,7 @@ export function CategoryTrendChart({ category, values, open, months, selected, l
         slots={months} minSlot={22} ticks={ticks} y={y} selected={selected} t={t} onPick={onPick}
         label={i => `${monthLabel(months[i], t.locale)}: ${name} ${money(value(months[i]))}${open?.get(months[i]) ? `, ${fmt(t.inclOpen, { amount: money(open.get(months[i])!) })}` : ''}`}
         marks={(cx, slot, active) => {
-          const w = Math.max(4, Math.min(12, slot * 0.4));
+          const w = Math.max(4, Math.min(16, slot * 0.44));
           const end = cx(months.length - 1) + slot / 2;
           return (
             <>
@@ -586,8 +656,10 @@ export function CategoryTrendChart({ category, values, open, months, selected, l
                 const x = cx(i) - w / 2;
                 return (
                   <g key={m} opacity={active === null || active === i ? 1 : 0.45}>
-                    {paid > 0 && <path d={pending > 0 ? rectPath(x, w, y(paid), base) : columnPath(x, w, y(paid), base)} className="fill-hue-chart" />}
-                    {pending > 0 && <path d={columnPath(x, w, y(total), y(paid))} fill={`url(#${hatch})`} />}
+                    <g {...grow(base, i)}>
+                      {paid > 0 && <path d={pending > 0 ? rectPath(x, w, y(paid), base) : columnPath(x, w, y(paid), base)} className="fill-hue-chart" />}
+                      {pending > 0 && <path d={columnPath(x, w, y(total), y(paid))} fill={`url(#${hatch})`} />}
+                    </g>
                   </g>
                 );
               })}
@@ -645,7 +717,7 @@ export function AverageBars({ items, language, t, selected, onSelect, detail }: 
               <span className="min-w-0 flex-1 text-label text-fg wrap-compound text-start">{name}</span>
               <span className={`text-label font-semibold num ${c.kind === 'income' ? 'text-pos' : 'text-fg'}`}>{formatMoney(average, t.locale)}</span>
             </div>
-            <div className="mt-1.5 h-3 rounded-e-[4px] bg-hue-chart" style={{ width: `${Math.max(1, (average / max) * 100)}%` }} aria-hidden="true" />
+            <div className="bar-grow mt-1.5 h-3 rounded-full bg-hue-chart" style={{ width: `${Math.max(1, (average / max) * 100)}%`, animationDelay: `${Math.min(i * 40, 400)}ms` }} aria-hidden="true" />
           </>
         );
         return (
@@ -760,7 +832,7 @@ export function SavingsRateChart({ points, selected, t, onPick, target = 20 }: S
         label={i => `${monthLabel(points[i].key, t.locale)}${visible(rates[i]) ? `: ${percent(rates[i]!)}, ${
           points[i].saved < 0 ? t.overspent : t.saved} ${money(Math.abs(points[i].saved))}` : ''}`}
         marks={(cx, slot, active) => {
-          const w = Math.max(4, Math.min(12, slot * 0.4));
+          const w = Math.max(4, Math.min(16, slot * 0.44));
           const end = cx(points.length - 1) + slot / 2;
           return (
             <>
@@ -769,9 +841,11 @@ export function SavingsRateChart({ points, selected, t, onPick, target = 20 }: S
                 if (!visible(r)) return null;
                 return (
                   <g key={p.key} opacity={active === null || active === i ? 1 : 0.45}>
-                    {r >= 0
-                      ? <path d={columnPath(cx(i) - w / 2, w, y(r), base)} className="fill-chart-in" />
-                      : <path d={columnPathDown(cx(i) - w / 2, w, y(r), base)} className="fill-neg" />}
+                    <g {...grow(base, i)}>
+                      {r >= 0
+                        ? <path d={columnPath(cx(i) - w / 2, w, y(r), base)} className="fill-chart-in" />
+                        : <path d={columnPathDown(cx(i) - w / 2, w, y(r), base)} className="fill-neg" />}
+                    </g>
                   </g>
                 );
               })}
@@ -831,7 +905,7 @@ export function PaceChart({ pace: p, now, t, groups }: {
     <div>
       {p.usual && <LegendToggles label={t.chartShow} hidden={hidden} onToggle={toggle} items={legend} />}
       <ChartFrame
-        slots={days} minSlot={8} ticks={ticks} y={y} t={t}
+        slots={days} minSlot={8} ticks={ticks} y={y} t={t} reveal
         label={i => dayName(i)}
         groups={groups}
         // Weekly ticks along the bottom, today's day among them.
@@ -928,7 +1002,7 @@ export function OutlookChart({ outlook: o, t }: { outlook: Outlook; t: Strings }
   const bills = (p: (typeof pts)[number]) => p.big.filter(b => !b.income);
   return (
     <ChartFrame
-      slots={pts.map(p => p.key)} minSlot={22} ticks={ticks} y={y} t={t}
+      slots={pts.map(p => p.key)} minSlot={22} ticks={ticks} y={y} t={t} reveal
       zero={yLo < 0 && yHi > 0}
       label={i => {
         const p = pts[i];
@@ -991,7 +1065,7 @@ export function ShareBar({ items, label, className = '' }: {
   const total = items.reduce((s, i) => s + Math.max(0, i.value), 0);
   if (total <= 0) return null;
   return (
-    <div role="img" aria-label={label} className={`flex gap-[2px] h-2.5 rounded-full overflow-hidden ${className}`}>
+    <div role="img" aria-label={label} className={`flex gap-[3px] h-3 rounded-full overflow-hidden ${className}`}>
       {items.filter(i => i.value > 0).map(i => (
         <div key={i.key} data-hue={i.hue} className="h-full bg-hue-chart first:rounded-s-full last:rounded-e-full" style={{ width: `${(i.value / total) * 100}%` }} />
       ))}
@@ -1011,7 +1085,7 @@ export function MiniBars({ hue, rows }: { hue?: Hue; rows: { label: string; valu
         <div key={r.label} className="flex items-center gap-2">
           <span className="w-[5.5rem] shrink-0 text-micro text-fg-mute tabular-nums wrap-compound">{r.label}</span>
           <span className="min-w-0 flex-1 flex items-center gap-1.5">
-            <span className="h-2 rounded-e-[3px] bg-hue-chart" style={{ width: `${Math.max(2, (Math.abs(r.value) / max) * 100)}%`, opacity: r.faded ? 0.35 : 1 }} />
+            <span className="bar-grow h-2.5 rounded-full bg-hue-chart" style={{ width: `${Math.max(2, (Math.abs(r.value) / max) * 100)}%`, opacity: r.faded ? 0.35 : 1 }} />
             <span className="shrink-0 text-micro font-semibold text-fg num">{r.text}</span>
           </span>
         </div>

@@ -13,7 +13,7 @@ export function BudgetBar({ status, className = '' }: { status: BudgetStatus; cl
   const over = status.left < 0;
   const spring = { type: 'spring' as const, duration: 0.5, bounce: 0 };
   return (
-    <span aria-hidden="true" className={`relative block h-[7px] rounded-full bg-surface-2 ${className}`}>
+    <span aria-hidden="true" className={`relative block h-[7px] rounded-full bg-fg/10 ${className}`}>
       {over ? (
         <span className="absolute inset-0 rounded-full bg-neg" />
       ) : (

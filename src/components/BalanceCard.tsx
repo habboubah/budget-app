@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
-import { Check, ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { CalendarCheck, Check, ChevronDown, ChevronRight, Eye, EyeOff, PiggyBank } from 'lucide-react';
 import { MonthBalance } from '../logic';
 import { formatMoney, formatMoneyApprox, leftPerDay, monthKeyOf, monthLabel, monthLeft, monthSettled, spoken } from '../logic';
 import { Strings, fmt, plural } from '../translations';
@@ -99,8 +99,8 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, p
   const carryShort = b.overridden ? t.openingShort : b.prevKey ? t.carryShort : t.startingBalance;
 
   return (
-    <motion.section className="hero hero-glow rounded-lg overflow-hidden" aria-label={t.balanceNow} {...swipe}>
-      <div className="ps-5 pe-4 pt-5 pb-3">
+    <motion.section className="hero hero-glow hero-art hero-shine rounded-lg overflow-hidden" aria-label={t.balanceNow} {...swipe}>
+      <div className="ps-5 pe-4 pt-5 pb-4">
         {/* The ring grows with the text size; once the balance would be squeezed
             beside it (the basis is in rem), it moves under the balance. */}
         <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
@@ -149,12 +149,13 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, p
         <>
           {/* The two answers. Side by side while both fit; a large amount or
               large text stacks them (the basis is in rem). */}
-          <dl className="mx-2 flex flex-wrap gap-2">
-            <Panel label={t.balanceEnd} tone={b.end < 0 ? 'text-on-hero-neg' : 'text-on-hero'} note={endNote}>
+          <dl className="mx-2.5 flex flex-wrap gap-2">
+            <Panel icon={CalendarCheck} label={t.balanceEnd} tone={b.end < 0 ? 'text-on-hero-neg' : 'text-on-hero'} note={endNote}>
               <span className="sr-only">{say(money(b.end))}</span>
               <span aria-hidden="true"><CountingMoney cents={b.end} money={money} /></span>
             </Panel>
             <Panel
+              icon={PiggyBank}
               label={running ? t.leftOverNow : t.leftThisMonth}
               tone={net > 0 ? 'text-on-hero-pos' : net < 0 ? 'text-on-hero-neg' : 'text-on-hero-soft'}
               note={leftNote}
@@ -169,7 +170,7 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, p
             aria-expanded={details}
             aria-controls={detailsId}
             onClick={() => { tapLight(); setDetails(v => !v); }}
-            className="w-full min-h-tap ps-5 pe-4 pt-2.5 pb-3 flex items-center gap-2 text-caption text-on-hero-mute text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
+            className="w-full min-h-tap ps-5 pe-4 pt-3 pb-3.5 flex items-center gap-2 text-caption text-on-hero-mute text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
           >
             <span className="min-w-0 flex-1 wrap-prose">
               {carryShort} <span className="num font-semibold text-on-hero whitespace-nowrap">{money(b.openingNow)}</span>
@@ -189,7 +190,7 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, p
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-              className="mx-2 mb-2 rounded-md hero-panel overflow-hidden"
+              className="mx-2.5 mb-2.5 rounded-[22px] hero-panel overflow-hidden"
             >
               <CarryRow balance={b} t={t} money={money} onOpening={onOpening} />
               <Workings balance={b} t={t} money={money} />
@@ -211,7 +212,7 @@ export function BalanceCard({ balance: b, t, onOpening, onSwipe, reconciledAt, p
           )}
         </>
       ) : (
-        <div className="mx-2 mb-2 rounded-md hero-panel overflow-hidden">
+        <div className="mx-2.5 mb-2.5 rounded-[22px] hero-panel overflow-hidden">
           <CarryRow balance={b} t={t} money={money} onOpening={onOpening} />
         </div>
       )}
@@ -321,13 +322,22 @@ function useMonthSwipe(rtl: boolean, onSwipe?: (delta: 1 | -1) => void) {
 }
 
 /** One of the two answers: a caption, the amount, and a line about it. */
-function Panel({ label, tone, note, children }: { label: string; tone: string; note: Note | null; children: React.ReactNode }) {
+function Panel({ icon: Icon, label, tone, note, children }: {
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  label: string;
+  tone: string;
+  note: Note | null;
+  children: React.ReactNode;
+}) {
   return (
     // No min-w-0: an amount wider than the basis widens its panel, and the
     // two stack instead of the figure running out of its frame.
-    <div className="flex-1 basis-[9.5rem] rounded-[16px] hero-panel ps-3 pe-2.5 pt-2.5 pb-2">
-      <dt className="text-caption font-medium text-on-hero-soft wrap-prose">{label}</dt>
-      <dd className={`rounded-num text-heading font-bold whitespace-nowrap mt-0.5 ${tone}`}>{children}</dd>
+    <div className="flex-1 basis-[9.5rem] rounded-[22px] hero-panel ps-3.5 pe-2.5 pt-3 pb-2.5">
+      <dt className="flex items-start gap-1.5 text-caption font-medium text-on-hero-soft">
+        <Icon className="w-[15px] h-[15px] shrink-0 mt-[1.5px]" strokeWidth={2.2} aria-hidden="true" />
+        <span className="min-w-0 wrap-prose">{label}</span>
+      </dt>
+      <dd className={`rounded-num text-heading font-bold whitespace-nowrap mt-1 ${tone}`}>{children}</dd>
       {note && <dd className={`text-caption font-medium wrap-prose ${note.tone}`}>{note.text}</dd>}
     </div>
   );
@@ -504,7 +514,7 @@ function BigMoney({ cents, money, say }: { cents: number; money: (c: number) => 
   const [before, figure, after] = m ? [m[1], m[2], m[3]] : ['', text, ''];
   const sign = 'text-[0.6em] font-semibold text-on-hero-mute';
   return (
-    <p className="rounded-num font-bold mt-1 text-[clamp(32px,10vw,44px)] leading-[1.1] wrap-prose text-on-hero">
+    <p className="rounded-num font-extrabold mt-1.5 text-[clamp(34px,11vw,46px)] leading-[1.06] tracking-[-0.02em] wrap-prose text-on-hero">
       <span className="sr-only">{say(money(cents))}</span>
       <span aria-hidden="true">
         {before && <span className={`${sign} me-1`}>{before}</span>}
@@ -530,9 +540,9 @@ function PaidRing({ paid, total, label }: { paid: number; total: number; label: 
       role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={paid} aria-label={label} title={label}
     >
       <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90" aria-hidden="true">
-        <circle cx="30" cy="30" r={r} fill="none" strokeWidth="7" className="stroke-on-hero/25" />
+        <circle cx="30" cy="30" r={r} fill="none" strokeWidth="6.5" className="stroke-on-hero/20" />
         <motion.circle
-          cx="30" cy="30" r={r} fill="none" strokeWidth="7" strokeLinecap="round"
+          cx="30" cy="30" r={r} fill="none" strokeWidth="6.5" strokeLinecap="round"
           className="stroke-on-hero"
           style={{ opacity: ratio > 0 ? 1 : 0 }}
           strokeDasharray={c}

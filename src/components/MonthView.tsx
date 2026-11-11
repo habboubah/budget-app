@@ -182,6 +182,7 @@ export function MonthView(p: Props) {
 
   return (
     <Screen
+      still
       title={label}
       tabbed
       subtitle={monthStartDay() !== 1 ? periodLabel(month, t) : undefined}

@@ -109,7 +109,7 @@ export function CategoryView({ book, categoryId, months, language, t, onBack, on
           <section>
             <dl className="flex flex-wrap gap-2">
               {tiles.map(x => (
-                <div key={x.label} className="flex-1 basis-[6.5rem] min-w-0 flex flex-col justify-between rounded-md bg-surface card-edge px-3 py-2.5">
+                <div key={x.label} className="flex-1 basis-[6.5rem] flex flex-col justify-between rounded-md bg-surface card-edge px-3.5 py-3">
                   <dt className="text-caption text-fg-mute wrap-compound">{x.label}</dt>
                   <dd className="mt-0.5 rounded-num text-heading font-semibold text-fg">{x.value}</dd>
                 </div>

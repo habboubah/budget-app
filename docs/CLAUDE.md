@@ -191,7 +191,12 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `neg`; in the 50/30/20 bars *saved* is `chart-in`, as `chart-save` sits too
   close to `chart-want`). Every legend with two or more series is
   `LegendToggles`: aria-pressed chips that hide a series, and the axis
-  rescales to what is left,
+  rescales to what is left. Columns have a round data end on a square foot;
+  the grid is dotted above a solid floor; a month line (the balance) is
+  smoothed with `smoothPath` — monotone, so it never rises above or dips
+  below a value it doesn't have — over a wash that thins out downwards, its
+  newest point in a soft halo; day lines (pace) and projections stay
+  straight,
   and per category `bg-hue-chart` / `fill-hue-chart` under `data-hue` — one
   OKLCH step per hue and theme (`--t-<hue>-chart`). Amber (`chart-save` /
   `warn`) means "open" everywhere; what a month kept is a label, not a column.
@@ -701,19 +706,27 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 - Money and dates are formatted with `t.locale` (`de-DE` → `1.050,00 €`).
 - Long German compounds get `wrap-compound`, never `truncate`.
 
-## Styling — native iOS, vivid
-- The look is today's iOS: grouped grey background with white cards (black
-  with graphite cards at night), large titles, a floating capsule tab bar,
-  round floating nav buttons, swipe actions — with colour from two sources:
-  the user's **accent** and each category's **hue**. Read the `apple-design`
-  skill before changing interaction or motion.
+## Styling — native iOS, vivid, with depth
+- The look (second redesign, November 2026) is a finance app of today on
+  iOS's own patterns: a cool, light canvas lit by the accent at the top of
+  each page, white cards that float on a soft shadow (ink-blue night, cards
+  edged by a highlight from above), large soft radii (`rounded-sm` 14,
+  `rounded-md` 24, `rounded-lg` 32), heavy large titles, a floating glass
+  capsule tab bar, round floating nav buttons, swipe actions — with colour
+  from two sources: the user's **accent** and each category's **hue**, which
+  now lights whatever belongs to the category (see *A category's colour*).
+  Read the `apple-design` skill before changing interaction or motion.
 - Tailwind utilities inline. **All colours come from tokens in
   `src/index.css`** — never a literal hex in a component (`text-on-color` is
   the white ink on saturated fills).
 - Surfaces `bg-bg` / `bg-surface` / `bg-surface-2`, text `text-fg` /
   `text-fg-mute` / `text-fg-faint`, action `text-accent` / `bg-accent-fill`
-  + `text-accent-fill-ink`. Cards are `rounded-md bg-surface card-edge` — no
-  border, no shadow. Floating chrome (tab bar, nav buttons) is `float-chrome`.
+  + `text-accent-fill-ink`. Cards are `rounded-md bg-surface card-edge`:
+  `card-edge` is the whole elevation (`--t-card` per theme — a hairline, a
+  contact shadow and a low soft one by day; an inner highlight at night), so
+  never add a border or another shadow to a card. A card that is one button
+  takes `press` (it gives a little under the finger). Floating chrome (tab
+  bar, nav buttons) is `glass-chrome` (`float-chrome` is its solid fallback).
 - **Accent** = `data-accent` on `<html>` (store `accent`, key
   `spartopf-accent`, a view preference — not in backups; picked in Optionen →
   Darstellung → Farbe). Eight in `ACCENTS` (`types.ts`); each `[data-accent]`
@@ -722,9 +735,12 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   and `--t-chart-line` onto them. After touching any colour, run
   `npm run audit:contrast` (`scripts/contrast-audit.mjs`): every accent ×
   theme, the hero and its panel, the paid ticks — it must pass.
-- **The hero** (`hero` + `hero-glow`): the accent's gradient with a sheen and a
-  glow of its own colour. It carries the balance card, the statistics' month
-  summary, the add button and primary `Button`s. Ink on it: `text-on-hero`,
+- **The hero** (`hero` + `hero-glow`): the accent's gradient with a sheen, a
+  rim of light and a glow of its own colour. It carries the balance card, the
+  statistics' month summary, the add button and primary `Button`s. The big
+  hero cards add `hero-art` (fine rings in the far corner) and the balance
+  card `hero-shine` (one band of light when it appears); both stay under
+  `--hero-sheen`, which the audit reads — keep it that way. Ink on it: `text-on-hero`,
   `text-on-hero-mute` (captions on the gradient); on its frosted `hero-panel`
   also `text-on-hero-soft` / `-pos` / `-warn` / `-neg` — those four only on the
   panel. Never `text-pos` / `text-neg` / `text-fg` on the hero.
@@ -736,8 +752,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   font-semibold`); `rounded-num` (SF Rounded, tabular) for money read at a
   glance — the balance, category totals, the amount being typed, key figures
   in the statistics. `eyebrow` is a sentence-case caption, not uppercase.
-- Rows: status in words in the grey detail line (*offen*, *erwartet*,
-  *überfällig*), never pill badges; open amounts `text-fg-mute`, like a pending
+- Rows: a category card's entries have no dividers — the tick sits in a 68 px
+  column under the header's picture, the name under the category's name;
+  settings groups keep their inset hairlines. Status in words in the grey
+  detail line (*offen*, *erwartet*, *überfällig*), never pill badges; open amounts `text-fg-mute`, like a pending
   card payment. Swipe actions come from `ui/SwipeRow` (touch only — the mouse
   drags to sort); everything a swipe does must also be reachable without it.
 - Navigation: tapping the month's name opens `MonthPickerSheet`; ‹ › sit in
@@ -746,7 +764,14 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   a negative balance or overdue, `text-warn` (+ `bg-warn-dim`) *open*. Expenses
   themselves are plain `text-fg` — a bill is not an error.
 - A category's colour: `data-hue={category.hue}` on an element, then paint
-  with `bg-hue-bg` / `text-hue-ink`. Its hue is identity — the emoji tile, the
+  with `bg-hue-bg` / `text-hue-ink`. It also lights what belongs to the
+  category: `hue-wash` (fading down from the top — a category card's header)
+  and `hue-tint` (even — a *Demnächst fällig* card, the entry sheet's amount)
+  lay `--hue-bg` over the surface at `--t-hue-wash`; on them the picture is
+  `<Picture plain>` (a white tile) and a bar's track is `bg-fg/10`. Text on
+  them: `text-fg`, `text-fg-mute`, the money colours and `text-accent` — the
+  audit checks each against every hue (`… hue wash` rows). Its hue is
+  identity — the emoji tile, the
   bar under the category's name (paid so far; with a budget, paid + open
   against the budget, red when over, a tick for today — `BudgetBar`) and the paid ticks
   (`bg-hue-chart` + `text-chart-label`), the bars in the statistics; cards stay
@@ -754,8 +779,16 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 - Motion: big money runs to a new value (`useCountUp` / `ui/CountingMoney`,
   with the final amount in an `sr-only` twin); a month's cards come in with
   `stagger` / `rise` (`ui/stagger.ts`), keyed by month — the balance card
-  stays outside so its numbers run between months. All of it collapses
-  under reduced motion.
+  stays outside so its numbers run between months (`<Screen still>`); every
+  other screen's cards rise in by themselves (`rise-children` on `Screen`'s
+  `<main>`; `no-rise` holds the copy under a back swipe still). A tab comes
+  forward out of a slight depth, a pushed screen slides. A category's paid
+  bar slides in from empty (a transform under the track's round mask), a paid tick pops with a ring spreading out of it, the chosen tab's
+  symbol lands with a bounce. Charts come in once: columns grow from the
+  baseline (`chart-grow`, via `grow()` in Charts.tsx), a line chart is
+  uncovered from the left (`ChartFrame reveal`), horizontal bars run out
+  (`bar-grow`). Transform and opacity only, once per appearance, never on a
+  tap. All of it collapses under reduced motion.
 - Amounts use the `num` utility (tabular, LTR); big amounts the `display` face.
 - Type scale in rem (follows Dynamic Type); touch targets in px
   (`min-h-control`, `h-tap`, `w-tap`).
