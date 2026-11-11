@@ -1108,6 +1108,17 @@ const nb: Strings = {
   per2MonthsShort: 'annenhver md.',
   perQuarterShort: 'per kvartal',
   perHalfYearShort: 'per halvår',
+  // Yearly budgets and rollover (schema 25)
+  budgetAsk: 'Hvor mye kan {name} koste?',
+  budgetPerMonth: 'Per måned',
+  budgetPerYear: 'Per år',
+  budgetFieldYear: 'Budsjett per år',
+  budgetRollover: 'Ta med resten til neste måned',
+  budgetRolloverHint: 'Det som er igjen, legges til neste måned; det som gikk over, trekkes fra der. Teller fra og med denne måneden.',
+  budgetYearHint: 'For hele kalenderåret – bra for klær, ferie eller gaver.',
+  budgetLineYear: 'Årsbudsjett {amount}',
+  budgetCarriedPlus: 'inkl. {amount} overført',
+  budgetCarriedMinus: 'minus {amount} overført',
 };
 
 export default nb;

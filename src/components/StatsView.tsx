@@ -1,3 +1,4 @@
+import { monthlyLimit } from '../budgets';
 import { CSSProperties, useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, ChevronRight, X } from 'lucide-react';
 import { Category, MonthKey } from '../types';
@@ -320,7 +321,7 @@ function WhereCard({ book, averageOver, language, t, onCategory, onPayee }: {
   const tagTotal = tags.reduce((sum, x) => sum + x.amount, 0);
   const payeeSpan = monthSpanLabel(payeeMonths, t.locale);
   const rows = allRows ? where.rows : where.rows.slice(0, WHERE_ROWS);
-  const scale = Math.max(1, ...where.rows.map(r => Math.max(r.average, r.category.limit ?? 0)));
+  const scale = Math.max(1, ...where.rows.map(r => Math.max(r.average, monthlyLimit(r.category) ?? 0)));
 
   return (
     <Card
@@ -386,6 +387,8 @@ function WhereRowButton({ row: r, scale, language, t, onOpen }: {
   onOpen: () => void;
 }) {
   const c: Category = r.category;
+  // The budget's tick sits on a monthly scale: a year's budget shows as a twelfth (schema 25).
+  const limit = monthlyLimit(c);
   const name = displayName(c.names, language);
   const share = formatPercent(Math.round(r.share * 100), t.locale);
   const up = r.change && r.change.diff > 0;
@@ -393,7 +396,7 @@ function WhereRowButton({ row: r, scale, language, t, onOpen }: {
   const label = [
     fmt(t.whereRowAria, { name, amount: formatMoney(r.average, t.locale), share }),
     change,
-    c.limit ? fmt(t.whereBudgetAria, { amount: formatMoneyShort(c.limit, t.locale) }) : null,
+    limit ? fmt(t.whereBudgetAria, { amount: formatMoneyShort(limit, t.locale) }) : null,
   ].filter(Boolean).join(', ');
   const Arrow = up ? ArrowUpRight : ArrowDownRight;
   return (
@@ -419,7 +422,7 @@ function WhereRowButton({ row: r, scale, language, t, onOpen }: {
         </span>
         <span className="relative mt-1.5 block h-3" aria-hidden="true">
           <span className="absolute inset-y-0 start-0 rounded-e-[4px] bg-hue-chart" style={{ width: `${Math.max(1, (r.average / scale) * 100)}%` }} />
-          {!!c.limit && <span className="absolute -top-0.5 -bottom-0.5 w-[2px] rounded-full bg-fg" style={{ insetInlineStart: `calc(${(c.limit / scale) * 100}% - 1px)` }} />}
+          {!!limit && <span className="absolute -top-0.5 -bottom-0.5 w-[2px] rounded-full bg-fg" style={{ insetInlineStart: `calc(${(limit / scale) * 100}% - 1px)` }} />}
         </span>
       </button>
     </li>

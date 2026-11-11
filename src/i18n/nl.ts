@@ -1107,6 +1107,17 @@ const nl: Strings = {
   per2MonthsShort: 'per 2 mnd.',
   perQuarterShort: 'per kwartaal',
   perHalfYearShort: 'per halfjaar',
+  // Yearly budgets and rollover (schema 25)
+  budgetAsk: 'Hoeveel mag {name} kosten?',
+  budgetPerMonth: 'Per maand',
+  budgetPerYear: 'Per jaar',
+  budgetFieldYear: 'Budget per jaar',
+  budgetRollover: 'Rest meenemen naar de volgende maand',
+  budgetRolloverHint: 'Wat overblijft komt bij de volgende maand; wat erover ging, gaat er daar af. Telt vanaf deze maand.',
+  budgetYearHint: 'Voor het hele kalenderjaar – handig voor kleding, vakantie of cadeaus.',
+  budgetLineYear: 'Jaarbudget {amount}',
+  budgetCarriedPlus: 'incl. {amount} meegenomen',
+  budgetCarriedMinus: 'min {amount} meegenomen',
 };
 
 export default nl;

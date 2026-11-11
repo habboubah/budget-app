@@ -157,7 +157,11 @@ Everything the app can do. Build and release steps are in the
 - **Budgets.** Give a spending category a monthly budget (with a suggestion
   from what it cost on average): its card shows paid and open against it, a
   tick for today, "noch 212,88 €" or "50,04 € drüber". *Diesen Monat übrig*
-  says what is left per day.
+  says what is left per day. A budget can also run **per year** (*Pro Jahr*:
+  clothes, holidays, presents — the calendar year's months count together,
+  "Jahresbudget 600 € · noch 212 €"), or stay monthly and **take its rest
+  along** (*Rest in den nächsten Monat mitnehmen*: what is left comes on top
+  next month, what went over comes off — "inkl. 45 € Übertrag").
 - **Demnächst fällig** on the running month: what is due next, overdue first,
   ticked off right there; *Alle* lists it day by day, with what next month
   brings along.

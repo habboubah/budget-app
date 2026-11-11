@@ -1,0 +1,190 @@
+{
+ "_about": "What version 25 keeps in localStorage (synthetic): version 24's book, with a yearly budget on one category and a rollover budget on another.",
+ "spartopf-meta": {
+  "seeded": true,
+  "schemaVersion": 25
+ },
+ "spartopf-categories": [
+  {
+   "id": "income",
+   "names": {
+    "de": "Einkommen",
+    "en": "Income",
+    "ar": "الدخل"
+   },
+   "emoji": "💰",
+   "hue": "leaf",
+   "kind": "income",
+   "repeat": "monthly",
+   "builtin": true
+  },
+  {
+   "id": "fixed",
+   "names": {
+    "de": "Wohnen",
+    "en": "Home",
+    "ar": "المنزل"
+   },
+   "emoji": "🏠",
+   "hue": "sky",
+   "kind": "expense",
+   "repeat": "monthly",
+   "budget": "need",
+   "builtin": true,
+   "limit": 60000,
+   "limitPer": "year"
+  },
+  {
+   "id": "groceries",
+   "names": {
+    "de": "Lebensmittel und Drogerie",
+    "en": "Groceries & drugstore",
+    "ar": "البقالة والعناية الشخصية"
+   },
+   "emoji": "🛒",
+   "hue": "lime",
+   "kind": "expense",
+   "repeat": "none",
+   "budget": "need",
+   "builtin": true,
+   "keywords": [
+    "Habibi Markt",
+    "Lidl",
+    "Rewe"
+   ],
+   "limit": 30000,
+   "rollover": true,
+   "rolloverFrom": "2026-10"
+  }
+ ],
+ "spartopf-months": [
+  {
+   "key": "2026-10",
+   "startedAt": 1790000000000,
+   "opening": 300000
+  },
+  {
+   "key": "2026-11",
+   "startedAt": 1793000000000
+  }
+ ],
+ "spartopf-entries": [
+  {
+   "id": "w1",
+   "month": "2026-10",
+   "categoryId": "fixed",
+   "name": "Autokredit",
+   "amount": 25000,
+   "paid": true,
+   "repeat": "monthly",
+   "seriesId": "car",
+   "createdAt": 1790000000001,
+   "date": "2026-10-01"
+  },
+  {
+   "id": "w2",
+   "month": "2026-11",
+   "categoryId": "fixed",
+   "name": "Autokredit",
+   "amount": 25000,
+   "paid": true,
+   "repeat": "monthly",
+   "seriesId": "car",
+   "createdAt": 1793000000001,
+   "date": "2026-11-01"
+  },
+  {
+   "id": "w3",
+   "month": "2026-11",
+   "categoryId": "fixed",
+   "name": "Sondertilgung",
+   "amount": 50000,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "w3",
+   "createdAt": 1793000000002,
+   "date": "2026-11-05",
+   "debtId": "debt-car",
+   "files": [
+    {
+     "id": "rcpt-1",
+     "name": "Bestätigung",
+     "type": "image/jpeg",
+     "size": 184320
+    },
+    {
+     "id": "rcpt-2",
+     "name": "Tilgungsplan",
+     "type": "application/pdf",
+     "size": 90210
+    }
+   ]
+  },
+  {
+   "id": "w4",
+   "month": "2026-11",
+   "categoryId": "income",
+   "name": "Lena zahlt zurück",
+   "amount": 10000,
+   "paid": true,
+   "repeat": "none",
+   "seriesId": "w4",
+   "createdAt": 1793000000003,
+   "date": "2026-11-08",
+   "debtId": "debt-lena"
+  },
+  {
+   "id": "x1",
+   "month": "2026-11",
+   "categoryId": "fixed",
+   "name": "Rundfunkbeitrag",
+   "amount": 5508,
+   "paid": true,
+   "repeat": "yearly",
+   "every": 3,
+   "seriesId": "gez",
+   "createdAt": 1793000000101,
+   "date": "2026-11-15"
+  },
+  {
+   "id": "x2",
+   "month": "2026-11",
+   "categoryId": "extra",
+   "name": "Sofa-Rate",
+   "amount": 5000,
+   "paid": false,
+   "repeat": "monthly",
+   "until": "2027-01",
+   "seriesId": "sofa",
+   "createdAt": 1793000000102,
+   "date": "2026-11-20"
+  }
+ ],
+ "spartopf-contracts": {},
+ "spartopf-currency": null,
+ "spartopf-favorites": [],
+ "spartopf-goals": [],
+ "spartopf-rules": [],
+ "spartopf-demo": null,
+ "spartopf-accounts": [],
+ "spartopf-debts": [
+  {
+   "id": "debt-car",
+   "name": "Autokredit",
+   "direction": "owe",
+   "principal": 1000000,
+   "start": "2026-09",
+   "rate": 4.9,
+   "seriesId": "car",
+   "createdAt": 1789000000000
+  },
+  {
+   "id": "debt-lena",
+   "name": "Lena",
+   "direction": "owed",
+   "principal": 30000,
+   "start": "2026-10",
+   "createdAt": 1790000000000
+  }
+ ]
+}

@@ -232,3 +232,12 @@ describe('version 24 (repeat intervals and an end)', () => {
     expect(total(data)).toBe(total(stored('storage-v22.json').data) + 5508 + 5000);
   });
 });
+
+describe('version 25 (yearly budgets and rollover)', () => {
+  it('keeps a budget for the year and one whose rest moves on', () => {
+    const { data } = stored('storage-v25.json');
+    expect(data.categories.find(c => c.id === 'fixed')).toMatchObject({ limit: 60000, limitPer: 'year' });
+    expect(data.categories.find(c => c.id === 'groceries')).toMatchObject({ limit: 30000, rollover: true, rolloverFrom: '2026-10' });
+    expect(balances(data)).toEqual(balances(stored('storage-v24.json').data));
+  });
+});

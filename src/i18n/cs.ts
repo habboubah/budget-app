@@ -1111,6 +1111,17 @@ const cs: Strings = {
   per2MonthsShort: 'každé 2 měs.',
   perQuarterShort: 'čtvrtletně',
   perHalfYearShort: 'pololetně',
+  // Yearly budgets and rollover (schema 25)
+  budgetAsk: 'Kolik smí stát: {name}?',
+  budgetPerMonth: 'Na měsíc',
+  budgetPerYear: 'Na rok',
+  budgetFieldYear: 'Rozpočet na rok',
+  budgetRollover: 'Převádět zbytek do dalšího měsíce',
+  budgetRolloverHint: 'Co zbude, přičte se k dalšímu měsíci; co se přečerpá, odečte se z něj. Počítá se od tohoto měsíce.',
+  budgetYearHint: 'Na celý kalendářní rok – hodí se na oblečení, dovolenou nebo dárky.',
+  budgetLineYear: 'Roční rozpočet {amount}',
+  budgetCarriedPlus: 'vč. {amount} převodu',
+  budgetCarriedMinus: 'po odečtení {amount} převodu',
 };
 
 export default cs;

@@ -1110,6 +1110,17 @@ const tr: Strings = {
   per2MonthsShort: '2 ayda bir',
   perQuarterShort: 'üç ayda bir',
   perHalfYearShort: 'altı ayda bir',
+  // Yearly budgets and rollover (schema 25)
+  budgetAsk: '{name} ne kadar tutabilir?',
+  budgetPerMonth: 'Aylık',
+  budgetPerYear: 'Yıllık',
+  budgetFieldYear: 'Yıllık bütçe',
+  budgetRollover: 'Kalanı sonraki aya aktar',
+  budgetRolloverHint: 'Kalan tutar sonraki aya eklenir; aşılan tutar oradan düşülür. Bu aydan itibaren sayılır.',
+  budgetYearHint: 'Tüm takvim yılı için – giyim, tatil veya hediyeler için uygun.',
+  budgetLineYear: 'Yıllık bütçe {amount}',
+  budgetCarriedPlus: '{amount} devir dahil',
+  budgetCarriedMinus: '{amount} devir düşüldü',
 };
 
 export default tr;

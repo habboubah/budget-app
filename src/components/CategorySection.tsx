@@ -2,8 +2,9 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, ChevronsDownUp, ChevronsUpDown, Circle, CircleMinus, Gauge, ListFilter, MoreHorizontal, Paperclip, Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
-import { dayLabel, displayName, formatMoney, formatMoneyShort, isOverdue, spoken } from '../logic';
+import { dayLabel, displayName, formatMoney, isOverdue, spoken } from '../logic';
 import { BudgetStatus } from '../budgets';
+import { budgetCarried, budgetLine } from '../budgetLabel';
 import { BudgetBar } from './BudgetBar';
 import { Strings, fmt, plural } from '../translations';
 import { Picture } from '../ui/Picture';
@@ -90,7 +91,6 @@ export function CategorySection({
     ? fmt(income ? t.nExpected : t.nOpen, { n: openCount })
     : all.length ? (income ? t.allReceived : t.allPaid) : t.sectionEmpty;
 
-  const short = (c: number) => formatMoneyShort(c, t.locale);
   // With a budget, the line under the bar says how it stands; the status moves to its end.
   const over = budget && budget.left < 0;
 
@@ -99,7 +99,7 @@ export function CategorySection({
       { key: 'add', label: t.addEntry, icon: Plus, onSelect: onAdd },
       ...(onBudget ? [{
         key: 'budget', label: t.budgetMenu, icon: Gauge, onSelect: onBudget,
-        sub: budget ? fmt(t.budgetLine, { amount: short(budget.limit) }) : undefined,
+        sub: budget ? budgetLine(t, budget) : undefined,
       }] : []),
     ],
     [
@@ -231,7 +231,8 @@ export function CategorySection({
                   over it, paying out ahead of the month's pace, or what is still open. */}
               <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-caption">
                 <span className="text-fg-mute tabular-nums">
-                  {fmt(t.budgetLine, { amount: short(budget.limit) })}
+                  {budgetLine(t, budget)}
+                  {budget.carried !== 0 && ` (${budgetCarried(t, budget)})`}
                   {!over && ` · ${fmt(t.budgetLeft, { amount: money(budget.left) })}`}
                   {collapsed && ` · ${t.foldedNote}`}
                 </span>

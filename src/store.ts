@@ -600,7 +600,13 @@ export function useAppStore() {
   };
 
   const updateCategory = (id: string, patch: Partial<Omit<Category, 'id'>>) =>
-    setCategories(prev => prev.map(c => (c.id === id ? { ...c, ...patch } : c)));
+    setCategories(prev => prev.map(c => {
+      if (c.id !== id) return c;
+      const next = { ...c, ...patch };
+      // How a budget counts goes with the budget (schema 25).
+      if (!next.limit) { delete next.limitPer; delete next.rollover; delete next.rolloverFrom; }
+      return next;
+    }));
 
   interface RemovedCategory { category: Category; index: number; entries: Entry[] }
 

@@ -148,7 +148,8 @@ export function suggestBudgets(book: Book, months: MonthKey[]): { category: Cate
   const out: { category: Category; amount: number; current?: number }[] = [];
   for (const c of book.data.categories) {
     const part = book.partOf(c.id);
-    if (c.kind !== 'expense' || (part !== 'need' && part !== 'want')) continue;
+    // A budget for the year is the user's own plan: no monthly figure is suggested over it.
+    if (c.kind !== 'expense' || (part !== 'need' && part !== 'want') || c.limitPer === 'year') continue;
     let total = 0;
     let once = 0;
     for (const k of months) {

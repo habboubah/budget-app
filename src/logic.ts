@@ -24,8 +24,10 @@ import { isSupportedCurrency } from './currency';
  *  23: `AppData.monthStart` (plan 32: months from payday) — optional, unset = the 1st; with it an
  *      entry's `month` is the period its date falls in.
  *  24: `Entry.every` (a yearly entry that comes back every 2, 3 or 6 months) and
- *      `Entry.until` (a recurring entry's last month) — optional, unset = yearly / no end. */
-export const SCHEMA_VERSION = 24;
+ *      `Entry.until` (a recurring entry's last month) — optional, unset = yearly / no end.
+ *  25: `Category.limitPer` (a budget for the year) and `Category.rollover` / `rolloverFrom`
+ *      (a monthly budget whose rest moves on) — optional, unset = a plain monthly budget. */
+export const SCHEMA_VERSION = 25;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1580,7 +1582,12 @@ function normalizeCategory(v: unknown): Category | null {
     ...(v.budget === 'need' || v.budget === 'want' || v.budget === 'save' ? { budget: v.budget } : {}),
     // A budget is whole cents above zero, for spending only.
     ...(v.kind !== 'income' && typeof v.limit === 'number' && Number.isFinite(v.limit) && v.limit >= 1
-      ? { limit: Math.min(Math.round(v.limit), MAX_CENTS) } : {}),
+      ? {
+        limit: Math.min(Math.round(v.limit), MAX_CENTS),
+        // How the budget counts (schema 25): for the year, or with its rest carried on — never both.
+        ...(v.limitPer === 'year' ? { limitPer: 'year' as const }
+          : v.rollover === true && isMonthKey(v.rolloverFrom) ? { rollover: true, rolloverFrom: v.rolloverFrom } : {}),
+      } : {}),
     ...(v.standard === false ? { standard: false } : {}),
     ...(v.builtin === true ? { builtin: true } : {}),
     // Edited in Settings: the user's own list (empty is a choice too). Unset: what the app ships.

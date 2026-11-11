@@ -24,7 +24,7 @@ import { hintExplain } from './components/HintRows';
 import { ShareImage, renderShareImage } from './shareImage';
 import { shareImage } from './export';
 import { SetupCard, TipsCard } from './components/SetupCard';
-import { BudgetSheet } from './components/BudgetSheet';
+import { BudgetHow, BudgetSheet } from './components/BudgetSheet';
 import { DueSoonView } from './components/DueSoonView';
 import { ContractsView } from './components/ContractsView';
 import { ContractSheet } from './components/ContractSheet';
@@ -685,12 +685,19 @@ export default function App() {
     });
   };
 
-  const saveBudget = (c: Category, limit: number | undefined) => {
-    const before = c.limit;
-    store.updateCategory(c.id, { limit });
+  const saveBudget = (c: Category, limit: number | undefined, how?: BudgetHow) => {
+    const before = { limit: c.limit, limitPer: c.limitPer, rollover: c.rollover, rolloverFrom: c.rolloverFrom };
+    // Per year, or with the rest carried on from this month (schema 25) — a rollover that was on keeps its start.
+    const rollover = limit !== undefined && how?.per !== 'year' && !!how?.rollover;
+    store.updateCategory(c.id, {
+      limit,
+      limitPer: limit !== undefined && how?.per === 'year' ? 'year' : undefined,
+      rollover: rollover || undefined,
+      rolloverFrom: rollover ? (c.rollover && c.rolloverFrom) || monthKeyOf(new Date()) : undefined,
+    });
     const name = displayName(c.names, language);
     show(limit === undefined ? fmt(t.budgetRemoved, { name }) : fmt(t.budgetSaved, { name, amount: formatMoneyShort(limit, t.locale) }), {
-      label: t.undo, run: () => store.updateCategory(c.id, { limit: before }),
+      label: t.undo, run: () => store.updateCategory(c.id, before),
     });
   };
 

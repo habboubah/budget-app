@@ -1108,6 +1108,17 @@ const sv: Strings = {
   per2MonthsShort: 'varannan mån.',
   perQuarterShort: 'per kvartal',
   perHalfYearShort: 'per halvår',
+  // Yearly budgets and rollover (schema 25)
+  budgetAsk: 'Hur mycket får {name} kosta?',
+  budgetPerMonth: 'Per månad',
+  budgetPerYear: 'Per år',
+  budgetFieldYear: 'Budget per år',
+  budgetRollover: 'Ta med resten till nästa månad',
+  budgetRolloverHint: 'Det som blir över läggs till nästa månad; det som gick över dras av där. Räknas från och med den här månaden.',
+  budgetYearHint: 'För hela kalenderåret – bra för kläder, semester eller presenter.',
+  budgetLineYear: 'Årsbudget {amount}',
+  budgetCarriedPlus: 'inkl. {amount} överfört',
+  budgetCarriedMinus: 'minus {amount} överfört',
 };
 
 export default sv;

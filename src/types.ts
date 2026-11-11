@@ -45,6 +45,11 @@ export interface Category {
    *  every month, nothing carried over (schema 9). Unset = no budget. Not to
    *  be confused with `budget`, the need / want / save split. */
   limit?: number;
+  /** `limit` is the budget for a calendar year, not for a month (schema 25: clothes, holidays, presents). Unset = a month. */
+  limitPer?: 'year';
+  /** A monthly budget whose rest — or overspend — moves into the next month (schema 25), counted from `rolloverFrom` on. */
+  rollover?: boolean;
+  rolloverFrom?: MonthKey;
   /** Part of every newly started month. Unset = yes. */
   standard?: boolean;
   /** Ships with the app (can be edited, deleted and restored). */

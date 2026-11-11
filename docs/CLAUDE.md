@@ -234,7 +234,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   **schema 21** `AppData.debts` + `Entry.debtId` (plan 31, below);
   **schema 22** `Entry.files` (plan 27, below);
   **schema 23** `AppData.monthStart` (plan 32, below);
-  **schema 24** `Entry.every` and `Entry.until` (below) — all
+  **schema 24** `Entry.every` and `Entry.until` (below);
+  **schema 25** `Category.limitPer`, `rollover`, `rolloverFrom` (below) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
@@ -265,6 +266,17 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   its interval. Labels come from `src/repeatLabel.ts` (`repeatName`,
   `perShort`, `REPEAT_CHOICES` for the entry sheet's menu). Weekly isn't
   offered: a series has one entry a month everywhere.
+- **Budgets (schema 25, `src/budgets.ts`).** `Category.limit` is a plain
+  monthly budget; with `limitPer: 'year'` it is the calendar year's, with
+  `rollover` + `rolloverFrom` a monthly one whose rest (or overspend) since
+  that month moves on — never both, and neither without a limit
+  (`normalizeCategory`, `store.updateCategory`). `budgetStatus` answers for
+  all three: `limit` is what the bar is measured against (the month's budget
+  with what was carried, or the year's), `base` the amount as set, `period`,
+  `carried`. **Read a budget through `budgetStatus`, and a per-month figure
+  through `monthlyLimit(c)`** (a twelfth of a year's) — never `c.limit` by
+  itself. Words: `src/budgetLabel.ts`. Set in `BudgetSheet` (*Pro Monat / Pro
+  Jahr*, the rollover switch); the category sheet edits the amount only.
 - **Entry order:** `Entry.order` is set once the user drags entries in a
   category (`moveEntry()` renumbers the source and target category of that
   month); `sortEntries()` puts ordered entries first, the rest by due day, then

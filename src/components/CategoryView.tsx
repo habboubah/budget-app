@@ -1,3 +1,4 @@
+import { monthlyLimit } from '../budgets';
 import { perShort } from '../repeatLabel';
 import { CSSProperties, ReactNode, useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
@@ -100,7 +101,7 @@ export function CategoryView({ book, categoryId, months, language, t, onBack, on
             <div className="mt-3">
               <CategoryTrendChart
                 category={c} values={values} open={open} months={d.months} language={language} t={t}
-                average={enough ? d.average : undefined} limit={spending ? c.limit : undefined}
+                average={enough ? d.average : undefined} limit={spending ? monthlyLimit(c) : undefined}
               />
             </div>
           </section>

@@ -1137,6 +1137,17 @@ const de = {
   per2MonthsShort: 'alle 2 Mon.',
   perQuarterShort: 'viertelj.',
   perHalfYearShort: 'halbj.',
+  // Yearly budgets and rollover (schema 25)
+  budgetAsk: 'Wie viel darf {name} kosten?',
+  budgetPerMonth: 'Pro Monat',
+  budgetPerYear: 'Pro Jahr',
+  budgetFieldYear: 'Budget pro Jahr',
+  budgetRollover: 'Rest in den nächsten Monat mitnehmen',
+  budgetRolloverHint: 'Was übrig bleibt, kommt im nächsten Monat dazu; was drüber liegt, geht dort ab. Zählt ab diesem Monat.',
+  budgetYearHint: 'Für das ganze Kalenderjahr – gut für Kleidung, Urlaub oder Geschenke.',
+  budgetLineYear: 'Jahresbudget {amount}',
+  budgetCarriedPlus: 'inkl. {amount} Übertrag',
+  budgetCarriedMinus: 'abzgl. {amount} Übertrag',
 };
 
 export type Strings = { [K in keyof typeof de]: string };
@@ -2245,6 +2256,17 @@ const en: Strings = {
   per2MonthsShort: 'every 2 months',
   perQuarterShort: 'a quarter',
   perHalfYearShort: 'every 6 months',
+  // Yearly budgets and rollover (schema 25)
+  budgetAsk: 'How much may {name} cost?',
+  budgetPerMonth: 'Per month',
+  budgetPerYear: 'Per year',
+  budgetFieldYear: 'Budget per year',
+  budgetRollover: 'Carry what’s left into next month',
+  budgetRolloverHint: 'What’s left is added to next month; what went over is taken off it. Counts from this month on.',
+  budgetYearHint: 'For the whole calendar year – good for clothes, holidays or presents.',
+  budgetLineYear: 'Yearly budget {amount}',
+  budgetCarriedPlus: 'incl. {amount} carried over',
+  budgetCarriedMinus: 'less {amount} carried over',
 };
 
 /*
@@ -3367,6 +3389,17 @@ const ar: Strings = {
   per2MonthsShort: 'كل شهرين',
   perQuarterShort: 'كل ربع سنة',
   perHalfYearShort: 'كل نصف سنة',
+  // Yearly budgets and rollover (schema 25)
+  budgetAsk: 'كم يُسمح أن تكلّف فئة {name}؟',
+  budgetPerMonth: 'شهريًا',
+  budgetPerYear: 'سنويًا',
+  budgetFieldYear: 'الميزانية السنوية',
+  budgetRollover: 'ترحيل المتبقي إلى الشهر التالي',
+  budgetRolloverHint: 'ما يتبقى يُضاف إلى الشهر التالي، وما زاد يُخصم منه. يُحتسب ابتداءً من هذا الشهر.',
+  budgetYearHint: 'للسنة الميلادية كلها – مناسب للملابس والعطلات والهدايا.',
+  budgetLineYear: 'الميزانية السنوية {amount}',
+  budgetCarriedPlus: 'يشمل {amount} مرحّلة',
+  budgetCarriedMinus: 'بعد خصم {amount} مرحّلة',
 };
 
 /**

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { budgetStatus, monthBudgets, roundBudget, suggestLimit } from './budgets';
+import { budgetStatus, monthBudgets, monthlyLimit, roundBudget, suggestLimit } from './budgets';
 import { formatMoneyShort, makeBackup, normalizeState, parseBackup, restoreDefaultCategories, upgradeData } from './logic';
 import { defaultCategories } from './data/defaults';
 import { AppData, Category, Entry } from './types';
@@ -146,5 +146,58 @@ describe('budgets in storage', () => {
     expect(formatMoneyShort(40000, 'de-DE')).toBe('400\u00a0€');
     expect(formatMoneyShort(21288, 'de-DE')).toBe('212,88\u00a0€');
     expect(formatMoneyShort(40000, 'en-GB')).toBe('€400');
+  });
+});
+
+describe('a budget whose rest moves on (schema 25)', () => {
+  const groceries: Category = { ...defaultCategories().find(c => c.id === 'groceries')!, limit: 30000, rollover: true, rolloverFrom: '2026-09' };
+
+  it('adds what earlier months left and takes off what they overspent', () => {
+    const entries = [e('2026-09', 'groceries', 250), e('2026-10', 'groceries', 320), e('2026-11', 'groceries', 100), e('2026-08', 'groceries', 999)];
+    // September left 50, October went 20 over: 30 come on top in November. August was before the start.
+    expect(budgetStatus(entries, groceries, '2026-11', nov7)).toMatchObject({ base: 30000, carried: 3000, limit: 33000, spent: 10000, left: 23000, period: 'month' });
+    expect(budgetStatus(entries, groceries, '2026-10', nov7)).toMatchObject({ carried: 5000, limit: 35000, left: 3000 });
+  });
+
+  it('starts in its first month with nothing carried, and never goes below zero', () => {
+    expect(budgetStatus([e('2026-09', 'groceries', 100)], groceries, '2026-09', nov7)).toMatchObject({ carried: 0, limit: 30000 });
+    const s = budgetStatus([e('2026-09', 'groceries', 700), e('2026-10', 'groceries', 10)], groceries, '2026-10', nov7)!;
+    expect(s).toMatchObject({ carried: -40000, limit: 0, left: -1000 });
+  });
+
+  it('a plain budget carries nothing', () => {
+    const plain = { ...groceries, rollover: undefined, rolloverFrom: undefined };
+    expect(budgetStatus([e('2026-10', 'groceries', 100)], plain, '2026-11', nov7)).toMatchObject({ carried: 0, limit: 30000 });
+  });
+});
+
+describe('a budget for the year (schema 25)', () => {
+  const clothing: Category = { ...defaultCategories().find(c => c.id === 'clothing')!, limit: 60000, limitPer: 'year' };
+
+  it('counts the calendar year up to the month shown', () => {
+    const entries = [e('2026-02', 'clothing', 120), e('2026-06', 'clothing', 80), e('2026-11', 'clothing', 50, false), e('2026-12', 'clothing', 40), e('2025-12', 'clothing', 500)];
+    const s = budgetStatus(entries, clothing, '2026-11', nov7)!;
+    expect(s).toMatchObject({ period: 'year', limit: 60000, paid: 20000, open: 5000, spent: 25000, left: 35000, perDay: null });
+    expect(s.elapsed).toBeCloseTo((10 + 7 / 30) / 12);
+    expect(budgetStatus(entries, clothing, '2026-06', nov7)).toMatchObject({ spent: 20000, elapsed: 0.5 });
+  });
+
+  it('is a twelfth per month where a monthly figure is needed', () => {
+    expect(monthlyLimit(clothing)).toBe(5000);
+    expect(monthlyLimit({ limit: 30000 })).toBe(30000);
+    expect(monthlyLimit({})).toBeUndefined();
+  });
+
+  it('survives a reload; the two ways of counting never mix, and neither stays without a limit', () => {
+    const cats = defaultCategories().map(c =>
+      c.id === 'clothing' ? { ...c, limit: 60000, limitPer: 'year', rollover: true, rolloverFrom: '2026-01' }
+        : c.id === 'groceries' ? { ...c, limit: 30000, rollover: true, rolloverFrom: '2026-09' }
+          : c.id === 'car' ? { ...c, limitPer: 'year', rollover: true, rolloverFrom: '2026-09' } : c);
+    const back = normalizeState({ categories: cats, entries: [], months: [] }).categories;
+    expect(back.find(c => c.id === 'clothing')).toMatchObject({ limit: 60000, limitPer: 'year' });
+    expect(back.find(c => c.id === 'clothing')!.rollover).toBeUndefined();
+    expect(back.find(c => c.id === 'groceries')).toMatchObject({ rollover: true, rolloverFrom: '2026-09' });
+    const car = back.find(c => c.id === 'car')!;
+    expect([car.limitPer, car.rollover, car.rolloverFrom]).toEqual([undefined, undefined, undefined]);
   });
 });

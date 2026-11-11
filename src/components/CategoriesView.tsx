@@ -133,7 +133,7 @@ export function categorySub(c: Category, t: Strings): string {
   return [
     c.kind === 'income' ? t.kindIncome : null,
     c.standard !== false ? t.inEveryMonth : t.notInNewMonths,
-    c.kind === 'expense' && c.limit ? fmt(t.budgetLine, { amount: formatMoneyShort(c.limit, t.locale) }) : null,
+    c.kind === 'expense' && c.limit ? fmt(c.limitPer === 'year' ? t.budgetLineYear : t.budgetLine, { amount: formatMoneyShort(c.limit, t.locale) }) : null,
   ].filter(Boolean).join(' · ');
 }
 

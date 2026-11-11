@@ -95,7 +95,7 @@ export function nextTip(data: AppData, state: TipState, ctx: TipContext): Tip | 
     const month = addMonths(monthKeyOf(today), -1);
     let worst: { category: Category; over: number } | null = null;
     for (const category of data.categories) {
-      if (category.kind !== 'expense' || !category.limit || category.limit <= 0) continue;
+      if (category.kind !== 'expense' || !category.limit || category.limit <= 0 || category.limitPer === 'year') continue;
       let spent = 0;
       for (const e of data.entries) if (e.month === month && e.categoryId === category.id && !e.transfer) spent += e.amount;
       const over = spent - category.limit;

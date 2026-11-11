@@ -1107,6 +1107,17 @@ const es: Strings = {
   per2MonthsShort: 'cada 2 meses',
   perQuarterShort: 'al trimestre',
   perHalfYearShort: 'al semestre',
+  // Yearly budgets and rollover (schema 25)
+  budgetAsk: '¿Cuánto puede costar {name}?',
+  budgetPerMonth: 'Al mes',
+  budgetPerYear: 'Al año',
+  budgetFieldYear: 'Presupuesto al año',
+  budgetRollover: 'Pasar el resto al mes siguiente',
+  budgetRolloverHint: 'Lo que sobra se suma al mes siguiente; lo que se pasa se le resta. Cuenta desde este mes.',
+  budgetYearHint: 'Para todo el año natural: útil para ropa, vacaciones o regalos.',
+  budgetLineYear: 'Presupuesto anual {amount}',
+  budgetCarriedPlus: 'incl. {amount} de arrastre',
+  budgetCarriedMinus: 'menos {amount} de arrastre',
 };
 
 export default es;
