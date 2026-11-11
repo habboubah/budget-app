@@ -1,14 +1,14 @@
 import { ChevronRight } from 'lucide-react';
 import { Category } from '../types';
-import { addMonths, dayLabel, displayName, formatMoney, formatMoneyApprox, formatMoneyEstimate, formatPercent, monthLabel, monthSpanLabel } from '../logic';
+import { addMonths, dateAt, dayLabel, displayName, formatMoney, formatMoneyApprox, formatMoneyEstimate, formatMoneyWhole, formatPercent, monthLabel, monthSpanLabel } from '../logic';
 import { Pace } from '../insights';
 import { Strings, fmt } from '../translations';
 import { tapLight } from '../ui/haptics';
 import { PaceChart, ShareBar } from './Charts';
 import { Explain, ExplainButton } from './ExplainSheet';
 
-/** The headline's ink: amber when faster than usual, green when slower, plain otherwise. */
-const TONE = { above: 'text-warn', below: 'text-pos' } as const;
+/** Today's figure on the hero's panel: amber when faster than usual, green when slower, plain otherwise. */
+const TONE = { above: 'text-on-hero-warn', below: 'text-on-hero-pos' } as const;
 
 /** The sentence at the top of the card (§9.1's table). */
 export function paceHeadline(p: Pace, t: Strings): string {
@@ -27,9 +27,12 @@ export function paceHeadline(p: Pace, t: Strings): string {
 /**
  * *November bis heute* on top of Planen: everyday spending so far against a
  * usual month at the same day, where it would end, and where it goes this
- * month — with *Monatsbericht ›* for the whole story. Fixed costs stay out
- * (D3). VoiceOver reads the headline and the three figures, then steps
- * through the weeks; *Als Tabelle* has every week's values.
+ * month — with *Monatsbericht ›* for the whole story. The card opens on the
+ * hero: the finding as a sentence and, on its panel, the three figures the
+ * chart is about — spent up to today, a usual month by today, where this
+ * one is heading. Fixed costs stay out (D3). VoiceOver reads the headline
+ * and the three figures, then steps through the weeks; *Als Tabelle* has
+ * every week's values.
  */
 export function PaceCard({ pace: p, categories, language, t, onReport, onExplain }: {
   pace: Pace;
@@ -74,21 +77,41 @@ export function PaceCard({ pace: p, categories, language, t, onReport, onExplain
     ...(p.basis.length ? { months: fmt(t.explainMonths, { span: monthSpanLabel(p.basis, t.locale) }) } : {}),
     excluded: t.explainPaceOut,
   });
-  const tone = p.verdict === 'above' || p.verdict === 'below' ? TONE[p.verdict] : 'text-fg';
+  const tone = p.verdict === 'above' || p.verdict === 'below' ? TONE[p.verdict] : 'text-on-hero';
+  const whole = (c: number) => formatMoneyWhole(c, t.locale);
+  // The chart's three figures, written out: up to today, a usual month by today, this month's end.
+  const tiles = [
+    { label: t.paceToday, value: whole(p.spent), tone },
+    ...(p.usualToday !== null ? [{ label: t.paceLegendUsual, value: whole(p.usualToday), tone: 'text-on-hero' }] : []),
+    ...(p.projected !== null ? [{ label: dayLabel(dateAt(p.month, p.days), t.locale), value: `≈ ${est(p.projected)}`, tone: 'text-on-hero' }] : []),
+  ];
 
   return (
-    <section className="rounded-md bg-surface card-edge p-[16px]" aria-labelledby="pace-title">
-      <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="eyebrow text-fg-mute">{fmt(t.paceEyebrow, { month: monthName })}</p>
-          <h3 id="pace-title" className={`display text-heading font-semibold tabular-nums wrap-prose ${tone}`}>{headline}</h3>
-          <p className="text-caption text-fg-mute mt-0.5 tabular-nums wrap-prose">
-            {p.verdict === 'none' ? t.paceSubNone : fmt(t.paceSub, { span: monthSpanLabel(p.basis, t.locale) })}
-            {p.basis.length === 1 && ` · ${t.paceBasisOne}`}
-          </p>
+    <section className="rounded-lg bg-surface card-edge overflow-hidden" aria-labelledby="pace-title">
+      <div className="hero hero-art text-on-hero p-[18px]">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="eyebrow text-on-hero-mute">{fmt(t.paceEyebrow, { month: monthName })}</p>
+            <h3 id="pace-title" className="mt-1 display text-heading font-semibold tabular-nums wrap-compound">{headline}</h3>
+          </div>
+          <ExplainButton name={fmt(t.paceEyebrow, { month: monthName })} t={t} onClick={() => onExplain(explain())} onHero />
         </div>
-        <ExplainButton name={fmt(t.paceEyebrow, { month: monthName })} t={t} onClick={() => onExplain(explain())} />
+        {tiles.length > 1 && (
+          <dl className="mt-3 flex flex-wrap gap-x-3 gap-y-2 rounded-sm hero-panel p-3" aria-hidden="true">
+            {tiles.map(x => (
+              <div key={x.label} className="flex-1 basis-[5rem]">
+                <dt className="text-caption text-on-hero-soft wrap-compound tabular-nums">{x.label}</dt>
+                <dd className={`rounded-num text-body font-semibold whitespace-nowrap ${x.tone}`}>{x.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </div>
+      <div className="p-[16px]">
+      <p className="text-caption text-fg-mute tabular-nums wrap-prose">
+        {p.verdict === 'none' ? t.paceSubNone : fmt(t.paceSub, { span: monthSpanLabel(p.basis, t.locale) })}
+        {p.basis.length === 1 && ` · ${t.paceBasisOne}`}
+      </p>
       <p className="sr-only">{summary}</p>
       <div className="mt-3">
         <PaceChart pace={p} now={monthName} t={t} groups={groups} />
@@ -138,6 +161,7 @@ export function PaceCard({ pace: p, categories, language, t, onReport, onExplain
         <span className="flex-1 text-start">{t.reportTitle}</span>
         <ChevronRight className="w-4 h-4 rtl:rotate-180" strokeWidth={2.4} aria-hidden="true" />
       </button>
+      </div>
     </section>
   );
 }

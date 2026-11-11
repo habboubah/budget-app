@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Category, MonthKey } from '../types';
 import { formatMoney, monthKeyOf, monthLabel } from '../logic';
 import { ChevronRight, Wallet } from 'lucide-react';
-import { Book, Insight, contractHints, financeCheck, finishedKeys, outlook, pace, savings, upToNow, yearlyReserve } from '../insights';
+import { Book, Insight, contractHints, financeCheck, finishedKeys, outlook, pace, runway, savings, upToNow, yearlyReserve } from '../insights';
 import { ContractItem, contractItems } from '../contracts';
 import { Strings, fmt } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
@@ -10,6 +10,7 @@ import { BudgetsCard } from './BudgetsCard';
 import { ContractsCard } from './ContractsCard';
 import { PaceCard } from './PaceCard';
 import { OutlookCard } from './OutlookCard';
+import { RunwayCard } from './RunwayCard';
 import { ReserveCard } from './ReserveCard';
 import { GoalsCard } from './GoalsCard';
 import { FinanceCheckCard } from './FinanceCheckCard';
@@ -52,7 +53,8 @@ interface Props {
  * Planen answers *Wie läuft es, was kommt, was tue ich?* (§7), in this
  * order, one time scope per card: *November bis heute* (everyday spending
  * against a usual month — it needs no setup, so it comes before budgets),
- * the running month's Budgets, *Ausblick* (the next twelve months), *Abos &
+ * the running month's Budgets, *Nächste 30 Tage* (the account day by day,
+ * from what is still open), *Ausblick* (the next twelve months), *Abos &
  * Verträge* with what is new and what is missing, then the slots for plans
  * 11 (Rücklage), 12 (Spartöpfe) and 31 (Schulden), and *Finanz-Check*.
  * Looking back is Statistik's.
@@ -62,6 +64,7 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
   const today = new Date();
   const current = monthKeyOf(today);
   const p = useMemo(() => pace(book, today), [book]);
+  const next = useMemo(() => runway(book, today), [book]);
   const ahead = useMemo(() => outlook(book, today), [book]);
   const reserve = useMemo(() => yearlyReserve(book, today, ahead), [book, ahead]);
   const check = useMemo(() => financeCheck(book, today), [book]);
@@ -87,6 +90,8 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
       )}
 
       <BudgetsCard data={data} month={current} language={language} t={t} onBudget={onBudget} />
+
+      {next && <RunwayCard runway={next} t={t} onDue={onDue} onExplain={onExplain} />}
 
       {ahead && <OutlookCard outlook={ahead} categories={data.categories} t={t} onExplain={onExplain} onWhatIf={onWhatIf} />}
 

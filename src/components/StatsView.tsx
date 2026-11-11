@@ -1,18 +1,19 @@
 import { monthlyLimit } from '../budgets';
-import { CSSProperties, useMemo, useState } from 'react';
-import { ArrowDownLeft, ArrowDownRight, ArrowUpRight, ChevronRight, PiggyBank, X } from 'lucide-react';
+import { CSSProperties, useEffect, useMemo, useState } from 'react';
+import { ArrowDownRight, ArrowUpRight, ChevronRight, X } from 'lucide-react';
 import { Category, MonthKey } from '../types';
 import {
-  NameTotal, displayName, formatMoney, formatMoneyApprox, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding,
-  normalizeName, topNames,
+  NameTotal, dayLabel, displayName, formatMoney, formatMoneyApprox, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding,
+  normalizeName, spoken, topNames,
 } from '../logic';
-import { Book, Fraction, Insight, MonthPoint, TagTotal, WhereRow, balanceChange, bookYears, compareYears, nearFraction, periodSeries, savings, tagTotals, upToNow, whereRows } from '../insights';
-import { Strings, fmt } from '../translations';
+import { Book, Fraction, Insight, MonthPoint, TagTotal, WhereRow, balanceChange, bookYears, compareYears, firstWeekday, monthDays, nearFraction, periodChange, periodSeries, savings, tagTotals, upToNow, weekdayPattern, whereRows } from '../insights';
+import { Strings, capitalize, fmt } from '../translations';
 import { Screen, Empty } from '../ui/Screen';
 import { Segmented } from '../ui/Field';
 import { Switch } from '../ui/Switch';
 import { Card, MenuPicker } from '../ui/Card';
-import { BalanceChart, IncomeExpenseChart } from './Charts';
+import { BalanceChart, HeatCalendar, IncomeExpenseChart, RingMeter, ShareBar, Sparkline, WeekdayBars } from './Charts';
+import { CountingMoney } from '../ui/CountingMoney';
 import { Explain, ExplainButton } from './ExplainSheet';
 import { HighlightsCard } from './HintRows';
 import { tapLight } from '../ui/haptics';
@@ -73,12 +74,15 @@ function balanceHeadline(points: MonthPoint[], t: Strings): string {
 
 /**
  * Statistik answers *Wie lief es?* (STATISTICS_AND_INSIGHTS.md §7): the year
- * review in season, *Das fällt auf* — the top three recent hints — then
- * *Verlauf* for a period (6 or 12 months, or all): three averages from the
- * finished months, income against spending with what each month kept, the
- * balance, where the money goes (a category opens its own screen, a payee
- * its sheet) and every number in a table (a month opens its report). It
- * stops at the running month: a month started ahead holds plans (I9).
+ * review in season, then the period — 3, 6, 9 or 12 months, all, or a year —
+ * chosen at the top, and under it: the period at a glance on the hero (the
+ * savings rate as a ring, the three averages with how each moved against
+ * the months before), *Das fällt auf* — the top three recent hints — income
+ * against spending with what each month kept, the balance, where the money
+ * goes (a category opens its own screen, a payee its sheet), when it goes
+ * (the weekdays, and the picked month as a calendar) and every number in a
+ * table (a month opens its report). It stops at the running month: a month
+ * started ahead holds plans (I9).
  */
 export function StatsView({ book, month, range, onRange, language, t, highlights, yearCard, onYear, onHideYear, onMonth, onHint, onHideHint, onHowHint, onExplain, onCategory, onPayee, onReport }: Props) {
   const money = (c: number) => formatMoney(c, t.locale);
@@ -112,13 +116,7 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
     <Screen title={t.statsTitle} tabbed>
       {yearCard && <YearCard year={yearCard} t={t} onOpen={() => onYear(yearCard)} onHide={() => onHideYear(yearCard)} />}
 
-      <HighlightsCard items={highlights} categories={categories} language={language} t={t} onAction={onHint} onHide={onHideHint} onHow={onHowHint} />
-
       <section className="space-y-5" aria-labelledby="history-title">
-        <div className="px-1">
-          <p className="eyebrow text-fg-mute">{monthSpanLabel(keys, t.locale)}</p>
-          <h2 id="history-title" className="display text-title2 font-extrabold text-fg wrap-compound tracking-[-0.02em]">{t.historySection}</h2>
-        </div>
         <div className="flex items-center gap-2">
           {/* Five segments beside the year: short labels ("3 M"), read out in full. */}
           <div className="flex-1 min-w-0">
@@ -150,9 +148,17 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
           </p>
         )}
 
-        {done.length > 0 && <Averages done={done} running={keys.includes(now) ? now : null} t={t} onExplain={onExplain} />}
+        {done.length > 0 && <PeriodHero all={all} done={done} running={keys.includes(now) ? now : null} t={t} onExplain={onExplain} />}
 
-        <Card title={savingsHeadline(done, t)} sub={t.chartIoSub}>
+        <HighlightsCard items={highlights} categories={categories} language={language} t={t} onAction={onHint} onHide={onHideHint} onHow={onHowHint} />
+
+        {/* The charts' own heading: the months they run over, under the period chosen above. */}
+        <div className="px-1 pt-1">
+          <p className="eyebrow text-fg-mute">{monthSpanLabel(keys, t.locale)}</p>
+          <h2 id="history-title" className="display text-title2 font-extrabold text-fg wrap-compound tracking-[-0.02em]">{t.historySection}</h2>
+        </div>
+
+        <Card title={done.length ? t.incomeVsExpenses : savingsHeadline(done, t)} sub={t.chartIoSub}>
           <IncomeExpenseChart points={points} selected={month} t={t} onPick={onMonth} />
         </Card>
 
@@ -163,6 +169,8 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
         )}
 
         <WhereCard book={book} averageOver={doneKeys.length ? doneKeys : keys} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />
+
+        <RhythmCard book={book} months={keys} month={month} t={t} onExplain={onExplain} />
 
         {/* Every value of the charts, without hovering; a month opens its report. */}
         <details className="rounded-md bg-surface card-edge group">
@@ -237,20 +245,41 @@ function YearCard({ year, t, onOpen, onHide }: { year: string; t: Strings; onOpe
   );
 }
 
+/** How a figure moved against the months before: an arrow and the percentage, in the panel's inks — good news green, the other amber. */
+function Delta({ pct, upIsGood, t }: { pct: number | null; upIsGood: boolean; t: Strings }) {
+  if (pct === null || Math.abs(pct) < 1) return null;
+  const up = pct > 0;
+  const Arrow = up ? ArrowUpRight : ArrowDownRight;
+  const p = formatPercent(Math.abs(pct), t.locale);
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-caption font-semibold tabular-nums ${up === upIsGood ? 'text-on-hero-pos' : 'text-on-hero-warn'}`}>
+      <Arrow className="w-3.5 h-3.5" strokeWidth={2.6} aria-hidden="true" />
+      <span aria-hidden="true">{p}</span>
+      <span className="sr-only">{fmt(up ? t.whereChangeMore : t.whereChangeLess, { p })}</span>
+    </span>
+  );
+}
+
 /**
- * Ø income, Ø spending, Ø saved over the finished months in view — the three
- * numbers the period opens on — which months they come from, and what of it
- * was put aside (D1). They wrap under each other when large text no longer
- * fits three abreast.
+ * The period at a glance, on the hero: what it comes to as a sentence, the
+ * savings rate as a ring against the 20 % of 50/30/20, Ø saved running to
+ * its value, and Ø income and Ø spending on the panel — each with its line
+ * over the months and how it moved against as many months before (D1: what
+ * was put aside counts as saved, and is named). Averages run over finished
+ * months only; the caption says which.
  */
-function Averages({ done, running, t, onExplain }: { done: MonthPoint[]; running: MonthKey | null; t: Strings; onExplain: (e: Explain) => void }) {
+function PeriodHero({ all, done, running, t, onExplain }: { all: MonthPoint[]; done: MonthPoint[]; running: MonthKey | null; t: Strings; onExplain: (e: Explain) => void }) {
   const s = savings(done);
+  const change = useMemo(() => periodChange(all, done), [all, done]);
   const span = monthSpanLabel(done.map(p => p.key), t.locale);
   const approx = (c: number) => formatMoneyApprox(c, t.locale);
-  const items = [
-    { label: t.kpiIncome, value: approx(s.averageIncome), tone: 'text-fg', icon: ArrowDownLeft, chip: 'bg-pos-dim text-pos' },
-    { label: t.kpiExpenses, value: approx(s.averageExpense), tone: 'text-fg', icon: ArrowUpRight, chip: 'bg-surface-2 text-fg-mute' },
-    { label: t.kpiSaved, value: `${s.averageSaved > 0 ? '+' : ''}${approx(s.averageSaved)}`, tone: s.averageSaved < 0 ? 'text-neg' : 'text-pos', icon: PiggyBank, chip: 'bg-accent-dim text-accent' },
+  const signed = (c: number) => `${c > 0 ? '+' : ''}${approx(c)}`;
+  const rate = s.rate === null ? null : Math.round(s.rate * 100);
+  const ratePct = rate === null ? '' : formatPercent(rate, t.locale);
+  const target = fmt(t.targetPct, { p: 20 });
+  const tiles = [
+    { label: t.kpiIncome, value: approx(s.averageIncome), line: done.map(p => p.income), pct: change?.income ?? null, upIsGood: true },
+    { label: t.kpiExpenses, value: approx(s.averageExpense), line: done.map(p => p.spending), pct: change?.spending ?? null, upIsGood: false },
   ];
   const explain = (): Explain => ({
     title: t.explainKpi,
@@ -258,35 +287,107 @@ function Averages({ done, running, t, onExplain }: { done: MonthPoint[]; running
     calc: [
       fmt(t.explainKpiCalc, { income: approx(s.averageIncome), spending: approx(s.averageExpense), saved: approx(s.averageSaved) }),
       ...(s.averageInvested > 0 ? [fmt(t.explainKpiInvested, { invested: approx(s.averageInvested) })] : []),
+      ...(change ? [fmt(t.whereChangeCaption, { span: monthSpanLabel(change.before, t.locale) })] : []),
     ],
     months: fmt(t.explainMonths, { span }),
     excluded: t.explainKpiOut,
   });
   return (
-    <section>
-      <dl className="flex flex-wrap gap-2">
-        {items.map(i => (
-          // The amounts line up at the bottom even where a label wraps.
-          <div key={i.label} className="flex-1 basis-[6.5rem] flex flex-col justify-between rounded-md bg-surface card-edge px-3.5 pt-3 pb-3">
-            <dt className="text-caption text-fg-mute wrap-compound">
-              {/* A small sign of its own for each figure: in, out, kept. */}
-              <span className={`mb-2 w-7 h-7 rounded-full flex items-center justify-center ${i.chip}`} aria-hidden="true">
-                <i.icon className="w-4 h-4" strokeWidth={2.4} />
+    <section className="rounded-lg hero hero-glow hero-art overflow-hidden text-on-hero p-[18px]" aria-labelledby="period-title">
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="eyebrow text-on-hero-mute tabular-nums wrap-prose">
+            {running ? fmt(t.kpiCaptionRunning, { span, month: monthLabel(running, t.locale, 'name') }) : fmt(t.kpiCaption, { span })}
+          </p>
+          <h2 id="period-title" className="mt-1 display text-heading font-semibold wrap-compound">{savingsHeadline(done, t)}</h2>
+        </div>
+        <ExplainButton name={t.explainKpi} t={t} onClick={() => onExplain(explain())} onHero />
+      </div>
+
+      {/* With large text the figure drops under the ring rather than being cut off beside it. */}
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-3">
+        {rate !== null && (
+          <RingMeter value={s.rate ?? 0} target={0.2} label={`${t.savingsRateTitle} ${ratePct}, ${target}`}>
+            <span className="rounded-num text-heading font-bold">{ratePct.replace(/\s/g, '')}</span>
+          </RingMeter>
+        )}
+        <div className="min-w-0 flex-1 basis-[9.5rem]">
+          <p className="text-caption text-on-hero-mute wrap-compound">{t.kpiSaved}</p>
+          {/* Never wider than the card: it grows with the text size only as far as the phone's width lets it. */}
+          <p className="rounded-num text-[clamp(1.5rem,8.5vw,2rem)] leading-[1.2] font-bold whitespace-nowrap" aria-hidden="true">
+            <CountingMoney cents={s.averageSaved} money={signed} />
+          </p>
+          <p className="sr-only">{spoken(signed(s.averageSaved), t.amountHidden)}</p>
+          {rate !== null && <p className="text-caption text-on-hero-mute tabular-nums wrap-prose">{`${t.savingsRateTitle} · ${target}`}</p>}
+        </div>
+      </div>
+
+      <dl className="mt-4 grid grid-cols-2 gap-2">
+        {tiles.map(x => (
+          <div key={x.label} className="min-w-0 rounded-sm hero-panel px-3 py-2.5">
+            <dt className="text-caption text-on-hero-soft wrap-compound">{x.label}</dt>
+            <dd>
+              <span className="block rounded-num text-body font-semibold text-on-hero">{x.value}</span>
+              <span className="mt-1 flex items-center justify-between gap-2 min-h-[28px]">
+                <Delta pct={x.pct} upIsGood={x.upIsGood} t={t} />
+                <Sparkline values={x.line} className="ms-auto text-on-hero-soft" />
               </span>
-              {i.label}
-            </dt>
-            <dd className={`mt-0.5 rounded-num text-heading font-bold ${i.tone}`}>{i.value}</dd>
+            </dd>
           </div>
         ))}
       </dl>
-      <div className="mt-2 ps-1 flex items-start gap-2">
-        <p className="min-w-0 flex-1 text-caption text-fg-mute wrap-prose tabular-nums">
-          {running ? fmt(t.kpiCaptionRunning, { span, month: monthLabel(running, t.locale, 'name') }) : fmt(t.kpiCaption, { span })}
-          {s.averageInvested > 0 && ` · ${fmt(t.kpiInvested, { amount: approx(s.averageInvested) })}`}
-        </p>
-        <ExplainButton name={t.explainKpi} t={t} onClick={() => onExplain(explain())} />
-      </div>
+      {s.averageInvested > 0 && (
+        <p className="mt-2.5 text-caption text-on-hero-mute tabular-nums wrap-prose">{fmt(t.kpiInvested, { amount: approx(s.averageInvested) })}</p>
+      )}
     </section>
+  );
+}
+
+/**
+ * *Wann du Geld ausgibst*: everyday spending by weekday over the months in
+ * view — the priciest one named in the title when one clearly leads — and
+ * the picked month day by day as a calendar. A day tapped writes out its
+ * date, its amount and what it was; without one, the month's total and what
+ * that comes to a day. Fixed costs stay out, as in the pace (D3).
+ */
+function RhythmCard({ book, months, month, t, onExplain }: { book: Book; months: MonthKey[]; month: MonthKey; t: Strings; onExplain: (e: Explain) => void }) {
+  const pattern = useMemo(() => weekdayPattern(book, months), [book, months]);
+  const calendar = useMemo(() => monthDays(book, month), [book, month]);
+  const [day, setDay] = useState<number | null>(null);
+  useEffect(() => setDay(null), [month]);
+  if (!pattern.total.some(v => v > 0)) return null;
+  const money = (c: number) => formatMoney(c, t.locale);
+  const weekday = (wd: number, style: 'long' | 'short') => new Intl.DateTimeFormat(t.locale, { weekday: style }).format(new Date(2024, 0, 1 + wd));
+  const span = monthSpanLabel(months, t.locale);
+  const picked = day === null ? null : calendar.days[day - 1];
+  const readout = picked
+    ? [`${weekday(picked.weekday, 'short')} ${dayLabel(picked.date, t.locale)}`, money(picked.amount), picked.top, picked.count > 1 ? fmt(t.tagEntries, { n: picked.count }) : null].filter(Boolean).join(' · ')
+    : calendar.elapsed > 0
+      ? `${money(calendar.total)} · ${fmt(t.perDay, { amount: formatMoneyApprox(Math.round(calendar.total / calendar.elapsed), t.locale) })}`
+      : '';
+  const first = firstWeekday(t.locale);
+  const explain = (): Explain => ({
+    title: t.rhythmTitle,
+    definition: t.explainRhythmDef,
+    calc: Array.from({ length: 7 }, (_, i) => (first + i) % 7).map(wd => `${weekday(wd, 'long')}: Ø ${formatMoneyApprox(pattern.average[wd], t.locale)}`),
+    months: fmt(t.explainMonths, { span }),
+    excluded: t.explainPaceOut,
+  });
+  return (
+    <Card
+      title={pattern.top === null ? t.rhythmTitle : fmt(t.rhythmTop, { day: weekday(pattern.top, 'long') })}
+      sub={fmt(t.rhythmSub, { span })}
+      action={<ExplainButton name={t.rhythmTitle} t={t} onClick={() => onExplain(explain())} />}
+    >
+      <WeekdayBars pattern={pattern} t={t} />
+      <div className="mt-5 pt-4 hairline-t">
+        <h4 className="text-label font-semibold text-fg wrap-compound">{capitalize(monthLabel(month, t.locale))}</h4>
+        <p className="text-caption text-fg-mute tabular-nums wrap-prose min-h-[1.125rem]" role="status">{readout}</p>
+        <div className="mt-3">
+          <HeatCalendar month={calendar} t={t} selected={day} onSelect={setDay} />
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -361,8 +462,16 @@ function WhereCard({ book, averageOver, language, t, onCategory, onPayee }: {
           <p className="text-label text-fg-mute wrap-prose">{t.whereNone}</p>
         ) : (
           <>
+            {where.rows.length > 1 && (
+              // The whole split at a glance; the rows under it carry every name and figure.
+              <ShareBar
+                className="mb-2"
+                label={where.rows.map(r => `${displayName(r.category.names, language)} ${formatPercent(Math.round(r.share * 100), t.locale)}`).join(', ')}
+                items={where.rows.map(r => ({ key: r.category.id, hue: r.category.hue, value: r.average }))}
+              />
+            )}
             <ul className="-mx-4 divide-hairline-inset" style={{ '--sep': '16px' } as CSSProperties}>
-              {rows.map(r => <WhereRowButton key={r.category.id} row={r} scale={scale} language={language} t={t} onOpen={() => onCategory(r.category.id)} />)}
+              {rows.map((r, i) => <WhereRowButton key={r.category.id} row={r} index={i} scale={scale} language={language} t={t} onOpen={() => onCategory(r.category.id)} />)}
             </ul>
             {!allRows && where.rows.length > rows.length && (
               <button
@@ -385,8 +494,10 @@ function WhereCard({ book, averageOver, language, t, onCategory, onPayee }: {
 }
 
 /** One category: emoji · name · Ø · share · change chip, its bar in its colour with the budget as a 2 px tick; a tap opens its screen. */
-function WhereRowButton({ row: r, scale, language, t, onOpen }: {
+function WhereRowButton({ row: r, index, scale, language, t, onOpen }: {
   row: WhereRow;
+  /** Its place in the list: the bars run out one after another. */
+  index: number;
   scale: number;
   language: string;
   t: Strings;
@@ -427,7 +538,7 @@ function WhereRowButton({ row: r, scale, language, t, onOpen }: {
           <ChevronRight className="w-4 h-4 shrink-0 self-center text-fg-faint rtl:rotate-180" strokeWidth={2.4} />
         </span>
         <span className="relative mt-1.5 block h-3" aria-hidden="true">
-          <span className="bar-grow absolute inset-y-0 start-0 rounded-full bg-hue-chart" style={{ width: `${Math.max(1, (r.average / scale) * 100)}%` }} />
+          <span className="bar-grow absolute inset-y-0 start-0 rounded-full bg-hue-chart" style={{ width: `${Math.max(1, (r.average / scale) * 100)}%`, animationDelay: `${Math.min(index * 50, 400)}ms` }} />
           {!!limit && <span className="absolute -top-0.5 -bottom-0.5 w-[2px] rounded-full bg-fg" style={{ insetInlineStart: `calc(${(limit / scale) * 100}% - 1px)` }} />}
         </span>
       </button>
