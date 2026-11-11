@@ -77,6 +77,12 @@ try {
     offenders.add(url);
     return route.abort();
   });
+  // A fresh install starts in English whatever the device speaks; the steps below
+  // find their buttons by German labels. Pick German as a person would in Optionen —
+  // only the language, so the first run is otherwise the untouched one.
+  await ctx.addInitScript(() => {
+    try { if (localStorage.getItem('spartopf-lang') == null) localStorage.setItem('spartopf-lang', 'de'); } catch { /* no storage */ }
+  });
   const page = await ctx.newPage();
   page.on('pageerror', e => fail(`page error: ${e.message}`));
   const step = async (name, fn) => {
