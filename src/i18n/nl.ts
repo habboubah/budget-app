@@ -1138,6 +1138,24 @@ const nl: Strings = {
   remindReturn: 'Retour mogelijk t/m {date}: {name}',
   remindWarranty: 'Garantie eindigt op {date}: {name}',
   remindReceiptBody: 'De bon staat bij de post in Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'Kan ik het betalen?',
+  whatIfDebt: 'Lening',
+  whatIfWhen: 'In maand',
+  whatIfFrom: 'Vanaf maand',
+  whatIfExtra: 'Extra per maand',
+  whatIfOk: 'Dat kan: de rekening blijft boven één maand basisbehoeften.',
+  whatIfTight: 'Het wordt krap: {month} eindigt op {amount}.',
+  whatIfShort: 'Dat is te weinig: {month} eindigt op {amount}.',
+  whatIfLow: 'Laagste stand ({month})',
+  whatIfEnd: 'Eind {month}',
+  whatIfWithout: 'zonder: {amount}',
+  whatIfPlan: 'Als open post noteren',
+  whatIfBasis: 'Geschat uit de vooruitblik: vaste lasten plus een gewone maand. Afgerond, geen belofte – er wordt niets opgeslagen.',
+  whatIfDebtResult: 'Schuldenvrij {after} in plaats van {before} ({n} mnd. eerder)',
+  whatIfDebtNoEnd: 'Schuldenvrij {after}',
+  whatIfInterest: '{amount} minder rente',
+  whatIfDebtNever: 'Zelfs dan dekt de betaling de rente niet.',
 };
 
 export default nl;

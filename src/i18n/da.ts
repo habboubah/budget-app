@@ -1138,6 +1138,24 @@ const da: Strings = {
   remindReturn: 'Retur mulig til {date}: {name}',
   remindWarranty: 'Garantien udløber {date}: {name}',
   remindReceiptBody: 'Kvitteringen ligger ved posten i Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'Har jeg råd?',
+  whatIfDebt: 'Lån',
+  whatIfWhen: 'Måned',
+  whatIfFrom: 'Fra måned',
+  whatIfExtra: 'Ekstra pr. måned',
+  whatIfOk: 'Det går: kontoen bliver over én måneds basisbehov.',
+  whatIfTight: 'Det bliver stramt: {month} ender på {amount}.',
+  whatIfShort: 'Det rækker ikke: {month} ender på {amount}.',
+  whatIfLow: 'Laveste saldo ({month})',
+  whatIfEnd: 'Slutningen af {month}',
+  whatIfWithout: 'uden: {amount}',
+  whatIfPlan: 'Skriv ind som åben post',
+  whatIfBasis: 'Anslået ud fra udsigten: faste udgifter plus en almindelig måned. Afrundet, ikke et løfte – intet gemmes.',
+  whatIfDebtResult: 'Gældfri {after} i stedet for {before} ({n} md. tidligere)',
+  whatIfDebtNoEnd: 'Gældfri {after}',
+  whatIfInterest: '{amount} mindre i renter',
+  whatIfDebtNever: 'Selv da dækker ydelsen ikke renterne.',
 };
 
 export default da;

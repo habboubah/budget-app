@@ -1141,6 +1141,24 @@ const pl: Strings = {
   remindReturn: 'Zwrot możliwy do {date}: {name}',
   remindWarranty: 'Gwarancja kończy się {date}: {name}',
   remindReceiptBody: 'Paragon jest przy wpisie w Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'Czy mnie na to stać?',
+  whatIfDebt: 'Kredyt',
+  whatIfWhen: 'W miesiącu',
+  whatIfFrom: 'Od miesiąca',
+  whatIfExtra: 'Dodatkowo co miesiąc',
+  whatIfOk: 'To się uda: konto zostaje powyżej miesiąca podstawowych potrzeb.',
+  whatIfTight: 'Będzie ciasno: {month} kończy się na {amount}.',
+  whatIfShort: 'To nie wystarczy: {month} kończy się na {amount}.',
+  whatIfLow: 'Najniższy stan ({month})',
+  whatIfEnd: 'Koniec: {month}',
+  whatIfWithout: 'bez tego: {amount}',
+  whatIfPlan: 'Zapisz jako otwartą pozycję',
+  whatIfBasis: 'Szacunek z prognozy: koszty stałe plus zwykły miesiąc. Zaokrąglone, bez gwarancji – nic nie jest zapisywane.',
+  whatIfDebtResult: 'Bez długu: {after} zamiast {before} ({n} mies. wcześniej)',
+  whatIfDebtNoEnd: 'Bez długu: {after}',
+  whatIfInterest: '{amount} mniej odsetek',
+  whatIfDebtNever: 'Nawet wtedy rata nie pokrywa odsetek.',
 };
 
 export default pl;

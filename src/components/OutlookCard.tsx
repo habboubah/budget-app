@@ -3,7 +3,9 @@ import { Category } from '../types';
 import { formatMoney, formatMoneyEstimate, monthLabel, monthSpanLabel } from '../logic';
 import { Outlook, bigItems } from '../insights';
 import { Strings, fmt } from '../translations';
+import { CircleHelp } from 'lucide-react';
 import { Picture } from '../ui/Picture';
+import { Button } from '../ui/Button';
 import { OutlookChart } from './Charts';
 import { Explain, ExplainButton } from './ExplainSheet';
 
@@ -20,11 +22,13 @@ export function outlookHeadline(o: Outlook, t: Strings): string {
  * to calm months, rounded, its basis named — and the big items coming up
  * (yearly bills, entries already planned).
  */
-export function OutlookCard({ outlook: o, categories, t, onExplain }: {
+export function OutlookCard({ outlook: o, categories, t, onExplain, onWhatIf }: {
   outlook: Outlook;
   categories: Category[];
   t: Strings;
   onExplain: (e: Explain) => void;
+  /** *Kann ich mir das leisten?*: a purchase or a new cost tried against this outlook. */
+  onWhatIf?: () => void;
 }) {
   const est = (c: number) => formatMoneyEstimate(c, t.locale);
   const end = o.months[o.months.length - 1];
@@ -77,6 +81,11 @@ export function OutlookCard({ outlook: o, categories, t, onExplain }: {
               );
             })}
           </ul>
+        </div>
+      )}
+      {onWhatIf && (
+        <div className="mt-4 pt-3 hairline-t">
+          <Button full variant="secondary" icon={CircleHelp} onClick={onWhatIf}>{t.whatIfTitle}</Button>
         </div>
       )}
     </section>

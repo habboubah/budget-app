@@ -12,6 +12,7 @@
  *   hints.ts     unusual, price changes, missing, new names, trends, biggest, best / worst
  *   pace.ts      "November bis heute": everyday spending against a usual month (H1)
  *   outlook.ts   Ausblick: the balance in the coming twelve months (P2)
+ *   whatif.ts    "Kann ich mir das leisten?": a plan laid over the Ausblick, an extra debt payment
  *   reserve.ts   Rücklage für jährliche Kosten (plan 11)
  *   goals.ts     Spartöpfe: savings goals and their progress (plan 12)
  *   debts.ts     debts and loans, money lent: schedules and payoff (plan 31)
@@ -30,6 +31,7 @@ export * from './rules';
 export * from './hints';
 export * from './pace';
 export * from './outlook';
+export * from './whatif';
 export * from './reserve';
 export * from './goals';
 export * from './debts';

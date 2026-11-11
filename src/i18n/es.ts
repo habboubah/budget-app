@@ -1138,6 +1138,24 @@ const es: Strings = {
   remindReturn: 'Devolución posible hasta el {date}: {name}',
   remindWarranty: 'La garantía termina el {date}: {name}',
   remindReceiptBody: 'El recibo está con el apunte en Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: '¿Puedo permitírmelo?',
+  whatIfDebt: 'Préstamo',
+  whatIfWhen: 'En el mes',
+  whatIfFrom: 'Desde el mes',
+  whatIfExtra: 'Extra al mes',
+  whatIfOk: 'Es posible: la cuenta queda por encima de un mes de necesidades básicas.',
+  whatIfTight: 'Va justo: {month} termina en {amount}.',
+  whatIfShort: 'No alcanza: {month} termina en {amount}.',
+  whatIfLow: 'Punto más bajo ({month})',
+  whatIfEnd: 'Final de {month}',
+  whatIfWithout: 'sin ello: {amount}',
+  whatIfPlan: 'Anotarlo como apunte pendiente',
+  whatIfBasis: 'Estimación a partir de la previsión: gastos fijos más un mes habitual. Redondeado, no es una promesa; no se guarda nada.',
+  whatIfDebtResult: 'Sin deuda en {after} en vez de {before} ({n} meses antes)',
+  whatIfDebtNoEnd: 'Sin deuda en {after}',
+  whatIfInterest: '{amount} menos de intereses',
+  whatIfDebtNever: 'Ni así la cuota cubre los intereses.',
 };
 
 export default es;

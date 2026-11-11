@@ -1139,6 +1139,24 @@ const nb: Strings = {
   remindReturn: 'Retur mulig til {date}: {name}',
   remindWarranty: 'Garantien utløper {date}: {name}',
   remindReceiptBody: 'Kvitteringen ligger ved posten i Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'Har jeg råd?',
+  whatIfDebt: 'Lån',
+  whatIfWhen: 'Måned',
+  whatIfFrom: 'Fra måned',
+  whatIfExtra: 'Ekstra per måned',
+  whatIfOk: 'Det går: kontoen holder seg over én måneds grunnbehov.',
+  whatIfTight: 'Det blir trangt: {month} ender på {amount}.',
+  whatIfShort: 'Det holder ikke: {month} ender på {amount}.',
+  whatIfLow: 'Laveste saldo ({month})',
+  whatIfEnd: 'Slutten av {month}',
+  whatIfWithout: 'uten: {amount}',
+  whatIfPlan: 'Legg inn som åpen post',
+  whatIfBasis: 'Anslått fra utsikten: faste kostnader pluss en vanlig måned. Avrundet, ikke et løfte – ingenting lagres.',
+  whatIfDebtResult: 'Gjeldfri {after} i stedet for {before} ({n} md. tidligere)',
+  whatIfDebtNoEnd: 'Gjeldfri {after}',
+  whatIfInterest: '{amount} mindre i renter',
+  whatIfDebtNever: 'Selv da dekker ikke betalingen rentene.',
 };
 
 export default nb;

@@ -1139,6 +1139,24 @@ const sv: Strings = {
   remindReturn: 'Retur möjlig till {date}: {name}',
   remindWarranty: 'Garantin går ut {date}: {name}',
   remindReceiptBody: 'Kvittot finns vid posten i Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'Har jag råd?',
+  whatIfDebt: 'Lån',
+  whatIfWhen: 'Månad',
+  whatIfFrom: 'Från månad',
+  whatIfExtra: 'Extra per månad',
+  whatIfOk: 'Det går: kontot håller sig över en månads basbehov.',
+  whatIfTight: 'Det blir knappt: {month} slutar på {amount}.',
+  whatIfShort: 'Det räcker inte: {month} slutar på {amount}.',
+  whatIfLow: 'Lägsta saldo ({month})',
+  whatIfEnd: 'Slutet av {month}',
+  whatIfWithout: 'utan: {amount}',
+  whatIfPlan: 'Lägg in som obetald post',
+  whatIfBasis: 'Uppskattat från utsikten: fasta kostnader plus en vanlig månad. Avrundat, inget löfte – inget sparas.',
+  whatIfDebtResult: 'Skuldfri {after} i stället för {before} ({n} mån. tidigare)',
+  whatIfDebtNoEnd: 'Skuldfri {after}',
+  whatIfInterest: '{amount} mindre i ränta',
+  whatIfDebtNever: 'Inte ens då täcker betalningen räntan.',
 };
 
 export default sv;

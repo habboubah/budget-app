@@ -1142,6 +1142,24 @@ const cs: Strings = {
   remindReturn: 'Vrácení možné do {date}: {name}',
   remindWarranty: 'Záruka končí {date}: {name}',
   remindReceiptBody: 'Účtenka je u položky ve Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'Mohu si to dovolit?',
+  whatIfDebt: 'Úvěr',
+  whatIfWhen: 'V měsíci',
+  whatIfFrom: 'Od měsíce',
+  whatIfExtra: 'Navíc každý měsíc',
+  whatIfOk: 'To vyjde: účet zůstane nad jedním měsícem základních potřeb.',
+  whatIfTight: 'Bude to těsné: {month} skončí na {amount}.',
+  whatIfShort: 'To nestačí: {month} skončí na {amount}.',
+  whatIfLow: 'Nejnižší stav ({month})',
+  whatIfEnd: 'Konec: {month}',
+  whatIfWithout: 'bez toho: {amount}',
+  whatIfPlan: 'Zapsat jako otevřenou položku',
+  whatIfBasis: 'Odhad z výhledu: fixní náklady plus obvyklý měsíc. Zaokrouhleno, bez záruky – nic se neukládá.',
+  whatIfDebtResult: 'Bez dluhu: {after} místo {before} (o {n} měs. dříve)',
+  whatIfDebtNoEnd: 'Bez dluhu: {after}',
+  whatIfInterest: 'o {amount} méně na úrocích',
+  whatIfDebtNever: 'Ani tak splátka nepokryje úroky.',
 };
 
 export default cs;

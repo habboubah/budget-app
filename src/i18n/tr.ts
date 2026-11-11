@@ -1141,6 +1141,24 @@ const tr: Strings = {
   remindReturn: 'İade için son gün {date}: {name}',
   remindWarranty: 'Garanti {date} tarihinde bitiyor: {name}',
   remindReceiptBody: 'Fiş, Spartopf’taki kayıtla birlikte duruyor.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'Bunu karşılayabilir miyim?',
+  whatIfDebt: 'Kredi',
+  whatIfWhen: 'Ay',
+  whatIfFrom: 'Başlangıç ayı',
+  whatIfExtra: 'Aylık ek ödeme',
+  whatIfOk: 'Olur: hesap bir aylık temel ihtiyacın üzerinde kalır.',
+  whatIfTight: 'Sıkışır: {month} sonu {amount}.',
+  whatIfShort: 'Yetmiyor: {month} sonu {amount}.',
+  whatIfLow: 'En düşük bakiye ({month})',
+  whatIfEnd: '{month} sonu',
+  whatIfWithout: 'olmadan: {amount}',
+  whatIfPlan: 'Açık kayıt olarak ekle',
+  whatIfBasis: 'Öngörüden tahmin: sabit giderler artı olağan bir ay. Yuvarlanmıştır, söz değildir – hiçbir şey kaydedilmez.',
+  whatIfDebtResult: 'Borç bitişi {after}, {before} yerine ({n} ay erken)',
+  whatIfDebtNoEnd: 'Borç bitişi {after}',
+  whatIfInterest: '{amount} daha az faiz',
+  whatIfDebtNever: 'Bu durumda bile taksit faizi karşılamıyor.',
 };
 
 export default tr;

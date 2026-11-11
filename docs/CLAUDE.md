@@ -144,6 +144,12 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     Jahresrückblick, `suggestBudgets`). Nothing there builds a sentence:
     `src/insightText.ts` turns an Insight into words (tested in every
     language). Every function takes `today`.
+  - **What-if** (`whatif.ts`, `WhatIfSheet`, the button under the Ausblick):
+    `whatIf(outlook, plan)` lays a one-off purchase or a monthly cost over the
+    Ausblick's middle line (lowest point, end, verdict against one month of
+    Grundbedarf), `extraPayment(data, debt, extra)` reruns a debt's schedule
+    with more a month. Estimates only ("≈"), nothing stored; the sheet's
+    *vormerken* opens the entry sheet with the plan as an open entry.
   - **`StatsView`**: the year card (15 Dec – 31 Jan, ≥ 6 months),
     *Das fällt auf* (`HintRows.tsx`; "⋯" → *Wie berechnet?* / *Ausblenden*,
     undoable), then *Verlauf* with 3 / 6 / 9 / 12 / Alle ("3 M", read out as

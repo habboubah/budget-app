@@ -12,7 +12,7 @@ import {
   shouldAskForReview, transferPair, uid,
   changeMonthStart,
 } from './logic';
-import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, monthReview, paymentSeries, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
+import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, monthReview, outlook, paymentSeries, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
 import { CategoryView } from './components/CategoryView';
@@ -44,6 +44,7 @@ import { DebtSheet, DebtSheetMode } from './components/DebtSheet';
 import { MonthActionsMenu } from './components/MonthActionsMenu';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
+import { WhatIfSheet } from './components/WhatIfSheet';
 import { SettingsView } from './components/SettingsView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
@@ -189,6 +190,9 @@ export default function App() {
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const [splitEntry, setSplitEntry] = useState<Entry | null>(null);
   const [goalSheet, setGoalSheet] = useState<GoalSheetMode>(null);
+  /** *Kann ich mir das leisten?* (Planen › Ausblick). */
+  const [whatIfOpen, setWhatIfOpen] = useState(false);
+  const ahead = useMemo(() => (whatIfOpen ? outlook(book) : null), [whatIfOpen, book]);
   const [ruleSheet, setRuleSheet] = useState<RuleSheetMode>(null);
   /** The scope menu when a category is corrected during an import (plan 20). */
   const [reclassify, setReclassify] = useState<{ anchor: HTMLElement; found: PlannedRow['found']; categoryId: string; name: string } | null>(null);
@@ -1206,6 +1210,7 @@ export default function App() {
             onDue={() => push('dueSoon')}
             onGoals={() => push('goals')}
             onReserveGoal={(goal, due) => setGoalSheet({ kind: 'new', preset: { name: t.reserveTitle, target: goal, due } })}
+            onWhatIf={() => setWhatIfOpen(true)}
             onExplain={setExplain}
             wealth={multi ? { now: totals.now, count: accounts.length, onOpen: () => push('accounts') } : undefined}
             debts={store.debts.length ? <DebtsCard overview={debts} t={t} onOpen={() => push('debts')} onEdit={editDebt} /> : null}
@@ -1563,6 +1568,21 @@ export default function App() {
         onClose={() => setContractFor(null)}
         onSave={saveContract}
       />
+
+      {ahead && (
+        <WhatIfSheet
+          open={whatIfOpen}
+          outlook={ahead}
+          data={allView}
+          debts={debts.plans.filter(p => p.debt.direction === 'owe' && !p.done)}
+          t={t}
+          onClose={() => setWhatIfOpen(false)}
+          onPlan={plan => quickAddCategory && setEntrySheet({
+            kind: 'new', month: plan.month, categoryId: quickAddCategory,
+            preset: { amount: plan.amount, paid: false, ...(plan.monthly ? { repeat: 'monthly' as const } : {}) },
+          })}
+        />
+      )}
 
       <BudgetSheet
         category={budgetFor}

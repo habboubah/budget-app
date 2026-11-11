@@ -1168,6 +1168,24 @@ const de = {
   remindReturn: 'Rückgabe noch bis {date}: {name}',
   remindWarranty: 'Garantie endet am {date}: {name}',
   remindReceiptBody: 'Der Beleg liegt beim Eintrag in Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'Kann ich mir das leisten?',
+  whatIfDebt: 'Kredit',
+  whatIfWhen: 'Im Monat',
+  whatIfFrom: 'Ab Monat',
+  whatIfExtra: 'Zusätzlich pro Monat',
+  whatIfOk: 'Das passt: Das Konto bleibt über einem Monat Grundbedarf.',
+  whatIfTight: 'Es wird knapp: {month} endet mit {amount}.',
+  whatIfShort: 'Das reicht nicht: {month} endet mit {amount}.',
+  whatIfLow: 'Tiefster Stand ({month})',
+  whatIfEnd: 'Ende {month}',
+  whatIfWithout: 'ohne: {amount}',
+  whatIfPlan: 'Als offenen Eintrag vormerken',
+  whatIfBasis: 'Geschätzt aus dem Ausblick: feste Kosten plus ein üblicher Monat. Gerundet, keine Zusage – gespeichert wird nichts.',
+  whatIfDebtResult: 'Schuldenfrei {after} statt {before} ({n} Mon. früher)',
+  whatIfDebtNoEnd: 'Schuldenfrei {after}',
+  whatIfInterest: '{amount} weniger Zinsen',
+  whatIfDebtNever: 'Auch damit deckt die Rate die Zinsen nicht.',
 };
 
 export type Strings = { [K in keyof typeof de]: string };
@@ -2307,6 +2325,24 @@ const en: Strings = {
   remindReturn: 'Return possible until {date}: {name}',
   remindWarranty: 'Warranty ends on {date}: {name}',
   remindReceiptBody: 'The receipt is with the entry in Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'Can I afford it?',
+  whatIfDebt: 'Loan',
+  whatIfWhen: 'In month',
+  whatIfFrom: 'From month',
+  whatIfExtra: 'Extra per month',
+  whatIfOk: 'That works: the account stays above one month of basic needs.',
+  whatIfTight: 'It gets tight: {month} ends on {amount}.',
+  whatIfShort: 'That falls short: {month} ends on {amount}.',
+  whatIfLow: 'Lowest point ({month})',
+  whatIfEnd: 'End of {month}',
+  whatIfWithout: 'without: {amount}',
+  whatIfPlan: 'Put it down as a pending entry',
+  whatIfBasis: 'Estimated from the outlook: fixed costs plus a usual month. Rounded, not a promise – nothing is saved.',
+  whatIfDebtResult: 'Debt-free {after} instead of {before} ({n} mo. sooner)',
+  whatIfDebtNoEnd: 'Debt-free {after}',
+  whatIfInterest: '{amount} less interest',
+  whatIfDebtNever: 'Even then the payment doesn’t cover the interest.',
 };
 
 /*
@@ -3460,6 +3496,24 @@ const ar: Strings = {
   remindReturn: 'الإرجاع ممكن حتى {date}: {name}',
   remindWarranty: 'ينتهي الضمان في {date}: {name}',
   remindReceiptBody: 'الإيصال محفوظ مع البند في Spartopf.',
+  // Kann ich mir das leisten? (what-if)
+  whatIfTitle: 'هل أستطيع تحمّل ذلك؟',
+  whatIfDebt: 'قرض',
+  whatIfWhen: 'في شهر',
+  whatIfFrom: 'ابتداءً من شهر',
+  whatIfExtra: 'مبلغ إضافي كل شهر',
+  whatIfOk: 'هذا ممكن: يبقى الحساب أعلى من احتياجات شهر أساسية.',
+  whatIfTight: 'سيضيق الحال: ينتهي {month} على {amount}.',
+  whatIfShort: 'هذا لا يكفي: ينتهي {month} على {amount}.',
+  whatIfLow: 'أدنى رصيد ({month})',
+  whatIfEnd: 'نهاية {month}',
+  whatIfWithout: 'بدونه: {amount}',
+  whatIfPlan: 'تسجيله كبند مفتوح',
+  whatIfBasis: 'تقدير من التوقعات: التكاليف الثابتة مع شهر معتاد. مقرَّب وليس وعدًا – لا يُحفظ شيء.',
+  whatIfDebtResult: 'سداد كامل في {after} بدلًا من {before} (أبكر بـ {n} شهرًا)',
+  whatIfDebtNoEnd: 'سداد كامل في {after}',
+  whatIfInterest: 'فوائد أقل بمقدار {amount}',
+  whatIfDebtNever: 'حتى مع ذلك لا يغطي القسط الفوائد.',
 };
 
 /**

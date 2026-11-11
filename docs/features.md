@@ -232,7 +232,14 @@ Everything the app can do. Build and release steps are in the
   everyday spending so far against a usual month at the same day, where it
   would end, and where it goes. The month's **budgets**. **Ausblick**: the
   balance at the end of each of the next twelve months, with yearly bills in
-  their month and a range from calm to pricey months. **Rücklage für jährliche
+  their month and a range from calm to pricey months; under it, **Kann ich
+  mir das leisten?** tries a purchase in a month or a new monthly cost against
+  that outlook — "Das passt", "Es wird knapp: Februar 2027 endet mit ≈ 1.240 €"
+  or "Das reicht nicht", with the lowest point and the year's end beside what
+  they would be without it — and, with a loan, what paying more every month
+  does ("Schuldenfrei März 2028 statt August 2028, ≈ 310 € weniger Zinsen").
+  Nothing is saved; *Als offenen Eintrag vormerken* puts the plan into its
+  month as an open entry. **Rücklage für jährliche
   Kosten** (when the book has a yearly bill): how much to set aside a month,
   the next bills coming up, and whether the account covers them. **Spartöpfe**:
   savings goals with a progress ring and "noch 97 € im Monat bis Juni"; a
