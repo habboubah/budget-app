@@ -217,6 +217,36 @@ export function savings(points: MonthPoint[]): SavingsInsight {
   };
 }
 
+export interface PeriodChange {
+  /** The finished months just before the period, as many as it has. */
+  before: MonthKey[];
+  /** Ø income, Ø spending and Ø saved against those months, in whole percent of what they were; null without a base to compare with. */
+  income: number | null;
+  spending: number | null;
+  saved: number | null;
+}
+
+/**
+ * How a period's averages moved against as many finished months just before
+ * it (principle 2: your own past, on the same terms). Null when the book has
+ * fewer months before than the period is long — no comparison from too little.
+ */
+export function periodChange(all: MonthPoint[], period: MonthPoint[]): PeriodChange | null {
+  if (!period.length) return null;
+  const earlier = all.filter(p => p.key < period[0].key);
+  if (earlier.length < period.length) return null;
+  const before = earlier.slice(-period.length);
+  const now = savings(period);
+  const was = savings(before);
+  const pct = (a: number, b: number) => (b > 0 ? Math.round(((a - b) / b) * 100) : null);
+  return {
+    before: before.map(p => p.key),
+    income: pct(now.averageIncome, was.averageIncome),
+    spending: pct(now.averageExpense, was.averageExpense),
+    saved: pct(now.averageSaved, was.averageSaved),
+  };
+}
+
 /** How many months the balance would cover the average spending (null without spending). */
 export function reserveMonths(balance: number, averageExpense: number): number | null {
   if (averageExpense <= 0) return null;

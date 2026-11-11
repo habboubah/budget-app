@@ -113,6 +113,14 @@ export function outlook(book: Book, today = new Date(), horizon = 12): Outlook |
   return { from: { key: startKey, end: start }, months, everyday, basis, ranged, grundbedarf: need, headline };
 }
 
+/**
+ * Where the outlook's middle line is lowest — the running month's end, where
+ * it starts, included (the first, when several are): where it gets tightest.
+ */
+export function outlookLowest(o: Outlook): { key: MonthKey; amount: number } {
+  return o.months.reduce((b, m) => (m.mid < b.amount ? { key: m.key, amount: m.mid } : b), { key: o.from.key, amount: o.from.end });
+}
+
 /** The yearly bills and planned one-offs of the coming months, in order: *Große Posten*. */
 export function bigItems(o: Outlook): (OutlookItem & { month: MonthKey })[] {
   return o.months.flatMap(m => m.big.filter(b => !b.income).map(b => ({ ...b, month: m.key })));
