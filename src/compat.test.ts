@@ -257,3 +257,12 @@ describe('version 27 (warranty and return dates)', () => {
     expect(data.entries.find(e => e.id === 'x4')).toMatchObject({ returnUntil: '2026-11-26', warrantyUntil: '2028-11-12' });
   });
 });
+
+describe('version 28 (trips and projects)', () => {
+  it('keeps a trip with its budget, dates and rate, and the entry tagged for it', () => {
+    const { data } = stored('storage-v28.json');
+    expect(data.projects).toEqual([{ id: 'trip', name: 'Urlaub Türkei', emoji: '🏖️', tag: 'urlaub-türkei', budget: 200000, from: '2026-11-09', to: '2026-11-18', currency: 'TRY', rate: 38.5, createdAt: 1793000000200 }]);
+    expect(data.entries.find(e => e.id === 'x5')?.tags).toEqual(['urlaub-türkei']);
+    expect(stored('storage-v27.json').data.projects).toBeUndefined();
+  });
+});

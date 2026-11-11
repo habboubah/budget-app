@@ -41,6 +41,7 @@ export const DATA_KEYS = {
   demo: 'spartopf-demo',
   accounts: 'spartopf-accounts',
   debts: 'spartopf-debts',
+  projects: 'spartopf-projects',
   monthStart: 'spartopf-month-start',
   meta: 'spartopf-meta',
 } as const;
@@ -138,6 +139,7 @@ export function loadStored(read: (key: string) => unknown): AppData {
     demo: read(DATA_KEYS.demo),
     accounts: read(DATA_KEYS.accounts),
     debts: read(DATA_KEYS.debts),
+    projects: read(DATA_KEYS.projects),
     monthStart: read(DATA_KEYS.monthStart),
   });
   // Saved by an older version: new and renamed built-in categories, merges.
@@ -167,6 +169,7 @@ export function writeLocal(data: AppData, write: (key: string, value: string) =>
   write(DATA_KEYS.demo, JSON.stringify(data.demo ?? null));
   write(DATA_KEYS.accounts, JSON.stringify(data.accounts ?? []));
   write(DATA_KEYS.debts, JSON.stringify(data.debts ?? []));
+  write(DATA_KEYS.projects, JSON.stringify(data.projects ?? []));
   write(DATA_KEYS.monthStart, JSON.stringify(data.monthStart ?? null));
   write(DATA_KEYS.meta, JSON.stringify({ schemaVersion: SCHEMA_VERSION, seeded: true }));
 }

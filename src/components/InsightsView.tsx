@@ -39,6 +39,8 @@ interface Props {
   onReserveGoal: (target: number, due?: MonthKey) => void;
   /** *Kann ich mir das leisten?* under the Ausblick. */
   onWhatIf: () => void;
+  /** Reisen und Projekte: a card once there is one. */
+  projects?: React.ReactNode;
   onExplain: (e: Explain) => void;
   /** Once there is more than one account (plan 30): all of them together, "Vermögen", and the way to the accounts. */
   wealth?: { now: number; count: number; onOpen: () => void };
@@ -55,7 +57,7 @@ interface Props {
  * 11 (Rücklage), 12 (Spartöpfe) and 31 (Schulden), and *Finanz-Check*.
  * Looking back is Statistik's.
  */
-export function InsightsView({ book, language, t, hidden, onBudget, onContract, onContractsAll, onReport, onAdd, onDue, onGoals, onReserveGoal, onWhatIf, onExplain, wealth, debts }: Props) {
+export function InsightsView({ book, language, t, hidden, onBudget, onContract, onContractsAll, onReport, onAdd, onDue, onGoals, onReserveGoal, onWhatIf, onExplain, wealth, debts, projects }: Props) {
   const data = book.data;
   const today = new Date();
   const current = monthKeyOf(today);
@@ -122,6 +124,7 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
       )}
 
       {debts}
+      {projects}
 
       {check ? (
         <FinanceCheckCard check={check} points={chart} data={data} language={language} t={t} onReport={onReport} onDue={onDue} onExplain={onExplain} />

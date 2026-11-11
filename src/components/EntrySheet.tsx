@@ -1,7 +1,8 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, ShieldCheck, Star, Trash2, Undo2 } from 'lucide-react';
-import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, Interval, MonthKey, Repeat } from '../types';
+import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, Interval, MonthKey, Project, Repeat } from '../types';
+import { fromProjectCurrency } from '../insights/projects';
 import { REPEAT_CHOICES, repeatName } from '../repeatLabel';
 import { shiftDay } from '../contracts';
 import { NotAReceiptError, addAttachment, attachmentBlob, dropAttachment, readReceipt } from '../receipts';
@@ -55,6 +56,8 @@ interface Props {
   defaultAccount?: string;
   /** The debts still open, once there is one (plan 31): a pill links the entry to one — an extra payment, money paid back. */
   debts?: { id: string; name: string }[];
+  /** The trips and projects running today (schema 28): a pill each puts the entry under one — and, for a trip abroad, takes the amount in its currency. */
+  projects?: Project[];
   /** Says why a receipt couldn't be attached or read (plan 27). */
   onNotice?: (text: string) => void;
 }
@@ -85,7 +88,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * taps a category, and only with `autoCategory`; emptying the name goes back
  * to the category the sheet opened with.
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts, onNotice }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts, projects = [], onNotice }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -191,7 +194,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setDateText(defaultEntryDate(month));
     setNote('');
     setNoteOpen(false);
-    setTagText('');
+    // A trip in progress — a project with both its dates, running today — is where a new entry most likely belongs.
+    setTagText(projects.filter(p => p.from && p.to).map(p => `#${p.tag}`).join(' '));
     setTagsOpen(false);
     setShowError(false);
     setAllCategories(false);
@@ -251,7 +255,11 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
   // A plain amount, or a small sum ("12,50+4,80") the field can add up (plan 08).
   const computed = evalAmount(amountText, t.locale);
-  const amount = parseAmount(amountText, t.locale) ?? computed;
+  const typed = parseAmount(amountText, t.locale) ?? computed;
+  // Under a trip abroad, a new entry's amount is typed in the trip's currency and saved in the book's (schema 28).
+  const tagSet = new Set(normalizeTags(tagText.split(/[,\s]+/)));
+  const abroad = mode?.kind === 'new' ? projects.find(p => p.currency && p.rate && tagSet.has(p.tag)) : undefined;
+  const amount = typed !== null && abroad ? fromProjectCurrency(typed, abroad) : typed;
   const isExpression = computed !== null;
   const due = /^\d{1,2}$/.test(dueText.trim()) ? Number(dueText) : undefined;
   const dueValid = dueText.trim() === '' || (due !== undefined && due >= 1 && due <= 31);
@@ -368,7 +376,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     };
     if (due !== undefined) d.dueDay = due;
     if (dateText) d.date = dateText;
-    const n = cleanText(note, 200);
+    // What was typed abroad is kept as the note when there is none: "450,00 TRY".
+    const n = cleanText(note, 200) || (abroad && typed !== null ? `${amountToInput(typed, t.locale)} ${abroad.currency}` : '');
     if (n) d.note = n;
     // The goal link only on a Sparen category (plan 12).
     if (isSaving && goalId && goals.some(g => g.id === goalId)) d.goalId = goalId;
@@ -513,8 +522,14 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               style={{ width: `${Math.max(4, amountText.length || 4) + 0.6}ch` }}
               className="min-w-0 max-w-full bg-transparent rounded-num text-[clamp(40px,13vw,52px)] leading-[1.15] font-bold text-center text-fg placeholder:text-fg-faint/60 caret-accent outline-none"
             />
-            <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">{currencySymbol()}</span>
+            <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">{abroad ? abroad.currency : currencySymbol()}</span>
           </div>
+          {/* Typed in the trip's currency: what it comes to in the book's. */}
+          {abroad && amount !== null && !isExpression && (
+            <p dir="ltr" aria-live="polite" className="text-label text-accent font-semibold mt-1 rounded-num">
+              = {withAmounts(() => formatMoney(amount, t.locale))}
+            </p>
+          )}
           {/* The running sum, announced politely — "= 17,30 €" (plan 08). What is
               being typed, so shown even while amounts are hidden (plan 06). */}
           {isExpression && amount !== null && (
@@ -759,6 +774,28 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               <span>{t.refund}</span>
             </button>
           )}
+          {/* A trip or project running today: one tap files the entry under it (its tag). */}
+          {projects.map(p => {
+            const on = tagSet.has(p.tag);
+            return (
+              <button
+                key={p.id}
+                type="button"
+                aria-pressed={on}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => {
+                  tapLight();
+                  setTagText(tt => (on
+                    ? normalizeTags(tt.split(/[,\s]+/)).filter(x => x !== p.tag).map(x => `#${x}`).join(' ')
+                    : `${tt.trim()} #${p.tag}`.trim()));
+                }}
+                className={`${PILL} focus-visible:ring-focus ${on ? 'text-accent' : 'text-fg-mute'}`}
+              >
+                <span className="emoji text-[15px] leading-none" aria-hidden="true">{p.emoji}</span>
+                <span className="truncate">{p.name}</span>
+              </button>
+            );
+          })}
           {accounts && (() => {
             const a = accounts.find(x => x.id === accountId) ?? accounts[0];
             return (

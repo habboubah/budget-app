@@ -220,6 +220,33 @@ export interface AppData {
   debts?: Debt[];
   /** The day the months start on, 2–28 (schema 23, plan 32: a month from payday to payday). Unset = the 1st. */
   monthStart?: number;
+  /** Trips and projects (schema 28): a tag with a budget and dates. Unset = none. */
+  projects?: Project[];
+}
+
+/**
+ * A trip or a project (schema 28) — a holiday, a move, the baby's room:
+ * everything tagged with its `tag` counts towards it, whatever the category
+ * or month. It may have a budget and dates, and — for a trip abroad — the
+ * currency amounts are typed in and its rate.
+ */
+export interface Project {
+  id: string;
+  name: string;
+  emoji: string;
+  /** The tag its entries carry (as `Entry.tags` holds it: lower case, no "#"). */
+  tag: string;
+  /** What it may cost in all, cents. */
+  budget?: number;
+  /** Its first and last day, YYYY-MM-DD. Between them — or, without dates, until it is closed — the entry sheet offers it. */
+  from?: string;
+  to?: string;
+  /** Amounts typed for it are in this currency (ISO 4217), `rate` of it to one unit of the book's (1 € = 38,5 TRY). Both or neither. */
+  currency?: string;
+  rate?: number;
+  /** Finished: kept with its total, no longer offered in the entry sheet. */
+  closed?: boolean;
+  createdAt: number;
 }
 
 /**

@@ -246,7 +246,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   **schema 27** `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is
   kept for: two ISO days, set in the entry sheet once a receipt is attached,
   not carried over; `returnSource` and `warrantySource` in reminders.ts
-  remind 3 and 30 days ahead) — all
+  remind 3 and 30 days ahead);
+  **schema 28** `AppData.projects` (below) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
@@ -536,6 +537,21 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   change is undone as a whole (`store.changeStart` returns the book before).
   The month title's subline shows the dates while the start isn't the 1st.
   Siri's `amounts.json` carries `until`, the period's last day.
+- **Trips and projects (schema 28, `src/insights/projects.ts`).**
+  `AppData.projects`: `Project { name, emoji, tag, budget?, from?, to?,
+  currency? + rate?, closed? }`. A project owns nothing: its entries are the
+  ones carrying its `tag` (`projectTag(name)` makes it; fixed once created),
+  so `projectStatus` sums expense entries with that tag across every month
+  and account — refunds come off, income and transfers don't count — against
+  the budget, with the days and a per-day figure while it runs
+  (`isActiveProject`: not closed and inside its dates, or dateless). The
+  entry sheet gets a pill per active project (it toggles the tag; one with
+  both dates starts on for a new entry) and, under a project with a
+  currency, takes a **new** entry's amount in that currency:
+  `fromProjectCurrency(typed, project)` is what is saved, the typed amount
+  becomes the note. Rates are typed, never fetched. `ProjectsView` (from
+  *Optionen › Haushaltsbuch*, the way in), `ProjectSheet`, and Planen's
+  `ProjectsCard` once there is one. Deleting a project keeps the tags.
 - **Debts and loans (plan 31, `src/insights/debts.ts`, pure and tested).**
   `Debt { name, direction: 'owe' | 'owed', principal, start, rate?, payment?,
   seriesId? }` in `AppData.debts` (schema 21). What is paid back comes from the

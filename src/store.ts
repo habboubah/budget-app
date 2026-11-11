@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ACCENTS, Accent, Account, AppData, Category, Contract, Debt, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
+import { ACCENTS, Accent, Account, AppData, Category, Contract, Debt, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Project, Rule, ThemeMode } from './types';
 import { Language, isLanguage, DEFAULT_LANGUAGE, loadLanguage, stringsFor } from './translations';
 import {
   ALL_ACCOUNTS, AccountView, MAIN_ACCOUNT, MAX_ACCOUNTS, MAX_FAVORITES, TransferDraft, canDeleteAccount, canRemoveFromMonth, carryCandidates, carryOver,
@@ -104,6 +104,7 @@ export function useAppStore() {
   const [demo, setDemo] = useState<DemoInfo | undefined>(initial.demo);
   /** Debts and loans, and money lent (plan 31). */
   const [debts, setDebts] = useState<Debt[]>(initial.debts ?? []);
+  const [projects, setProjects] = useState<Project[]>(initial.projects ?? []);
   /**
    * The day the book's month begins (plan 32) — data, so part of a backup.
    * `setMonthStart` keeps logic.ts in step; set in the same breath as the
@@ -240,9 +241,10 @@ export function useAppStore() {
       ...(demo ? { demo } : {}),
       ...(accounts.length ? { accounts } : {}),
       ...(debts.length ? { debts } : {}),
+      ...(projects.length ? { projects } : {}),
       ...(monthStart !== 1 ? { monthStart } : {}),
     }),
-    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts, monthStart],
+    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts, monthStart, projects],
   );
   /** Whether the book holds test data: Optionen offers to remove it instead of adding it. */
   const hasDemo = useMemo(() => hasDemoData(data), [data]);
@@ -671,6 +673,7 @@ export function useAppStore() {
     setDemo(fixed.demo);
     setAccounts(fixed.accounts ?? []);
     setDebts(fixed.debts ?? []);
+    setProjects(fixed.projects ?? []);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -714,6 +717,7 @@ export function useAppStore() {
     setAccounts([]);
     setAccountView(MAIN_ACCOUNT);
     setDebts([]);
+    setProjects([]);
     // Back to the defaults of a fresh install: euros and English.
     setCurrency(DEFAULT_CURRENCY);
     setLanguage(DEFAULT_LANGUAGE);
@@ -845,6 +849,38 @@ export function useAppStore() {
     if (r.entryIds.length) setEntries(prev => prev.map(e => (r.entryIds.includes(e.id) ? { ...e, debtId: r.debt.id } : e)));
   };
 
+  /* ------------------------------------------- trips and projects (schema 28) */
+
+  const addProject = (p: Omit<Project, 'id' | 'createdAt'>): Project => {
+    const created: Project = { id: uid(), createdAt: Date.now(), ...p };
+    setProjects(prev => [...prev, created]);
+    return created;
+  };
+
+  /** Change a project; optional fields set to undefined are dropped, and a rate goes with its currency. */
+  const updateProject = (id: string, patch: Partial<Omit<Project, 'id' | 'createdAt'>>) =>
+    setProjects(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const next: Project = { ...p, ...patch };
+      if (!next.budget) delete next.budget;
+      if (!next.from) delete next.from;
+      if (!next.to) delete next.to;
+      if (!next.currency || !next.rate) { delete next.currency; delete next.rate; }
+      if (!next.closed) delete next.closed;
+      return next;
+    }));
+
+  /** Remove a project; its entries keep their tag. Returns what to undo. */
+  const removeProject = (id: string): { project: Project; index: number } | null => {
+    const index = projects.findIndex(p => p.id === id);
+    if (index === -1) return null;
+    setProjects(prev => prev.filter(p => p.id !== id));
+    return { project: projects[index], index };
+  };
+
+  const restoreProject = (r: { project: Project; index: number }) =>
+    setProjects(prev => (prev.some(p => p.id === r.project.id) ? prev : [...prev.slice(0, r.index), r.project, ...prev.slice(r.index)]));
+
   /* ----------------------------------------------------------- import rules */
 
   /** Create an import rule (plan 20); returns it. A dupe (same match + set) is reused. */
@@ -921,6 +957,7 @@ export function useAppStore() {
     goals, addGoal, updateGoal, closeGoal, withdrawGoal, removeGoal, restoreGoal,
     rules, addRule, updateRule, removeRule, restoreRule,
     debts, addDebt, updateDebt, removeDebt, restoreDebt,
+    projects, addProject, updateProject, removeProject, restoreProject,
     monthStart, changeStart,
     lastExport, markExported: () => setLastExport(isoDay()),
     copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),

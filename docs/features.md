@@ -141,6 +141,17 @@ Everything the app can do. Build and release steps are in the
   *Optionen → Haushaltsbuch → Regeln*. CSV exports from other budget apps
   (Finanzguru, Outbank, YNAB, Cashew and more) are recognised by their columns,
   and an unfamiliar file is mapped by its best guess.
+- **Trips and projects.** *Optionen › Reisen und Projekte*: a holiday, a
+  move, the baby's room — a name (it becomes the tag), a budget in all, and
+  optionally its first and last day. Everything with that tag counts towards
+  it, whatever the category or month: "640 € von 2.000 € · 9.–18. Nov. · ≈
+  170 € pro Tag". While it runs, the entry sheet offers it as a pill — one
+  tap files the entry under it; a trip with both dates is preselected for
+  new entries during those days. For a trip abroad, give it the local
+  currency and a rate you type ("1 € = 38,5 TRY"): amounts are then typed
+  in that currency and saved in yours, with what was typed kept as the
+  note. No rate is ever fetched. Planen shows a card once there is one;
+  finished ones can be closed, and deleting one leaves its entries' tags.
 - **Tags.** Give an entry free tags from the sheet's "+" menu (*# Tag*). Search
   finds `#urlaub`, and once any tag exists *Statistik → Wofür das Geld geht*
   gains a **Tags** view ("Urlaub · 1.840 € · 23 Einträge"); the CSV export has a

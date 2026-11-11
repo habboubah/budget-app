@@ -1,5 +1,5 @@
 import {
-  ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, INTERVALS, Interval, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
+  ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, INTERVALS, Interval, MonthKey, MonthRecord, Names, Project, REPEATS, Repeat, Rule,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -28,8 +28,9 @@ import { isSupportedCurrency } from './currency';
  *  25: `Category.limitPer` (a budget for the year) and `Category.rollover` / `rolloverFrom`
  *      (a monthly budget whose rest moves on) — optional, unset = a plain monthly budget.
  *  26: `Entry.refund` (money back in an expense category; its amount is negative) — optional.
- *  27: `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is kept for) — optional. */
-export const SCHEMA_VERSION = 27;
+ *  27: `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is kept for) — optional.
+ *  28: trips and projects (`AppData.projects`) — optional, unset = none. */
+export const SCHEMA_VERSION = 28;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1736,6 +1737,7 @@ export function normalizeState(raw: unknown): AppData {
   for (const e of entries) if (e.refund && incomeIds.has(e.categoryId)) { delete e.refund; e.amount = Math.abs(e.amount); }
   // Debts (schema 21): an entry's link to a debt that isn't there is dropped.
   const debts = normalizeDebts(v.debts);
+  const projects = normalizeProjects(v.projects);
   const debtSet = new Set((debts ?? []).map(d => d.id));
   for (const e of entries) if (e.debtId && !debtSet.has(e.debtId)) delete e.debtId;
   for (const m of months) {
@@ -1765,6 +1767,7 @@ export function normalizeState(raw: unknown): AppData {
     ...(demo ? { demo } : {}),
     ...(accounts ? { accounts } : {}),
     ...(debts ? { debts } : {}),
+    ...(projects ? { projects } : {}),
     ...(monthStart !== 1 ? { monthStart } : {}),
   };
 }
@@ -1835,6 +1838,40 @@ export function backupFiles(text: string, maxBytes: number): Record<string, stri
 }
 
 /** Debts (schema 21): a name, a direction, whole cents, a start month, a rate between 0 and 100 %. Unset when there are none. */
+export const MAX_PROJECTS = 40;
+
+/** The tag a project's entries carry, from its name: "Urlaub Türkei 2027" → "urlaub-türkei-2027". */
+export function projectTag(name: string): string {
+  return normalizeTags([cleanText(name, 40).replace(/[\s,#]+/g, '-').replace(/^-+|-+$/g, '')])[0] ?? '';
+}
+
+/** Trips and projects (schema 28): a name and a tag are required; a rate only with its currency; one project per tag. */
+function normalizeProjects(v: unknown): Project[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const list = dedupe(v.map((p): Project | null => {
+    if (!isObj(p) || !str(p.id)) return null;
+    const name = cleanText(str(p.name) ?? '', 40);
+    const tag = normalizeTags([str(p.tag) ?? ''])[0] ?? projectTag(name);
+    if (!name || !tag) return null;
+    const project: Project = {
+      id: (p.id as string).slice(0, 80), name, tag,
+      emoji: str(p.emoji)?.trim() || '🧳',
+      createdAt: typeof p.createdAt === 'number' && Number.isFinite(p.createdAt) ? p.createdAt : 0,
+    };
+    if (typeof p.budget === 'number' && Number.isFinite(p.budget) && p.budget >= 1) project.budget = Math.min(Math.round(p.budget), MAX_CENTS);
+    if (isIsoDay(p.from)) project.from = p.from;
+    if (isIsoDay(p.to) && (!project.from || p.to >= project.from)) project.to = p.to;
+    if (typeof p.currency === 'string' && /^[A-Z]{3}$/.test(p.currency) && typeof p.rate === 'number' && Number.isFinite(p.rate) && p.rate > 0) {
+      project.currency = p.currency;
+      project.rate = Math.min(p.rate, 1_000_000);
+    }
+    if (p.closed === true) project.closed = true;
+    return project;
+  }).filter((p): p is Project => p !== null), p => p.id);
+  const byTag = dedupe(list, p => p.tag).slice(0, MAX_PROJECTS);
+  return byTag.length ? byTag : undefined;
+}
+
 function normalizeDebts(v: unknown): Debt[] | undefined {
   if (!Array.isArray(v)) return undefined;
   const list = dedupe(v.map((d): Debt | null => {

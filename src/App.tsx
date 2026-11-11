@@ -12,7 +12,7 @@ import {
   shouldAskForReview, transferPair, uid,
   changeMonthStart,
 } from './logic';
-import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, monthReview, outlook, paymentSeries, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
+import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, isActiveProject, monthReview, outlook, paymentSeries, projectsOverview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
 import { CategoryView } from './components/CategoryView';
@@ -45,6 +45,8 @@ import { MonthActionsMenu } from './components/MonthActionsMenu';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
 import { WhatIfSheet } from './components/WhatIfSheet';
+import { ProjectsCard, ProjectsView } from './components/ProjectsView';
+import { ProjectSheet, ProjectSheetMode } from './components/ProjectSheet';
 import { SettingsView } from './components/SettingsView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
@@ -94,7 +96,7 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -102,7 +104,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -334,6 +336,14 @@ export default function App() {
   /** Debts and loans (plan 31): every one's plan, and what can pay them. */
   const debts = useMemo(() => debtsOverview(data), [data]);
   const [debtSheet, setDebtSheet] = useState<DebtSheetMode>(null);
+  // Trips and projects (schema 28): every entry of every account counts, by its tag.
+  const projects = useMemo(() => projectsOverview(allView), [allView]);
+  const activeProjects = useMemo(() => store.projects.filter(p => isActiveProject(p)), [store.projects]);
+  const [projectSheet, setProjectSheet] = useState<ProjectSheetMode>(null);
+  const editProject = (id: string) => {
+    const status = projects.find(s => s.project.id === id);
+    if (status) setProjectSheet({ kind: 'edit', status });
+  };
   const series = useMemo(() => (debtSheet ? paymentSeries(data) : []), [data, debtSheet]);
 
   // The screen pushed on this tab, if any: the nav's single source of truth —
@@ -1149,6 +1159,8 @@ export default function App() {
             }}
             onBack={back}
           />
+        ) : id === 'projects' ? (
+          <ProjectsView overview={projects} t={t} onBack={back} onNew={() => setProjectSheet({ kind: 'new' })} onEdit={editProject} />
         ) : id === 'debts' ? (
           <DebtsView overview={debts} t={t} onBack={back} onNew={() => setDebtSheet({ kind: 'new' })} onEdit={editDebt} />
         ) : id === 'accounts' ? (
@@ -1183,6 +1195,8 @@ export default function App() {
             accountCount={accounts.length}
             onAccounts={() => push('accounts')}
             debtCount={store.debts.length}
+            onProjects={() => push('projects')}
+            projectCount={store.projects.length}
             onDebts={() => push('debts')}
             monthStart={store.monthStart}
             onMonthStart={() => setMonthStartOpen(true)}
@@ -1245,6 +1259,7 @@ export default function App() {
             onExplain={setExplain}
             wealth={multi ? { now: totals.now, count: accounts.length, onOpen: () => push('accounts') } : undefined}
             debts={store.debts.length ? <DebtsCard overview={debts} t={t} onOpen={() => push('debts')} onEdit={editDebt} /> : null}
+            projects={store.projects.length ? <ProjectsCard overview={projects} t={t} onOpen={() => push('projects')} onEdit={editProject} /> : null}
           />
         ) : (
           <MonthView
@@ -1412,7 +1427,21 @@ export default function App() {
         accounts={multi ? accounts.map(a => ({ id: a.id, label: accountName(a, t.accountMain), emoji: a.emoji })) : undefined}
         defaultAccount={target}
         debts={store.debts.length ? store.debts.map(d => ({ id: d.id, name: d.name })) : undefined}
+        projects={activeProjects}
         onNotice={text => show(text)}
+      />
+
+      <ProjectSheet
+        mode={projectSheet}
+        taken={store.projects.map(p => p.tag)}
+        t={t}
+        onClose={() => setProjectSheet(null)}
+        onCreate={p => { store.addProject(p); notifySuccess(); show(fmt(t.projectAdded, { name: p.name })); }}
+        onSave={(id, patch) => store.updateProject(id, patch)}
+        onDelete={p => {
+          const removed = store.removeProject(p.id);
+          if (removed) show(fmt(t.projectDeleted, { name: p.name }), { label: t.undo, run: () => store.restoreProject(removed) });
+        }}
       />
 
       <DebtSheet
