@@ -24,6 +24,7 @@
 // gitignored .env.release file (see .env.release.example):
 //   ANDROID_KEYSTORE_PATH       the upload keystore (.jks / .keystore)
 //   ANDROID_KEYSTORE_PASSWORD   its password; left out, the script asks for it
+//                               once and writes it into .env.release itself
 //   ANDROID_KEY_ALIAS           the key's alias in it
 //   ANDROID_KEY_PASSWORD        optional; defaults to the keystore's
 //   PLAY_SERVICE_ACCOUNT_JSON   path of the Play service account's JSON key.
@@ -102,9 +103,9 @@ if (args.includes('--make-key')) {
   if (!/^ANDROID_KEYSTORE_PATH=/m.test(has)) lines.push(`ANDROID_KEYSTORE_PATH=${keystore}`);
   if (!/^ANDROID_KEY_ALIAS=/m.test(has)) lines.push(`ANDROID_KEY_ALIAS=${alias}`);
   if (lines.length) fs.appendFileSync(envFile, `${has && !has.endsWith('\n') ? '\n' : ''}# Android upload key (scripts/release-android.js --make-key)\n${lines.join('\n')}\n`, { mode: 0o600 });
-  console.log(`\nDone. Its path and alias are in .env.release (gitignored); the password is not.`);
+  console.log(`\nDone. Its path and alias are in .env.release (gitignored).`);
   console.log('Keep a copy of the keystore file and the password somewhere safe outside this computer.');
-  console.log('Next: npm run release:android — it asks for the password (or add ANDROID_KEYSTORE_PASSWORD=… to .env.release).');
+  console.log('Next: npm run release:android — it asks for the password once and then keeps it in .env.release.');
   process.exit(0);
 }
 
@@ -316,8 +317,33 @@ if (upload) {
   }
 }
 
-if (!process.env.ANDROID_KEYSTORE_PASSWORD) process.env.ANDROID_KEYSTORE_PASSWORD = await askHidden('Keystore password: ');
-if (!process.env.ANDROID_KEYSTORE_PASSWORD) stop('No password given.');
+// The keystore password is asked for once, checked against the keystore and then
+// kept in .env.release (gitignored, readable by you only) — as pizza-driver-log
+// keeps its own in android/keystore.properties — so no later release asks.
+if (!process.env.ANDROID_KEYSTORE_PASSWORD) {
+  const keytool = process.env.JAVA_HOME ? path.join(process.env.JAVA_HOME, 'bin', 'keytool') : 'keytool';
+  const opens = password => {
+    const tried = spawnSync(
+      keytool,
+      ['-list', '-keystore', process.env.ANDROID_KEYSTORE_PATH, '-alias', process.env.ANDROID_KEY_ALIAS, '-storepass:env', 'SPARTOPF_STOREPASS'],
+      { stdio: 'ignore', env: { ...process.env, SPARTOPF_STOREPASS: password } },
+    );
+    return tried.error ? true : tried.status === 0; // no keytool to ask: the signing step will tell
+  };
+  let password = '';
+  for (let tries = 1; ; tries += 1) {
+    password = await askHidden('Keystore password (asked this once, then remembered in .env.release): ');
+    if (!password) stop('No password given.');
+    if (opens(password)) break;
+    if (tries === 3) stop('That password does not open the keystore — nothing was saved.');
+    console.log(`That does not open ${path.basename(process.env.ANDROID_KEYSTORE_PATH)} (alias "${process.env.ANDROID_KEY_ALIAS}"). Once more:`);
+  }
+  process.env.ANDROID_KEYSTORE_PASSWORD = password;
+  const has = fs.existsSync(envFile) ? fs.readFileSync(envFile, 'utf8') : '';
+  fs.appendFileSync(envFile, `${has && !has.endsWith('\n') ? '\n' : ''}ANDROID_KEYSTORE_PASSWORD='${password}'\n`, { mode: 0o600 });
+  fs.chmodSync(envFile, 0o600);
+  console.log('Saved in .env.release — the next release does not ask.');
+}
 
 // The same gate as the iPhone release: lint, tests, privacy, performance, contrast.
 if (!skipCheck) run('npm run check');

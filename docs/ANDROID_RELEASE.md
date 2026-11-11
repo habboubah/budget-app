@@ -31,13 +31,16 @@ npm run android:key
 
 `keytool` asks for a password and your name. The key goes to
 `~/.android-keys/spartopf-upload.jks`; its path and alias are written into
-`.env.release` (gitignored), the password is not. Keep a copy of the file and
+`.env.release` (gitignored). Keep a copy of the file and
 the password somewhere safe outside the computer — lose them and Google has
 to reset the key. Never commit the keystore, the password or `.env.release`.
 
-`npm run release:android` asks for the password each time; to skip the
-question, add `ANDROID_KEYSTORE_PASSWORD=…` to `.env.release`. An existing
-keystore works too: set `ANDROID_KEYSTORE_PATH` and `ANDROID_KEY_ALIAS` there.
+The first `npm run release:android` asks for the password **once**, checks
+that it opens the keystore, and writes it into `.env.release`
+(`ANDROID_KEYSTORE_PASSWORD=…`, the file is readable by you only) — as
+pizza-driver-log keeps its own in `android/keystore.properties`. No later
+release asks. Delete that line to be asked again. An existing keystore works
+too: set `ANDROID_KEYSTORE_PATH` and `ANDROID_KEY_ALIAS` there.
 
 ## Once: the Play Console
 

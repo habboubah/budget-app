@@ -164,7 +164,7 @@ the same number.
 | Command | What it does |
 |---|---|
 | `npm run release:android -- --dry-run` | Shows the version and version code. Nothing is built. |
-| `npm run release:android` | Checks, builds, signs and uploads the bundle to the internal test track, with the release notes from `release-notes/`. Asks for the keystore password (or reads `ANDROID_KEYSTORE_PASSWORD` from `.env.release`). The same version a second time gets the next free version code by itself. |
+| `npm run release:android` | Checks, builds, signs and uploads the bundle to the internal test track, with the release notes from `release-notes/`. Asks for the keystore password the first time only, then keeps it in `.env.release`. The same version a second time gets the next free version code by itself. |
 | `npm run release:android -- --no-upload` | Only builds and signs the bundle; nothing is sent to Google Play. |
 | `npm run release:android -- --track alpha` | Releases to the closed test instead (`beta`: the open test). |
 | `npm run release:android -- --build 1` | Forces the build number that is added to the version code. |
