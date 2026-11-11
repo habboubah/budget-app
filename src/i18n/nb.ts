@@ -1041,6 +1041,7 @@ const nb: Strings = {
   // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
   // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
   guideTitle: 'Veiledning',
+  guideBack: 'Tilbake til veiledningen',
   guideRowSub: 'Alle funksjoner kort forklart, med en kort omvisning',
   guideAll: 'Se alle funksjoner',
   guideTourTitle: 'Kort omvisning',

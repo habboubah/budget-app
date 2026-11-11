@@ -1041,6 +1041,7 @@ const fr: Strings = {
   // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
   // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
   guideTitle: 'Guide',
+  guideBack: 'Retour au guide',
   guideRowSub: 'Toutes les fonctions en bref, avec une courte visite',
   guideAll: 'Voir toutes les fonctions',
   guideTourTitle: 'Courte visite',

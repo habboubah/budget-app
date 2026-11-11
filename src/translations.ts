@@ -1068,6 +1068,7 @@ const de = {
   // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
   // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
   guideTitle: 'Anleitung',
+  guideBack: 'Zurück zur Anleitung',
   guideRowSub: 'Alle Funktionen kurz erklärt, mit einer Tour',
   guideAll: 'Alle Funktionen ansehen',
   guideTourTitle: 'Kurze Tour',
@@ -2310,6 +2311,7 @@ const en: Strings = {
   // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
   // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
   guideTitle: 'Guide',
+  guideBack: 'Back to the guide',
   guideRowSub: 'Every feature in brief, with a short tour',
   guideAll: 'See all features',
   guideTourTitle: 'Short tour',
@@ -3562,6 +3564,7 @@ const ar: Strings = {
   // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
   // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
   guideTitle: 'الدليل',
+  guideBack: 'العودة إلى الدليل',
   guideRowSub: 'كل الميزات بإيجاز، مع جولة قصيرة',
   guideAll: 'عرض كل الميزات',
   guideTourTitle: 'جولة قصيرة',

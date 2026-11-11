@@ -48,6 +48,7 @@ import { WhatIfSheet } from './components/WhatIfSheet';
 import { ProjectsCard, ProjectsView } from './components/ProjectsView';
 import { ProjectSheet, ProjectSheetMode } from './components/ProjectSheet';
 import { TaxView } from './components/TaxView';
+import { GuideBackPill } from './components/GuideBackPill';
 import { SettingsView } from './components/SettingsView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
@@ -170,6 +171,8 @@ export default function App() {
   const [tab, setTab] = useState<TabId>('month');
   /** A screen the guide's *Zeigen* opened is shown: back leads to the guide again (see `under` below). */
   const [guideReturn, setGuideReturn] = useState(false);
+  /** *Zeigen* or a tour led away from the guide to where no back button leads to it: the capsule above the tab bar does. */
+  const [guideAway, setGuideAway] = useState(false);
   /** Per tab, the screen pushed over its root — each tab keeps its place, as on iOS. */
   const [stack, setStack] = useState<Partial<Record<TabId, PushedId>>>({});
   const push = (to: PushedId) => {
@@ -1084,8 +1087,24 @@ export default function App() {
     }, 400);
     return () => window.clearTimeout(id);
   }, [screen]);
+  // Back at the guide, however: nothing left to lead back to it.
+  useEffect(() => { if (screen === 'guide') setGuideAway(false); }, [screen]);
+  /** The capsule's "‹ Anleitung": whatever *Zeigen* opened closes, and the guide is shown with its topic. */
+  const backToGuide = () => {
+    setGuideAway(false);
+    setTour(null);
+    setEntrySheet(null);
+    setMonthPickerOpen(false);
+    setActionsAnchor(null);
+    setGuideReturn(false);
+    setTab('settings');
+    setStack(s => ({ ...s, settings: 'guide' }));
+  };
   /** *Zeigen*: the screen a topic is about, or the thing on the month page opened. */
   const guideGo = (a: GuideAction) => {
+    // Only a screen of Optionen takes the guide's place (its back leads there),
+    // and the month start is a sheet over the guide: everything else gets the capsule.
+    if (HOME[a as PushedId] !== 'settings' && a !== 'monthStart' && !(a === 'report' && book.months.some(k => k < now))) setGuideAway(true);
     const root = (id: TabId) => { setTab(id); setStack(s => ({ ...s, [id]: undefined })); };
     if (a === 'month') openMonthPage(monthKeyOf());
     else if (a === 'stats' || a === 'insights' || a === 'settings') root(a);
@@ -1928,6 +1947,15 @@ export default function App() {
             : undefined}
         />
       )}
+
+      <GuideBackPill
+        show={guideAway && screen !== 'guide' && !tour}
+        title={t.guideTitle}
+        label={t.guideBack}
+        closeLabel={t.close}
+        onBack={backToGuide}
+        onClose={() => setGuideAway(false)}
+      />
 
       <Toast toast={toast} onDone={hide} raised />
     </div>

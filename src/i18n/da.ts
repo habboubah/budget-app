@@ -1040,6 +1040,7 @@ const da: Strings = {
   // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
   // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
   guideTitle: 'Vejledning',
+  guideBack: 'Tilbage til vejledningen',
   guideRowSub: 'Alle funktioner kort forklaret, med en kort rundtur',
   guideAll: 'Se alle funktioner',
   guideTourTitle: 'Kort rundtur',
