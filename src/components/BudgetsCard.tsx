@@ -3,6 +3,7 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { AppData, Category, MonthKey } from '../types';
 import { displayName, formatMoney, formatMoneyApprox, formatMoneyShort, monthLabel } from '../logic';
 import { monthBudgets, suggestLimit } from '../budgets';
+import { budgetCarried } from '../budgetLabel';
 import { Strings, fmt } from '../translations';
 import { Card } from '../ui/Card';
 import { Menu } from '../ui/Menu';
@@ -64,6 +65,8 @@ export function BudgetsCard({ data, month, language, t, onBudget }: {
                     <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-caption">
                       <span className="text-fg-mute tabular-nums">
                         {used}
+                        {s.period === 'year' && ` · ${t.budgetPerYear}`}
+                        {s.carried !== 0 && ` · ${budgetCarried(t, s)}`}
                         {s.perDay !== null && ` · ${fmt(t.perDay, { amount: formatMoneyApprox(s.perDay, t.locale) })}`}
                       </span>
                       {s.ahead && <span className="ms-auto font-medium text-warn">{t.budgetAhead}</span>}

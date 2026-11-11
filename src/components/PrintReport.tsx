@@ -8,6 +8,8 @@ import { Sheet } from '../ui/Sheet';
 import { Switch } from '../ui/Switch';
 import { MonthReportBody } from './MonthReportView';
 import { YearReviewBody } from './YearReviewView';
+import { TaxListBody } from './TaxView';
+import { taxYear } from '../insights/tax';
 
 /*
  * Plan 28: the month report and the year review as a PDF, to share or print.
@@ -21,7 +23,8 @@ import { YearReviewBody } from './YearReviewView';
  */
 
 export interface PrintSpec {
-  kind: 'month' | 'year';
+  /** `tax`: the year's list for the tax return (schema 29). */
+  kind: 'month' | 'year' | 'tax';
   month: MonthKey;
   year: string;
   /** Every entry of the month or the year, as a table after the report. */
@@ -30,7 +33,7 @@ export interface PrintSpec {
 
 /** The file name the share sheet shows: "Spartopf Monatsbericht November 2026.pdf". */
 export function reportFileName(spec: PrintSpec, t: Strings): string {
-  const what = spec.kind === 'month' ? `${t.reportTitle} ${monthLabel(spec.month, t.locale)}` : `${t.yearTitle} ${spec.year}`;
+  const what = spec.kind === 'month' ? `${t.reportTitle} ${monthLabel(spec.month, t.locale)}` : `${spec.kind === 'tax' ? t.taxTitle : t.yearTitle} ${spec.year}`;
   return `Spartopf ${what}`.replace(/[\\/:*?"<>|]/g, '-');
 }
 
@@ -43,7 +46,7 @@ export function PrintReport({ spec, book, data, language, accent, t, today = new
   t: Strings;
   today?: Date;
 }) {
-  const title = spec.kind === 'month' ? `${t.reportTitle} · ${monthLabel(spec.month, t.locale)}` : `${t.yearTitle} ${spec.year}`;
+  const title = spec.kind === 'month' ? `${t.reportTitle} · ${monthLabel(spec.month, t.locale)}` : `${spec.kind === 'tax' ? t.taxTitle : t.yearTitle} ${spec.year}`;
   return createPortal(
     <div className="print-root text-fg" data-theme="light" data-accent={accent} dir={t.dir} lang={language}>
       <header className="print-head">
@@ -51,11 +54,12 @@ export function PrintReport({ spec, book, data, language, accent, t, today = new
         <h1 className="display text-title2 font-bold text-fg wrap-compound">{title}</h1>
       </header>
       <div className="space-y-3">
-        {spec.kind === 'month'
+        {spec.kind === 'tax' ? <TaxListBody list={taxYear(data, spec.year)} t={t} />
+          : spec.kind === 'month'
           ? <MonthReportBody r={monthReview(book, spec.month, today)} book={book} month={spec.month} language={language} t={t} />
           : <YearReviewBody y={yearReview(book, spec.year, today)} year={spec.year} language={language} t={t} />}
       </div>
-      {spec.entries && <EntriesTable spec={spec} data={data} language={language} t={t} />}
+      {spec.entries && spec.kind !== 'tax' && <EntriesTable spec={spec} data={data} language={language} t={t} />}
       <footer className="print-foot text-caption text-fg-mute">{fmt(t.reportFooter, { date: dayLabel(isoDay(today), t.locale) })}</footer>
     </div>,
     document.body,

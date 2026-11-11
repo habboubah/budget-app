@@ -1,14 +1,18 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, Star, Trash2 } from 'lucide-react';
-import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, MonthKey, Repeat } from '../types';
+import { CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Landmark, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, ShieldCheck, Star, Trash2, Undo2 } from 'lucide-react';
+import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, Interval, MonthKey, Project, Repeat, TAX_KINDS, TaxKind } from '../types';
+import { taxKindLabel } from './TaxView';
+import { fromProjectCurrency } from '../insights/projects';
+import { REPEAT_CHOICES, repeatName } from '../repeatLabel';
+import { shiftDay } from '../contracts';
 import { NotAReceiptError, addAttachment, attachmentBlob, dropAttachment, readReceipt } from '../receipts';
 import { readImageText } from '../ocr';
 import { FileTooLargeError } from '../limits';
 import { ReceiptViewer } from './ReceiptViewer';
 import { budgetOf } from '../data/defaults';
 import {
-  amountToInput, cleanText, dayLabel, periodRange, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
+  amountToInput, cleanText, dayLabel, dayLabelYear, shiftDays, isMonthKey, monthLabel, periodRange, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
   normalizeDigits, topCategories, MAIN_ACCOUNT, MAX_ATTACHMENTS, currencySymbol } from '../logic';
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
 import { Strings, fmt } from '../translations';
@@ -20,7 +24,7 @@ import { tapLight } from '../ui/haptics';
 
 export type EntrySheetMode =
   /** `preset`: what the first run's steps fill in ("Gehalt", monthly); the repeat stays for "save & next". */
-  | { kind: 'new'; month: MonthKey; categoryId: string; preset?: { name?: string; repeat?: Repeat; amount?: number; paid?: boolean } }
+  | { kind: 'new'; month: MonthKey; categoryId: string; preset?: { name?: string; repeat?: Repeat; amount?: number; paid?: boolean; note?: string } }
   | { kind: 'edit'; entry: Entry }
   | null;
 
@@ -53,6 +57,10 @@ interface Props {
   defaultAccount?: string;
   /** The debts still open, once there is one (plan 31): a pill links the entry to one — an extra payment, money paid back. */
   debts?: { id: string; name: string }[];
+  /** The trips and projects running today (schema 28): a pill each puts the entry under one — and, for a trip abroad, takes the amount in its currency. */
+  projects?: Project[];
+  /** Offer the tax mark (schema 29): switched on under Optionen › Steuerliste, or the book already has marked entries. */
+  taxMarks?: boolean;
   /** Says why a receipt couldn't be attached or read (plan 27). */
   onNotice?: (text: string) => void;
 }
@@ -83,7 +91,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * taps a category, and only with `autoCategory`; emptying the name goes back
  * to the category the sheet opened with.
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts, onNotice }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts, projects = [], taxMarks = false, onNotice }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -92,6 +100,13 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [name, setName] = useState('');
   const [paid, setPaid] = useState(true);
   const [repeat, setRepeat] = useState<Repeat>('none');
+  // A yearly entry's interval when it isn't twelve months, and a recurring entry's last month (schema 24).
+  const [refund, setRefund] = useState(false);
+  // Marked for the tax return (schema 29), and the menu it is picked from.
+  const [tax, setTax] = useState<TaxKind | undefined>(undefined);
+  const [taxAt, setTaxAt] = useState<HTMLElement | null>(null);
+  const [every, setEvery] = useState<Interval | undefined>(undefined);
+  const [until, setUntil] = useState('');
   const [dueText, setDueText] = useState('');
   const [dateText, setDateText] = useState('');
   const [note, setNote] = useState('');
@@ -123,6 +138,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [debtAt, setDebtAt] = useState<HTMLElement | null>(null);
   /** Receipts and documents (plan 27): what is attached, the one being looked at, and what is busy. */
   const [files, setFiles] = useState<Attachment[]>([]);
+  // What the receipt is kept for (schema 27): the warranty's last day, the last day to return it.
+  const [warranty, setWarranty] = useState('');
+  const [returnBy, setReturnBy] = useState('');
   const [fileAt, setFileAt] = useState<HTMLElement | null>(null);
   const [viewing, setViewing] = useState<Attachment | null>(null);
   const [fileBusy, setFileBusy] = useState<'adding' | 'reading' | null>(null);
@@ -139,6 +157,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
   const category = categories.find(c => c.id === categoryId);
   const income = category?.kind === 'income';
+  /** Money back in an expense category (schema 26): it reads like income in the sheet, and is saved with a negative amount. */
+  const isRefund = refund && !income;
+  const gain = income || isRefund;
   /** A savings category: it can fill a goal (plan 12). */
   const isSaving = category?.kind === 'expense' && budgetOf(category) === 'save';
   const openGoalsList = goals.filter(g => !g.closedAt);
@@ -172,11 +193,16 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     // A new entry: paid, once — the way most receipts are.
     setPaid(true);
     setRepeat(mode?.kind === 'new' ? mode.preset?.repeat ?? 'none' : 'none');
+    setEvery(undefined);
+    setUntil('');
+    setRefund(false);
+    setTax(undefined);
     setDueText('');
     setDateText(defaultEntryDate(month));
     setNote('');
     setNoteOpen(false);
-    setTagText('');
+    // A trip in progress — a project with both its dates, running today — is where a new entry most likely belongs.
+    setTagText(projects.filter(p => p.from && p.to).map(p => `#${p.tag}`).join(' '));
     setTagsOpen(false);
     setShowError(false);
     setAllCategories(false);
@@ -185,6 +211,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setAccountId(defaultAccount);
     setDebtId(undefined);
     setFiles([]);
+    setWarranty('');
+    setReturnBy('');
   };
 
   useEffect(() => {
@@ -193,10 +221,14 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     if (mode.kind === 'edit') {
       const e = mode.entry;
       setCategoryId(e.categoryId);
-      setAmountText(amountToInput(e.amount, t.locale));
+      setAmountText(amountToInput(Math.abs(e.amount), t.locale));
       setName(e.name);
       setPaid(e.paid);
       setRepeat(e.repeat);
+      setEvery(e.repeat === 'yearly' ? e.every : undefined);
+      setUntil(e.until ?? '');
+      setRefund(!!e.refund);
+      setTax(e.tax);
       setDueText(e.dueDay ? String(e.dueDay) : '');
       setDateText(e.date ?? '');
       setNote(e.note ?? '');
@@ -209,6 +241,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setAccountId(e.accountId ?? MAIN_ACCOUNT);
       setDebtId(e.debtId);
       setFiles(e.files ?? []);
+      setWarranty(e.warrantyUntil ?? '');
+      setReturnBy(e.returnUntil ?? '');
       // An entry being edited keeps its category: guesses are only pointed out.
       setNameTyped(false);
       setCategoryChosen(true);
@@ -219,6 +253,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       // A hint's "Eintragen" (a regular payment still missing): its usual amount, still open.
       if (mode.preset?.amount) setAmountText(amountToInput(mode.preset.amount, t.locale));
       if (mode.preset?.paid === false) setPaid(false);
+      // A scanned invoice: its reference and IBAN, to pay it from the banking app.
+      if (mode.preset?.note) { setNote(mode.preset.note); setNoteOpen(true); }
       // The amount first, with the decimal pad. After the sheet has mounted;
       // preventScroll keeps the page still.
       requestAnimationFrame(() => amountRef.current?.focus({ preventScroll: true }));
@@ -227,7 +263,11 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
   // A plain amount, or a small sum ("12,50+4,80") the field can add up (plan 08).
   const computed = evalAmount(amountText, t.locale);
-  const amount = parseAmount(amountText, t.locale) ?? computed;
+  const typed = parseAmount(amountText, t.locale) ?? computed;
+  // Under a trip abroad, a new entry's amount is typed in the trip's currency and saved in the book's (schema 28).
+  const tagSet = new Set(normalizeTags(tagText.split(/[,\s]+/)));
+  const abroad = mode?.kind === 'new' ? projects.find(p => p.currency && p.rate && tagSet.has(p.tag)) : undefined;
+  const amount = typed !== null && abroad ? fromProjectCurrency(typed, abroad) : typed;
   const isExpression = computed !== null;
   const due = /^\d{1,2}$/.test(dueText.trim()) ? Number(dueText) : undefined;
   const dueValid = dueText.trim() === '' || (due !== undefined && due >= 1 && due <= 31);
@@ -318,6 +358,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setNameTyped(false);
     setAllSuggestions(false);
     setRepeat(f.repeat ?? 'none');
+    setEvery(undefined);
     setAmountText(f.amount !== undefined ? amountToInput(f.amount, t.locale) : '');
     setShowError(false);
     requestAnimationFrame(() => {
@@ -333,13 +374,19 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     const d: EntryDraft = {
       categoryId,
       name: cleanText(name) || displayName(category.names, language),
-      amount,
+      amount: isRefund ? -amount : amount,
+      refund: isRefund || undefined,
+      tax: income ? undefined : tax,
       paid,
       repeat,
+      // Always said, so an edit can take the interval or the end off again (schema 24).
+      every: repeat === 'yearly' ? every : undefined,
+      until: repeat !== 'none' && isMonthKey(until) && until >= month ? until : undefined,
     };
     if (due !== undefined) d.dueDay = due;
     if (dateText) d.date = dateText;
-    const n = cleanText(note, 200);
+    // What was typed abroad is kept as the note when there is none: "450,00 TRY".
+    const n = cleanText(note, 200) || (abroad && typed !== null ? `${amountToInput(typed, t.locale)} ${abroad.currency}` : '');
     if (n) d.note = n;
     // The goal link only on a Sparen category (plan 12).
     if (isSaving && goalId && goals.some(g => g.id === goalId)) d.goalId = goalId;
@@ -351,6 +398,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     if (debts) d.debtId = debtId && debts.some(x => x.id === debtId) ? debtId : undefined;
     // Always said, so the last receipt can be taken off again (plan 27).
     d.files = files.length ? files : undefined;
+    // The same for what the receipt is kept for (schema 27).
+    d.warrantyUntil = isIsoDay(warranty) ? warranty : undefined;
+    d.returnUntil = isIsoDay(returnBy) ? returnBy : undefined;
     return d;
   };
 
@@ -419,14 +469,16 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     } else onClose();
   };
 
-  const title = editing ? t.editEntry : income ? t.newIncome : t.newExpense;
+  const title = editing ? t.editEntry : income ? t.newIncome : isRefund ? t.refund : t.newExpense;
   const dateLabel = !dateText ? t.dateNone : dateText === isoDay() ? t.dateToday : dayLabel(dateText, t.locale);
-  const statusLabel = paid ? (income ? t.statusReceived : t.statusPaid) : (income ? t.statusExpected : t.statusOpen);
-  const repeats: { value: Repeat; label: string; sub: string }[] = [
-    { value: 'none', label: t.repeatNone, sub: t.repeatHintNone },
-    { value: 'monthly', label: t.repeatMonthly, sub: t.repeatHintMonthly },
-    { value: 'yearly', label: t.repeatYearly, sub: t.repeatHintYearly },
-  ];
+  const statusLabel = paid ? (gain ? t.statusReceived : t.statusPaid) : (gain ? t.statusExpected : t.statusOpen);
+  const repeats = REPEAT_CHOICES.map(c => ({
+    ...c,
+    label: repeatName(t, c),
+    sub: c.repeat === 'none' ? t.repeatHintNone : c.repeat === 'monthly' ? t.repeatHintMonthly : c.every ? fmt(t.repeatHintEvery, { n: c.every }) : t.repeatHintYearly,
+  }));
+  const repeatLabel = repeatName(t, { repeat, every });
+  const untilLabel = isMonthKey(until) ? fmt(t.repeatUntil, { month: monthLabel(until, t.locale) }) : t.repeatNoEnd;
 
   return (
     <Sheet open={!!mode} title={title} closeLabel={t.cancel} onClose={onClose}
@@ -455,8 +507,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
           {/* Written the way amounts are shown everywhere: "−45,12 €", left to right. */}
           <div dir="ltr" className="mt-0.5 flex items-baseline justify-center gap-1.5">
-            <span className={`rounded-num text-[32px] font-semibold ${income ? 'text-pos' : 'text-fg-mute'}`} aria-hidden="true">
-              {income ? '+' : '−'}
+            <span className={`rounded-num text-[32px] font-semibold ${gain ? 'text-pos' : 'text-fg-mute'}`} aria-hidden="true">
+              {gain ? '+' : '−'}
             </span>
             <input
               ref={amountRef}
@@ -479,8 +531,14 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               style={{ width: `${Math.max(4, amountText.length || 4) + 0.6}ch` }}
               className="min-w-0 max-w-full bg-transparent rounded-num text-[clamp(40px,13vw,52px)] leading-[1.15] font-bold text-center text-fg placeholder:text-fg-faint/60 caret-accent outline-none"
             />
-            <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">{currencySymbol()}</span>
+            <span className="rounded-num text-[32px] font-semibold text-fg-mute" aria-hidden="true">{abroad ? abroad.currency : currencySymbol()}</span>
           </div>
+          {/* Typed in the trip's currency: what it comes to in the book's. */}
+          {abroad && amount !== null && !isExpression && (
+            <p dir="ltr" aria-live="polite" className="text-label text-accent font-semibold mt-1 rounded-num">
+              = {withAmounts(() => formatMoney(amount, t.locale))}
+            </p>
+          )}
           {/* The running sum, announced politely — "= 17,30 €" (plan 08). What is
               being typed, so shown even while amounts are hidden (plan 06). */}
           {isExpression && amount !== null && (
@@ -672,7 +730,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             role="switch"
             aria-checked={paid}
             // The name stays; the switch says whether it is.
-            aria-label={income ? t.statusReceived : t.statusPaid}
+            aria-label={gain ? t.statusReceived : t.statusPaid}
             onMouseDown={e => e.preventDefault()}
             onClick={() => { tapLight(); setPaid(v => !v); }}
             className={`${PILL} focus-visible:ring-focus`}
@@ -688,14 +746,79 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           <button
             type="button"
             aria-haspopup="menu"
-            aria-label={`${t.repeat}: ${repeats.find(r => r.value === repeat)!.label}`}
+            aria-label={`${t.repeat}: ${repeatLabel}`}
             onMouseDown={e => e.preventDefault()}
             onClick={e => { tapLight(); setRepeatAt(e.currentTarget); }}
             className={`${PILL} focus-visible:ring-focus`}
           >
             <RepeatIcon className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
-            <span aria-hidden="true">{repeats.find(r => r.value === repeat)!.label}</span>
+            <span aria-hidden="true">{repeatLabel}</span>
           </button>
+          {/* A recurring entry may end: the last month it comes back in (an instalment plan, a contract that runs out). */}
+          {repeat !== 'none' && (
+            <label className={`${PILL} focus-within:ring-focus`}>
+              <CalendarOff className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+              <span aria-hidden="true">{untilLabel}</span>
+              <input
+                type="month"
+                value={until}
+                min={month}
+                onChange={e => setUntil(e.target.value)}
+                onClick={e => { try { e.currentTarget.showPicker?.(); } catch { /* not allowed here: the tap still focuses it */ } }}
+                aria-label={`${t.repeatEnds}: ${untilLabel}`}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </label>
+          )}
+          {/* Money back — a return, a reimbursement: it lowers this category's spending instead of counting as income. */}
+          {!income && (
+            <button
+              type="button"
+              aria-pressed={refund}
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => { tapLight(); setRefund(v => !v); }}
+              className={`${PILL} focus-visible:ring-focus ${refund ? 'text-pos' : 'text-fg-mute'}`}
+            >
+              <Undo2 className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+              <span>{t.refund}</span>
+            </button>
+          )}
+          {/* For the tax return: which kind of cost this is. Only once the list is in use. */}
+          {!income && (taxMarks || !!tax) && (
+            <button
+              type="button"
+              aria-haspopup="menu"
+              aria-label={`${t.taxPill}: ${tax ? taxKindLabel(tax, t) : t.taxNone}`}
+              onMouseDown={e => e.preventDefault()}
+              onClick={e => { tapLight(); setTaxAt(e.currentTarget); }}
+              className={`${PILL} focus-visible:ring-focus ${tax ? '' : 'text-fg-mute'}`}
+            >
+              <Landmark className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+              <span aria-hidden="true" className="truncate">{tax ? taxKindLabel(tax, t) : t.taxPill}</span>
+            </button>
+          )}
+          {/* A trip or project running today: one tap files the entry under it (its tag). */}
+          {projects.map(p => {
+            const on = tagSet.has(p.tag);
+            return (
+              <button
+                key={p.id}
+                type="button"
+                aria-pressed={on}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => {
+                  tapLight();
+                  setTagText(tt => (on
+                    ? normalizeTags(tt.split(/[,\s]+/)).filter(x => x !== p.tag).map(x => `#${x}`).join(' ')
+                    : `${tt.trim()} #${p.tag}`.trim()));
+                }}
+                className={`${PILL} focus-visible:ring-focus ${on ? 'text-accent' : 'text-fg-mute'}`}
+              >
+                <span className="emoji text-[15px] leading-none" aria-hidden="true">{p.emoji}</span>
+                <span className="truncate">{p.name}</span>
+              </button>
+            );
+          })}
           {accounts && (() => {
             const a = accounts.find(x => x.id === accountId) ?? accounts[0];
             return (
@@ -762,11 +885,23 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           )}
         </div>
         {!dateValid && <p role="alert" className="text-caption text-neg px-1">{t.dateHint}</p>}
+        {isRefund && <p className="text-caption text-fg-mute px-1 wrap-prose">{t.refundHint}</p>}
+        <Menu
+          anchor={taxAt}
+          label={t.taxPill}
+          groups={[[
+            { key: 'none', label: t.taxNone, icon: tax ? undefined : Check, onSelect: () => setTax(undefined) },
+            ...TAX_KINDS.map(k => ({ key: k, label: taxKindLabel(k, t), icon: k === tax ? Check : undefined, onSelect: () => setTax(k) })),
+          ]]}
+          onClose={() => setTaxAt(null)}
+        />
         <Menu
           anchor={repeatAt}
           label={t.repeat}
           groups={[repeats.map(r => ({
-            key: r.value, label: r.label, sub: r.sub, icon: r.value === repeat ? Check : undefined, onSelect: () => setRepeat(r.value),
+            key: `${r.repeat}${r.every ?? ''}`, label: r.label, sub: r.sub,
+            icon: r.repeat === repeat && (r.repeat !== 'yearly' || r.every === every) ? Check : undefined,
+            onSelect: () => { setRepeat(r.repeat); setEvery(r.every); },
           }))]}
           onClose={() => setRepeatAt(null)}
         />
@@ -810,6 +945,34 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               </li>
             )}
           </ul>
+        )}
+        {/* With a receipt: how long it is good for. A first tap sets the usual (14 days to return, two years of warranty), the date can then be changed or cleared. */}
+        {(files.length > 0 || !!warranty || !!returnBy) && !income && (
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t.receiptDates}>
+            {([
+              { value: returnBy, set: setReturnBy, add: t.returnAdd, until: t.returnUntil, usual: shiftDays(dateText || isoDay(), 14), Icon: Undo2 },
+              { value: warranty, set: setWarranty, add: t.warrantyAdd, until: t.warrantyUntil, usual: shiftDay(dateText || isoDay(), 24), Icon: ShieldCheck },
+            ]).map(({ value, set, add, until, usual, Icon }) => (value ? (
+              <label key={add} className={`${PILL} focus-within:ring-focus`}>
+                <Icon className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+                <span aria-hidden="true">{fmt(until, { date: dayLabelYear(value, t.locale) })}</span>
+                <input
+                  type="date"
+                  value={value}
+                  onChange={e => set(e.target.value)}
+                  onClick={e => { try { e.currentTarget.showPicker?.(); } catch { /* not allowed here: the tap still focuses it */ } }}
+                  aria-label={fmt(until, { date: dayLabelYear(value, t.locale) })}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </label>
+            ) : (
+              <button key={add} type="button" onMouseDown={e => e.preventDefault()} onClick={() => { tapLight(); set(usual); }}
+                className={`${PILL} text-fg-mute focus-visible:ring-focus`}>
+                <Icon className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+                <span>{add}</span>
+              </button>
+            )))}
+          </div>
         )}
         <input ref={cameraInput} type="file" accept="image/*" capture="environment" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={e => void attach(e.currentTarget)} />
         <input ref={pickInput} type="file" accept="image/*,application/pdf,.pdf" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={e => void attach(e.currentTarget)} />
@@ -883,7 +1046,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           {!editing && (
             <Button variant="secondary" full disabled={!valid} onClick={() => save(true)}>{t.saveAndNext}</Button>
           )}
-          {onPinFavorite && !!category && !!cleanText(name) && (
+          {onPinFavorite && !isRefund && !!category && !!cleanText(name) && (
             <Button variant="ghost" full icon={pinned ? Check : Star} disabled={pinned}
               onClick={() => {
                 const ok = onPinFavorite({
@@ -897,7 +1060,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               {pinned ? t.favoriteSaved : t.pinFavorite}
             </Button>
           )}
-          {editing && onSplit && !income && !editing.splitId && (
+          {editing && onSplit && !income && !editing.refund && !editing.splitId && (
             <Button variant="ghost" full icon={Split} onClick={() => { onClose(); onSplit(editing); }}>{t.splitPayAction}</Button>
           )}
           {editing && (

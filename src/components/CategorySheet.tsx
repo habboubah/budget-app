@@ -127,7 +127,7 @@ export function CategorySheet({ mode, data, language, t, onClose, onCreate, onSa
         {kind === 'expense' && (
           <div>
             <Field
-              label={t.budgetField}
+              label={editing?.limitPer === 'year' ? t.budgetFieldYear : t.budgetField}
               value={limit}
               onChange={v => setLimit(normalizeDigits(v))}
               inputMode="decimal"

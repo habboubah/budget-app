@@ -8,11 +8,11 @@ import { fmt, plural, stringsFor } from './translations';
 import { AccountKind, Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import {
   ALL_ACCOUNTS, MAIN_ACCOUNT, REVIEW_RULE, ReviewMoment, accountName, accountTotals, accountView, accountsOf, addMonths, balanceFor, canDeleteAccount, carryCandidates,
-  computeBalances, displayName, formatMoneyShort, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
+  computeBalances, displayName, formatMoneyShort, formatPercent, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
   shouldAskForReview, transferPair, uid,
   changeMonthStart,
 } from './logic';
-import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, monthReview, paymentSeries, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
+import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, isActiveProject, monthReview, outlook, paymentSeries, projectsOverview, taxYear, taxYears, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
 import { CategoryView } from './components/CategoryView';
@@ -24,7 +24,7 @@ import { hintExplain } from './components/HintRows';
 import { ShareImage, renderShareImage } from './shareImage';
 import { shareImage } from './export';
 import { SetupCard, TipsCard } from './components/SetupCard';
-import { BudgetSheet } from './components/BudgetSheet';
+import { BudgetHow, BudgetSheet } from './components/BudgetSheet';
 import { DueSoonView } from './components/DueSoonView';
 import { ContractsView } from './components/ContractsView';
 import { ContractSheet } from './components/ContractSheet';
@@ -44,6 +44,10 @@ import { DebtSheet, DebtSheetMode } from './components/DebtSheet';
 import { MonthActionsMenu } from './components/MonthActionsMenu';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
+import { WhatIfSheet } from './components/WhatIfSheet';
+import { ProjectsCard, ProjectsView } from './components/ProjectsView';
+import { ProjectSheet, ProjectSheetMode } from './components/ProjectSheet';
+import { TaxView } from './components/TaxView';
 import { SettingsView } from './components/SettingsView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
@@ -58,6 +62,7 @@ import { RuleSheet, RuleSheetMode } from './components/RuleSheet';
 import { RemindersView } from './components/RemindersView';
 import { LockScreen, PrivacyCover } from './components/LockScreen';
 import { reminderPlan } from './reminders';
+import { budgetCrossing, budgetStatus } from './budgets';
 import { onReminderTap, remindersAvailable, syncReminders } from './notify';
 import { LockKind, authenticate, deviceUnsecured, lockKind as findLockKind } from './lock';
 import { devNative, isAndroid, isIos, isNative } from './platform';
@@ -78,6 +83,10 @@ import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonth
 import { StatementImportSheet, ImportState } from './components/StatementImportSheet';
 import { PlannedRow, allCategoryNames, applyStatement, csvForMapping, parseBankCsv, parseMappedCsv, parseStatementText, planStatement } from './statementImport';
 import { readImageText, readTextFile } from './ocr';
+import { readQrCode } from './qrScan';
+import { PdfLockedError, readPdfLines } from './pdfText';
+import { parseStatementLines } from './statementPdf';
+import { giroCodeEntry, parseGiroCode } from './girocode';
 import { FileTooLargeError, LIMITS } from './limits';
 import { TabBar } from './ui/TabBar';
 import { Toast, useToast } from './ui/Toast';
@@ -88,7 +97,7 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -96,7 +105,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -178,6 +187,8 @@ export default function App() {
   // Bank transactions: a CSV export or a photo, read, then checked in a sheet.
   const statementInput = useRef<HTMLInputElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
+  const invoiceInput = useRef<HTMLInputElement>(null);
+  const pdfInput = useRef<HTMLInputElement>(null);
   const [statement, setStatement] = useState<ImportState>(null);
   /** A category with entries waiting for "really delete?". */
   const [confirmCategory, setConfirmCategory] = useState<Category | null>(null);
@@ -188,6 +199,9 @@ export default function App() {
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const [splitEntry, setSplitEntry] = useState<Entry | null>(null);
   const [goalSheet, setGoalSheet] = useState<GoalSheetMode>(null);
+  /** *Kann ich mir das leisten?* (Planen › Ausblick). */
+  const [whatIfOpen, setWhatIfOpen] = useState(false);
+  const ahead = useMemo(() => (whatIfOpen ? outlook(book) : null), [whatIfOpen, book]);
   const [ruleSheet, setRuleSheet] = useState<RuleSheetMode>(null);
   /** The scope menu when a category is corrected during an import (plan 20). */
   const [reclassify, setReclassify] = useState<{ anchor: HTMLElement; found: PlannedRow['found']; categoryId: string; name: string } | null>(null);
@@ -323,6 +337,20 @@ export default function App() {
   /** Debts and loans (plan 31): every one's plan, and what can pay them. */
   const debts = useMemo(() => debtsOverview(data), [data]);
   const [debtSheet, setDebtSheet] = useState<DebtSheetMode>(null);
+  // Trips and projects (schema 28): every entry of every account counts, by its tag.
+  const projects = useMemo(() => projectsOverview(allView), [allView]);
+  const activeProjects = useMemo(() => store.projects.filter(p => isActiveProject(p)), [store.projects]);
+  const [projectSheet, setProjectSheet] = useState<ProjectSheetMode>(null);
+  // The tax list (schema 29): the years with something marked, and the one shown.
+  const taxYearList = useMemo(() => taxYears(allView), [allView]);
+  const [taxYearShown, setTaxYearShown] = useState('');
+  const taxYearKey = taxYearList.includes(taxYearShown) ? taxYearShown : taxYearList[0] ?? String(new Date().getFullYear());
+  const taxList = useMemo(() => taxYear(allView, taxYearKey), [allView, taxYearKey]);
+  const anyTaxMark = useMemo(() => data.entries.some(e => e.tax), [data.entries]);
+  const editProject = (id: string) => {
+    const status = projects.find(s => s.project.id === id);
+    if (status) setProjectSheet({ kind: 'edit', status });
+  };
   const series = useMemo(() => (debtSheet ? paymentSeries(data) : []), [data, debtSheet]);
 
   // The screen pushed on this tab, if any: the nav's single source of truth —
@@ -406,6 +434,21 @@ export default function App() {
     void StatusBar.setStyle({ style: resolved === 'dark' ? Style.Dark : Style.Light }).catch(() => {});
   }, [themeMode]);
 
+  /**
+   * A word when a change takes a category's budget to 80 % or over it — in
+   * the running month or a later one, and without an amount. `after`: the
+   * entries as they are once the change is in.
+   */
+  const budgetNote = (after: Entry[], categoryId: string, m: MonthKey): string | null => {
+    const c = categories.find(x => x.id === categoryId);
+    if (!store.budgetNotes || !c || m < monthKeyOf(new Date())) return null;
+    const now = budgetStatus(after, c, m);
+    const mark = budgetCrossing(budgetStatus(data.entries, c, m), now);
+    if (!mark || !now) return null;
+    const name = displayName(c.names, language);
+    return mark === 100 ? fmt(t.budgetNoteOver, { name }) : fmt(t.budgetNote80, { name, p: formatPercent(Math.round((now.spent / now.limit) * 100), t.locale) });
+  };
+
   const createEntry = (m: MonthKey, d: EntryDraft) => {
     const id = uid();
     const now = Date.now();
@@ -413,13 +456,19 @@ export default function App() {
     if (!entry.accountId) delete entry.accountId;
     if (!entry.debtId) delete entry.debtId;
     if (!entry.files?.length) delete entry.files;
+    if (!entry.refund) delete entry.refund;
+    if (!entry.tax) delete entry.tax;
+    if (!entry.warrantyUntil) delete entry.warrantyUntil;
+    if (!entry.returnUntil) delete entry.returnUntil;
+    if (!entry.every) delete entry.every;
+    if (!entry.until) delete entry.until;
     store.addEntry(entry);
     // The category stays in the month even if this entry is deleted again.
     store.showCategory(m, d.categoryId);
     // A new entry in a folded category unfolds it, so it can be seen landing.
     store.expand(d.categoryId);
     setLastCategory(d.categoryId);
-    show(fmt(t.entryAdded, { name: d.name }));
+    show(budgetNote([...data.entries, entry], d.categoryId, m) ?? fmt(t.entryAdded, { name: d.name }));
   };
 
   /**
@@ -548,11 +597,35 @@ export default function App() {
     }
   };
 
-  const onStatementFile = async (f: File | undefined, source: 'csv' | 'photo') => {
+  /**
+   * An invoice's QR code (GiroCode) from a photo or a screenshot, read on the
+   * device: the entry sheet opens with the payee, the amount and — as the note
+   * — the reference and IBAN, still open. Nothing is saved before *Sichern*.
+   */
+  const onInvoiceFile = async (f: File | undefined) => {
+    if (invoiceInput.current) invoiceInput.current.value = '';
+    if (!f || !quickAddCategory) return;
+    try {
+      const text = await readQrCode(f);
+      const code = text ? parseGiroCode(text) : null;
+      if (!code) { show(text ? t.qrNotInvoice : t.qrNone); return; }
+      const { name, amount, note } = giroCodeEntry(code);
+      // An amount in another currency than the book's is left for the user to type.
+      const mine = !code.currency || code.currency === (data.currency ?? 'EUR');
+      setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory, preset: { name, paid: false, note, ...(amount && mine ? { amount } : {}) } });
+    } catch (e) {
+      show(e instanceof FileTooLargeError ? t[e.key] : t.qrNone);
+    }
+  };
+
+  const onStatementFile = async (f: File | undefined, from: 'csv' | 'photo' | 'pdf') => {
     if (statementInput.current) statementInput.current.value = '';
     if (photoInput.current) photoInput.current.value = '';
+    if (pdfInput.current) pdfInput.current.value = '';
     if (!f) return;
-    const limit = source === 'csv' ? LIMITS.csvBytes : LIMITS.imageBytes;
+    // A statement's PDF is read like a CSV from here on: same review sheet, same matching.
+    const source = from === 'photo' ? 'photo' : 'csv';
+    const limit = from === 'csv' ? LIMITS.csvBytes : from === 'pdf' ? LIMITS.statementPdfBytes : LIMITS.imageBytes;
     if (f.size > limit) { show(t.importTooLarge); return; }
     setStatement({ phase: 'reading', source, progress: 0 });
     try {
@@ -566,7 +639,8 @@ export default function App() {
           ? parseMappedCsv(text, map.guess, store.currency)
           : [];
       };
-      const found = source === 'csv'
+      const found = from === 'pdf' ? parseStatementLines(await readPdfLines(f))
+        : source === 'csv'
         ? readCsv(await readTextFile(f))
         : parseStatementText(
           await readImageText(f, p => setStatement(s => (s?.phase === 'reading' ? { ...s, progress: p } : s))),
@@ -578,12 +652,12 @@ export default function App() {
     } catch (e) {
       setStatement(null);
       trouble.current = true;
-      show(e instanceof FileTooLargeError ? t[e.key] : t.importFailed);
+      show(e instanceof FileTooLargeError ? t[e.key] : e instanceof PdfLockedError ? t.pdfLocked : t.importFailed);
     }
   };
 
   const confirmStatement = (rows: PlannedRow[]) => {
-    const { add, pay } = applyStatement(rows, Date.now());
+    const { add, pay } = applyStatement(rows, Date.now(), undefined, undefined, categories);
     const done = store.importEntries(intoAccount(add, target), pay);
     // Looked through (plan 19): taken over or left out, the captured payments leave the inbox once the book is saved.
     const ids = reviewIds.current;
@@ -683,12 +757,19 @@ export default function App() {
     });
   };
 
-  const saveBudget = (c: Category, limit: number | undefined) => {
-    const before = c.limit;
-    store.updateCategory(c.id, { limit });
+  const saveBudget = (c: Category, limit: number | undefined, how?: BudgetHow) => {
+    const before = { limit: c.limit, limitPer: c.limitPer, rollover: c.rollover, rolloverFrom: c.rolloverFrom };
+    // Per year, or with the rest carried on from this month (schema 25) — a rollover that was on keeps its start.
+    const rollover = limit !== undefined && how?.per !== 'year' && !!how?.rollover;
+    store.updateCategory(c.id, {
+      limit,
+      limitPer: limit !== undefined && how?.per === 'year' ? 'year' : undefined,
+      rollover: rollover || undefined,
+      rolloverFrom: rollover ? (c.rollover && c.rolloverFrom) || monthKeyOf(new Date()) : undefined,
+    });
     const name = displayName(c.names, language);
     show(limit === undefined ? fmt(t.budgetRemoved, { name }) : fmt(t.budgetSaved, { name, amount: formatMoneyShort(limit, t.locale) }), {
-      label: t.undo, run: () => store.updateCategory(c.id, { limit: before }),
+      label: t.undo, run: () => store.updateCategory(c.id, before),
     });
   };
 
@@ -1025,6 +1106,8 @@ export default function App() {
             onRestoreDefaults={restoreDefaults}
             autoCategory={store.autoCategory}
             onAutoCategory={store.setAutoCategory}
+            budgetNotes={store.budgetNotes}
+            onBudgetNotes={store.setBudgetNotes}
           />
         ) : id === 'capture' ? (
           <CaptureView review={store.captureReview} t={t} onBack={back} onReview={store.setCaptureReview} />
@@ -1084,6 +1167,11 @@ export default function App() {
             }}
             onBack={back}
           />
+        ) : id === 'tax' ? (
+          <TaxView list={taxList} years={taxYearList} marks={store.taxMarks} t={t} onBack={back} onYear={setTaxYearShown} onMarks={store.setTaxMarks}
+            onPdf={() => void makeReport({ kind: 'tax', month: `${taxYearKey}-01`, year: taxYearKey, entries: false })} />
+        ) : id === 'projects' ? (
+          <ProjectsView overview={projects} t={t} onBack={back} onNew={() => setProjectSheet({ kind: 'new' })} onEdit={editProject} />
         ) : id === 'debts' ? (
           <DebtsView overview={debts} t={t} onBack={back} onNew={() => setDebtSheet({ kind: 'new' })} onEdit={editDebt} />
         ) : id === 'accounts' ? (
@@ -1118,6 +1206,9 @@ export default function App() {
             accountCount={accounts.length}
             onAccounts={() => push('accounts')}
             debtCount={store.debts.length}
+            onProjects={() => push('projects')}
+            projectCount={store.projects.length}
+            onTax={() => push('tax')}
             onDebts={() => push('debts')}
             monthStart={store.monthStart}
             onMonthStart={() => setMonthStartOpen(true)}
@@ -1176,9 +1267,11 @@ export default function App() {
             onDue={() => push('dueSoon')}
             onGoals={() => push('goals')}
             onReserveGoal={(goal, due) => setGoalSheet({ kind: 'new', preset: { name: t.reserveTitle, target: goal, due } })}
+            onWhatIf={() => setWhatIfOpen(true)}
             onExplain={setExplain}
             wealth={multi ? { now: totals.now, count: accounts.length, onOpen: () => push('accounts') } : undefined}
             debts={store.debts.length ? <DebtsCard overview={debts} t={t} onOpen={() => push('debts')} onEdit={editDebt} /> : null}
+            projects={store.projects.length ? <ProjectsCard overview={projects} t={t} onOpen={() => push('projects')} onEdit={editProject} /> : null}
           />
         ) : (
           <MonthView
@@ -1326,7 +1419,13 @@ export default function App() {
         t={t}
         onClose={() => setEntrySheet(null)}
         onCreate={createEntry}
-        onSave={(id, d) => { store.updateEntry(id, d); setLastCategory(d.categoryId); }}
+        onSave={(id, d) => {
+          const was = data.entries.find(e => e.id === id);
+          const note = was ? budgetNote(data.entries.map(e => (e.id === id ? { ...e, ...d } : e)), d.categoryId, was.month) : null;
+          store.updateEntry(id, d);
+          setLastCategory(d.categoryId);
+          if (note) show(note);
+        }}
         onDelete={deleteEntry}
         favorites={store.favorites}
         onPinFavorite={fav => {
@@ -1340,7 +1439,22 @@ export default function App() {
         accounts={multi ? accounts.map(a => ({ id: a.id, label: accountName(a, t.accountMain), emoji: a.emoji })) : undefined}
         defaultAccount={target}
         debts={store.debts.length ? store.debts.map(d => ({ id: d.id, name: d.name })) : undefined}
+        projects={activeProjects}
+        taxMarks={store.taxMarks || anyTaxMark}
         onNotice={text => show(text)}
+      />
+
+      <ProjectSheet
+        mode={projectSheet}
+        taken={store.projects.map(p => p.tag)}
+        t={t}
+        onClose={() => setProjectSheet(null)}
+        onCreate={p => { store.addProject(p); notifySuccess(); show(fmt(t.projectAdded, { name: p.name })); }}
+        onSave={(id, patch) => store.updateProject(id, patch)}
+        onDelete={p => {
+          const removed = store.removeProject(p.id);
+          if (removed) show(fmt(t.projectDeleted, { name: p.name }), { label: t.undo, run: () => store.restoreProject(removed) });
+        }}
       />
 
       <DebtSheet
@@ -1528,6 +1642,21 @@ export default function App() {
         onSave={saveContract}
       />
 
+      {ahead && (
+        <WhatIfSheet
+          open={whatIfOpen}
+          outlook={ahead}
+          data={allView}
+          debts={debts.plans.filter(p => p.debt.direction === 'owe' && !p.done)}
+          t={t}
+          onClose={() => setWhatIfOpen(false)}
+          onPlan={plan => quickAddCategory && setEntrySheet({
+            kind: 'new', month: plan.month, categoryId: quickAddCategory,
+            preset: { amount: plan.amount, paid: false, ...(plan.monthly ? { repeat: 'monthly' as const } : {}) },
+          })}
+        />
+      )}
+
       <BudgetSheet
         category={budgetFor}
         data={data}
@@ -1558,6 +1687,8 @@ export default function App() {
         onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
         onImportCsv={() => statementInput.current?.click()}
         onImportPhoto={() => photoInput.current?.click()}
+        onScanInvoice={() => invoiceInput.current?.click()}
+        onImportPdf={() => pdfInput.current?.click()}
         onDelete={deleteMonth}
         onReport={() => openReport(month)}
       />
@@ -1611,6 +1742,21 @@ export default function App() {
         accept="image/*"
         className="sr-only" tabIndex={-1} aria-hidden="true"
         onChange={e => void onStatementFile(e.target.files?.[0], 'photo')}
+      />
+      <input
+        ref={pdfInput}
+        type="file"
+        accept="application/pdf,.pdf"
+        className="sr-only" tabIndex={-1} aria-hidden="true"
+        onChange={e => void onStatementFile(e.target.files?.[0], 'pdf')}
+      />
+      <input
+        ref={invoiceInput}
+        data-scan="invoice"
+        type="file"
+        accept="image/*"
+        className="sr-only" tabIndex={-1} aria-hidden="true"
+        onChange={e => void onInvoiceFile(e.target.files?.[0])}
       />
       <StatementImportSheet
         state={statement}

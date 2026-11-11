@@ -129,7 +129,7 @@ export function cleanPayee(raw: string, purpose = '', type = ''): string {
 
 const NOTE_AMOUNT = /(?:(€|EUR)\s?)?([+\-−–]?\s?(?:\d{1,3}(?:[.,\s’']\d{3})+|\d+)(?:[.,]\d{1,2})?)\s?(€|EUR\b)?/gi;
 const NOT_THE_PAYMENT = /(kontostand|saldo|verf[üu]gbar\w*|guthaben|balance|available|limit|rest\w*)(?:\s+[\p{L}]+){0,2}\s*:?\s*$/iu;
-const NOTE_INCOME = /gutschrift|geldeingang|zahlungseingang|eingegangen|eingang\b|erhalten|hat (?:dir|ihnen|euch)\b|gutgeschrieben|erstattung|r[üu]ckzahlung|gehalt|received|sent you|refund|incoming|credited|payment from|[üu]berweisung von/i;
+export const NOTE_INCOME = /gutschrift|geldeingang|zahlungseingang|eingegangen|eingang\b|erhalten|hat (?:dir|ihnen|euch)\b|gutgeschrieben|erstattung|r[üu]ckzahlung|gehalt|received|sent you|refund|incoming|credited|payment from|[üu]berweisung von/i;
 const NOTE_STOP = /\s+(?:am \d|on \d|um \d|mit (?:deiner|ihrer|der)|with your|[üu]ber \d|in h[öo]he|i\.\s?h\.\s?v|wurde|wurden|ist |war |was |has |get[äa]tigt|abgebucht|bezahlt|gebucht|erhalten|eingegangen|gutgeschrieben|gesendet|[üu]berwiesen|geschickt)|[.;:!?|\n]|,\s|\s[-–—]\s|$/i;
 const GENERIC_TITLE = /^(kartenzahlung|kartenumsatz|zahlung|lastschrift|gutschrift|geldeingang|zahlungseingang|[üu]berweisung|umsatz|neue[rs]? (umsatz|buchung|transaktion)|buchung|transaktion|konto\w*|payment|card payment|transaction|purchase|incoming payment|apple pay|google pay|girocard|visa|mastercard|debitkarte|kreditkarte)\b[\s\w]*$/i;
 
@@ -195,7 +195,7 @@ export function parseNotificationText(text: string): { amount: number; name: str
   return { amount, name: name === '?' ? '' : name, income, ...(date ? { date } : {}) };
 }
 
-const fingerprint = (date: string | undefined, cents: number, raw: string, purpose = '') =>
+export const fingerprint = (date: string | undefined, cents: number, raw: string, purpose = '') =>
   `${date ?? ''}|${cents}|${normalizeName(raw).slice(0, 40)}|${normalizeName(purpose).slice(0, 40)}`;
 
 /** CSV text → rows of cells. Detects ";", "," or tab; quotes and line breaks inside quotes are kept. */
@@ -458,7 +458,9 @@ const daysApart = (a?: string, b?: string) =>
  * What to do with each transaction found, checked against what is entered:
  *  - its name and category: the user's own when this payee was entered
  *    before (most recent), else the bank's category matched to one of the
- *    user's, else "Sonstiges" (income always lands in an income category);
+ *    user's, else "Sonstiges" (income lands in an income category — unless it
+ *    comes from a payee the user buys from: then it is a refund in that
+ *    payee's category, schema 26);
  *  - exists — the same transaction was imported before, or an entry of the
  *    same month with the same amount and the same payee (or a date at most
  *    three days off) is already ticked;
@@ -507,20 +509,24 @@ export function planStatement(found: Found[], data: AppData, today = new Date())
     const ruleName = rule && !('skip' in rule.set) ? rule.set.name : undefined;
     let categoryId = (ruleCategory && byId.has(ruleCategory) ? ruleCategory : undefined)
       ?? prior?.categoryId ?? (f.bankCategory ? bankMap.get(fold(f.bankCategory)) : undefined) ?? (f.income ? incomeId : fallback) ?? fallback;
-    if (!ruleCategory) {
+    // Money back from a payee the user buys from (a return at Zalando) is a refund in that
+    // payee's category, not income (schema 26): it stays where the purchases are.
+    const refund = f.income && !ruleCategory && !!prior && categoryId === prior.categoryId && byId.get(categoryId)?.kind === 'expense';
+    if (!ruleCategory && !refund) {
       if (f.income !== (byId.get(categoryId)?.kind === 'income') && incomeId) categoryId = f.income ? incomeId : (prior && !f.income ? prior.categoryId : fallback);
       if (!f.income && byId.get(categoryId)?.kind === 'income') categoryId = fallback;
     }
     const name = ruleName ?? prior?.name ?? f.name;
     const month: MonthKey = f.date ? periodOf(f.date) : monthKeyOf(today);
-    const kindOf = (e: Entry) => byId.get(e.categoryId)?.kind === 'income';
+    // Money coming in: income, or a refund — whose amount is stored negative.
+    const kindOf = (e: Entry) => byId.get(e.categoryId)?.kind === 'income' || !!e.refund;
     let status: RowStatus = 'new';
     let match: Entry | undefined;
     if (f.ref && refs.has(f.ref)) {
       status = 'exists';
       match = entries.find(e => e.ref === f.ref);
     } else {
-      const candidates = entries.filter(e => !used.has(e.id) && e.month === month && e.amount === f.amount && kindOf(e) === f.income);
+      const candidates = entries.filter(e => !used.has(e.id) && e.month === month && Math.abs(e.amount) === f.amount && kindOf(e) === f.income);
       match = candidates.find(e => sameName(normalizeName(e.name), key) || sameName(normalizeName(e.name), normalizeName(name)))
         ?? candidates.find(e => daysApart(e.date, f.date) <= 3);
       if (match) status = match.paid ? 'exists' : 'pay';
@@ -536,7 +542,9 @@ export function planStatement(found: Found[], data: AppData, today = new Date())
  * entries — paid, once, dated — for everything else ticked, including a row
  * marked "already entered" the user ticks anyway (two equal purchases).
  */
-export function applyStatement(rows: PlannedRow[], now: number, newId: () => string = uid, today = new Date()): { add: Entry[]; pay: string[] } {
+export function applyStatement(rows: PlannedRow[], now: number, newId: () => string = uid, today = new Date(), categories?: Category[]): { add: Entry[]; pay: string[] } {
+  // With the categories at hand, money that came in and is filed under an expense category is a refund (schema 26).
+  const expense = new Set((categories ?? []).filter(c => c.kind === 'expense').map(c => c.id));
   const add: Entry[] = [];
   const pay: string[] = [];
   rows.filter(r => r.include).forEach((r, i) => {
@@ -554,6 +562,7 @@ export function applyStatement(rows: PlannedRow[], now: number, newId: () => str
       seriesId: id,
       createdAt: now + i,
     };
+    if (r.found.income && expense.has(r.categoryId)) { e.amount = -r.found.amount; e.refund = true; }
     if (r.found.date) e.date = r.found.date;
     if (r.found.ref) e.ref = r.found.ref;
     add.push(e);

@@ -137,6 +137,9 @@
   {
    "category": "extra",
    "limit": 15000,
+   "base": 15000,
+   "period": "month",
+   "carried": 0,
    "paid": 10629,
    "open": 0,
    "spent": 10629,
@@ -148,6 +151,9 @@
   {
    "category": "groceries",
    "limit": 45000,
+   "base": 45000,
+   "period": "month",
+   "carried": 0,
    "paid": 22604,
    "open": 0,
    "spent": 22604,
@@ -159,6 +165,9 @@
   {
    "category": "restaurants",
    "limit": 12000,
+   "base": 12000,
+   "period": "month",
+   "carried": 0,
    "paid": 2906,
    "open": 0,
    "spent": 2906,

@@ -58,6 +58,12 @@ export function RemindersView({ data, prefs, t, onBack, onChange }: {
     onChange({ on });
     if (on) setPermission(await askNotify());
   };
+  const toggleNudge = async (nudge: boolean) => {
+    onChange({ nudge });
+    if (nudge) setPermission(await askNotify());
+  };
+  const nudgeTimeId = useId();
+  const any = prefs.on || prefs.nudge;
 
   return (
     <Screen title={t.remindersTitle} subtitle={t.remindersIntro} onBack={onBack} backLabel={t.back} tabbed>
@@ -67,7 +73,7 @@ export function RemindersView({ data, prefs, t, onBack, onChange }: {
         </ControlRow>
       </Group>
 
-      {prefs.on && permission === 'denied' && (
+      {any && permission === 'denied' && (
         <p role="alert" className="rounded-md bg-warn-dim px-4 py-3 flex items-start gap-3 text-label text-fg wrap-prose">
           <AlertCircle className="w-5 h-5 text-warn shrink-0 mt-px" aria-hidden="true" />
           <span>{t.remindersDenied}</span>
@@ -97,17 +103,38 @@ export function RemindersView({ data, prefs, t, onBack, onChange }: {
             </ControlRow>
           </Group>
 
-          <Group title={t.remindersNext}>
-            {next.length === 0 ? (
-              <p className="px-4 py-3.5 text-label text-fg-mute wrap-prose">{t.remindersNone}</p>
-            ) : next.map(r => (
-              <div key={r.id} className="relative px-4 py-2.5" style={{ '--sep': '1rem' } as CSSProperties}>
-                <p className="text-caption text-fg-mute tabular-nums">{whenLabel(r.at, t.locale)}</p>
-                <p className="text-body text-fg wrap-prose mt-0.5">{r.title}</p>
-              </div>
-            ))}
-          </Group>
         </>
+      )}
+
+      {/* The daily nudge: its own switch and time, whatever the bill reminders do. */}
+      <Group footer={t.nudgeHint}>
+        <ControlRow label={t.nudgeRow}>
+          <Switch checked={prefs.nudge} onChange={on => void toggleNudge(on)} label={t.nudgeRow} />
+        </ControlRow>
+        {prefs.nudge && (
+          <ControlRow label={t.remindersTime} labelId={nudgeTimeId}>
+            <input
+              type="time"
+              aria-labelledby={nudgeTimeId}
+              value={prefs.nudgeTime}
+              onChange={e => { if (/^\d{2}:\d{2}$/.test(e.target.value)) onChange({ nudgeTime: e.target.value }); }}
+              className="min-h-tap px-3 rounded-sm bg-surface-2 text-body text-fg tabular-nums focus-visible:ring-focus"
+            />
+          </ControlRow>
+        )}
+      </Group>
+
+      {any && (
+        <Group title={t.remindersNext}>
+          {next.length === 0 ? (
+            <p className="px-4 py-3.5 text-label text-fg-mute wrap-prose">{t.remindersNone}</p>
+          ) : next.map(r => (
+            <div key={r.id} className="relative px-4 py-2.5" style={{ '--sep': '1rem' } as CSSProperties}>
+              <p className="text-caption text-fg-mute tabular-nums">{whenLabel(r.at, t.locale)}</p>
+              <p className="text-body text-fg wrap-prose mt-0.5">{r.title}</p>
+            </div>
+          ))}
+        </Group>
       )}
     </Screen>
   );

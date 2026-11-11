@@ -1,5 +1,5 @@
 import {
-  ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, MonthKey, MonthRecord, Names, REPEATS, Repeat, Rule,
+  ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, INTERVALS, Interval, MonthKey, MonthRecord, Names, Project, REPEATS, Repeat, Rule, TAX_KINDS, TaxKind,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -22,8 +22,16 @@ import { isSupportedCurrency } from './currency';
  *  21: debts and loans (`AppData.debts`, `Entry.debtId`, plan 31) — optional, unset = none.
  *  22: receipts (`Entry.files`, plan 27) — optional; a backup may carry the files themselves (`files`).
  *  23: `AppData.monthStart` (plan 32: months from payday) — optional, unset = the 1st; with it an
- *      entry's `month` is the period its date falls in. */
-export const SCHEMA_VERSION = 23;
+ *      entry's `month` is the period its date falls in.
+ *  24: `Entry.every` (a yearly entry that comes back every 2, 3 or 6 months) and
+ *      `Entry.until` (a recurring entry's last month) — optional, unset = yearly / no end.
+ *  25: `Category.limitPer` (a budget for the year) and `Category.rollover` / `rolloverFrom`
+ *      (a monthly budget whose rest moves on) — optional, unset = a plain monthly budget.
+ *  26: `Entry.refund` (money back in an expense category; its amount is negative) — optional.
+ *  27: `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is kept for) — optional.
+ *  28: trips and projects (`AppData.projects`) — optional, unset = none.
+ *  29: `Entry.tax` (an expense marked for the tax return) — optional. */
+export const SCHEMA_VERSION = 29;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -585,6 +593,18 @@ export function dayOfMonth(today = new Date()): number {
   return dayIndex(isoDay(today), monthKeyOf(today)) ?? today.getDate();
 }
 
+/** A day shifted by whole days ("2026-11-11" + 14 → "2026-11-25"). */
+export function shiftDays(iso: string, n: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return isoDay(new Date(y, m - 1, d + n));
+}
+
+/** "11. Nov. 2028" — a day with its year, for dates that lie further off (a warranty's end). */
+export function dayLabelYear(date: string, locale: string): string {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(y, m - 1, d));
+}
+
 /** "3. Nov." / "3 Nov" — an entry's date on the month page, where the year goes without saying. */
 export function dayLabel(date: string, locale: string): string {
   const [y, m, d] = date.split('-').map(Number);
@@ -1070,6 +1090,36 @@ export function accountTotals(data: AppData, month: MonthKey): { accounts: Accou
 
 /* -------------------------------------------------------------- carry-over */
 
+/** How many months lie between a recurring entry and its next copy: 1, 12 — or 2, 3, 6 for a yearly entry with `every` (schema 24). 0 = it doesn't repeat. */
+export function intervalOf(e: Pick<Entry, 'repeat' | 'every'>): number {
+  return e.repeat === 'none' ? 0 : e.repeat === 'monthly' ? 1 : e.every ?? 12;
+}
+
+/** The series has run out by `key`: its last month (`until`) lies before it. */
+export const seriesEnded = (e: Pick<Entry, 'until'>, key: MonthKey): boolean => !!e.until && key > e.until;
+
+/** Whether a recurring entry comes back in the later month `key`: every month, or a whole number of its intervals on — and not past its end. */
+export function comesBackIn(e: Pick<Entry, 'repeat' | 'every' | 'until' | 'month'>, key: MonthKey): boolean {
+  const n = intervalOf(e);
+  if (!n || key <= e.month || seriesEnded(e, key)) return false;
+  return n === 1 || e.repeat === 'yearly' && (e.every ? monthsBetween(e.month, key) % n === 0 : key === addMonths(e.month, 12));
+}
+
+/**
+ * The newest entry of every `yearly` series (the ones outside the monthly
+ * run: yearly, half-yearly, quarterly, every two months) — what a forecast
+ * projects from. One pass; ask `comesBackIn(entry, key)` for a month ahead.
+ */
+export function latestPeriodic(entries: readonly Entry[]): Entry[] {
+  const latest = new Map<string, Entry>();
+  for (const e of entries) {
+    if (e.transfer || e.repeat !== 'yearly') continue;
+    const have = latest.get(e.seriesId);
+    if (!have || e.month > have.month || (e.month === have.month && e.createdAt > have.createdAt)) latest.set(e.seriesId, e);
+  }
+  return [...latest.values()];
+}
+
 /**
  * What starting `key` would carry in: every monthly entry of the last started
  * month before it, every yearly entry of the same month a year earlier —
@@ -1078,12 +1128,14 @@ export function accountTotals(data: AppData, month: MonthKey): { accounts: Accou
 export function carryCandidates(data: AppData, key: MonthKey): Entry[] {
   const present = new Set(data.entries.filter(e => e.month === key).map(e => e.seriesId));
   const prev = previousStarted(data.months, key);
-  const yearAgo = addMonths(key, -12);
+  // A yearly entry of the same month a year earlier — a quarterly one three months earlier, and so on.
+  const back = new Map<number, MonthKey>();
+  const ago = (n: number) => back.get(n) ?? (back.set(n, addMonths(key, -n)), back.get(n)!);
   const out: Entry[] = [];
   const seen = new Set<string>();
   for (const e of data.entries) {
-    const take = (e.month === prev && e.repeat === 'monthly') || (e.month === yearAgo && e.repeat === 'yearly');
-    if (!take || present.has(e.seriesId) || seen.has(e.seriesId)) continue;
+    const take = (e.month === prev && e.repeat === 'monthly') || (e.repeat === 'yearly' && e.month === ago(intervalOf(e)));
+    if (!take || seriesEnded(e, key) || present.has(e.seriesId) || seen.has(e.seriesId)) continue;
     seen.add(e.seriesId);
     out.push(e);
   }
@@ -1101,7 +1153,7 @@ export function laterCopies(data: AppData, entry: Entry, now: number, newId: () 
   if (entry.repeat === 'none') return [];
   const targets = data.months
     .map(m => m.key)
-    .filter(k => (entry.repeat === 'monthly' ? k > entry.month : k === addMonths(entry.month, 12)))
+    .filter(k => comesBackIn(entry, k))
     .filter(k => !data.entries.some(e => e.month === k && e.seriesId === entry.seriesId));
   return targets.flatMap((k, i) => carryOver([entry], k, now + i, newId));
 }
@@ -1112,7 +1164,7 @@ export function laterTransferCopies(data: AppData, pair: Entry[], now: number, n
   if (!first || first.repeat === 'none') return [];
   const targets = data.months
     .map(m => m.key)
-    .filter(k => (first.repeat === 'monthly' ? k > first.month : k === addMonths(first.month, 12)))
+    .filter(k => comesBackIn(first, k))
     .filter(k => !data.entries.some(e => e.month === k && e.seriesId === first.seriesId));
   return targets.flatMap((k, i) => carryOver(pair, k, now + i * pair.length, newId));
 }
@@ -1133,6 +1185,11 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
       seriesId: e.seriesId,
       createdAt: now + i,
     };
+    if (e.repeat === 'yearly' && e.every) copy.every = e.every;
+    if (e.until) copy.until = e.until;
+    if (e.refund) copy.refund = true;
+    // A recurring cost stays marked for the tax return (the Kita, every month).
+    if (e.tax) copy.tax = e.tax;
     if (e.dueDay !== undefined) copy.dueDay = e.dueDay;
     // The same day of the new month (rent on the 1st stays on the 1st).
     if (e.date) copy.date = dayInMonth(key, Number(e.date.slice(8, 10)));
@@ -1189,7 +1246,8 @@ export function suggestNames({ entries, categoryId, query = '', lang, limit = 12
   const newer = (a: Entry, b: Entry) => a.month > b.month || (a.month === b.month && a.createdAt > b.createdAt);
   const groups = new Map<string, { name: string; count: number; here: number; latest: Entry; latestHere?: Entry }>();
   for (const e of entries) {
-    if (e.transfer) continue;
+    // A refund's amount is no hint for what the next purchase costs.
+    if (e.transfer || e.refund) continue;
     const k = normalizeName(e.name);
     if (!k) continue;
     const isHere = e.categoryId === categoryId;
@@ -1544,7 +1602,12 @@ function normalizeCategory(v: unknown): Category | null {
     ...(v.budget === 'need' || v.budget === 'want' || v.budget === 'save' ? { budget: v.budget } : {}),
     // A budget is whole cents above zero, for spending only.
     ...(v.kind !== 'income' && typeof v.limit === 'number' && Number.isFinite(v.limit) && v.limit >= 1
-      ? { limit: Math.min(Math.round(v.limit), MAX_CENTS) } : {}),
+      ? {
+        limit: Math.min(Math.round(v.limit), MAX_CENTS),
+        // How the budget counts (schema 25): for the year, or with its rest carried on — never both.
+        ...(v.limitPer === 'year' ? { limitPer: 'year' as const }
+          : v.rollover === true && isMonthKey(v.rolloverFrom) ? { rollover: true, rolloverFrom: v.rolloverFrom } : {}),
+      } : {}),
     ...(v.standard === false ? { standard: false } : {}),
     ...(v.builtin === true ? { builtin: true } : {}),
     // Edited in Settings: the user's own list (empty is a choice too). Unset: what the app ships.
@@ -1554,7 +1617,10 @@ function normalizeCategory(v: unknown): Category | null {
 
 function normalizeEntry(v: unknown, start = 1): Entry | null {
   if (!isObj(v) || !str(v.id) || !isMonthKey(v.month) || !str(v.categoryId)) return null;
-  const amount = typeof v.amount === 'number' && Number.isFinite(v.amount) ? Math.min(Math.round(Math.abs(v.amount)), MAX_CENTS) : 0;
+  const size = typeof v.amount === 'number' && Number.isFinite(v.amount) ? Math.min(Math.round(Math.abs(v.amount)), MAX_CENTS) : 0;
+  // Only a refund is negative (schema 26); any other minus sign in stored data is dropped, as before.
+  const refund = v.refund === true && size > 0 && !isObj(v.transfer);
+  const amount = refund ? -size : size;
   const due = typeof v.dueDay === 'number' && Number.isInteger(v.dueDay) && v.dueDay >= 1 && v.dueDay <= 31 ? v.dueDay : undefined;
   const e: Entry = {
     id: v.id as string,
@@ -1567,7 +1633,11 @@ function normalizeEntry(v: unknown, start = 1): Entry | null {
     seriesId: str(v.seriesId) || (v.id as string),
     createdAt: typeof v.createdAt === 'number' && Number.isFinite(v.createdAt) ? v.createdAt : 0,
   };
+  if (refund) e.refund = true;
   if (due !== undefined) e.dueDay = due;
+  if (e.repeat === 'yearly' && (INTERVALS as readonly unknown[]).includes(v.every)) e.every = v.every as Interval;
+  // A last month only on a recurring entry, and never before the entry itself.
+  if (e.repeat !== 'none' && isMonthKey(v.until) && v.until >= e.month) e.until = v.until;
   // A date is always inside its month — the period, when months start on another day (plan 32).
   if (isIsoDay(v.date) && periodOf(v.date, start) === e.month) e.date = v.date;
   const note = cleanText(str(v.note) ?? '', 200);
@@ -1582,6 +1652,9 @@ function normalizeEntry(v: unknown, start = 1): Entry | null {
   if (debtId) e.debtId = debtId.slice(0, 80);
   const files = normalizeAttachments(v.files);
   if (files.length) e.files = files;
+  if ((TAX_KINDS as readonly unknown[]).includes(v.tax)) e.tax = v.tax as TaxKind;
+  if (isIsoDay(v.warrantyUntil)) e.warrantyUntil = v.warrantyUntil;
+  if (isIsoDay(v.returnUntil)) e.returnUntil = v.returnUntil;
   const tags = normalizeTags(v.tags);
   if (tags.length) e.tags = tags;
   const splitId = str(v.splitId);
@@ -1663,8 +1736,12 @@ export function normalizeState(raw: unknown): AppData {
   const accounts = normalizeAccounts(v.accounts);
   const accountSet = new Set((accounts ?? []).map(a => a.id));
   for (const e of entries) if (e.accountId && !accountSet.has(e.accountId)) delete e.accountId;
+  // A refund lives in an expense category; in an income category it is plain income (schema 26).
+  const incomeIds = new Set(categories.filter(c => c.kind === 'income').map(c => c.id));
+  for (const e of entries) if (e.refund && incomeIds.has(e.categoryId)) { delete e.refund; e.amount = Math.abs(e.amount); }
   // Debts (schema 21): an entry's link to a debt that isn't there is dropped.
   const debts = normalizeDebts(v.debts);
+  const projects = normalizeProjects(v.projects);
   const debtSet = new Set((debts ?? []).map(d => d.id));
   for (const e of entries) if (e.debtId && !debtSet.has(e.debtId)) delete e.debtId;
   for (const m of months) {
@@ -1694,6 +1771,7 @@ export function normalizeState(raw: unknown): AppData {
     ...(demo ? { demo } : {}),
     ...(accounts ? { accounts } : {}),
     ...(debts ? { debts } : {}),
+    ...(projects ? { projects } : {}),
     ...(monthStart !== 1 ? { monthStart } : {}),
   };
 }
@@ -1764,6 +1842,40 @@ export function backupFiles(text: string, maxBytes: number): Record<string, stri
 }
 
 /** Debts (schema 21): a name, a direction, whole cents, a start month, a rate between 0 and 100 %. Unset when there are none. */
+export const MAX_PROJECTS = 40;
+
+/** The tag a project's entries carry, from its name: "Urlaub Türkei 2027" → "urlaub-türkei-2027". */
+export function projectTag(name: string): string {
+  return normalizeTags([cleanText(name, 40).replace(/[\s,#]+/g, '-').replace(/^-+|-+$/g, '')])[0] ?? '';
+}
+
+/** Trips and projects (schema 28): a name and a tag are required; a rate only with its currency; one project per tag. */
+function normalizeProjects(v: unknown): Project[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const list = dedupe(v.map((p): Project | null => {
+    if (!isObj(p) || !str(p.id)) return null;
+    const name = cleanText(str(p.name) ?? '', 40);
+    const tag = normalizeTags([str(p.tag) ?? ''])[0] ?? projectTag(name);
+    if (!name || !tag) return null;
+    const project: Project = {
+      id: (p.id as string).slice(0, 80), name, tag,
+      emoji: str(p.emoji)?.trim() || '🧳',
+      createdAt: typeof p.createdAt === 'number' && Number.isFinite(p.createdAt) ? p.createdAt : 0,
+    };
+    if (typeof p.budget === 'number' && Number.isFinite(p.budget) && p.budget >= 1) project.budget = Math.min(Math.round(p.budget), MAX_CENTS);
+    if (isIsoDay(p.from)) project.from = p.from;
+    if (isIsoDay(p.to) && (!project.from || p.to >= project.from)) project.to = p.to;
+    if (typeof p.currency === 'string' && /^[A-Z]{3}$/.test(p.currency) && typeof p.rate === 'number' && Number.isFinite(p.rate) && p.rate > 0) {
+      project.currency = p.currency;
+      project.rate = Math.min(p.rate, 1_000_000);
+    }
+    if (p.closed === true) project.closed = true;
+    return project;
+  }).filter((p): p is Project => p !== null), p => p.id);
+  const byTag = dedupe(list, p => p.tag).slice(0, MAX_PROJECTS);
+  return byTag.length ? byTag : undefined;
+}
+
 function normalizeDebts(v: unknown): Debt[] | undefined {
   if (!Array.isArray(v)) return undefined;
   const list = dedupe(v.map((d): Debt | null => {
@@ -2083,6 +2195,8 @@ export interface CsvLabels {
   paid: string;
   open: string;
   repeat: Record<Repeat, string>;
+  /** What the repeat cell says for a yearly entry with another interval (2, 3, 6 months; schema 24). */
+  every?: Record<number, string>;
   /** The header for the appended currency column ("Währung"). */
   currency: string;
   /** The header for the appended tags column ("Tags", plan 26). */
@@ -2126,7 +2240,7 @@ export function toCsv(data: AppData, lang: string, labels: CsvLabels): string {
     lines.push([
       cell(e.month), textCell(e.transfer ? labels.transfer : displayName(c?.names, lang)),
       cell(e.transfer ? labels.transfer : kind === 'income' ? labels.income : labels.expense),
-      textCell(e.name), cell(value), cell(e.paid ? labels.paid : labels.open), cell(labels.repeat[e.repeat]),
+      textCell(e.name), cell(value), cell(e.paid ? labels.paid : labels.open), cell((e.repeat === 'yearly' && e.every && labels.every?.[e.every]) || labels.repeat[e.repeat]),
       cell(e.dueDay ? String(e.dueDay) : ''), textCell(e.note ?? ''),
       cell(e.date ? `${e.date.slice(8, 10)}.${e.date.slice(5, 7)}.${e.date.slice(0, 4)}` : ''),
       cell(activeCurrency), // the book's currency, appended so the old column order is kept

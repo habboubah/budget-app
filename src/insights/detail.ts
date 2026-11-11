@@ -1,6 +1,6 @@
 import { Category, Entry, MonthKey } from '../types';
 import { addMonths, monthKeyOf, normalizeName } from '../logic';
-import { suggestLimit } from '../budgets';
+import { monthlyLimit, suggestLimit } from '../budgets';
 import { Book, Part, finishedKeys, monthOf, spendingOf } from './book';
 import { Trend, categoryTrends } from './hints';
 import { TREND_FLOOR, TREND_SHARE } from './baseline';
@@ -84,7 +84,8 @@ export function categoryDetail(book: Book, categoryId: string, months: MonthKey[
     lastYear = inView.reduce((s, k) => s + of(addMonths(k, -12)), 0);
   }
 
-  const limit = category.kind === 'expense' && category.limit ? category.limit : null;
+  // A year's budget is shown per month here (a twelfth), like the averages beside it.
+  const limit = category.kind === 'expense' ? monthlyLimit(category) ?? null : null;
   const budget = limit ? { limit, kept: finished.filter(k => of(k) <= limit).length, months: finished.length } : null;
   const suggestion = category.kind === 'expense' ? suggestLimit(book.data, categoryId, today) : null;
 

@@ -2,8 +2,9 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, ChevronsDownUp, ChevronsUpDown, Circle, CircleMinus, Gauge, ListFilter, MoreHorizontal, Paperclip, Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
-import { dayLabel, displayName, formatMoney, formatMoneyShort, isOverdue, spoken } from '../logic';
+import { dayLabel, displayName, formatMoney, isOverdue, isoDay, spoken } from '../logic';
 import { BudgetStatus } from '../budgets';
+import { budgetCarried, budgetLine } from '../budgetLabel';
 import { BudgetBar } from './BudgetBar';
 import { Strings, fmt, plural } from '../translations';
 import { Picture } from '../ui/Picture';
@@ -90,7 +91,6 @@ export function CategorySection({
     ? fmt(income ? t.nExpected : t.nOpen, { n: openCount })
     : all.length ? (income ? t.allReceived : t.allPaid) : t.sectionEmpty;
 
-  const short = (c: number) => formatMoneyShort(c, t.locale);
   // With a budget, the line under the bar says how it stands; the status moves to its end.
   const over = budget && budget.left < 0;
 
@@ -99,7 +99,7 @@ export function CategorySection({
       { key: 'add', label: t.addEntry, icon: Plus, onSelect: onAdd },
       ...(onBudget ? [{
         key: 'budget', label: t.budgetMenu, icon: Gauge, onSelect: onBudget,
-        sub: budget ? fmt(t.budgetLine, { amount: short(budget.limit) }) : undefined,
+        sub: budget ? budgetLine(t, budget) : undefined,
       }] : []),
     ],
     [
@@ -231,7 +231,8 @@ export function CategorySection({
                   over it, paying out ahead of the month's pace, or what is still open. */}
               <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-caption">
                 <span className="text-fg-mute tabular-nums">
-                  {fmt(t.budgetLine, { amount: short(budget.limit) })}
+                  {budgetLine(t, budget)}
+                  {budget.carried !== 0 && ` (${budgetCarried(t, budget)})`}
                   {!over && ` · ${fmt(t.budgetLeft, { amount: money(budget.left) })}`}
                   {collapsed && ` · ${t.foldedNote}`}
                 </span>
@@ -345,6 +346,8 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   onToggle: () => void;
   onMoveBy: (delta: -1 | 1) => void;
 }) {
+  // A refund reads like income on its row: "+12,50 €", erwartet / erhalten (schema 26).
+  const gain = income || !!e.refund;
   const meta: React.ReactNode[] = [];
   // The date first — it is also when an open entry is due; then, while open,
   // the status in words, coloured — never colour or shape alone. How often it
@@ -353,13 +356,16 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   if (!e.paid) {
     meta.push(
       <span key="state" className={`font-medium ${overdue ? 'text-neg' : 'text-warn'}`}>
-        {overdue ? t.overdue : income ? t.expected : t.open}
+        {overdue ? t.overdue : gain ? t.expected : t.open}
       </span>,
     );
   }
+  if (e.refund) meta.push(<span key="refund" className="text-fg-mute">{t.refund}</span>);
   if (e.note) meta.push(<span key="note" className="wrap-compound"><Highlight text={e.note} query={search} /></span>);
   // A part of a split payment (plan 21): a quiet marker; tapping the row opens its editor.
   if (e.splitId) meta.push(<span key="split" className="text-fg-mute">{t.splitPayPart}</span>);
+  // Still time to send it back (schema 27): the last day, while it lies ahead.
+  if (e.returnUntil && e.returnUntil >= isoDay()) meta.push(<span key="return" className="whitespace-nowrap">{fmt(t.returnUntil, { date: dayLabel(e.returnUntil, t.locale) })}</span>);
   // A receipt is attached (plan 27): a paperclip; the entry's sheet shows it.
   if (e.files?.length) {
     meta.push(
@@ -417,7 +423,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
         }}
         aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
         aria-label={`${fmt(t.editNamed, { name: e.name })}, ${spoken(formatMoney(e.amount, t.locale), t.amountHidden)}, ${
-          e.paid ? (income ? t.receivedState : t.paidState) : overdue ? t.overdue : income ? t.expected : t.open}`}
+          e.paid ? (gain ? t.receivedState : t.paidState) : overdue ? t.overdue : gain ? t.expected : t.open}${e.refund ? `, ${t.refund}` : ''}`}
         className="flex-1 min-w-0 py-2.5 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         <span className="min-w-0 flex-1">
@@ -431,8 +437,8 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
           )}
         </span>
         {/* Open money is grey, like a pending card payment; it turns solid once paid. */}
-        <span className={`shrink-0 text-body font-medium num ${e.paid ? (income ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
-          <Highlight text={formatMoney(e.amount, t.locale)} query={search} />
+        <span className={`shrink-0 text-body font-medium num ${e.paid ? (gain ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
+          <Highlight text={e.refund ? formatMoney(-e.amount, t.locale, 'always') : formatMoney(e.amount, t.locale)} query={search} />
         </span>
       </button>
     </div>

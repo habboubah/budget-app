@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ACCENTS, Accent, Account, AppData, Category, Contract, Debt, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Rule, ThemeMode } from './types';
+import { ACCENTS, Accent, Account, AppData, Category, Contract, Debt, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Project, Rule, ThemeMode } from './types';
 import { Language, isLanguage, DEFAULT_LANGUAGE, loadLanguage, stringsFor } from './translations';
 import {
   ALL_ACCOUNTS, AccountView, MAIN_ACCOUNT, MAX_ACCOUNTS, MAX_FAVORITES, TransferDraft, canDeleteAccount, canRemoveFromMonth, carryCandidates, carryOver,
@@ -32,7 +32,9 @@ const K = {
   lastExport: 'spartopf-last-export',
   copyCardDismissed: 'spartopf-copy-card-dismissed',
   autoCategory: 'spartopf-auto-category',
+  budgetNotes: 'spartopf-budget-notes',
   captureReview: 'spartopf-capture-review',
+  taxMarks: 'spartopf-tax-marks',
   tipState: 'spartopf-tip-state',
   account: 'spartopf-account',
 } as const;
@@ -103,6 +105,7 @@ export function useAppStore() {
   const [demo, setDemo] = useState<DemoInfo | undefined>(initial.demo);
   /** Debts and loans, and money lent (plan 31). */
   const [debts, setDebts] = useState<Debt[]>(initial.debts ?? []);
+  const [projects, setProjects] = useState<Project[]>(initial.projects ?? []);
   /**
    * The day the book's month begins (plan 32) — data, so part of a backup.
    * `setMonthStart` keeps logic.ts in step; set in the same breath as the
@@ -151,6 +154,8 @@ export function useAppStore() {
   const [reviewAsked, setReviewAsked] = useState(() => { const v = readString(K.reviewAsked); return isIsoDay(v) ? v : ''; });
   /** The entry sheet picks the category the typed name points to (plan 32) — on unless switched off. A view preference. */
   const [autoCategory, setAutoCategory] = useState(() => readString(K.autoCategory) !== '0');
+  /** A word when an entry takes a budget to 80 % or over it — on unless switched off. A view preference. */
+  const [budgetNotes, setBudgetNotes] = useState(() => readString(K.budgetNotes) !== '0');
   /** Categories folded down on the month page — a view preference, not data, so not in a backup. */
   const [collapsed, setCollapsed] = useState<string[]>(() => {
     const saved = readJson(K.collapsed);
@@ -182,12 +187,16 @@ export function useAppStore() {
   useEffect(() => { persist(K.firstUse, firstUse); }, [firstUse]);
   useEffect(() => { if (reviewAsked) persist(K.reviewAsked, reviewAsked); }, [reviewAsked]);
   useEffect(() => { persist(K.autoCategory, autoCategory ? '1' : '0'); }, [autoCategory]);
+  useEffect(() => { persist(K.budgetNotes, budgetNotes ? '1' : '0'); }, [budgetNotes]);
   /** Plan 37: which tips are done, and when the last one was put away. */
   const [tipState, setTipState] = useState<TipState>(() => readTipState(readJson(K.tipState)));
   useEffect(() => { persist(K.tipState, JSON.stringify(tipState)); }, [tipState]);
   /** Plan 19: captured payments wait under *Neu* instead of being booked at once. */
   const [captureReview, setCaptureReview] = useState(() => readString(K.captureReview) === '1');
   useEffect(() => { persist(K.captureReview, captureReview ? '1' : '0'); }, [captureReview]);
+  /** The entry sheet offers the tax mark (schema 29) — off until switched on under Optionen › Steuerliste. A view preference. */
+  const [taxMarks, setTaxMarks] = useState(() => readString(K.taxMarks) === '1');
+  useEffect(() => { persist(K.taxMarks, taxMarks ? '1' : '0'); }, [taxMarks]);
   useEffect(() => { persist(K.account, accountView); }, [accountView]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.hintsHidden, JSON.stringify(hintsHidden)); }, [hintsHidden]);
@@ -236,9 +245,10 @@ export function useAppStore() {
       ...(demo ? { demo } : {}),
       ...(accounts.length ? { accounts } : {}),
       ...(debts.length ? { debts } : {}),
+      ...(projects.length ? { projects } : {}),
       ...(monthStart !== 1 ? { monthStart } : {}),
     }),
-    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts, monthStart],
+    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts, monthStart, projects],
   );
   /** Whether the book holds test data: Optionen offers to remove it instead of adding it. */
   const hasDemo = useMemo(() => hasDemoData(data), [data]);
@@ -374,6 +384,13 @@ export function useAppStore() {
       // Optional fields set to undefined are dropped, not stored as null.
       if (next.dueDay === undefined) delete next.dueDay;
       if (!next.note) delete next.note;
+      // The interval belongs to a yearly entry, the last month to a recurring one (schema 24).
+      if (!next.refund) delete next.refund;
+      if (!next.tax) delete next.tax;
+      if (!next.warrantyUntil) delete next.warrantyUntil;
+      if (!next.returnUntil) delete next.returnUntil;
+      if (!next.every || next.repeat !== 'yearly') delete next.every;
+      if (!next.until || next.repeat === 'none') delete next.until;
       // Back on the main account: no account is stored (plan 30).
       if (!next.accountId || next.accountId === MAIN_ACCOUNT) delete next.accountId;
       if (!next.debtId) delete next.debtId;
@@ -383,7 +400,7 @@ export function useAppStore() {
       return next;
     }));
     // Made recurring in the editor: it goes into the months already started after it, too.
-    if (before && before.repeat === 'none' && patch.repeat && patch.repeat !== 'none') {
+    if (before && patch.repeat && patch.repeat !== 'none' && (before.repeat === 'none' || before.every !== patch.every)) {
       const later = laterCopies(data, { ...before, ...patch }, Date.now());
       if (later.length) setEntries(prev => [...prev, ...later]);
     }
@@ -597,7 +614,13 @@ export function useAppStore() {
   };
 
   const updateCategory = (id: string, patch: Partial<Omit<Category, 'id'>>) =>
-    setCategories(prev => prev.map(c => (c.id === id ? { ...c, ...patch } : c)));
+    setCategories(prev => prev.map(c => {
+      if (c.id !== id) return c;
+      const next = { ...c, ...patch };
+      // How a budget counts goes with the budget (schema 25).
+      if (!next.limit) { delete next.limitPer; delete next.rollover; delete next.rolloverFrom; }
+      return next;
+    }));
 
   interface RemovedCategory { category: Category; index: number; entries: Entry[] }
 
@@ -655,6 +678,7 @@ export function useAppStore() {
     setDemo(fixed.demo);
     setAccounts(fixed.accounts ?? []);
     setDebts(fixed.debts ?? []);
+    setProjects(fixed.projects ?? []);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -698,6 +722,7 @@ export function useAppStore() {
     setAccounts([]);
     setAccountView(MAIN_ACCOUNT);
     setDebts([]);
+    setProjects([]);
     // Back to the defaults of a fresh install: euros and English.
     setCurrency(DEFAULT_CURRENCY);
     setLanguage(DEFAULT_LANGUAGE);
@@ -829,6 +854,38 @@ export function useAppStore() {
     if (r.entryIds.length) setEntries(prev => prev.map(e => (r.entryIds.includes(e.id) ? { ...e, debtId: r.debt.id } : e)));
   };
 
+  /* ------------------------------------------- trips and projects (schema 28) */
+
+  const addProject = (p: Omit<Project, 'id' | 'createdAt'>): Project => {
+    const created: Project = { id: uid(), createdAt: Date.now(), ...p };
+    setProjects(prev => [...prev, created]);
+    return created;
+  };
+
+  /** Change a project; optional fields set to undefined are dropped, and a rate goes with its currency. */
+  const updateProject = (id: string, patch: Partial<Omit<Project, 'id' | 'createdAt'>>) =>
+    setProjects(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const next: Project = { ...p, ...patch };
+      if (!next.budget) delete next.budget;
+      if (!next.from) delete next.from;
+      if (!next.to) delete next.to;
+      if (!next.currency || !next.rate) { delete next.currency; delete next.rate; }
+      if (!next.closed) delete next.closed;
+      return next;
+    }));
+
+  /** Remove a project; its entries keep their tag. Returns what to undo. */
+  const removeProject = (id: string): { project: Project; index: number } | null => {
+    const index = projects.findIndex(p => p.id === id);
+    if (index === -1) return null;
+    setProjects(prev => prev.filter(p => p.id !== id));
+    return { project: projects[index], index };
+  };
+
+  const restoreProject = (r: { project: Project; index: number }) =>
+    setProjects(prev => (prev.some(p => p.id === r.project.id) ? prev : [...prev.slice(0, r.index), r.project, ...prev.slice(r.index)]));
+
   /* ----------------------------------------------------------- import rules */
 
   /** Create an import rule (plan 20); returns it. A dupe (same match + set) is reused. */
@@ -878,7 +935,9 @@ export function useAppStore() {
     hideAmounts, setHideAmounts,
     firstUse, reviewAsked, markReviewAsked: () => setReviewAsked(isoDay()),
     autoCategory, setAutoCategory,
+    budgetNotes, setBudgetNotes,
     captureReview, setCaptureReview,
+    taxMarks, setTaxMarks,
     tipState, closeTip: (id: TipId) => setTipState(s => closeTip(s, id)),
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),
@@ -904,6 +963,7 @@ export function useAppStore() {
     goals, addGoal, updateGoal, closeGoal, withdrawGoal, removeGoal, restoreGoal,
     rules, addRule, updateRule, removeRule, restoreRule,
     debts, addDebt, updateDebt, removeDebt, restoreDebt,
+    projects, addProject, updateProject, removeProject, restoreProject,
     monthStart, changeStart,
     lastExport, markExported: () => setLastExport(isoDay()),
     copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),

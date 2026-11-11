@@ -78,8 +78,9 @@ function DueCard({ item, category, language, t, onEdit, onTick }: {
   onTick: () => void;
 }) {
   const e = item.entry;
-  const income = category?.kind === 'income';
-  const money = formatMoney(e.amount, t.locale, income ? 'always' : 'auto');
+  // Money coming in: income, or a refund that is still awaited (schema 26).
+  const income = category?.kind === 'income' || !!e.refund;
+  const money = formatMoney(Math.abs(e.amount), t.locale, income ? 'always' : 'auto');
   const status = item.overdue ? t.overdue : income ? t.expected : t.open;
   const when = dueWhen(item, t);
   const tickLabel = `${income ? t.markReceived : t.markPaid} — ${e.name}`;

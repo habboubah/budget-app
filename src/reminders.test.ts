@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_REMINDERS, REMINDER_LIMIT, ReminderPrefs, ReminderSource, billSource, normalizeReminderPrefs, reminderId, reminderPlan,
+  DEFAULT_REMINDERS, NUDGE_DAYS, REMINDER_LIMIT, ReminderPrefs, ReminderSource, billSource, normalizeReminderPrefs, nudgePlan, reminderId, reminderPlan, returnSource, warrantySource,
 } from './reminders';
 import { defaultCategories } from './data/defaults';
+import { carryOver } from './logic';
 import translations from './translations';
 import { AppData, Entry } from './types';
 
@@ -25,11 +26,11 @@ const noon = new Date(2026, 10, 7, 12, 0);
 
 describe('reminder preferences', () => {
   it('starts off, at nine, the day before, without amounts', () => {
-    expect(normalizeReminderPrefs(undefined)).toEqual({ on: false, time: '09:00', lead: 1, amounts: false });
+    expect(normalizeReminderPrefs(undefined)).toMatchObject({ on: false, time: '09:00', lead: 1, amounts: false });
   });
   it('drops what it cannot use', () => {
-    expect(normalizeReminderPrefs({ on: true, time: '25:00', lead: 5, amounts: 'yes' })).toEqual({ on: true, time: '09:00', lead: 1, amounts: false });
-    expect(normalizeReminderPrefs({ on: true, time: '07:30', lead: 3, amounts: true })).toEqual({ on: true, time: '07:30', lead: 3, amounts: true });
+    expect(normalizeReminderPrefs({ on: true, time: '25:00', lead: 5, amounts: 'yes' })).toMatchObject({ on: true, time: '09:00', lead: 1, amounts: false });
+    expect(normalizeReminderPrefs({ on: true, time: '07:30', lead: 3, amounts: true })).toMatchObject({ on: true, time: '07:30', lead: 3, amounts: true });
   });
 });
 
@@ -138,5 +139,76 @@ describe('the reminder plan', () => {
     };
     const plan = reminderPlan(data([]), on, t, morning, [billSource, backup]);
     expect(plan).toEqual([expect.objectContaining({ at: '2026-11-10T09:00', title: 'Zeit für eine Sicherung', id: reminderId('backup:2026-11-10') })]);
+  });
+});
+
+describe('the daily nudge', () => {
+  const nudge: ReminderPrefs = { ...DEFAULT_REMINDERS, nudge: true, nudgeTime: '20:00' };
+  const at = (plan: { at: string }[]) => plan.map(p => p.at);
+
+  it('goes off once a day for the next five days, today included while its time is still to come', () => {
+    const plan = nudgePlan(data([]), nudge, t, noon);
+    expect(at(plan)).toEqual(['2026-11-07T20:00', '2026-11-08T20:00', '2026-11-09T20:00', '2026-11-10T20:00', '2026-11-11T20:00']);
+    expect(plan[0]).toMatchObject({ title: t.nudgeTitle, body: t.nudgeBody });
+    expect(new Set(plan.map(p => p.id)).size).toBe(NUDGE_DAYS);
+  });
+
+  it('skips today once something was entered today, or once the time has passed', () => {
+    const own = e('2026-11', 'groceries', 'Lidl', 12, { id: 'own', seriesId: 'own', createdAt: noon.getTime() - 3600_000 });
+    expect(at(nudgePlan(data([own]), nudge, t, noon))[0]).toBe('2026-11-08T20:00');
+    expect(at(nudgePlan(data([]), nudge, t, new Date(2026, 10, 7, 21, 0)))[0]).toBe('2026-11-08T20:00');
+  });
+
+  it('doesn’t take the copies a new month brings along for something entered', () => {
+    const carried = e('2026-11', 'fixed', 'Miete', 950, { id: 'copy', seriesId: 'rent', createdAt: noon.getTime() - 60_000 });
+    expect(at(nudgePlan(data([carried]), nudge, t, noon))[0]).toBe('2026-11-07T20:00');
+  });
+
+  it('runs beside the bill reminders, and without them', () => {
+    const bill = e('2026-11', 'fixed', 'Strom', 85, { date: '2026-11-09' });
+    expect(reminderPlan(data([bill]), nudge, t, noon).every(p => p.title === t.nudgeTitle)).toBe(true);
+    const both = reminderPlan(data([bill]), { ...nudge, on: true }, t, noon);
+    expect(both.filter(p => p.title === t.nudgeTitle)).toHaveLength(NUDGE_DAYS);
+    expect(both.some(p => p.title !== t.nudgeTitle)).toBe(true);
+    expect(reminderPlan(data([bill]), DEFAULT_REMINDERS, t, noon)).toEqual([]);
+  });
+
+  it('keeps a stored time only when it is one', () => {
+    expect(normalizeReminderPrefs({ nudge: true, nudgeTime: '7pm' })).toMatchObject({ nudge: true, nudgeTime: '20:00' });
+    expect(normalizeReminderPrefs({ nudge: true, nudgeTime: '07:30' }).nudgeTime).toBe('07:30');
+    expect(normalizeReminderPrefs({}).nudge).toBe(false);
+  });
+});
+
+describe('an awaited refund', () => {
+  it('is not a bill to be reminded of', () => {
+    const refund = e('2026-11', 'clothing', 'Zalando', -40, { refund: true, date: '2026-11-09' });
+    expect(billSource.items(data([refund]), morning)).toEqual([]);
+  });
+});
+
+describe('what a receipt is kept for (schema 27)', () => {
+  const kettle = e('2026-11', 'extra', 'Wasserkocher', 34.99, { paid: true, date: '2026-11-05', returnUntil: '2026-11-19', warrantyUntil: '2028-11-05' });
+
+  it('reminds three days before the last day to return it', () => {
+    const plan = reminderPlan(data([kettle]), on, t, morning);
+    const back = plan.find(p => p.title.includes('Rückgabe'))!;
+    expect(back.at).toBe('2026-11-16T09:00');
+    expect(sp(back.title)).toBe('Rückgabe noch bis 19. Nov.: Wasserkocher');
+    expect(back.body).toBe(t.remindReceiptBody);
+  });
+
+  it('reminds a month before the warranty ends, and says nothing once a day has passed', () => {
+    const late = new Date(2028, 9, 1, 8, 0);
+    const plan = reminderPlan(data([kettle]), on, t, late);
+    expect(plan.map(p => p.at)).toEqual(['2028-10-06T09:00']);
+    expect(sp(plan[0].title)).toBe('Garantie endet am 5. Nov.: Wasserkocher');
+    expect(warrantySource.items(data([kettle]), new Date(2028, 10, 6))).toEqual([]);
+    expect(returnSource.items(data([kettle]), new Date(2026, 10, 20))).toEqual([]);
+  });
+
+  it('is not carried into the next month with a recurring entry', () => {
+    const [copy] = carryOver([{ ...kettle, repeat: 'monthly' }], '2026-12', 1);
+    expect([copy.returnUntil, copy.warrantyUntil]).toEqual([undefined, undefined]);
   });
 });

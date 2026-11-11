@@ -26,6 +26,9 @@ interface Props {
   onRestoreDefaults: () => void;
   /** The entry sheet picks the category the typed name points to (plan 32). */
   autoCategory: boolean;
+  /** A word when an entry takes a budget to 80 % or over it. */
+  budgetNotes: boolean;
+  onBudgetNotes: (on: boolean) => void;
   onAutoCategory: (on: boolean) => void;
 }
 
@@ -39,7 +42,7 @@ interface Props {
  * whether the entry sheet picks the category from the name typed — from each
  * category's keywords, edited in its sheet (plan 32).
  */
-export function CategoriesView({ categories, entries, language, t, onBack, onEdit, onNew, onDelete, onReorder, onRestoreDefaults, autoCategory, onAutoCategory }: Props) {
+export function CategoriesView({ categories, entries, language, t, onBack, onEdit, onNew, onDelete, onReorder, onRestoreDefaults, autoCategory, onAutoCategory, budgetNotes, onBudgetNotes }: Props) {
   const [editing, setEditing] = useState(false);
   const [confirmRestore, setConfirmRestore] = useState(false);
   const counts = new Map<string, number>();
@@ -115,6 +118,13 @@ export function CategoriesView({ categories, entries, language, t, onBack, onEdi
         </div>
       )}
 
+      {categories.some(c => c.kind === 'expense' && c.limit) && (
+        <div className="flex items-center gap-3 rounded-md bg-surface card-edge ps-4 pe-1">
+          <span className="flex-1 min-w-0 py-3 text-body text-fg wrap-compound">{t.budgetNotes}</span>
+          <Switch checked={budgetNotes} onChange={onBudgetNotes} label={t.budgetNotes} />
+        </div>
+      )}
+
       <Confirm
         open={confirmRestore}
         title={t.restoreDefaultsTitle}
@@ -133,7 +143,7 @@ export function categorySub(c: Category, t: Strings): string {
   return [
     c.kind === 'income' ? t.kindIncome : null,
     c.standard !== false ? t.inEveryMonth : t.notInNewMonths,
-    c.kind === 'expense' && c.limit ? fmt(t.budgetLine, { amount: formatMoneyShort(c.limit, t.locale) }) : null,
+    c.kind === 'expense' && c.limit ? fmt(c.limitPer === 'year' ? t.budgetLineYear : t.budgetLine, { amount: formatMoneyShort(c.limit, t.locale) }) : null,
   ].filter(Boolean).join(' · ');
 }
 

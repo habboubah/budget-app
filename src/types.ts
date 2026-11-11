@@ -19,6 +19,23 @@ export type CategoryKind = 'income' | 'expense';
 export const REPEATS = ['none', 'monthly', 'yearly'] as const;
 export type Repeat = (typeof REPEATS)[number];
 
+/**
+ * A `yearly` entry that comes back sooner than a year on (schema 24): every
+ * two months, every quarter or every half year. It stays a `yearly` entry in
+ * every other respect — a bill outside the monthly run, kept out of trends,
+ * counted in the reserve — only its distance in months differs (`Entry.every`,
+ * unset = 12; read it with `intervalOf`).
+ */
+/**
+ * What an expense may matter for at tax time (schema 29) — the user's own
+ * mark, for the year's list; the app never judges whether it is deductible.
+ */
+export const TAX_KINDS = ['craftsman', 'household', 'childcare', 'donation', 'work', 'health', 'other'] as const;
+export type TaxKind = (typeof TAX_KINDS)[number];
+
+export const INTERVALS = [2, 3, 6] as const;
+export type Interval = (typeof INTERVALS)[number];
+
 export interface Category {
   id: string;
   names: Names;
@@ -35,6 +52,11 @@ export interface Category {
    *  every month, nothing carried over (schema 9). Unset = no budget. Not to
    *  be confused with `budget`, the need / want / save split. */
   limit?: number;
+  /** `limit` is the budget for a calendar year, not for a month (schema 25: clothes, holidays, presents). Unset = a month. */
+  limitPer?: 'year';
+  /** A monthly budget whose rest — or overspend — moves into the next month (schema 25), counted from `rolloverFrom` on. */
+  rollover?: boolean;
+  rolloverFrom?: MonthKey;
   /** Part of every newly started month. Unset = yes. */
   standard?: boolean;
   /** Ships with the app (can be edited, deleted and restored). */
@@ -73,11 +95,21 @@ export interface Entry {
   month: MonthKey;
   categoryId: string;
   name: string;
-  /** Integer cents, never negative — the category's kind gives the sign. */
+  /** Integer cents — the category's kind gives the sign. Negative only for a `refund`. */
   amount: number;
+  /**
+   * Money that came back in an expense category (schema 26): a return, a
+   * reimbursement. Its `amount` is negative, so every sum over the category
+   * goes down by it and the account up — it is never income.
+   */
+  refund?: true;
   /** Expense paid / income received. False = still open (planned / expected). */
   paid: boolean;
   repeat: Repeat;
+  /** With `repeat: 'yearly'`: how many months until it comes back, when not twelve (schema 24). */
+  every?: Interval;
+  /** The last month a recurring entry runs — nothing is carried over past it (schema 24: an instalment plan, a contract that ends). */
+  until?: MonthKey;
   /** Day of the month it is due, 1–31. */
   dueDay?: number;
   /** The day it belongs to, YYYY-MM-DD, inside `month` — today when entered,
@@ -106,6 +138,11 @@ export interface Entry {
   debtId?: string;
   /** Receipts and documents attached to it (schema 22, plan 27): what each is; the file itself is kept by storage.ts under its id. */
   files?: Attachment[];
+  /** Marked for the tax return (schema 29): which kind of cost it is. Carried over with a recurring entry. */
+  tax?: TaxKind;
+  /** What a receipt is kept for (schema 27): the last day of the warranty, and the last day to send it back — YYYY-MM-DD. Not carried over. */
+  warrantyUntil?: string;
+  returnUntil?: string;
   /**
    * One side of a transfer between two accounts (plan 30): money leaving one
    * account (`out`) and arriving in another (`in`), two entries sharing a
@@ -192,6 +229,33 @@ export interface AppData {
   debts?: Debt[];
   /** The day the months start on, 2–28 (schema 23, plan 32: a month from payday to payday). Unset = the 1st. */
   monthStart?: number;
+  /** Trips and projects (schema 28): a tag with a budget and dates. Unset = none. */
+  projects?: Project[];
+}
+
+/**
+ * A trip or a project (schema 28) — a holiday, a move, the baby's room:
+ * everything tagged with its `tag` counts towards it, whatever the category
+ * or month. It may have a budget and dates, and — for a trip abroad — the
+ * currency amounts are typed in and its rate.
+ */
+export interface Project {
+  id: string;
+  name: string;
+  emoji: string;
+  /** The tag its entries carry (as `Entry.tags` holds it: lower case, no "#"). */
+  tag: string;
+  /** What it may cost in all, cents. */
+  budget?: number;
+  /** Its first and last day, YYYY-MM-DD. Between them — or, without dates, until it is closed — the entry sheet offers it. */
+  from?: string;
+  to?: string;
+  /** Amounts typed for it are in this currency (ISO 4217), `rate` of it to one unit of the book's (1 € = 38,5 TRY). Both or neither. */
+  currency?: string;
+  rate?: number;
+  /** Finished: kept with its total, no longer offered in the entry sheet. */
+  closed?: boolean;
+  createdAt: number;
 }
 
 /**
@@ -283,6 +347,11 @@ export interface EntryDraft {
   amount: number;
   paid: boolean;
   repeat: Repeat;
+  /** A refund in an expense category: `amount` is then negative (schema 26). */
+  refund?: true;
+  /** The interval of a `yearly` entry that isn't twelve months, and a recurring entry's last month (schema 24). */
+  every?: Interval;
+  until?: MonthKey;
   dueDay?: number;
   date?: string;
   note?: string;
@@ -296,4 +365,9 @@ export interface EntryDraft {
   debtId?: string;
   /** Receipts and documents (plan 27). */
   files?: Attachment[];
+  /** Marked for the tax return (schema 29). */
+  tax?: TaxKind;
+  /** The warranty's last day and the last day to return it (schema 27). */
+  warrantyUntil?: string;
+  returnUntil?: string;
 }

@@ -1,5 +1,5 @@
 import { AppData, Category, Entry, MonthKey } from '../types';
-import { addMonths } from '../logic';
+import { addMonths, intervalOf } from '../logic';
 import { budgetOf } from '../data/defaults';
 
 /*
@@ -126,7 +126,9 @@ export function commitments(data: AppData, month: MonthKey): { items: Commitment
       items.push({ name: e.name, categoryId: e.categoryId, monthly: e.amount, yearly: e.amount * 12, repeat: 'monthly' });
     } else if (e.repeat === 'yearly' && e.month >= from && e.month <= month) {
       seen.add(e.seriesId);
-      items.push({ name: e.name, categoryId: e.categoryId, monthly: Math.round(e.amount / 12), yearly: e.amount, repeat: 'yearly' });
+      // A quarterly bill comes four times a year, a half-yearly one twice (schema 24).
+      const n = intervalOf(e);
+      items.push({ name: e.name, categoryId: e.categoryId, monthly: Math.round(e.amount / n), yearly: Math.round(e.amount * 12 / n), repeat: 'yearly' });
     }
   }
   items.sort((a, b) => b.yearly - a.yearly);

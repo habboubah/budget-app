@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { chromium } from 'playwright';
+import encodeQR from 'qr';
 import { build, preview } from 'vite';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -36,6 +37,13 @@ const ALLOWED_URLS = [
     'Optionen › Spartopf bewerten in the Android app (src/links.ts): handed to Google Play when tapped, never fetched'],
   [/^https:\/\/habboubah\.github\.io\/privacy-policy\/spartopf\/(de\/)?$/,
     'Optionen › Datenschutz (src/links.ts): opened in Safari when tapped, never fetched'],
+  // Only in pdf.js's own chunks (pdfjs-dist, legacy build): the third entry limits a rule to those files.
+  [/^http:\/\/(www\.xfa\.org\/schema|ns\.adobe\.com|www\.w3\.org)\//,
+    'pdf.js: XML namespaces it compares against while reading a PDF — never fetched', /assets[\\/]pdf[.-]/],
+  [/^https?:\/\/(www\.apache\.org\/licenses\/|github\.com\/zloirock\/core-js|mozilla\.github\.io\/pdf\.js|github\.com\/mozilla\/pdf\.js)/,
+    'pdf.js: licence and banner comments', /assets[\\/]pdf[.-]/],
+  [/^https?:\/\/(a|x|foo\.bar|a@b|example\.com|тест|\$(\{\w+\})?)([/#?].*)?$/,
+    "pdf.js: core-js's URL feature tests ('https://a', 'https://тест') and a URL template in the legacy build — parsed, never fetched; the PDF step below proves it", /assets[\\/]pdf[.-]/],
 ];
 
 const failures = [];
@@ -55,7 +63,7 @@ for (const file of walk(dist)) {
   if (!/\.(js|mjs|html|css|json|webmanifest|svg)$/.test(file)) continue;
   const text = fs.readFileSync(file, 'utf8');
   for (const [url] of text.matchAll(/https?:\/\/[^\s"'`)<>\\]+/g)) {
-    if (ALLOWED_URLS.some(([re]) => re.test(url))) continue;
+    if (ALLOWED_URLS.some(([re, , files]) => re.test(url) && (!files || files.test(file)))) continue;
     unknown.set(url, path.relative(root, file));
   }
 }
@@ -108,6 +116,26 @@ try {
     await page.waitForTimeout(300);
   });
   await step('every tab', async () => { for (const i of [1, 2, 3, 0]) await tab(i); });
+  await step('a statement PDF read on the device (pdf.js)', async () => {
+    // A statement printed here from made-up lines — never a real one.
+    const sheet = await ctx.newPage();
+    await sheet.setContent('<p>Kontoauszug vom 01.10.2026 bis 31.10.2026</p><p>02.10.2026 Testmarkt 23,45-</p><p>03.10.2026 Beispiel AG 100,00+</p>');
+    const pdf = await sheet.pdf({ format: 'A4' });
+    await sheet.close();
+    await page.locator('input[accept*="pdf"]').setInputFiles({ name: 'auszug.pdf', mimeType: 'application/pdf', buffer: pdf });
+    await page.waitForSelector('[role="dialog"] button[type="submit"], [role="dialog"] button.hero', { timeout: 30000 });
+    for (let i = 0; i < 10 && await page.locator('[role="dialog"]').count(); i++) {
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(300);
+    }
+  });
+  await step('an invoice QR code read on the device', async () => {
+    const gif = encodeQR(['BCD', '002', '1', 'SCT', '', 'Testwerke', 'DE89370400440532013000', 'EUR12.34', '', '', 'Rechnung 1'].join('\n'), 'gif', { scale: 8 });
+    await page.locator('input[data-scan="invoice"]').setInputFiles({ name: 'rechnung.gif', mimeType: 'image/gif', buffer: Buffer.from(gif) });
+    await page.waitForSelector('[role="dialog"]', { timeout: 15000 });
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.querySelector('[role="dialog"]'), null, { timeout: 10000 });
+  });
   await step('a bank CSV imported', async () => {
     const header = '"Auftragskonto";"Buchungstag";"Valutadatum";"Buchungstext";"Verwendungszweck";"Glaeubiger ID";"Mandatsreferenz";"Kundenreferenz (End-to-End)";"Sammlerreferenz";"Lastschrift Ursprungsbetrag";"Auslagenersatz Ruecklastschrift";"Beguenstigter/Zahlungspflichtiger";"Kontonummer/IBAN";"BIC (SWIFT-Code)";"Betrag";"Waehrung";"Info";"Kategorie"';
     const d = new Date();
@@ -130,7 +158,7 @@ try {
       g.fillText('Bäckerei      -4,10 €', 40, 220);
       return c.toDataURL('image/png').split(',')[1];
     });
-    await page.locator('input[accept="image/*"]').setInputFiles({ name: 'screenshot.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
+    await page.locator('input[accept="image/*"]:not([data-scan])').setInputFiles({ name: 'screenshot.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
     // Reading takes a while in headless Chromium. Wait for the sheet's "reading…" panel to come and go:
     // the review sheet or a "nothing found" toast follows. (Any status counted before — and the CSV step's
     // toast is one — let the sheet be closed mid-read, and its review then opened over the next step.)

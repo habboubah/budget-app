@@ -1,5 +1,5 @@
 import { MonthKey } from '../types';
-import { addMonths, balanceFor, monthKeyOf } from '../logic';
+import { addMonths, balanceFor, comesBackIn, latestPeriodic, monthKeyOf } from '../logic';
 import { Book, finishedKeys, monthOf } from './book';
 import { mean, median, quantile } from './baseline';
 import { grundbedarf } from './health';
@@ -63,9 +63,12 @@ export function outlook(book: Book, today = new Date(), horizon = 12): Outlook |
   const start = balanceFor(book.balances, startKey).end;
 
   const sign = (categoryId: string) => (book.partOf(categoryId) === 'income' ? 1 : -1);
-  const monthly = new Map<string, { amount: number; categoryId: string }>();
-  for (const e of monthOf(book, latest).entries) if (e.repeat === 'monthly') monthly.set(e.seriesId, { amount: e.amount, categoryId: e.categoryId });
-  const monthlyNet = [...monthly.values()].reduce((s, x) => s + sign(x.categoryId) * x.amount, 0);
+  const monthly = new Map<string, { amount: number; categoryId: string; until?: MonthKey }>();
+  for (const e of monthOf(book, latest).entries) if (e.repeat === 'monthly') monthly.set(e.seriesId, { amount: e.amount, categoryId: e.categoryId, until: e.until });
+  // What runs every month, for a month ahead: a series that has ended by then (schema 24) no longer counts.
+  const monthlyNet = (key: MonthKey) => [...monthly.values()].reduce((s, x) => s + (x.until && key > x.until ? 0 : sign(x.categoryId) * x.amount), 0);
+  // The bills outside the monthly run, each from its newest entry: yearly, half-yearly, quarterly.
+  const periodic = latestPeriodic(book.data.entries);
 
   const nets = basis.map(k => {
     const m = monthOf(book, k);
@@ -89,9 +92,9 @@ export function outlook(book: Book, today = new Date(), horizon = 12): Outlook |
         if (e.repeat !== 'monthly') big.push({ name: e.name, categoryId: e.categoryId, amount: e.amount, income: sign(e.categoryId) > 0, kind: e.repeat === 'yearly' ? 'yearly' : 'planned' });
       }
     } else {
-      fixed = monthlyNet;
-      for (const e of monthOf(book, addMonths(key, -12)).entries) {
-        if (e.repeat !== 'yearly') continue;
+      fixed = monthlyNet(key);
+      for (const e of periodic) {
+        if (!comesBackIn(e, key)) continue;
         fixed += sign(e.categoryId) * e.amount;
         big.push({ name: e.name, categoryId: e.categoryId, amount: e.amount, income: sign(e.categoryId) > 0, kind: 'yearly' });
       }

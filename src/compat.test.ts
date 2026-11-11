@@ -223,3 +223,53 @@ describe('a backup from schema 9 (budgets)', () => {
     expect([nov.now, nov.end]).toEqual([474030, 794030]);
   });
 });
+
+describe('version 24 (repeat intervals and an end)', () => {
+  it('keeps a quarterly bill and an instalment with its last month', () => {
+    const { data } = stored('storage-v24.json');
+    expect(data.entries.find(e => e.id === 'x1')).toMatchObject({ repeat: 'yearly', every: 3 });
+    expect(data.entries.find(e => e.id === 'x2')).toMatchObject({ repeat: 'monthly', until: '2027-01' });
+    expect(total(data)).toBe(total(stored('storage-v22.json').data) + 5508 + 5000);
+  });
+});
+
+describe('version 25 (yearly budgets and rollover)', () => {
+  it('keeps a budget for the year and one whose rest moves on', () => {
+    const { data } = stored('storage-v25.json');
+    expect(data.categories.find(c => c.id === 'fixed')).toMatchObject({ limit: 60000, limitPer: 'year' });
+    expect(data.categories.find(c => c.id === 'groceries')).toMatchObject({ limit: 30000, rollover: true, rolloverFrom: '2026-10' });
+    expect(balances(data)).toEqual(balances(stored('storage-v24.json').data));
+  });
+});
+
+describe('version 26 (refunds)', () => {
+  it('keeps a refund negative, so the account ends 19,99 € higher', () => {
+    const { data } = stored('storage-v26.json');
+    expect(data.entries.find(e => e.id === 'x3')).toMatchObject({ amount: -1999, refund: true });
+    const now = (d: AppData) => computeBalances(d).at(-1)!.now;
+    expect(now(data)).toBe(now(stored('storage-v25.json').data) + 1999);
+  });
+});
+
+describe('version 27 (warranty and return dates)', () => {
+  it('keeps what a receipt is kept for', () => {
+    const { data } = stored('storage-v27.json');
+    expect(data.entries.find(e => e.id === 'x4')).toMatchObject({ returnUntil: '2026-11-26', warrantyUntil: '2028-11-12' });
+  });
+});
+
+describe('version 28 (trips and projects)', () => {
+  it('keeps a trip with its budget, dates and rate, and the entry tagged for it', () => {
+    const { data } = stored('storage-v28.json');
+    expect(data.projects).toEqual([{ id: 'trip', name: 'Urlaub Türkei', emoji: '🏖️', tag: 'urlaub-türkei', budget: 200000, from: '2026-11-09', to: '2026-11-18', currency: 'TRY', rate: 38.5, createdAt: 1793000000200 }]);
+    expect(data.entries.find(e => e.id === 'x5')?.tags).toEqual(['urlaub-türkei']);
+    expect(stored('storage-v27.json').data.projects).toBeUndefined();
+  });
+});
+
+describe('version 29 (the tax mark)', () => {
+  it('keeps an expense marked for the tax return', () => {
+    const { data } = stored('storage-v29.json');
+    expect(data.entries.find(e => e.id === 'x6')).toMatchObject({ tax: 'craftsman', amount: 8950 });
+  });
+});

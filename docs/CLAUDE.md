@@ -144,6 +144,12 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     Jahresrückblick, `suggestBudgets`). Nothing there builds a sentence:
     `src/insightText.ts` turns an Insight into words (tested in every
     language). Every function takes `today`.
+  - **What-if** (`whatif.ts`, `WhatIfSheet`, the button under the Ausblick):
+    `whatIf(outlook, plan)` lays a one-off purchase or a monthly cost over the
+    Ausblick's middle line (lowest point, end, verdict against one month of
+    Grundbedarf), `extraPayment(data, debt, extra)` reruns a debt's schedule
+    with more a month. Estimates only ("≈"), nothing stored; the sheet's
+    *vormerken* opens the entry sheet with the plan as an open entry.
   - **`StatsView`**: the year card (15 Dec – 31 Jan, ≥ 6 months),
     *Das fällt auf* (`HintRows.tsx`; "⋯" → *Wie berechnet?* / *Ausblenden*,
     undoable), then *Verlauf* with 3 / 6 / 9 / 12 / Alle ("3 M", read out as
@@ -233,7 +239,22 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `src/demo.ts`); **schema 20** accounts and transfers (plan 30, below);
   **schema 21** `AppData.debts` + `Entry.debtId` (plan 31, below);
   **schema 22** `Entry.files` (plan 27, below);
-  **schema 23** `AppData.monthStart` (plan 32, below) — all
+  **schema 23** `AppData.monthStart` (plan 32, below);
+  **schema 24** `Entry.every` and `Entry.until` (below);
+  **schema 25** `Category.limitPer`, `rollover`, `rolloverFrom` (below);
+  **schema 26** `Entry.refund` (below);
+  **schema 27** `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is
+  kept for: two ISO days, set in the entry sheet once a receipt is attached,
+  not carried over; `returnSource` and `warrantySource` in reminders.ts
+  remind 3 and 30 days ahead);
+  **schema 28** `AppData.projects` (below);
+  **schema 29** `Entry.tax` (a `TaxKind`; `taxYear` / `taxYears` in
+  `insights/tax.ts` list what is marked *and paid* by kind, in the year of
+  the entry's date; `TaxView` under *Optionen › Haushaltsbuch*, whose switch
+  — view preference `spartopf-tax-marks`, or any marked entry — puts the
+  *Steuer* pill into the entry sheet; the PDF is `PrintSpec.kind: 'tax'`
+  through `PrintReport`. The app collects and says it gives no tax advice:
+  keep the kinds' names descriptive, never a paragraph of law) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
@@ -252,6 +273,29 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   balance put into it — `ensureMonth`) carries them too. A recurring entry
   added to, or made recurring in, an earlier month is copied into the months
   already started after it (`laterCopies`).
+- **Intervals and an end (schema 24).** There are still three repeats; a
+  `yearly` entry may carry `every` (2, 3 or 6 months, `INTERVALS`) and any
+  recurring entry `until` (its last month). **Never compare a repeat with
+  twelve months by hand:** `intervalOf(e)` is the distance in months,
+  `comesBackIn(e, key)` whether it returns in a later month (interval and end
+  both), `seriesEnded(e, key)` the end alone, `latestPeriodic(entries)` the
+  newest entry of every yearly-kind series — what the outlook and the month
+  report project from. A quarterly bill stays "yearly" for every insight (out
+  of trends, in the reserve); `commitments` and `contractItems` spread it by
+  its interval. Labels come from `src/repeatLabel.ts` (`repeatName`,
+  `perShort`, `REPEAT_CHOICES` for the entry sheet's menu). Weekly isn't
+  offered: a series has one entry a month everywhere.
+- **Budgets (schema 25, `src/budgets.ts`).** `Category.limit` is a plain
+  monthly budget; with `limitPer: 'year'` it is the calendar year's, with
+  `rollover` + `rolloverFrom` a monthly one whose rest (or overspend) since
+  that month moves on — never both, and neither without a limit
+  (`normalizeCategory`, `store.updateCategory`). `budgetStatus` answers for
+  all three: `limit` is what the bar is measured against (the month's budget
+  with what was carried, or the year's), `base` the amount as set, `period`,
+  `carried`. **Read a budget through `budgetStatus`, and a per-month figure
+  through `monthlyLimit(c)`** (a twelfth of a year's) — never `c.limit` by
+  itself. Words: `src/budgetLabel.ts`. Set in `BudgetSheet` (*Pro Monat / Pro
+  Jahr*, the rollover switch); the category sheet edits the amount only.
 - **Entry order:** `Entry.order` is set once the user drags entries in a
   category (`moveEntry()` renumbers the source and target category of that
   month); `sortEntries()` puts ordered entries first, the rest by due day, then
@@ -346,6 +390,36 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (a Vite plugin runs it for dev and every build; generated, gitignored, not
   precached by the PWA). Never commit a real bank export or screenshot.
   iOS needs `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription`.
+- **Statement PDFs (`src/pdfText.ts`, `src/statementPdf.ts`).** "⋯" →
+  *Kontoauszug importieren (PDF)*. `readPdfLines` reads the text and each
+  piece's place with Mozilla's **`pdfjs-dist`** (6.5.438, pinned; Apache-2.0;
+  the `legacy/build`, so iOS 15 can run it; text only — no rendering, no
+  fonts, no wasm, no fetching), a chunk of its own plus its worker, loaded
+  on the first PDF. `linesFromItems` (pure) groups pieces into lines by
+  baseline. `parseStatementLines` (pure, tested with made-up lines) finds
+  the transactions: a leading date, the last two-decimal figure as the
+  amount — on the date's line, or the line above or below when a table's
+  cells don't line up — in or out from a sign or S / H, else from the Soll /
+  Haben column the amount ends in, else from the words; details under it
+  give the payee when the first line is only the booking type. The result
+  takes the CSV's path (`planStatement`, the review sheet), so nothing is
+  saved unseen. **No look-behind in regular expressions anywhere in the main
+  bundle** — iOS 15 can't parse them. `privacy-check.mjs` allows pdf.js's
+  URL-looking strings in its own chunks only, and reads a generated PDF and
+  a generated QR code to prove nothing is fetched. Not yet tried on real
+  bank statements; never commit one.
+- **Invoice QR codes (`src/girocode.ts`, `src/qrScan.ts`).** The month's "⋯"
+  → *Rechnung scannen*: `readQrCode(file)` draws the picture onto a canvas at
+  up to three sizes and hands the pixels to the **`qr`** package's
+  `decodeQR` (0.7.2, pinned; MIT / Apache-2.0, no dependencies, pure
+  JavaScript, one maintainer — paulmillr, of the noble-* libraries —
+  released September 2026; chosen over jsQR, last released in 2021, and over
+  a wasm build of ZXing; `BarcodeDetector` isn't in WKWebView). It is its own
+  chunk, loaded on the first scan. `parseGiroCode` (pure, tested) reads the
+  EPC text — BCD / 001|002 / SCT, payee, IBAN, `EUR12.34`, reference — and
+  `giroCodeEntry` gives the entry sheet's preset: open, the payee cleaned by
+  `cleanPayee`, the reference and IBAN as the note. An amount in another
+  currency than the book's is left out. Never commit a real invoice or code.
 - **Accounts and transfers (plan 30).** A book has its main account (id
   `main`, `MAIN_ACCOUNT`) and nothing else until the user adds cash, a savings
   account or another under *Optionen › Konten*; `AppData.accounts` (schema 20)
@@ -470,6 +544,21 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   change is undone as a whole (`store.changeStart` returns the book before).
   The month title's subline shows the dates while the start isn't the 1st.
   Siri's `amounts.json` carries `until`, the period's last day.
+- **Trips and projects (schema 28, `src/insights/projects.ts`).**
+  `AppData.projects`: `Project { name, emoji, tag, budget?, from?, to?,
+  currency? + rate?, closed? }`. A project owns nothing: its entries are the
+  ones carrying its `tag` (`projectTag(name)` makes it; fixed once created),
+  so `projectStatus` sums expense entries with that tag across every month
+  and account — refunds come off, income and transfers don't count — against
+  the budget, with the days and a per-day figure while it runs
+  (`isActiveProject`: not closed and inside its dates, or dateless). The
+  entry sheet gets a pill per active project (it toggles the tag; one with
+  both dates starts on for a new entry) and, under a project with a
+  currency, takes a **new** entry's amount in that currency:
+  `fromProjectCurrency(typed, project)` is what is saved, the typed amount
+  becomes the note. Rates are typed, never fetched. `ProjectsView` (from
+  *Optionen › Haushaltsbuch*, the way in), `ProjectSheet`, and Planen's
+  `ProjectsCard` once there is one. Deleting a project keeps the tags.
 - **Debts and loans (plan 31, `src/insights/debts.ts`, pure and tested).**
   `Debt { name, direction: 'owe' | 'owed', principal, start, rate?, payment?,
   seriesId? }` in `AppData.debts` (schema 21). What is paid back comes from the
@@ -488,6 +577,19 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (undoable).
 - **Money is integer cents** everywhere (`Entry.amount`). Convert only at the
   edges: `parseAmount()` for input, `formatMoney()` for display.
+- **Refunds (schema 26).** `Entry.refund` marks money back in an expense
+  category; its `amount` is then **negative** — the one case — so every sum
+  over a category, a month or a budget goes down by it without knowing about
+  refunds, and the account goes up. Hence: sum amounts as they are, never
+  `Math.abs` them in a total; where one entry's amount is *shown*, a refund
+  reads "+12,50 €" in `text-pos` with *erwartet / erhalten* (`CategorySection`,
+  `DueSoonRail`); the entry sheet types it positive and negates on save.
+  `normalizeEntry` keeps a minus sign only with the flag, and `normalizeState`
+  turns a refund in an income category into plain income. Bank import: money
+  in from a payee known under an expense category stays there and
+  `applyStatement(…, categories)` books it as a refund; matching compares
+  `Math.abs(amount)` with income-or-refund. Refunds are left out of name
+  suggestions' "last amount", favourites and splits.
 - **Currency (plan 07, `src/currency.ts`).** `AppData.currency` (ISO 4217,
   schema 11, optional, unset = EUR, in backups). Only two-minor-digit currencies
   are offered (`CURRENCIES`). `logic.ts` holds a module-level active currency
@@ -686,6 +788,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     `src/reminders.ts` plans (pure, tested), `src/notify.ts` swaps what is
     pending for the plan. Every pending notification is a reminder: syncing
     cancels them all first. Texts carry no amounts unless the user turns them on.
+    The daily nudge (`nudgePlan`, `prefs.nudge` / `nudgeTime`) is planned
+    `NUDGE_DAYS` ahead beside the sources and independent of `prefs.on`;
+    today's goes once an entry of the user's own (`seriesId === id`) was
+    made today. The in-app budget note is `budgetCrossing` (budgets.ts) +
+    `budgetNote` in App, behind the view preference `spartopf-budget-notes`.
   - **Face ID lock:** `@aparajita/capacitor-biometric-auth` (MIT), chosen over
     `@capgo/capacitor-native-biometric` (MPL-2.0): its iOS side is one small
     file using only LocalAuthentication (`.deviceOwnerAuthentication` with

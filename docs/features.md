@@ -11,10 +11,18 @@ Everything the app can do. Build and release steps are in the
   a bar for how much of it is paid, its ticks. Amounts run to their new value
   when something is ticked.
 - **Bank transactions in, without typing.** Import the CSV file from your
-  online banking (Sparkasse and others), or take a photo / screenshot of the
-  banking app — the text is read on the phone itself. Every transaction is
+  online banking (Sparkasse and others), the statement itself as a **PDF**
+  ("⋯" → *Kontoauszug importieren (PDF)*, for banks that offer nothing else),
+  or take a photo / screenshot of the banking app — the text is read on the
+  phone itself. Every transaction is
   shown to check first: new ones, ones already entered, and open bills they
   pay (those get ticked off).
+- **Scan an invoice.** "⋯" → *Rechnung scannen (QR-Code)*: take a photo (or
+  pick a screenshot) of the payment QR code many invoices carry — the
+  GiroCode. The entry sheet opens with the payee, the amount and, as the
+  note, the reference and the IBAN: an open bill, ready to tick off once it
+  is paid from the banking app. Read on the phone itself; the picture isn't
+  kept, and nothing is saved before *Sichern*.
 - **One month per page.** ‹ › switch months, or tap the month's name to pick
   any month (each shown with what it ended on); "Zum aktuellen Monat" jumps
   back.
@@ -73,6 +81,12 @@ Everything the app can do. Build and release steps are in the
   the entry shows it full screen. *Betrag vom Beleg lesen* suggests the total
   and the shop, read on the device. Photos are saved without their location
   data; receipts are part of the backup and are erased with the book.
+  With a receipt attached, two more pills say what it is kept for:
+  *Rückgabe* (a first tap sets 14 days from the entry's date) and *Garantie*
+  (two years) — each a date that can be changed or cleared. The row shows
+  "Rückgabe bis 25. Nov." while there is still time, and with reminders on a
+  notification comes three days before the last day to send it back and a
+  month before the warranty ends.
 - **Android.** The same app for Android phones: fingerprint or face unlock,
   no screenshots while the lock is on, *Im Gerätebackup sichern* decides
   whether the book may go into Google's backup, reports through the print
@@ -108,6 +122,14 @@ Everything the app can do. Build and release steps are in the
   August 2028"), with the interest still to come; an extra payment, or money
   paid back, is linked from the entry sheet's *Zu einer Schuld* pill. Planen
   gets a *Schulden* card once there is one.
+- **Refunds.** Money that comes back — a return, a deposit, something the
+  employer reimburses — is entered where the purchase was: the *Erstattung*
+  pill in the entry sheet turns "−" into "+". It goes into the account and
+  lowers that category's spending (its total, its budget, the statistics);
+  it never counts as income, so the savings rate stays honest. A refund can
+  be *erwartet* until it arrives. In a bank import, money coming in from a
+  shop you buy from is offered as a refund in that shop's category, and an
+  awaited refund is ticked off instead of entered twice.
 - **Split a payment.** In an entry's editor, *Aufteilen* turns one receipt
   ("Lidl 48,20 €") into parts in different categories ("Lebensmittel 35,10 € ·
   Drogerie 13,10 €") that must add up to the original. The parts are normal
@@ -119,6 +141,25 @@ Everything the app can do. Build and release steps are in the
   *Optionen → Haushaltsbuch → Regeln*. CSV exports from other budget apps
   (Finanzguru, Outbank, YNAB, Cashew and more) are recognised by their columns,
   and an unfamiliar file is mapped by its best guess.
+- **Trips and projects.** *Optionen › Reisen und Projekte*: a holiday, a
+  move, the baby's room — a name (it becomes the tag), a budget in all, and
+  optionally its first and last day. Everything with that tag counts towards
+  it, whatever the category or month: "640 € von 2.000 € · 9.–18. Nov. · ≈
+  170 € pro Tag". While it runs, the entry sheet offers it as a pill — one
+  tap files the entry under it; a trip with both dates is preselected for
+  new entries during those days. For a trip abroad, give it the local
+  currency and a rate you type ("1 € = 38,5 TRY"): amounts are then typed
+  in that currency and saved in yours, with what was typed kept as the
+  note. No rate is ever fetched. Planen shows a card once there is one;
+  finished ones can be closed, and deleting one leaves its entries' tags.
+- **Tax list.** *Optionen › Steuerliste*: switch on *Im Eintragsblatt
+  anbieten*, and an expense gets a *Steuer* pill — Handwerker, haushaltsnahe
+  Dienste, Kinderbetreuung, Spenden, Beruf und Arbeitsmittel, Gesundheit und
+  Pflege, Sonstiges. The screen lists what is marked and paid by kind and
+  year (a refund comes off, a recurring entry stays marked), with each kind's
+  sum and the year's, and *Bericht teilen* makes the PDF for the tax return
+  or the adviser. Spartopf only collects; it says so, and gives no tax
+  advice.
 - **Tags.** Give an entry free tags from the sheet's "+" menu (*# Tag*). Search
   finds `#urlaub`, and once any tag exists *Statistik → Wofür das Geld geht*
   gains a **Tags** view ("Urlaub · 1.840 € · 23 Einträge"); the CSV export has a
@@ -138,7 +179,14 @@ Everything the app can do. Build and release steps are in the
   Each category has **keywords** — the built-ins come with the usual German
   shops, brands and words in German, English and Arabic — to see, change,
   delete or add in its sheet, with ideas from what you often enter there.
-- **Carry-over.** Mark entries **monatlich** or **jährlich**. Starting the next
+- **Carry-over.** Mark entries **monatlich**, **alle 2 Monate**,
+  **vierteljährlich**, **halbjährlich** or **jährlich** — the Rundfunkbeitrag
+  every quarter, an insurance twice a year. A recurring entry can also **end**
+  (*Ohne Ende* → "bis März 2027"): an instalment plan or a contract that runs
+  out is carried up to that month and no further, and the *Ausblick* stops
+  counting it from then. Quarterly and half-yearly bills count like yearly
+  ones everywhere — in the reserve, the contracts ("viertelj.") and the
+  outlook — spread over the year by how often they come. Starting the next
   month shows exactly which ones come along and copies them in as *open*. The
   balance is carried over automatically — set it by hand for the first month or
   when the real account has drifted ("⋯" → Kontostand am Monatsanfang). Open
@@ -150,7 +198,11 @@ Everything the app can do. Build and release steps are in the
 - **Budgets.** Give a spending category a monthly budget (with a suggestion
   from what it cost on average): its card shows paid and open against it, a
   tick for today, "noch 212,88 €" or "50,04 € drüber". *Diesen Monat übrig*
-  says what is left per day.
+  says what is left per day. A budget can also run **per year** (*Pro Jahr*:
+  clothes, holidays, presents — the calendar year's months count together,
+  "Jahresbudget 600 € · noch 212 €"), or stay monthly and **take its rest
+  along** (*Rest in den nächsten Monat mitnehmen*: what is left comes on top
+  next month, what went over comes off — "inkl. 45 € Übertrag").
 - **Demnächst fällig** on the running month: what is due next, overdue first,
   ticked off right there; *Alle* lists it day by day, with what next month
   brings along.
@@ -158,6 +210,14 @@ Everything the app can do. Build and release steps are in the
 - **Reminders and a lock** (iPhone app): a notification before an open bill is
   due and a week before a contract's last day to cancel — without amounts
   unless you want them; Face ID (or the passcode) when opening Spartopf.
+  *Ans Eintragen erinnern* is a switch of its own: once a day at a time you
+  choose ("Heute schon etwas ausgegeben?"), only on days without an entry of
+  your own, never with an amount — and it falls silent by itself when the app
+  isn't opened for five days.
+- **A word when a budget runs low.** The entry that takes a category to 80 %
+  of its budget, or over it, says so in its confirmation ("Restaurants: 83 %
+  des Budgets verbraucht") — once per mark, no amounts. Switch it off in
+  *Kategorien und Budgets*.
 - **PDF report:** *Bericht teilen* under a month's report or the year review
   makes a PDF — totals, budgets, categories, open items, and every entry if
   you like — to share or print, with amounts even when they're hidden in the
@@ -199,7 +259,14 @@ Everything the app can do. Build and release steps are in the
   everyday spending so far against a usual month at the same day, where it
   would end, and where it goes. The month's **budgets**. **Ausblick**: the
   balance at the end of each of the next twelve months, with yearly bills in
-  their month and a range from calm to pricey months. **Rücklage für jährliche
+  their month and a range from calm to pricey months; under it, **Kann ich
+  mir das leisten?** tries a purchase in a month or a new monthly cost against
+  that outlook — "Das passt", "Es wird knapp: Februar 2027 endet mit ≈ 1.240 €"
+  or "Das reicht nicht", with the lowest point and the year's end beside what
+  they would be without it — and, with a loan, what paying more every month
+  does ("Schuldenfrei März 2028 statt August 2028, ≈ 310 € weniger Zinsen").
+  Nothing is saved; *Als offenen Eintrag vormerken* puts the plan into its
+  month as an open entry. **Rücklage für jährliche
   Kosten** (when the book has a yearly bill): how much to set aside a month,
   the next bills coming up, and whether the account covers them. **Spartöpfe**:
   savings goals with a progress ring and "noch 97 € im Monat bis Juni"; a
