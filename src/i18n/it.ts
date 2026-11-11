@@ -1190,6 +1190,26 @@ const it: Strings = {
   projectClose: 'Concluso',
   projectClosed: 'Conclusi',
   projectEntries: 'Voci: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Lista fiscale',
+  taxRowSub: 'Segna le spese per la dichiarazione dei redditi e ottieni l’anno in PDF',
+  taxIntro: 'Ciò che segni per la dichiarazione dei redditi compare qui per tipo e anno – da ricopiare o in PDF.',
+  taxSwitch: 'Proponi nella scheda della voce',
+  taxSwitchHint: 'Una spesa riceve allora l’opzione “Tasse”: artigiani, cura dei figli, donazione … Conta ciò che è pagato – nell’anno del pagamento.',
+  taxYearLabel: 'Anno',
+  taxEmpty: '{year}: ancora niente segnato',
+  taxEmptyBody: 'Attiva il contrassegno qui sopra e scegli “Tasse” su una spesa – la fattura dell’artigiano, l’asilo, una donazione.',
+  taxTotal: 'Totale {year}',
+  taxHint: 'Spartopf raccoglie soltanto ciò che segni. Se e quanto sia detraibile lo stabilisce la dichiarazione dei redditi – non è una consulenza fiscale.',
+  taxPill: 'Tasse',
+  taxNone: 'Non segnata',
+  taxCraftsman: 'Artigiani e lavori',
+  taxHousehold: 'Servizi domestici',
+  taxChildcare: 'Cura dei figli',
+  taxDonation: 'Donazioni',
+  taxWork: 'Lavoro e strumenti',
+  taxHealth: 'Salute e assistenza',
+  taxOther: 'Altro per le tasse',
 };
 
 export default it;

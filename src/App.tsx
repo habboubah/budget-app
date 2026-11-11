@@ -12,7 +12,7 @@ import {
   shouldAskForReview, transferPair, uid,
   changeMonthStart,
 } from './logic';
-import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, isActiveProject, monthReview, outlook, paymentSeries, projectsOverview, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
+import { Insight, buildBook, debtPlan, debtsOverview, goalProgress, highlights, isActiveProject, monthReview, outlook, paymentSeries, projectsOverview, taxYear, taxYears, periodSeries, reviewCardMonth, reviewSeason, upToNow } from './insights';
 import { MonthView } from './components/MonthView';
 import { StatsRange } from './components/StatsView';
 import { CategoryView } from './components/CategoryView';
@@ -47,6 +47,7 @@ import { InsightsView } from './components/InsightsView';
 import { WhatIfSheet } from './components/WhatIfSheet';
 import { ProjectsCard, ProjectsView } from './components/ProjectsView';
 import { ProjectSheet, ProjectSheetMode } from './components/ProjectSheet';
+import { TaxView } from './components/TaxView';
 import { SettingsView } from './components/SettingsView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
@@ -96,7 +97,7 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -104,7 +105,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -340,6 +341,12 @@ export default function App() {
   const projects = useMemo(() => projectsOverview(allView), [allView]);
   const activeProjects = useMemo(() => store.projects.filter(p => isActiveProject(p)), [store.projects]);
   const [projectSheet, setProjectSheet] = useState<ProjectSheetMode>(null);
+  // The tax list (schema 29): the years with something marked, and the one shown.
+  const taxYearList = useMemo(() => taxYears(allView), [allView]);
+  const [taxYearShown, setTaxYearShown] = useState('');
+  const taxYearKey = taxYearList.includes(taxYearShown) ? taxYearShown : taxYearList[0] ?? String(new Date().getFullYear());
+  const taxList = useMemo(() => taxYear(allView, taxYearKey), [allView, taxYearKey]);
+  const anyTaxMark = useMemo(() => data.entries.some(e => e.tax), [data.entries]);
   const editProject = (id: string) => {
     const status = projects.find(s => s.project.id === id);
     if (status) setProjectSheet({ kind: 'edit', status });
@@ -450,6 +457,7 @@ export default function App() {
     if (!entry.debtId) delete entry.debtId;
     if (!entry.files?.length) delete entry.files;
     if (!entry.refund) delete entry.refund;
+    if (!entry.tax) delete entry.tax;
     if (!entry.warrantyUntil) delete entry.warrantyUntil;
     if (!entry.returnUntil) delete entry.returnUntil;
     if (!entry.every) delete entry.every;
@@ -1159,6 +1167,9 @@ export default function App() {
             }}
             onBack={back}
           />
+        ) : id === 'tax' ? (
+          <TaxView list={taxList} years={taxYearList} marks={store.taxMarks} t={t} onBack={back} onYear={setTaxYearShown} onMarks={store.setTaxMarks}
+            onPdf={() => void makeReport({ kind: 'tax', month: `${taxYearKey}-01`, year: taxYearKey, entries: false })} />
         ) : id === 'projects' ? (
           <ProjectsView overview={projects} t={t} onBack={back} onNew={() => setProjectSheet({ kind: 'new' })} onEdit={editProject} />
         ) : id === 'debts' ? (
@@ -1197,6 +1208,7 @@ export default function App() {
             debtCount={store.debts.length}
             onProjects={() => push('projects')}
             projectCount={store.projects.length}
+            onTax={() => push('tax')}
             onDebts={() => push('debts')}
             monthStart={store.monthStart}
             onMonthStart={() => setMonthStartOpen(true)}
@@ -1428,6 +1440,7 @@ export default function App() {
         defaultAccount={target}
         debts={store.debts.length ? store.debts.map(d => ({ id: d.id, name: d.name })) : undefined}
         projects={activeProjects}
+        taxMarks={store.taxMarks || anyTaxMark}
         onNotice={text => show(text)}
       />
 

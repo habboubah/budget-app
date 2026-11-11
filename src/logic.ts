@@ -1,5 +1,5 @@
 import {
-  ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, INTERVALS, Interval, MonthKey, MonthRecord, Names, Project, REPEATS, Repeat, Rule,
+  ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, INTERVALS, Interval, MonthKey, MonthRecord, Names, Project, REPEATS, Repeat, Rule, TAX_KINDS, TaxKind,
 } from './types';
 import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
@@ -29,8 +29,9 @@ import { isSupportedCurrency } from './currency';
  *      (a monthly budget whose rest moves on) — optional, unset = a plain monthly budget.
  *  26: `Entry.refund` (money back in an expense category; its amount is negative) — optional.
  *  27: `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is kept for) — optional.
- *  28: trips and projects (`AppData.projects`) — optional, unset = none. */
-export const SCHEMA_VERSION = 28;
+ *  28: trips and projects (`AppData.projects`) — optional, unset = none.
+ *  29: `Entry.tax` (an expense marked for the tax return) — optional. */
+export const SCHEMA_VERSION = 29;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1187,6 +1188,8 @@ export function carryOver(sources: Entry[], key: MonthKey, now: number, newId: (
     if (e.repeat === 'yearly' && e.every) copy.every = e.every;
     if (e.until) copy.until = e.until;
     if (e.refund) copy.refund = true;
+    // A recurring cost stays marked for the tax return (the Kita, every month).
+    if (e.tax) copy.tax = e.tax;
     if (e.dueDay !== undefined) copy.dueDay = e.dueDay;
     // The same day of the new month (rent on the 1st stays on the 1st).
     if (e.date) copy.date = dayInMonth(key, Number(e.date.slice(8, 10)));
@@ -1649,6 +1652,7 @@ function normalizeEntry(v: unknown, start = 1): Entry | null {
   if (debtId) e.debtId = debtId.slice(0, 80);
   const files = normalizeAttachments(v.files);
   if (files.length) e.files = files;
+  if ((TAX_KINDS as readonly unknown[]).includes(v.tax)) e.tax = v.tax as TaxKind;
   if (isIsoDay(v.warrantyUntil)) e.warrantyUntil = v.warrantyUntil;
   if (isIsoDay(v.returnUntil)) e.returnUntil = v.returnUntil;
   const tags = normalizeTags(v.tags);

@@ -1191,6 +1191,26 @@ const fr: Strings = {
   projectClose: 'Terminé',
   projectClosed: 'Terminés',
   projectEntries: 'Entrées : {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Liste fiscale',
+  taxRowSub: 'Marquez les dépenses pour la déclaration d’impôts et obtenez l’année en PDF',
+  taxIntro: 'Ce que vous marquez pour la déclaration d’impôts figure ici par type et par année – à recopier ou en PDF.',
+  taxSwitch: 'Proposer dans la fiche de saisie',
+  taxSwitchHint: 'Une dépense reçoit alors l’option « Impôts » : artisans, garde d’enfants, don … Seul ce qui est payé compte – l’année du paiement.',
+  taxYearLabel: 'Année',
+  taxEmpty: '{year} : rien de marqué pour l’instant',
+  taxEmptyBody: 'Activez le marquage ci-dessus et choisissez « Impôts » sur une dépense – la facture de l’artisan, la crèche, un don.',
+  taxTotal: 'Total {year}',
+  taxHint: 'Spartopf ne fait que rassembler ce que vous marquez. C’est la déclaration d’impôts qui dit si, et combien, c’est déductible – ceci n’est pas un conseil fiscal.',
+  taxPill: 'Impôts',
+  taxNone: 'Non marqué',
+  taxCraftsman: 'Artisans et travaux',
+  taxHousehold: 'Services à domicile',
+  taxChildcare: 'Garde d’enfants',
+  taxDonation: 'Dons',
+  taxWork: 'Travail et matériel',
+  taxHealth: 'Santé et soins',
+  taxOther: 'Autres pour les impôts',
 };
 
 export default fr;

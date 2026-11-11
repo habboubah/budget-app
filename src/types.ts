@@ -26,6 +26,13 @@ export type Repeat = (typeof REPEATS)[number];
  * counted in the reserve — only its distance in months differs (`Entry.every`,
  * unset = 12; read it with `intervalOf`).
  */
+/**
+ * What an expense may matter for at tax time (schema 29) — the user's own
+ * mark, for the year's list; the app never judges whether it is deductible.
+ */
+export const TAX_KINDS = ['craftsman', 'household', 'childcare', 'donation', 'work', 'health', 'other'] as const;
+export type TaxKind = (typeof TAX_KINDS)[number];
+
 export const INTERVALS = [2, 3, 6] as const;
 export type Interval = (typeof INTERVALS)[number];
 
@@ -131,6 +138,8 @@ export interface Entry {
   debtId?: string;
   /** Receipts and documents attached to it (schema 22, plan 27): what each is; the file itself is kept by storage.ts under its id. */
   files?: Attachment[];
+  /** Marked for the tax return (schema 29): which kind of cost it is. Carried over with a recurring entry. */
+  tax?: TaxKind;
   /** What a receipt is kept for (schema 27): the last day of the warranty, and the last day to send it back — YYYY-MM-DD. Not carried over. */
   warrantyUntil?: string;
   returnUntil?: string;
@@ -356,6 +365,8 @@ export interface EntryDraft {
   debtId?: string;
   /** Receipts and documents (plan 27). */
   files?: Attachment[];
+  /** Marked for the tax return (schema 29). */
+  tax?: TaxKind;
   /** The warranty's last day and the last day to return it (schema 27). */
   warrantyUntil?: string;
   returnUntil?: string;

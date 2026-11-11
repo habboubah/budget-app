@@ -1193,6 +1193,26 @@ const pl: Strings = {
   projectClose: 'Zakończony',
   projectClosed: 'Zakończone',
   projectEntries: 'Wpisy: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Lista podatkowa',
+  taxRowSub: 'Oznacz wydatki do zeznania podatkowego i pobierz rok jako PDF',
+  taxIntro: 'To, co oznaczysz do zeznania podatkowego, znajdziesz tu według rodzaju i roku – do przepisania lub jako PDF.',
+  taxSwitch: 'Pokazuj w arkuszu wpisu',
+  taxSwitchHint: 'Wydatek dostaje wtedy przycisk „Podatek”: fachowcy, opieka nad dzieckiem, darowizna … Liczy się to, co zapłacone – w roku zapłaty.',
+  taxYearLabel: 'Rok',
+  taxEmpty: '{year}: jeszcze nic nie oznaczono',
+  taxEmptyBody: 'Włącz oznaczanie powyżej i wybierz „Podatek” przy wydatku – faktura fachowca, żłobek, darowizna.',
+  taxTotal: 'Suma {year}',
+  taxHint: 'Spartopf tylko zbiera to, co oznaczysz. O tym, czy i ile można odliczyć, decyduje zeznanie podatkowe – to nie jest doradztwo podatkowe.',
+  taxPill: 'Podatek',
+  taxNone: 'Nieoznaczone',
+  taxCraftsman: 'Fachowcy i remonty',
+  taxHousehold: 'Usługi domowe',
+  taxChildcare: 'Opieka nad dzieckiem',
+  taxDonation: 'Darowizny',
+  taxWork: 'Praca i narzędzia pracy',
+  taxHealth: 'Zdrowie i opieka',
+  taxOther: 'Inne do podatku',
 };
 
 export default pl;

@@ -1194,6 +1194,26 @@ const cs: Strings = {
   projectClose: 'Dokončeno',
   projectClosed: 'Dokončené',
   projectEntries: 'Položky: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Daňový seznam',
+  taxRowSub: 'Označ výdaje pro daňové přiznání a získej rok jako PDF',
+  taxIntro: 'Co označíš pro daňové přiznání, je tady podle druhu a roku – k opsání nebo jako PDF.',
+  taxSwitch: 'Nabízet v listu položky',
+  taxSwitchHint: 'Výdaj pak dostane volbu „Daně“: řemeslníci, péče o děti, dar … Počítá se zaplacené – v roce, kdy bylo zaplaceno.',
+  taxYearLabel: 'Rok',
+  taxEmpty: '{year}: zatím nic označeno',
+  taxEmptyBody: 'Zapni nahoře označování a u výdaje zvol „Daně“ – faktura řemeslníka, školka, dar.',
+  taxTotal: 'Součet {year}',
+  taxHint: 'Spartopf jen sbírá, co označíš. Zda a kolik lze odečíst, rozhoduje daňové přiznání – nejde o daňové poradenství.',
+  taxPill: 'Daně',
+  taxNone: 'Neoznačeno',
+  taxCraftsman: 'Řemeslníci',
+  taxHousehold: 'Služby pro domácnost',
+  taxChildcare: 'Péče o děti',
+  taxDonation: 'Dary',
+  taxWork: 'Práce a pracovní pomůcky',
+  taxHealth: 'Zdraví a péče',
+  taxOther: 'Ostatní pro daně',
 };
 
 export default cs;

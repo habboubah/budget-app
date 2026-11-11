@@ -152,6 +152,14 @@ Everything the app can do. Build and release steps are in the
   in that currency and saved in yours, with what was typed kept as the
   note. No rate is ever fetched. Planen shows a card once there is one;
   finished ones can be closed, and deleting one leaves its entries' tags.
+- **Tax list.** *Optionen › Steuerliste*: switch on *Im Eintragsblatt
+  anbieten*, and an expense gets a *Steuer* pill — Handwerker, haushaltsnahe
+  Dienste, Kinderbetreuung, Spenden, Beruf und Arbeitsmittel, Gesundheit und
+  Pflege, Sonstiges. The screen lists what is marked and paid by kind and
+  year (a refund comes off, a recurring entry stays marked), with each kind's
+  sum and the year's, and *Bericht teilen* makes the PDF for the tax return
+  or the adviser. Spartopf only collects; it says so, and gives no tax
+  advice.
 - **Tags.** Give an entry free tags from the sheet's "+" menu (*# Tag*). Search
   finds `#urlaub`, and once any tag exists *Statistik → Wofür das Geld geht*
   gains a **Tags** view ("Urlaub · 1.840 € · 23 Einträge"); the CSV export has a

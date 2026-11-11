@@ -1193,6 +1193,26 @@ const tr: Strings = {
   projectClose: 'Tamamlandı',
   projectClosed: 'Tamamlandı',
   projectEntries: 'Kayıt: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Vergi listesi',
+  taxRowSub: 'Giderleri vergi beyannamesi için işaretle, yılı PDF olarak al',
+  taxIntro: 'Vergi beyannamesi için işaretlediklerin burada tür ve yıla göre listelenir – bakıp yazmak ya da PDF olarak almak için.',
+  taxSwitch: 'Kayıt sayfasında göster',
+  taxSwitchHint: 'Bir gider o zaman “Vergi” seçeneğini alır: usta, çocuk bakımı, bağış … Ödenenler sayılır – ödendiği yılda.',
+  taxYearLabel: 'Yıl',
+  taxEmpty: '{year}: henüz işaretlenen yok',
+  taxEmptyBody: 'Yukarıdan işareti aç ve bir giderde “Vergi”yi seç – usta faturası, kreş, bir bağış.',
+  taxTotal: '{year} toplamı',
+  taxHint: 'Spartopf yalnızca işaretlediklerini toplar. Ne kadarının indirilebileceğine vergi beyannamesi karar verir – bu bir vergi danışmanlığı değildir.',
+  taxPill: 'Vergi',
+  taxNone: 'İşaretli değil',
+  taxCraftsman: 'Usta ve tamir işleri',
+  taxHousehold: 'Ev hizmetleri',
+  taxChildcare: 'Çocuk bakımı',
+  taxDonation: 'Bağışlar',
+  taxWork: 'İş ve iş araçları',
+  taxHealth: 'Sağlık ve bakım',
+  taxOther: 'Vergi için diğer',
 };
 
 export default tr;

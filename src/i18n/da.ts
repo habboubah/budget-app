@@ -1190,6 +1190,26 @@ const da: Strings = {
   projectClose: 'Afsluttet',
   projectClosed: 'Afsluttet',
   projectEntries: 'Poster: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Skatteliste',
+  taxRowSub: 'Markér udgifter til selvangivelsen, og få året som PDF',
+  taxIntro: 'Det, du markerer til selvangivelsen, står her efter type og år – til at skrive af eller som PDF.',
+  taxSwitch: 'Tilbyd i postarket',
+  taxSwitchHint: 'En udgift får så valget “Skat”: håndværkere, børnepasning, gave … Det, der er betalt, tæller – i det år, det blev betalt.',
+  taxYearLabel: 'År',
+  taxEmpty: '{year}: intet markeret endnu',
+  taxEmptyBody: 'Slå markeringen til ovenfor, og vælg “Skat” på en udgift – håndværkerregningen, daginstitutionen, en gave.',
+  taxTotal: 'Sum {year}',
+  taxHint: 'Spartopf samler kun det, du markerer. Om og hvor meget der kan trækkes fra, afgøres i selvangivelsen – dette er ikke skatterådgivning.',
+  taxPill: 'Skat',
+  taxNone: 'Ikke markeret',
+  taxCraftsman: 'Håndværkere',
+  taxHousehold: 'Service i hjemmet',
+  taxChildcare: 'Børnepasning',
+  taxDonation: 'Gaver og bidrag',
+  taxWork: 'Arbejde og arbejdsredskaber',
+  taxHealth: 'Sundhed og pleje',
+  taxOther: 'Andet til skatten',
 };
 
 export default da;

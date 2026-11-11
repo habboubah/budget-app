@@ -1190,6 +1190,26 @@ const es: Strings = {
   projectClose: 'Terminado',
   projectClosed: 'Terminados',
   projectEntries: 'Apuntes: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Lista fiscal',
+  taxRowSub: 'Marca gastos para la declaración de la renta y obtén el año en PDF',
+  taxIntro: 'Lo que marques para la declaración de la renta aparece aquí por tipo y año, para copiarlo o en PDF.',
+  taxSwitch: 'Ofrecer en la hoja del apunte',
+  taxSwitchHint: 'Un gasto recibe entonces la opción «Impuestos»: profesionales, cuidado de niños, donativo … Cuenta lo pagado, en el año en que se pagó.',
+  taxYearLabel: 'Año',
+  taxEmpty: '{year}: aún no hay nada marcado',
+  taxEmptyBody: 'Activa la marca arriba y elige «Impuestos» en un gasto: la factura del profesional, la guardería, un donativo.',
+  taxTotal: 'Total {year}',
+  taxHint: 'Spartopf solo reúne lo que marcas. Si es deducible, y cuánto, lo decide la declaración de la renta; esto no es asesoramiento fiscal.',
+  taxPill: 'Impuestos',
+  taxNone: 'Sin marcar',
+  taxCraftsman: 'Profesionales y reformas',
+  taxHousehold: 'Servicios del hogar',
+  taxChildcare: 'Cuidado de niños',
+  taxDonation: 'Donativos',
+  taxWork: 'Trabajo y material',
+  taxHealth: 'Salud y cuidados',
+  taxOther: 'Otros para impuestos',
 };
 
 export default es;

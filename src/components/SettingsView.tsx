@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Luggage, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins, CalendarRange, Zap } from 'lucide-react';
+import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Landmark, Languages, Lock, Luggage, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins, CalendarRange, Zap } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -38,6 +38,7 @@ interface Props {
   onDebts: () => void;
   onProjects: () => void;
   projectCount: number;
+  onTax: () => void;
   /** Pushes "Sichern und übertragen": backup, Excel, CSV. */
   onTransfer: () => void;
   /** The book holds test data (src/demo.ts): the row offers to remove it instead of adding it. */
@@ -275,6 +276,13 @@ export function SettingsView(p: Props) {
           leading={<IconTile icon={Luggage} hue="sand" />}
           trailing={<Next value={p.projectCount || undefined} />}
           onClick={p.onProjects}
+        />
+        <Row
+          label={t.taxTitle}
+          sub={t.taxRowSub}
+          leading={<IconTile icon={Landmark} hue="sand" />}
+          trailing={<Next />}
+          onClick={p.onTax}
         />
         <Row
           label={t.rulesRow}

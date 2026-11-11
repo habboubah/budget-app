@@ -1,7 +1,8 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, ShieldCheck, Star, Trash2, Undo2 } from 'lucide-react';
-import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, Interval, MonthKey, Project, Repeat } from '../types';
+import { CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Landmark, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, ShieldCheck, Star, Trash2, Undo2 } from 'lucide-react';
+import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, Interval, MonthKey, Project, Repeat, TAX_KINDS, TaxKind } from '../types';
+import { taxKindLabel } from './TaxView';
 import { fromProjectCurrency } from '../insights/projects';
 import { REPEAT_CHOICES, repeatName } from '../repeatLabel';
 import { shiftDay } from '../contracts';
@@ -58,6 +59,8 @@ interface Props {
   debts?: { id: string; name: string }[];
   /** The trips and projects running today (schema 28): a pill each puts the entry under one — and, for a trip abroad, takes the amount in its currency. */
   projects?: Project[];
+  /** Offer the tax mark (schema 29): switched on under Optionen › Steuerliste, or the book already has marked entries. */
+  taxMarks?: boolean;
   /** Says why a receipt couldn't be attached or read (plan 27). */
   onNotice?: (text: string) => void;
 }
@@ -88,7 +91,7 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * taps a category, and only with `autoCategory`; emptying the name goes back
  * to the category the sheet opened with.
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts, projects = [], onNotice }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts, projects = [], taxMarks = false, onNotice }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -99,6 +102,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [repeat, setRepeat] = useState<Repeat>('none');
   // A yearly entry's interval when it isn't twelve months, and a recurring entry's last month (schema 24).
   const [refund, setRefund] = useState(false);
+  // Marked for the tax return (schema 29), and the menu it is picked from.
+  const [tax, setTax] = useState<TaxKind | undefined>(undefined);
+  const [taxAt, setTaxAt] = useState<HTMLElement | null>(null);
   const [every, setEvery] = useState<Interval | undefined>(undefined);
   const [until, setUntil] = useState('');
   const [dueText, setDueText] = useState('');
@@ -190,6 +196,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setEvery(undefined);
     setUntil('');
     setRefund(false);
+    setTax(undefined);
     setDueText('');
     setDateText(defaultEntryDate(month));
     setNote('');
@@ -221,6 +228,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setEvery(e.repeat === 'yearly' ? e.every : undefined);
       setUntil(e.until ?? '');
       setRefund(!!e.refund);
+      setTax(e.tax);
       setDueText(e.dueDay ? String(e.dueDay) : '');
       setDateText(e.date ?? '');
       setNote(e.note ?? '');
@@ -368,6 +376,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       name: cleanText(name) || displayName(category.names, language),
       amount: isRefund ? -amount : amount,
       refund: isRefund || undefined,
+      tax: income ? undefined : tax,
       paid,
       repeat,
       // Always said, so an edit can take the interval or the end off again (schema 24).
@@ -774,6 +783,20 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               <span>{t.refund}</span>
             </button>
           )}
+          {/* For the tax return: which kind of cost this is. Only once the list is in use. */}
+          {!income && (taxMarks || !!tax) && (
+            <button
+              type="button"
+              aria-haspopup="menu"
+              aria-label={`${t.taxPill}: ${tax ? taxKindLabel(tax, t) : t.taxNone}`}
+              onMouseDown={e => e.preventDefault()}
+              onClick={e => { tapLight(); setTaxAt(e.currentTarget); }}
+              className={`${PILL} focus-visible:ring-focus ${tax ? '' : 'text-fg-mute'}`}
+            >
+              <Landmark className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+              <span aria-hidden="true" className="truncate">{tax ? taxKindLabel(tax, t) : t.taxPill}</span>
+            </button>
+          )}
           {/* A trip or project running today: one tap files the entry under it (its tag). */}
           {projects.map(p => {
             const on = tagSet.has(p.tag);
@@ -863,6 +886,15 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
         </div>
         {!dateValid && <p role="alert" className="text-caption text-neg px-1">{t.dateHint}</p>}
         {isRefund && <p className="text-caption text-fg-mute px-1 wrap-prose">{t.refundHint}</p>}
+        <Menu
+          anchor={taxAt}
+          label={t.taxPill}
+          groups={[[
+            { key: 'none', label: t.taxNone, icon: tax ? undefined : Check, onSelect: () => setTax(undefined) },
+            ...TAX_KINDS.map(k => ({ key: k, label: taxKindLabel(k, t), icon: k === tax ? Check : undefined, onSelect: () => setTax(k) })),
+          ]]}
+          onClose={() => setTaxAt(null)}
+        />
         <Menu
           anchor={repeatAt}
           label={t.repeat}

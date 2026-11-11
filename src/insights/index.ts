@@ -36,6 +36,7 @@ export * from './reserve';
 export * from './goals';
 export * from './debts';
 export * from './projects';
+export * from './tax';
 export * from './tags';
 export * from './health';
 export * from './highlights';

@@ -1190,6 +1190,26 @@ const nl: Strings = {
   projectClose: 'Afgerond',
   projectClosed: 'Afgerond',
   projectEntries: 'Posten: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Belastinglijst',
+  taxRowSub: 'Markeer uitgaven voor de belastingaangifte en krijg het jaar als pdf',
+  taxIntro: 'Wat je voor de belastingaangifte markeert, staat hier per soort en jaar – om over te nemen of als pdf.',
+  taxSwitch: 'Aanbieden in het invoerblad',
+  taxSwitchHint: 'Een uitgave krijgt dan de keuze ‘Belasting’: vaklieden, kinderopvang, gift … Wat betaald is telt – in het jaar van betaling.',
+  taxYearLabel: 'Jaar',
+  taxEmpty: '{year}: nog niets gemarkeerd',
+  taxEmptyBody: 'Zet het markeren hierboven aan en kies ‘Belasting’ bij een uitgave – de rekening van de vakman, de opvang, een gift.',
+  taxTotal: 'Totaal {year}',
+  taxHint: 'Spartopf verzamelt alleen wat je markeert. Of en hoeveel ervan aftrekbaar is, bepaalt de belastingaangifte – dit is geen belastingadvies.',
+  taxPill: 'Belasting',
+  taxNone: 'Niet gemarkeerd',
+  taxCraftsman: 'Vaklieden',
+  taxHousehold: 'Diensten aan huis',
+  taxChildcare: 'Kinderopvang',
+  taxDonation: 'Giften',
+  taxWork: 'Werk en werkmiddelen',
+  taxHealth: 'Gezondheid en zorg',
+  taxOther: 'Overig voor de belasting',
 };
 
 export default nl;

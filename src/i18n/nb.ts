@@ -1191,6 +1191,26 @@ const nb: Strings = {
   projectClose: 'Avsluttet',
   projectClosed: 'Avsluttet',
   projectEntries: 'Poster: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Skatteliste',
+  taxRowSub: 'Merk utgifter til skattemeldingen og få året som PDF',
+  taxIntro: 'Det du merker til skattemeldingen, står her etter type og år – til å skrive av eller som PDF.',
+  taxSwitch: 'Tilby i postarket',
+  taxSwitchHint: 'En utgift får da valget «Skatt»: håndverkere, barnepass, gave … Det som er betalt, teller – i året det ble betalt.',
+  taxYearLabel: 'År',
+  taxEmpty: '{year}: ingenting merket ennå',
+  taxEmptyBody: 'Slå på merkingen over og velg «Skatt» på en utgift – håndverkerregningen, barnehagen, en gave.',
+  taxTotal: 'Sum {year}',
+  taxHint: 'Spartopf samler bare det du merker. Om og hvor mye som er fradragsberettiget, avgjøres i skattemeldingen – dette er ikke skatterådgivning.',
+  taxPill: 'Skatt',
+  taxNone: 'Ikke merket',
+  taxCraftsman: 'Håndverkere',
+  taxHousehold: 'Tjenester i hjemmet',
+  taxChildcare: 'Barnepass',
+  taxDonation: 'Gaver',
+  taxWork: 'Arbeid og arbeidsutstyr',
+  taxHealth: 'Helse og pleie',
+  taxOther: 'Annet til skatten',
 };
 
 export default nb;

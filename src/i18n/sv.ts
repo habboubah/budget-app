@@ -1191,6 +1191,26 @@ const sv: Strings = {
   projectClose: 'Avslutat',
   projectClosed: 'Avslutade',
   projectEntries: 'Poster: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Skattelista',
+  taxRowSub: 'Markera utgifter för deklarationen och få året som PDF',
+  taxIntro: 'Det du markerar för deklarationen listas här efter typ och år – att skriva av eller som PDF.',
+  taxSwitch: 'Erbjud i postbladet',
+  taxSwitchHint: 'En utgift får då valet ”Skatt”: hantverkare, barnomsorg, gåva … Det som är betalt räknas – det år det betalades.',
+  taxYearLabel: 'År',
+  taxEmpty: '{year}: inget markerat ännu',
+  taxEmptyBody: 'Slå på markeringen ovan och välj ”Skatt” på en utgift – hantverkarfakturan, förskolan, en gåva.',
+  taxTotal: 'Summa {year}',
+  taxHint: 'Spartopf samlar bara det du markerar. Om och hur mycket som är avdragsgillt avgörs i deklarationen – detta är inte skatterådgivning.',
+  taxPill: 'Skatt',
+  taxNone: 'Inte markerad',
+  taxCraftsman: 'Hantverkare',
+  taxHousehold: 'Hushållsnära tjänster',
+  taxChildcare: 'Barnomsorg',
+  taxDonation: 'Gåvor',
+  taxWork: 'Arbete och arbetsredskap',
+  taxHealth: 'Hälsa och vård',
+  taxOther: 'Övrigt för skatten',
 };
 
 export default sv;

@@ -1191,6 +1191,26 @@ const pt: Strings = {
   projectClose: 'Concluído',
   projectClosed: 'Concluídos',
   projectEntries: 'Registos: {n}',
+  // The tax list (schema 29)
+  taxTitle: 'Lista fiscal',
+  taxRowSub: 'Marca despesas para a declaração de impostos e obtém o ano em PDF',
+  taxIntro: 'O que marcares para a declaração de impostos aparece aqui por tipo e ano – para copiar ou em PDF.',
+  taxSwitch: 'Mostrar na folha do registo',
+  taxSwitchHint: 'Uma despesa passa então a ter a opção “Impostos”: profissionais, cuidados infantis, donativo … Conta o que foi pago – no ano em que foi pago.',
+  taxYearLabel: 'Ano',
+  taxEmpty: '{year}: ainda nada marcado',
+  taxEmptyBody: 'Ativa a marca acima e escolhe “Impostos” numa despesa – a fatura do profissional, a creche, um donativo.',
+  taxTotal: 'Total {year}',
+  taxHint: 'O Spartopf apenas reúne o que marcas. Se é dedutível, e quanto, decide a declaração de impostos – isto não é aconselhamento fiscal.',
+  taxPill: 'Impostos',
+  taxNone: 'Não marcado',
+  taxCraftsman: 'Profissionais e obras',
+  taxHousehold: 'Serviços domésticos',
+  taxChildcare: 'Cuidados infantis',
+  taxDonation: 'Donativos',
+  taxWork: 'Trabalho e material',
+  taxHealth: 'Saúde e cuidados',
+  taxOther: 'Outros para impostos',
 };
 
 export default pt;

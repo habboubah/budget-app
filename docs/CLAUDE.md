@@ -247,7 +247,14 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   kept for: two ISO days, set in the entry sheet once a receipt is attached,
   not carried over; `returnSource` and `warrantySource` in reminders.ts
   remind 3 and 30 days ahead);
-  **schema 28** `AppData.projects` (below) — all
+  **schema 28** `AppData.projects` (below);
+  **schema 29** `Entry.tax` (a `TaxKind`; `taxYear` / `taxYears` in
+  `insights/tax.ts` list what is marked *and paid* by kind, in the year of
+  the entry's date; `TaxView` under *Optionen › Haushaltsbuch*, whose switch
+  — view preference `spartopf-tax-marks`, or any marked entry — puts the
+  *Steuer* pill into the entry sheet; the PDF is `PrintSpec.kind: 'tax'`
+  through `PrintReport`. The app collects and says it gives no tax advice:
+  keep the kinds' names descriptive, never a paragraph of law) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,

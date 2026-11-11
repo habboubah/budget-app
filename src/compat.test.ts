@@ -266,3 +266,10 @@ describe('version 28 (trips and projects)', () => {
     expect(stored('storage-v27.json').data.projects).toBeUndefined();
   });
 });
+
+describe('version 29 (the tax mark)', () => {
+  it('keeps an expense marked for the tax return', () => {
+    const { data } = stored('storage-v29.json');
+    expect(data.entries.find(e => e.id === 'x6')).toMatchObject({ tax: 'craftsman', amount: 8950 });
+  });
+});

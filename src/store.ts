@@ -34,6 +34,7 @@ const K = {
   autoCategory: 'spartopf-auto-category',
   budgetNotes: 'spartopf-budget-notes',
   captureReview: 'spartopf-capture-review',
+  taxMarks: 'spartopf-tax-marks',
   tipState: 'spartopf-tip-state',
   account: 'spartopf-account',
 } as const;
@@ -193,6 +194,9 @@ export function useAppStore() {
   /** Plan 19: captured payments wait under *Neu* instead of being booked at once. */
   const [captureReview, setCaptureReview] = useState(() => readString(K.captureReview) === '1');
   useEffect(() => { persist(K.captureReview, captureReview ? '1' : '0'); }, [captureReview]);
+  /** The entry sheet offers the tax mark (schema 29) — off until switched on under Optionen › Steuerliste. A view preference. */
+  const [taxMarks, setTaxMarks] = useState(() => readString(K.taxMarks) === '1');
+  useEffect(() => { persist(K.taxMarks, taxMarks ? '1' : '0'); }, [taxMarks]);
   useEffect(() => { persist(K.account, accountView); }, [accountView]);
   useEffect(() => { persist(K.collapsed, JSON.stringify(collapsed)); }, [collapsed]);
   useEffect(() => { persist(K.hintsHidden, JSON.stringify(hintsHidden)); }, [hintsHidden]);
@@ -382,6 +386,7 @@ export function useAppStore() {
       if (!next.note) delete next.note;
       // The interval belongs to a yearly entry, the last month to a recurring one (schema 24).
       if (!next.refund) delete next.refund;
+      if (!next.tax) delete next.tax;
       if (!next.warrantyUntil) delete next.warrantyUntil;
       if (!next.returnUntil) delete next.returnUntil;
       if (!next.every || next.repeat !== 'yearly') delete next.every;
@@ -932,6 +937,7 @@ export function useAppStore() {
     autoCategory, setAutoCategory,
     budgetNotes, setBudgetNotes,
     captureReview, setCaptureReview,
+    taxMarks, setTaxMarks,
     tipState, closeTip: (id: TipId) => setTipState(s => closeTip(s, id)),
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),
