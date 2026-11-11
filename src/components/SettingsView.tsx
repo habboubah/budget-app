@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Landmark, Languages, Lock, Luggage, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins, CalendarRange, Zap } from 'lucide-react';
+import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Compass, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Landmark, Languages, Lock, Luggage, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins, CalendarRange, Zap } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -69,6 +69,8 @@ interface Props {
   onRate?: () => void;
   onFeedback: () => void;
   onPrivacy: () => void;
+  /** Pushes the guide (src/guide.ts): every feature explained, and the short tour. */
+  onGuide: () => void;
 }
 
 /** A row's end when it opens something outside the app (the App Store, Mail, Safari): ↗. */
@@ -141,7 +143,7 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
 }
 
 /**
- * Optionen, grouped as iOS Settings is: Sicherheit und Mitteilungen (the
+ * Optionen, grouped as iOS Settings is: the guide on top, then Sicherheit und Mitteilungen (the
  * Face ID lock, hiding amounts, the iPhone backup, reminders — the lock, the
  * backup and reminders in the iPhone app only), Darstellung (language, light
  * or dark, the colour), Haushaltsbuch (categories and budgets; backup and
@@ -161,6 +163,17 @@ export function SettingsView(p: Props) {
 
   return (
     <Screen title={t.tabSettings} tabbed>
+      {/* First, where help is looked for: the guide to everything below and beyond. */}
+      <Group>
+        <Row
+          label={t.guideTitle}
+          sub={t.guideRowSub}
+          leading={<IconTile icon={Compass} hue="blue" />}
+          trailing={<Next />}
+          onClick={p.onGuide}
+        />
+      </Group>
+
       <Group title={t.securitySection}>
         {p.lockKind && (
           <Row

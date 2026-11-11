@@ -1036,6 +1036,19 @@ const sv: Strings = {
   hintBackup: 'På över 30 dagar finns ingen kopia av dina data utanför den här iPhonen.',
   hintBackupAction: 'Säkerhetskopiera nu',
   hintClose: 'Dölj tipset',
+  // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
+  // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
+  guideTitle: 'Guide',
+  guideRowSub: 'Alla funktioner i korthet, med en kort rundtur',
+  guideAll: 'Se alla funktioner',
+  guideTourTitle: 'Kort rundtur',
+  guideTourStart: 'Starta rundturen',
+  tourStep: '{n} av {total}',
+  tourNext: 'Nästa',
+  tourEnd: 'Avsluta rundturen',
+  // Its one tip (src/tips.ts).
+  hintGuide: 'Nytt: en guide till alla funktioner, med en kort rundtur.',
+  hintGuideAction: 'Öppna guiden',
 
   excelSection: 'Excel',
   importExcel: 'Importera från Excel',

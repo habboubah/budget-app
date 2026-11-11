@@ -38,6 +38,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
         {/* Physical spacing: the bar is chrome, its size doesn't follow the text (iOS doesn't either). */}
         <div className="mx-auto max-w-xl px-[16px] flex items-center gap-[12px]">
           <div
+            data-tour="tabs"
             className="pointer-events-auto flex-1 min-w-0 h-[62px] p-[4px] rounded-full glass-chrome grid"
             style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
           >
@@ -80,6 +81,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
               <motion.button
                 key="add"
                 type="button"
+                data-tour="add"
                 aria-label={add.label}
                 title={add.label}
                 onClick={() => { tapMedium(); add.onClick(); }}

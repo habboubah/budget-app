@@ -204,6 +204,7 @@ export function MonthView(p: Props) {
             type="button"
             onClick={() => { tapLight(); p.onPickMonth(); }}
             aria-haspopup="dialog"
+            data-tour="month"
             aria-label={`${label}, ${t.pickMonth}`}
             // The year wraps under the month's name rather than squeezing it (large text).
             className="-mx-1 px-1 min-h-tap rounded-sm flex flex-wrap items-baseline gap-x-2 text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
@@ -261,7 +262,7 @@ export function MonthView(p: Props) {
               <ChevronRight className="w-[22px] h-[22px] rtl:rotate-180" strokeWidth={2.2} />
             </button>
           </span>
-          <IconButton label={t.monthActions} icon={MoreHorizontal} tone="glass" aria-haspopup="menu" onClick={e => p.onActions(e.currentTarget)} />
+          <IconButton label={t.monthActions} icon={MoreHorizontal} tone="glass" aria-haspopup="menu" data-tour="actions" onClick={e => p.onActions(e.currentTarget)} />
         </>
       }
     >

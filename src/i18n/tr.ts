@@ -1038,6 +1038,19 @@ const tr: Strings = {
   hintBackup: '30 günden uzun süredir verilerinin bu iPhone dışında bir kopyası yok.',
   hintBackupAction: 'Şimdi yedekle',
   hintClose: 'İpucunu gizle',
+  // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
+  // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
+  guideTitle: 'Kılavuz',
+  guideRowSub: 'Tüm özellikler kısaca, kısa bir turla',
+  guideAll: 'Tüm özellikleri gör',
+  guideTourTitle: 'Kısa tur',
+  guideTourStart: 'Turu başlat',
+  tourStep: '{n} / {total}',
+  tourNext: 'İleri',
+  tourEnd: 'Turu bitir',
+  // Its one tip (src/tips.ts).
+  hintGuide: 'Yeni: tüm özellikler için bir kılavuz, kısa bir turla.',
+  hintGuideAction: 'Kılavuzu aç',
 
   excelSection: 'Excel',
   importExcel: 'Excel’den içe aktar',

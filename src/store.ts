@@ -6,7 +6,8 @@ import {
   computeBalances, laterCopies, laterTransferCopies, mainAccount, makeTransfer, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid, isIsoDay, isoDay, changeMonthStart, setMonthStart, validMonthStart,
 } from './logic';
-import { TipId, TipState, closeTip, readTipState } from './tips';
+import { TipId, TipState, closeTip, knowGuide, readTipState } from './tips';
+import { GuideTopicId, readGuideSeen } from './guide';
 import { Currency, DEFAULT_CURRENCY, isSupportedCurrency } from './currency';
 import { defaultCategories } from './data/defaults';
 import { ReminderPrefs, normalizeReminderPrefs } from './reminders';
@@ -36,6 +37,7 @@ const K = {
   captureReview: 'spartopf-capture-review',
   taxMarks: 'spartopf-tax-marks',
   tipState: 'spartopf-tip-state',
+  guideSeen: 'spartopf-guide-seen',
   account: 'spartopf-account',
 } as const;
 
@@ -191,6 +193,9 @@ export function useAppStore() {
   /** Plan 37: which tips are done, and when the last one was put away. */
   const [tipState, setTipState] = useState<TipState>(() => readTipState(readJson(K.tipState)));
   useEffect(() => { persist(K.tipState, JSON.stringify(tipState)); }, [tipState]);
+  /** The guide's topics opened so far (src/guide.ts): a tick beside each. */
+  const [guideSeen, setGuideSeen] = useState<GuideTopicId[]>(() => readGuideSeen(readJson(K.guideSeen)));
+  useEffect(() => { persist(K.guideSeen, JSON.stringify(guideSeen)); }, [guideSeen]);
   /** Plan 19: captured payments wait under *Neu* instead of being booked at once. */
   const [captureReview, setCaptureReview] = useState(() => readString(K.captureReview) === '1');
   useEffect(() => { persist(K.captureReview, captureReview ? '1' : '0'); }, [captureReview]);
@@ -939,6 +944,8 @@ export function useAppStore() {
     captureReview, setCaptureReview,
     taxMarks, setTaxMarks,
     tipState, closeTip: (id: TipId) => setTipState(s => closeTip(s, id)),
+    knowGuide: () => setTipState(knowGuide),
+    guideSeen, seeGuideTopic: (id: GuideTopicId) => setGuideSeen(prev => (prev.includes(id) ? prev : [...prev, id])),
     collapsed,
     toggleCollapsed: (id: string) => setCollapsed(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])),
     expand: (id: string) => setCollapsed(prev => prev.filter(x => x !== id)),

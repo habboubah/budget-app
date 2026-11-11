@@ -5,10 +5,12 @@ import { addMonths, isoDay, monthKeyOf, normalizeName } from './logic';
  * Tips instead of tours (plan 37): one small card on the month page that
  * points at a feature the moment it would have helped — never a list, never
  * two at once, at most one a week, and each goes for good once it is closed
- * or used. Pure and tested; the state is a device preference.
+ * or used. Pure and tested; the state is a device preference. The list and
+ * the tour that can be asked for are the guide's (src/guide.ts); its tip
+ * here only says once that it exists.
  */
 
-export const TIP_IDS = ['capture', 'favorite', 'reserve', 'budget', 'backup'] as const;
+export const TIP_IDS = ['guide', 'capture', 'favorite', 'reserve', 'budget', 'backup'] as const;
 export type TipId = (typeof TIP_IDS)[number];
 
 export interface TipState {
@@ -19,6 +21,7 @@ export interface TipState {
 }
 
 export type Tip =
+  | { id: 'guide' }
   | { id: 'capture' }
   | { id: 'favorite'; name: string; categoryId: string; amount?: number }
   | { id: 'reserve' }
@@ -35,6 +38,8 @@ export interface TipContext {
   daysSinceExport: number | null;
   /** The iPhone backup switch (plan 06); null = unknown. */
   inDeviceBackup: boolean | null;
+  /** The guide (src/guide.ts) may be pointed out: it exists, and this device hasn't met it yet. */
+  guide?: boolean;
 }
 
 export const TIP_PAUSE_DAYS = 7;
@@ -45,6 +50,13 @@ export function readTipState(v: unknown): TipState {
   const done = Array.isArray(o.done) ? TIP_IDS.filter(id => (o.done as unknown[]).includes(id)) : [];
   return { done, ...(typeof o.last === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.last) ? { last: o.last } : {}) };
 }
+
+/**
+ * The guide has been met another way — opened from Optionen, the tour taken,
+ * the gestures card with its link put away: its tip is done, without a pause.
+ */
+export const knowGuide = (state: TipState): TipState =>
+  (state.done.includes('guide') ? state : { ...state, done: [...state.done, 'guide'] });
 
 /** A tip put away — closed or used: it is done, and the week's pause starts. */
 export const closeTip = (state: TipState, id: TipId, today = new Date()): TipState =>
@@ -62,6 +74,9 @@ export function nextTip(data: AppData, state: TipState, ctx: TipContext): Tip | 
   const open = (id: TipId) => !state.done.includes(id);
   const kinds = new Map(data.categories.map(c => [c.id, c.kind]));
   const expense = (id: string) => kinds.get(id) === 'expense';
+
+  // The guide, once: whoever had the app before it came gets one line about it.
+  if (open('guide') && ctx.guide) return { id: 'guide' };
 
   // Three payments typed by hand in two weeks, and nothing captured yet.
   if (open('capture') && ctx.capture && !data.entries.some(e => e.ref?.startsWith('inbox:'))) {

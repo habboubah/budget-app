@@ -1035,6 +1035,19 @@ const es: Strings = {
   hintBackup: 'Desde hace más de 30 días no hay ninguna copia de tus datos fuera de este iPhone.',
   hintBackupAction: 'Hacer copia ahora',
   hintClose: 'Ocultar consejo',
+  // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
+  // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
+  guideTitle: 'Guía',
+  guideRowSub: 'Todas las funciones en breve, con un recorrido corto',
+  guideAll: 'Ver todas las funciones',
+  guideTourTitle: 'Recorrido corto',
+  guideTourStart: 'Empezar el recorrido',
+  tourStep: '{n} de {total}',
+  tourNext: 'Siguiente',
+  tourEnd: 'Salir del recorrido',
+  // Its one tip (src/tips.ts).
+  hintGuide: 'Novedad: una guía de todas las funciones, con un recorrido corto.',
+  hintGuideAction: 'Abrir la guía',
 
   excelSection: 'Excel',
   importExcel: 'Importar de Excel',

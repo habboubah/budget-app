@@ -1035,6 +1035,19 @@ const nl: Strings = {
   hintBackup: 'Al meer dan 30 dagen is er geen kopie van je gegevens buiten deze iPhone.',
   hintBackupAction: 'Nu een kopie maken',
   hintClose: 'Tip verbergen',
+  // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
+  // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
+  guideTitle: 'Handleiding',
+  guideRowSub: 'Alle functies kort uitgelegd, met een korte rondleiding',
+  guideAll: 'Alle functies bekijken',
+  guideTourTitle: 'Korte rondleiding',
+  guideTourStart: 'Rondleiding starten',
+  tourStep: '{n} van {total}',
+  tourNext: 'Volgende',
+  tourEnd: 'Rondleiding stoppen',
+  // Its one tip (src/tips.ts).
+  hintGuide: 'Nieuw: een handleiding bij alle functies, met een korte rondleiding.',
+  hintGuideAction: 'Handleiding openen',
 
   excelSection: 'Excel',
   importExcel: 'Importeren uit Excel',

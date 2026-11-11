@@ -1035,6 +1035,19 @@ const da: Strings = {
   hintBackup: 'I over 30 dage har der ikke været en kopi af dine data uden for denne iPhone.',
   hintBackupAction: 'Sikkerhedskopiér nu',
   hintClose: 'Skjul tippet',
+  // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
+  // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
+  guideTitle: 'Vejledning',
+  guideRowSub: 'Alle funktioner kort forklaret, med en kort rundtur',
+  guideAll: 'Se alle funktioner',
+  guideTourTitle: 'Kort rundtur',
+  guideTourStart: 'Start rundturen',
+  tourStep: '{n} af {total}',
+  tourNext: 'Næste',
+  tourEnd: 'Afslut rundturen',
+  // Its one tip (src/tips.ts).
+  hintGuide: 'Nyt: en vejledning til alle funktioner, med en kort rundtur.',
+  hintGuideAction: 'Åbn vejledningen',
 
   excelSection: 'Excel',
   importExcel: 'Importér fra Excel',

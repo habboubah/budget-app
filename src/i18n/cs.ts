@@ -1039,6 +1039,19 @@ const cs: Strings = {
   hintBackup: 'Už přes 30 dní neexistuje kopie tvých dat mimo tento iPhone.',
   hintBackupAction: 'Zálohovat teď',
   hintClose: 'Skrýt tip',
+  // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
+  // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
+  guideTitle: 'Průvodce',
+  guideRowSub: 'Všechny funkce stručně, s krátkou prohlídkou',
+  guideAll: 'Zobrazit všechny funkce',
+  guideTourTitle: 'Krátká prohlídka',
+  guideTourStart: 'Spustit prohlídku',
+  tourStep: '{n} z {total}',
+  tourNext: 'Dál',
+  tourEnd: 'Ukončit prohlídku',
+  // Its one tip (src/tips.ts).
+  hintGuide: 'Novinka: průvodce všemi funkcemi, s krátkou prohlídkou.',
+  hintGuideAction: 'Otevřít průvodce',
 
   excelSection: 'Excel',
   importExcel: 'Importovat z Excelu',

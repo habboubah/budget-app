@@ -1,0 +1,69 @@
+import type { GuidePages } from './de';
+
+/* The guide's pages and the tour's sentences (see ./de.ts for the rules). */
+const es: GuidePages = {
+  guideIntro: 'En breve. «Mostrar» te lleva al lugar correcto.',
+  guideSearch: 'Buscar en la guía',
+  guideShow: 'Mostrar',
+  guideRead: 'leído',
+  guideTourBody: 'La página del mes en pocos pasos: menos de un minuto.',
+
+  // The chapters (Planen is the tab’s own name).
+  guideChBasics: 'Lo básico',
+  guideChEntering: 'Anotar',
+  guideChLooking: 'Analizar',
+  guideChImporting: 'Importar',
+  guideChMore: 'Más en tu presupuesto',
+  guideChSafe: 'Seguridad y datos',
+
+  // The topics: a title where the feature has no label of its own in the app, and two or three sentences.
+  guideBalances: 'Los dos saldos',
+  guideBalancesBody: '«{now}» cuenta lo pagado o recibido: lo que muestra tu banco. «{end}» incluye todo lo que sigue pendiente. La línea entre ambos muestra el camino.',
+  guidePaid: 'Pagado o pendiente',
+  guidePaidBody: 'El círculo delante de cada apunte: vacío significa pendiente; lleno, pagado. Un toque lo marca, y deslizar a la derecha también. Deslizar a la izquierda lo elimina, y se puede deshacer.',
+  guideMonths: 'Meses y arrastre',
+  guideMonthsBody: 'Con ‹ › cambias de mes; un toque en su nombre los muestra todos. Un mes nuevo empieza solo: el saldo se arrastra y los apuntes periódicos llegan como pendientes.',
+  guideCategoriesBody: 'Cada categoría es una tarjeta en la página del mes. Un toque en su cabecera la pliega; mantén pulsado un apunte para moverlo. Tus propias categorías, colores y palabras clave se configuran en «{settings}».',
+  guideSearchBody: 'El campo de búsqueda bajo el nombre del mes encuentra nombres, notas, #etiquetas e importes, en todos los meses. El botón de al lado muestra solo lo pendiente.',
+  guideDueBody: 'Los apuntes pendientes con fecha aparecen arriba en el mes en curso y se marcan allí mismo. Pasado el día, se señalan como vencidos.',
+  guideAddBody: 'Toca el + redondo. Primero el importe, luego el nombre; la categoría la propone Spartopf. Sobre el teclado están + − × ÷: 12,50+4,80 se convierte en 17,30 al guardar.',
+  guideRepeats: 'Apuntes periódicos',
+  guideRepeatsBody: 'Alquiler, sueldo, suscripciones: pon «{repeat}» en el apunte en cada mes, cada 2 meses, cada trimestre, cada semestre o cada año. El apunte vuelve entonces solo; si quieres, solo hasta un último mes.',
+  guideFavoritesBody: 'Lo que anotas a menudo guárdalo como favorito desde el propio apunte. Aparecerá sobre cada apunte nuevo y rellenará nombre, categoría e importe con un toque.',
+  guideSplit: 'Dividir y reembolsos',
+  guideSplitBody: '¿Un tique para varias categorías? Abre el apunte y toca «{split}». Cuando te devuelvan dinero, anótalo con «{refund}» donde estaba la compra: reduce el gasto y no cuenta como ingreso.',
+  guideReceipts: 'Recibos y etiquetas',
+  guideReceiptsBody: '«{receipt}» adjunta una foto o un PDF a un apunte; Spartopf lee el importe en el propio dispositivo. «# {tag}» marca apuntes, por ejemplo #vacaciones: la búsqueda y el análisis los encuentran.',
+  guideCaptureBody: 'Los pagos con tarjeta y los avisos de tu banco pueden anotarse solos, con una automatización en la app Atajos. Spartopf te muestra los pasos.',
+  guideBudgetsBody: 'Dale a una categoría un presupuesto al mes o al año. Su barra muestra cuánto queda, y Spartopf te avisa cuando se agota. Lo que sobre puede pasar al mes siguiente.',
+  guideGoalsBody: 'Una hucha es un objetivo con importe y fecha: las vacaciones, la bici nueva. Los apuntes que le asignes la llenan; «{plan}» muestra cuánto llevas.',
+  guideOutlookBody: '«{plan}» mira hacia delante: los próximos 30 días, los meses que vienen y la reserva para las facturas que llegan una vez al año. «{whatIf}» comprueba una compra antes de hacerla.',
+  guideContractsBody: 'Todos tus gastos fijos de un vistazo. Indica hasta cuándo dura un contrato y con cuánta antelación hay que cancelarlo: Spartopf te lo recuerda a tiempo.',
+  guideDebtsBody: 'Préstamos, cuotas o dinero prestado: Spartopf calcula cuánto queda, cuándo terminarás y qué cambia un pago extra.',
+  guideStatsBody: 'Una mirada atrás: tasa de ahorro, ingresos y gastos a lo largo del tiempo, a dónde va el dinero y en qué días. Pasa el dedo por un gráfico, y la ⓘ explica cómo se calcula una cifra.',
+  guideReportsBody: 'Tras cada mes, un informe resume lo que destacó; a final de año llega el resumen del año. Ambos se pueden compartir en PDF.',
+  guideBank: 'Importar movimientos bancarios',
+  guideBankBody: 'En el menú «⋯» del mes: el archivo CSV o el extracto en PDF de tu banco, o una foto de la app del banco. Lo revisas todo antes de que se anote nada. Las reglas clasifican solas la próxima vez.',
+  guideInvoiceBody: 'Haz una foto al código QR de una factura: beneficiario, importe y concepto se rellenan, como apunte pendiente.',
+  guideExcelBody: '¿Llevabas tu presupuesto en Excel? Spartopf lee una hoja con una pestaña por mes y muestra antes lo que va a traer.',
+  guideReconcileBody: '¿Spartopf y el banco no coinciden? Escribe lo que muestra el banco: la diferencia se anota como apunte, o se ajusta el saldo inicial.',
+  guideAccountsBody: 'Para empezar basta una cuenta. En «{accounts}» añades efectivo, una cuenta de ahorro u otras, y los traspasos entre ellas, que no son ni ingreso ni gasto.',
+  guideProjectsBody: 'Un presupuesto propio para las vacaciones, la mudanza o la reforma; si quieres, con fechas y en la moneda local.',
+  guideMonthStartBody: 'Tu mes puede empezar el día de cobro en lugar del día 1: Spartopf planifica entonces de sueldo a sueldo.',
+  guidePrivate: 'Todo se queda en el dispositivo',
+  guidePrivateBody: 'Sin cuenta, sin servidor, sin anuncios. Tus datos solo salen del dispositivo si los exportas tú.',
+  guideBackupBody: 'Exporta una copia de seguridad con contraseña y vuelve a cargarla en un dispositivo nuevo. Allí está también la exportación CSV para la hoja de cálculo.',
+  guideLock: 'Bloqueo e importes ocultos',
+  guideLockBody: 'En «{settings}» puedes ocultar todos los importes cuando alguien mira, y en la app del teléfono activar el bloqueo para que solo la abras tú.',
+  guideRemindersBody: 'Recibe un aviso de los apuntes pendientes antes de que venzan, y por la noche para anotar los gastos del día. Sin importes, hasta que los actives.',
+  guideLookBody: '14 idiomas, claro u oscuro, ocho colores y tu moneda: todo en «{settings}», dentro de «{display}».',
+
+  // The tour of the month page, one sentence a mark.
+  tourBalance: 'Arriba: lo que hay ahora en la cuenta. Debajo: lo que quedará a fin de mes, cuando todo lo pendiente esté pagado.',
+  tourTick: 'Un toque en el círculo marca un apunte: pagado en vez de pendiente.',
+  tourMonth: 'Aquí cambias de mes. Los apuntes periódicos llegan solos.',
+  tourTabs: '«{stats}» mira hacia atrás; «{plan}», hacia delante. La guía completa está en «{settings}».',
+  tourAdd: 'Y aquí anotas algo: primero el importe.',
+};
+
+export default es;

@@ -72,6 +72,8 @@ import { inboxReview, inboxToEntries } from './native/inbox';
 import { CaptureView } from './components/CaptureView';
 import { HintCard } from './components/HintCard';
 import { nextTip } from './tips';
+import { GuideAction, GuideTopicId, TourStep, tourAnchor, tourSteps } from './guide';
+import { guidePages, loadGuidePages } from './guidePages';
 import { DeepLink, parseDeepLink } from './native/deepLink';
 import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, setSecure, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
 import { PrintReport, PrintSpec, ReportPdfSheet, reportFileName } from './components/PrintReport';
@@ -95,9 +97,20 @@ import { Confirm } from './ui/Sheet';
 import { notifySuccess, notifyWarning, tapLight } from './ui/haptics';
 import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 
+/*
+ * The guide's screen and the tour (src/guide.ts) are chunks of their own, and
+ * so are their words (src/guidePages.ts): loaded when the guide is opened or
+ * a tour begins, and kept from then on. Each is only ever rendered after its
+ * load, so there is no fallback.
+ */
+let GuideScreen: typeof import('./components/GuideView').GuideView | null = null;
+let TourOverlay: typeof import('./components/Tour').Tour | null = null;
+const loadGuide = () => import('./components/GuideView').then(m => { GuideScreen = m.GuideView; });
+const loadTour = () => import('./components/Tour').then(m => { TourOverlay = m.Tour; });
+
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -105,7 +118,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -155,12 +168,16 @@ export default function App() {
     : action);
 
   const [tab, setTab] = useState<TabId>('month');
+  /** A screen the guide's *Zeigen* opened is shown: back leads to the guide again (see `under` below). */
+  const [guideReturn, setGuideReturn] = useState(false);
   /** Per tab, the screen pushed over its root — each tab keeps its place, as on iOS. */
   const [stack, setStack] = useState<Partial<Record<TabId, PushedId>>>({});
   const push = (to: PushedId) => {
     const onTab = HOME[to] ?? tab;
     setTab(onTab);
     setStack(s => ({ ...s, [onTab]: to }));
+    // Whatever is pushed, it isn't the guide's doing — unless guideGo says so right after.
+    setGuideReturn(false);
   };
   const popTo = (onTab: TabId) => setStack(s => ({ ...s, [onTab]: undefined }));
   /** Every entry read once per change: what Statistik, Planen and the reports compute from. */
@@ -361,7 +378,18 @@ export default function App() {
   const pushed = stack[tab] ?? null;
   const screen: ScreenId = pushed ?? tab;
   const depth = pushed ? 1 : 0;
-  const back = () => popTo(tab);
+  /**
+   * The guide's *Zeigen* (src/guide.ts) opens a screen in the guide's place —
+   * a tab holds one pushed screen. From there, back leads to the guide again
+   * rather than to Optionen: `under` is what lies beneath the screen shown.
+   */
+  const under: ScreenId = guideReturn && tab === 'settings' && pushed && pushed !== 'guide' ? 'guide' : tab;
+  /** Set for the one change that should slide though the depth stays the same (guide ⇄ what it showed). */
+  const slide = useRef<0 | 1 | -1>(0);
+  const back = () => {
+    if (under === 'guide') { slide.current = -1; setGuideReturn(false); setStack(s => ({ ...s, settings: 'guide' })); }
+    else popTo(tab);
+  };
   // The iOS back gesture on a pushed screen (touch, from the leading edge).
   const swipe = useEdgeSwipeBack(back, t.dir === 'rtl');
   // The parent under it: from 30 % behind to in place, a shade lifting as it comes.
@@ -376,7 +404,8 @@ export default function App() {
   if (nav.current.screen !== screen) {
     const still = swipe.popped.current;
     swipe.popped.current = false;
-    nav.current = { screen, depth, still, dir: depth === nav.current.depth ? 0 : depth > nav.current.depth ? 1 : -1 };
+    nav.current = { screen, depth, still, dir: slide.current || (depth === nav.current.depth ? 0 : depth > nav.current.depth ? 1 : -1) };
+    slide.current = 0;
   }
   const dir = nav.current.dir;
   const rtl = t.dir === 'rtl' ? -1 : 1;
@@ -399,12 +428,12 @@ export default function App() {
         window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
         return;
       }
-      if (pushed) popTo(tab);
+      if (pushed) back();
       else if (tab !== 'month') setTab('month');
       else void CapacitorApp.minimizeApp();
     });
     return () => { void handle.then(h => h.remove()); };
-  }, [pushed, tab]);
+  }, [pushed, tab, under]);
 
   // While the setup runs: opening = the balance given − what the month has settled since.
   useEffect(() => {
@@ -1015,7 +1044,80 @@ export default function App() {
     capture: isIos() || devNative(),
     inDeviceBackup: deviceBackup,
     daysSinceExport: store.lastExport ? Math.floor((Date.now() - new Date(`${store.lastExport}T00:00:00`).getTime()) / 86_400_000) : null,
+    guide: true,
   }), [data, store.tipState, deviceBackup, store.lastExport]);
+
+  // ---- The guide and the tour (src/guide.ts): asked for, never in the way.
+  /** The topic left open in the guide, kept while *Zeigen* shows its screen. */
+  const [guideTopic, setGuideTopic] = useState<GuideTopicId | null>(null);
+  const openGuide = () => {
+    store.knowGuide();
+    void Promise.all([loadGuide(), loadGuidePages(language)]).then(() => push('guide'), () => undefined);
+  };
+  const pages = guidePages(language);
+  /** The tour's steps — the marks the page had when it began — and the one shown. */
+  const [tour, setTour] = useState<{ steps: TourStep[]; index: number } | null>(null);
+  const tourTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(tourTimer.current), []);
+  const startTour = () => {
+    store.knowGuide();
+    hide();
+    openMonthPage(monthKeyOf());
+    // Once the month page stands (it comes in over about 300 ms).
+    window.clearTimeout(tourTimer.current);
+    const loaded = Promise.all([loadTour(), loadGuidePages(language)]);
+    tourTimer.current = window.setTimeout(() => {
+      void loaded.then(() => {
+        const steps = tourSteps(step => !!tourAnchor(step));
+        if (steps.length) setTour({ steps, index: 0 });
+      }, () => undefined);
+    }, 450);
+  };
+  /** The month's "⋯" opened for the guide, once the month page is there to open it from. */
+  const menuAsked = useRef(false);
+  useEffect(() => {
+    if (!menuAsked.current || screen !== 'month') return;
+    menuAsked.current = false;
+    const id = window.setTimeout(() => {
+      const el = document.querySelector<HTMLElement>('[data-tour="actions"]');
+      if (el) setActionsAnchor(el);
+    }, 400);
+    return () => window.clearTimeout(id);
+  }, [screen]);
+  /** *Zeigen*: the screen a topic is about, or the thing on the month page opened. */
+  const guideGo = (a: GuideAction) => {
+    const root = (id: TabId) => { setTab(id); setStack(s => ({ ...s, [id]: undefined })); };
+    if (a === 'month') openMonthPage(monthKeyOf());
+    else if (a === 'stats' || a === 'insights' || a === 'settings') root(a);
+    else if (a === 'entry') {
+      openMonthPage(month);
+      if (quickAddCategory && balance.started) setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory });
+    } else if (a === 'monthPicker') { openMonthPage(month); setMonthPickerOpen(true); }
+    else if (a === 'monthMenu') {
+      if (screen === 'month') { const el = document.querySelector<HTMLElement>('[data-tour="actions"]'); if (el) setActionsAnchor(el); }
+      else { menuAsked.current = true; openMonthPage(month); }
+    } else if (a === 'monthStart') setMonthStartOpen(true);
+    else if (a === 'report') {
+      // The newest finished month's report; a book without one yet shows the statistics.
+      const done = book.months.filter(k => k < now).pop();
+      if (!done) { root('stats'); return; }
+      setReportMonth(done);
+      slide.current = 1;
+      push('monthReport');
+      setGuideReturn(tab === 'settings');
+    } else {
+      // A screen of Optionen takes the guide's place: back returns to the guide.
+      if (HOME[a] === 'settings') slide.current = 1;
+      push(a);
+      if (HOME[a] === 'settings') setGuideReturn(true);
+    }
+  };
+  // The guide is shown but a part of it isn't loaded (another language since): load it, or leave.
+  const [, guideReady] = useState(0);
+  useEffect(() => {
+    if (screen !== 'guide' || (GuideScreen && pages)) return;
+    void Promise.all([loadGuide(), loadGuidePages(language)]).then(() => guideReady(n => n + 1), () => popTo('settings'));
+  }, [screen, language]);
   const setup = showSetup ? (
     <SetupCard
       t={t}
@@ -1032,19 +1134,20 @@ export default function App() {
       onFinish={finishSetup}
     />
   ) : store.introDone && !store.tipsDone && balance.started && monthEntries.length > 0 && month === monthKeyOf() ? (
-    <TipsCard t={t} onDismiss={store.dismissTips} />
+    <TipsCard t={t} onDismiss={() => { store.dismissTips(); store.knowGuide(); }} onTour={startTour} onGuide={openGuide} />
   ) : tip && store.introDone && store.tipsDone && balance.started && month === monthKeyOf() ? (
     <HintCard
-      text={tip.id === 'capture' ? t.hintCapture : tip.id === 'favorite' ? fmt(t.hintFavorite, { name: tip.name })
+      text={tip.id === 'guide' ? t.hintGuide : tip.id === 'capture' ? t.hintCapture : tip.id === 'favorite' ? fmt(t.hintFavorite, { name: tip.name })
         : tip.id === 'reserve' ? t.hintReserve : tip.id === 'backup' ? t.hintBackup
         : fmt(t.hintBudget, { category: displayName(tip.category.names, language), month: monthLabel(tip.month, t.locale, 'name') })}
-      action={tip.id === 'capture' ? t.hintCaptureAction : tip.id === 'favorite' ? t.hintFavoriteAction
+      action={tip.id === 'guide' ? t.hintGuideAction : tip.id === 'capture' ? t.hintCaptureAction : tip.id === 'favorite' ? t.hintFavoriteAction
         : tip.id === 'reserve' ? t.hintReserveAction : tip.id === 'backup' ? t.hintBackupAction : t.hintBudgetAction}
       hideLabel={t.hintClose}
       onHide={() => store.closeTip(tip.id)}
       onAction={() => {
         store.closeTip(tip.id);
-        if (tip.id === 'capture') push('capture');
+        if (tip.id === 'guide') openGuide();
+        else if (tip.id === 'capture') push('capture');
         else if (tip.id === 'favorite') { if (store.addFavorite({ name: tip.name, categoryId: tip.categoryId, ...(tip.amount ? { amount: tip.amount } : {}) })) show(t.favoriteSaved); }
         else if (tip.id === 'reserve') setTab('insights');
         else if (tip.id === 'backup') push('transfer');
@@ -1056,7 +1159,21 @@ export default function App() {
   /** Every screen, by name — the tab roots and what can be pushed over them. */
   const screenFor = (id: ScreenId) => (
     <>
-        {id === 'contracts' ? (
+        {id === 'guide' ? GuideScreen && pages && (
+          <GuideScreen
+            t={t}
+            pages={pages}
+            ios={isIos() || devNative()}
+            app={remindersAvailable()}
+            seen={store.guideSeen}
+            open={guideTopic}
+            onOpen={topic => { setGuideTopic(topic); if (topic) store.seeGuideTopic(topic); }}
+            onBack={back}
+            onTour={startTour}
+            onDemo={store.hasDemo ? undefined : addDemo}
+            onShow={guideGo}
+          />
+        ) : id === 'contracts' ? (
           <ContractsView items={contracts} categories={categories} t={t} onBack={back} onOpen={setContractFor} />
         ) : id === 'category' ? (
           <CategoryView
@@ -1233,6 +1350,7 @@ export default function App() {
             onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
             onFeedback={() => void sendFeedback()}
             onPrivacy={() => void openExternal(privacyUrl(language))}
+            onGuide={openGuide}
           />
         ) : id === 'stats' ? (
           <StatsView
@@ -1353,7 +1471,7 @@ export default function App() {
           in from a little behind and coming out of a light shade. */}
       {pushed && swipe.swiping && (
         <div className="no-rise fixed inset-0 overflow-hidden pointer-events-none" aria-hidden="true" inert>
-          <motion.div style={{ x: swipeUnder }}>{screenFor(tab)}</motion.div>
+          <motion.div style={{ x: swipeUnder }}>{screenFor(under)}</motion.div>
           <motion.div className="absolute inset-0 scrim" style={{ opacity: swipeShade }} />
         </div>
       )}
@@ -1392,7 +1510,7 @@ export default function App() {
         label={t.appName}
         active={tab}
         // Tapping the active tab again pops back to its root, as on iOS.
-        onChange={id => { if (id === tab) popTo(id); setTab(id); }}
+        onChange={id => { if (id === tab) { popTo(id); if (id === 'settings') setGuideReturn(false); } setTab(id); }}
         tabs={[
           { id: 'month', label: t.tabMonth, icon: CalendarDays },
           { id: 'stats', label: t.tabStats, icon: BarChart3 },
@@ -1794,6 +1912,20 @@ export default function App() {
         onCancel={() => setConfirmCategory(null)}
         onConfirm={() => { if (confirmCategory) deleteCategory(confirmCategory); setConfirmCategory(null); }}
       />
+
+      {tour && TourOverlay && pages && (
+        <TourOverlay
+          steps={tour.steps}
+          index={tour.index}
+          t={t}
+          pages={pages}
+          onNext={() => setTour(s => (s && s.index < s.steps.length - 1 ? { ...s, index: s.index + 1 } : null))}
+          onEnd={() => setTour(null)}
+          onAdd={quickAddCategory && balance.started
+            ? () => { setTour(null); setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory }); }
+            : undefined}
+        />
+      )}
 
       <Toast toast={toast} onDone={hide} raised />
     </div>

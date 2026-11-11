@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from 'react';
-import { ArrowLeftRight, Check, ChevronRight, Circle, FileUp, Hand, X } from 'lucide-react';
+import { ArrowLeftRight, Check, ChevronRight, Circle, FileUp, Hand, Play, X } from 'lucide-react';
 import { amountToInput, formatMoney, normalizeDigits, parseAmount, currencySymbol } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Button, IconButton } from '../ui/Button';
@@ -147,9 +147,10 @@ export function SetupCard({ t, balance, salaryDone, fixedCount, canSalary, canFi
 
 /**
  * After the setup, once there is something to try them on: the three
- * gestures of the month page, on one card that goes for good with ✕.
+ * gestures of the month page, on one card that goes for good with ✕ — and,
+ * for whoever wants more, the short tour and the guide (src/guide.ts).
  */
-export function TipsCard({ t, onDismiss }: { t: Strings; onDismiss: () => void }) {
+export function TipsCard({ t, onDismiss, onTour, onGuide }: { t: Strings; onDismiss: () => void; onTour: () => void; onGuide: () => void }) {
   const titleId = useId();
   const tips = [
     { icon: Circle, text: t.tipTick },
@@ -172,6 +173,10 @@ export function TipsCard({ t, onDismiss }: { t: Strings; onDismiss: () => void }
           </li>
         ))}
       </ul>
+      <div className="mt-4 -ms-1 pe-3 flex flex-wrap items-center gap-x-1 gap-y-1">
+        <Button variant="secondary" icon={Play} onClick={onTour}>{t.guideTourStart}</Button>
+        <Button variant="ghost" onClick={onGuide}>{t.guideAll}</Button>
+      </div>
     </section>
   );
 }

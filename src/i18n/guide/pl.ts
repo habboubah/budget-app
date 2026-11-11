@@ -1,0 +1,69 @@
+import type { GuidePages } from './de';
+
+/* The guide's pages and the tour's sentences (see ./de.ts for the rules). */
+const pl: GuidePages = {
+  guideIntro: 'W skrócie. „Pokaż” przenosi cię we właściwe miejsce.',
+  guideSearch: 'Szukaj w przewodniku',
+  guideShow: 'Pokaż',
+  guideRead: 'przeczytane',
+  guideTourBody: 'Widok miesiąca w kilku krokach – zajmie mniej niż minutę.',
+
+  // The chapters (Planen is the tab’s own name).
+  guideChBasics: 'Podstawy',
+  guideChEntering: 'Wpisywanie',
+  guideChLooking: 'Analiza',
+  guideChImporting: 'Import',
+  guideChMore: 'Więcej w budżecie domowym',
+  guideChSafe: 'Bezpieczeństwo i dane',
+
+  // The topics: a title where the feature has no label of its own in the app, and two or three sentences.
+  guideBalances: 'Dwa salda',
+  guideBalancesBody: '„{now}” liczy to, co zapłacone lub otrzymane – czyli to, co pokazuje bank. „{end}” uwzględnia też wszystko, co jeszcze oczekuje. Linia między nimi pokazuje drogę.',
+  guidePaid: 'Zapłacone czy oczekuje',
+  guidePaidBody: 'Kółko przed każdą pozycją: puste znaczy, że oczekuje, wypełnione – że zapłacona. Stuknięcie ją odhacza, przesunięcie w prawo też. Przesunięcie w lewo usuwa – można to cofnąć.',
+  guideMonths: 'Miesiące i przeniesienie',
+  guideMonthsBody: 'Strzałki ‹ › zmieniają miesiąc; stuknięcie jego nazwy pokazuje wszystkie. Nowy miesiąc zaczyna się sam: saldo zostaje przeniesione, a pozycje cykliczne przechodzą jako oczekujące.',
+  guideCategoriesBody: 'Każda kategoria to karta w widoku miesiąca. Stuknięcie nagłówka ją zwija; przytrzymaj pozycję, aby ją przenieść. Własne kategorie, kolory i słowa kluczowe ustawisz w sekcji „{settings}”.',
+  guideSearchBody: 'Pole wyszukiwania pod nazwą miesiąca znajduje nazwy, notatki, #tagi i kwoty – we wszystkich miesiącach. Przycisk obok pokazuje tylko to, co jeszcze oczekuje.',
+  guideDueBody: 'Oczekujące pozycje z datą stoją na górze bieżącego miesiąca i tam można je odhaczyć. Gdy dzień minie, są oznaczane jako zaległe.',
+  guideAddBody: 'Stuknij okrągły +. Najpierw kwota, potem nazwa – kategorię podpowie Spartopf. Nad klawiaturą są klawisze + − × ÷: z 12,50+4,80 przy zapisie robi się 17,30.',
+  guideRepeats: 'Pozycje cykliczne',
+  guideRepeatsBody: 'Czynsz, pensja, abonamenty: ustaw w pozycji „{repeat}” na co miesiąc, co 2 miesiące, co kwartał, co pół roku lub co rok. Pozycja wraca potem sama – jeśli chcesz, tylko do wybranego miesiąca.',
+  guideFavoritesBody: 'To, co wpisujesz często, zapisz w pozycji jako ulubione. Pojawi się nad każdą nową pozycją i jednym stuknięciem wypełni nazwę, kategorię i kwotę.',
+  guideSplit: 'Podział i zwroty',
+  guideSplitBody: 'Jeden paragon na kilka kategorii? Otwórz pozycję i stuknij „{split}”. Gdy pieniądze wracają, wpisz je przez „{refund}” tam, gdzie był zakup – zmniejszą wydatki i nie liczą się jako przychód.',
+  guideReceipts: 'Paragony i tagi',
+  guideReceiptsBody: '„{receipt}” dołącza do pozycji zdjęcie lub PDF; kwotę Spartopf odczytuje na urządzeniu. „# {tag}” oznacza pozycje, na przykład #urlop – znajdą je wyszukiwanie i statystyki.',
+  guideCaptureBody: 'Płatności kartą i powiadomienia banku mogą wpisywać się same – dzięki automatyzacji w aplikacji Skróty. Spartopf pokaże kroki.',
+  guideBudgetsBody: 'Nadaj kategorii budżet na miesiąc lub na rok. Pasek pokazuje, ile zostało, a Spartopf da znać, gdy robi się ciasno. Reszta może przejść na następny miesiąc.',
+  guideGoalsBody: 'Skarbonka to cel z kwotą i datą – urlop, nowy rower. Wypełniają ją pozycje, które do niej przypiszesz; „{plan}” pokazuje, jak daleko jesteś.',
+  guideOutlookBody: '„{plan}” patrzy w przód: najbliższe 30 dni, kolejne miesiące i rezerwa na rachunki, które przychodzą raz w roku. „{whatIf}” sprawdza zakup, zanim go zrobisz.',
+  guideContractsBody: 'Wszystkie stałe koszty w jednym miejscu. Wpisz, do kiedy trwa umowa i z jakim wyprzedzeniem trzeba ją wypowiedzieć – Spartopf przypomni na czas.',
+  guideDebtsBody: 'Kredyty, raty albo pożyczone komuś pieniądze: Spartopf policzy, ile zostało, kiedy spłata się skończy i co zmieni nadpłata.',
+  guideStatsBody: 'Spojrzenie wstecz: stopa oszczędności, przychody i wydatki w czasie, na co idą pieniądze i w które dni. Przesuń palcem po wykresie – a ⓘ wyjaśni, jak policzono liczbę.',
+  guideReportsBody: 'Po każdym miesiącu raport podsumowuje, co się wyróżniało; na koniec roku przychodzi podsumowanie roku. Oba można udostępnić jako PDF.',
+  guideBank: 'Import transakcji z banku',
+  guideBankBody: 'W menu „⋯” miesiąca: plik CSV lub wyciąg PDF z banku albo zdjęcie z aplikacji bankowej. Sprawdzasz wszystko, zanim cokolwiek zostanie wpisane. Reguły następnym razem przypiszą kategorie same.',
+  guideInvoiceBody: 'Zrób zdjęcie kodu QR z faktury: odbiorca, kwota i tytuł wypełnią się jako oczekująca pozycja.',
+  guideExcelBody: 'Do tej pory budżet w Excelu? Spartopf wczyta arkusz z jedną kartą na miesiąc i najpierw pokaże, co przejmie.',
+  guideReconcileBody: 'Spartopf nie zgadza się z bankiem? Wpisz, co pokazuje bank – różnica zostanie zaksięgowana jako pozycja albo zmieni się saldo początkowe.',
+  guideAccountsBody: 'Na początek wystarczy jedno konto. W sekcji „{accounts}” dodasz gotówkę, konto oszczędnościowe lub inne – oraz przelewy między nimi, które nie są ani przychodem, ani wydatkiem.',
+  guideProjectsBody: 'Osobny budżet na urlop, przeprowadzkę czy remont – jeśli chcesz, z datami i w miejscowej walucie.',
+  guideMonthStartBody: 'Twój miesiąc może zaczynać się w dniu wypłaty zamiast pierwszego – Spartopf planuje wtedy od pensji do pensji.',
+  guidePrivate: 'Wszystko zostaje na urządzeniu',
+  guidePrivateBody: 'Bez konta, bez serwera, bez reklam. Dane opuszczają urządzenie tylko wtedy, gdy je wyeksportujesz.',
+  guideBackupBody: 'Wyeksportuj kopię zapasową z hasłem i wczytaj ją na nowym urządzeniu. Jest tam też eksport CSV do arkusza kalkulacyjnego.',
+  guideLock: 'Blokada i ukryte kwoty',
+  guideLockBody: 'W sekcji „{settings}” możesz ukryć wszystkie kwoty, gdy ktoś patrzy – a w aplikacji na telefonie włączyć blokadę, żeby nikt poza tobą jej nie otworzył.',
+  guideRemindersBody: 'Przypomnienia o oczekujących pozycjach, zanim minie termin – a wieczorem o wpisaniu wydatków z dnia. Bez kwot, dopóki ich nie włączysz.',
+  guideLookBody: '14 języków, jasny lub ciemny wygląd, osiem kolorów i twoja waluta: wszystko w „{settings}”, w części „{display}”.',
+
+  // The tour of the month page, one sentence a mark.
+  tourBalance: 'Na górze: ile jest teraz na koncie. Niżej: ile zostanie na koniec miesiąca, gdy wszystko, co oczekuje, będzie zapłacone.',
+  tourTick: 'Stuknięcie kółka odhacza pozycję: zapłacona zamiast oczekującej.',
+  tourMonth: 'Tutaj zmieniasz miesiąc. Pozycje cykliczne przechodzą same.',
+  tourTabs: '„{stats}” patrzą wstecz, „{plan}” w przód. Cały przewodnik znajdziesz w „{settings}”.',
+  tourAdd: 'A tutaj coś wpisujesz – najpierw kwota.',
+};
+
+export default pl;

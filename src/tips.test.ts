@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AppData, Entry } from './types';
 import { defaultCategories } from './data/defaults';
-import { closeTip, nextTip, readTipState, TipContext, TipState } from './tips';
+import { closeTip, knowGuide, nextTip, readTipState, TipContext, TipState } from './tips';
 
 const today = new Date(2026, 10, 20, 12);
 const none: TipState = { done: [] };
@@ -72,6 +72,26 @@ describe('tips (plan 37)', () => {
     expect(nextTip(data, closed, { ...phone, today: new Date(2026, 10, 26, 12) })).toBeNull();
     expect(nextTip(data, closed, { ...phone, today: new Date(2026, 10, 27, 12) })?.id).toBe('reserve');
     expect(closeTip(closed, 'capture', today).done).toEqual(['capture']);
+  });
+
+  it('the guide, once, before any other — for whoever hasn’t met it', () => {
+    const typed = [entry({ name: 'Rewe' }), entry({ name: 'Aral', categoryId: 'car' }), entry({ name: 'Kiosk' })];
+    const asked: TipContext = { ...phone, guide: true };
+    // Even a quiet book: the guide is news to everyone who had the app before it.
+    expect(nextTip(book([]), none, asked)).toEqual({ id: 'guide' });
+    expect(nextTip(book(typed), none, asked)).toEqual({ id: 'guide' });
+    // Not where the app doesn't offer it, and not within a week of another tip.
+    expect(nextTip(book(typed), none, phone)).toEqual({ id: 'capture' });
+    expect(nextTip(book(typed), { done: ['reserve'], last: '2026-11-18' }, asked)).toBeNull();
+    // Met another way — Optionen, the tour, the gestures card: done, and no pause for the next tip.
+    const known = knowGuide(none);
+    expect(known).toEqual({ done: ['guide'] });
+    expect(knowGuide(known)).toBe(known);
+    expect(nextTip(book(typed), known, asked)).toEqual({ id: 'capture' });
+    // Closed on its card: done, and a week's pause like any other.
+    const closed = closeTip(none, 'guide', today);
+    expect(nextTip(book(typed), closed, asked)).toBeNull();
+    expect(nextTip(book(typed), closed, { ...asked, today: new Date(2026, 10, 28, 12) })).not.toEqual({ id: 'guide' });
   });
 
   it('reads its stored state defensively', () => {

@@ -405,6 +405,14 @@
 @utility bottom-above-tabs { bottom: calc(86px + env(safe-area-inset-bottom)); }
 
 @utility scrim { background-color: var(--t-scrim); }
+/* The tour's mark (components/Tour.tsx): the page steps back behind the scrim, all but
+   the thing pointed at, which keeps a ring in the accent. It glides to the next mark. */
+@utility tour-mark {
+  box-shadow: 0 0 0 200vmax var(--t-scrim), 0 0 0 2px var(--t-accent);
+  transition: top 0.28s, left 0.28s, width 0.28s, height 0.28s, border-radius 0.28s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  @media (prefers-reduced-motion: reduce) { transition: none; }
+}
 
 /* Titles and headings: SF Pro Display with Apple's size-specific tracking —
    tighter as the type grows. */

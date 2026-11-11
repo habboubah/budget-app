@@ -107,7 +107,7 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
   const carryShort = b.overridden ? t.openingShort : b.prevKey ? t.carryShort : t.startingBalance;
 
   return (
-    <motion.section className="hero hero-glow hero-art hero-shine rounded-lg overflow-hidden" aria-label={t.balanceNow} {...swipe}>
+    <motion.section className="hero hero-glow hero-art hero-shine rounded-lg overflow-hidden" aria-label={t.balanceNow} data-tour="balance" {...swipe}>
       <div className="ps-5 pe-4 pt-5 pb-4">
         {/* The ring grows with the text size; once the balance would be squeezed
             beside it (the basis is in rem), it moves under the balance. */}

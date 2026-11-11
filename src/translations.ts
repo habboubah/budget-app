@@ -1063,6 +1063,19 @@ const de = {
   hintBackup: 'Seit über 30 Tagen gibt es keine Kopie deiner Daten außerhalb dieses iPhones.',
   hintBackupAction: 'Jetzt sichern',
   hintClose: 'Tipp ausblenden',
+  // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
+  // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
+  guideTitle: 'Anleitung',
+  guideRowSub: 'Alle Funktionen kurz erklärt, mit einer Tour',
+  guideAll: 'Alle Funktionen ansehen',
+  guideTourTitle: 'Kurze Tour',
+  guideTourStart: 'Tour starten',
+  tourStep: '{n} von {total}',
+  tourNext: 'Weiter',
+  tourEnd: 'Tour beenden',
+  // Its one tip (src/tips.ts).
+  hintGuide: 'Neu: eine Anleitung zu allen Funktionen, mit kurzer Tour.',
+  hintGuideAction: 'Anleitung öffnen',
 
   // Excel import
   excelSection: 'Excel',
@@ -2290,6 +2303,19 @@ const en: Strings = {
   hintBackup: 'For over 30 days there has been no copy of your data outside this iPhone.',
   hintBackupAction: 'Back up now',
   hintClose: 'Hide tip',
+  // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
+  // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
+  guideTitle: 'Guide',
+  guideRowSub: 'Every feature in brief, with a short tour',
+  guideAll: 'See all features',
+  guideTourTitle: 'Short tour',
+  guideTourStart: 'Start the tour',
+  tourStep: '{n} of {total}',
+  tourNext: 'Next',
+  tourEnd: 'End tour',
+  // Its one tip (src/tips.ts).
+  hintGuide: 'New: a guide to every feature, with a short tour.',
+  hintGuideAction: 'Open the guide',
 
   excelSection: 'Excel',
   importExcel: 'Import from Excel',
@@ -3527,6 +3553,19 @@ const ar: Strings = {
   hintBackup: 'منذ أكثر من 30 يوماً لا توجد نسخة من بياناتك خارج هذا الـiPhone.',
   hintBackupAction: 'نسخ احتياطي الآن',
   hintClose: 'إخفاء النصيحة',
+  // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
+  // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
+  guideTitle: 'الدليل',
+  guideRowSub: 'كل الميزات بإيجاز، مع جولة قصيرة',
+  guideAll: 'عرض كل الميزات',
+  guideTourTitle: 'جولة قصيرة',
+  guideTourStart: 'ابدأ الجولة',
+  tourStep: '{n} من {total}',
+  tourNext: 'التالي',
+  tourEnd: 'إنهاء الجولة',
+  // Its one tip (src/tips.ts).
+  hintGuide: 'جديد: دليل لكل الميزات، مع جولة قصيرة.',
+  hintGuideAction: 'افتح الدليل',
 
   // Excel import
   excelSection: 'Excel',

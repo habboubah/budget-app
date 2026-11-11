@@ -1,0 +1,69 @@
+import type { GuidePages } from './de';
+
+/* The guide's pages and the tour's sentences (see ./de.ts for the rules). */
+const cs: GuidePages = {
+  guideIntro: 'Stručně. „Ukázat“ tě zavede na správné místo.',
+  guideSearch: 'Hledat v průvodci',
+  guideShow: 'Ukázat',
+  guideRead: 'přečteno',
+  guideTourBody: 'Stránka měsíce v několika krocích – zabere méně než minutu.',
+
+  // The chapters (Planen is the tab’s own name).
+  guideChBasics: 'Základy',
+  guideChEntering: 'Zadávání',
+  guideChLooking: 'Vyhodnocení',
+  guideChImporting: 'Import',
+  guideChMore: 'Další v rozpočtu',
+  guideChSafe: 'Bezpečnost a data',
+
+  // The topics: a title where the feature has no label of its own in the app, and two or three sentences.
+  guideBalances: 'Dva zůstatky',
+  guideBalancesBody: '„{now}“ počítá, co je zaplaceno nebo přijato – tedy to, co ukazuje banka. „{end}“ zahrne i všechno, co ještě čeká. Čára mezi nimi ukazuje cestu.',
+  guidePaid: 'Zaplaceno, nebo čeká',
+  guidePaidBody: 'Kolečko před každou položkou: prázdné znamená, že čeká, plné, že je zaplacená. Klepnutí ji odškrtne, potažení doprava také. Potažení doleva ji smaže – dá se to vrátit.',
+  guideMonths: 'Měsíce a převod',
+  guideMonthsBody: 'Šipkami ‹ › přepínáš měsíc; klepnutí na jeho název ukáže všechny. Nový měsíc začne sám: zůstatek se převede a opakované položky přejdou jako čekající.',
+  guideCategoriesBody: 'Každá kategorie je karta na stránce měsíce. Klepnutí na záhlaví ji sbalí; položku přesuneš, když ji podržíš. Vlastní kategorie, barvy a klíčová slova nastavíš v části „{settings}“.',
+  guideSearchBody: 'Vyhledávací pole pod názvem měsíce najde názvy, poznámky, #štítky i částky – ve všech měsících. Tlačítko vedle ukáže jen to, co ještě čeká.',
+  guideDueBody: 'Čekající položky s datem stojí nahoře v aktuálním měsíci a dají se tam odškrtnout. Jakmile den uplyne, označí se jako po splatnosti.',
+  guideAddBody: 'Klepni na kulaté +. Nejdřív částka, pak název – kategorii navrhne Spartopf. Nad klávesnicí jsou klávesy + − × ÷: z 12,50+4,80 bude při uložení 17,30.',
+  guideRepeats: 'Opakované položky',
+  guideRepeatsBody: 'Nájem, výplata, předplatné: nastav v položce „{repeat}“ na měsíčně, každé 2 měsíce, čtvrtletně, pololetně nebo ročně. Položka se pak vrací sama – když chceš, jen do posledního měsíce.',
+  guideFavoritesBody: 'Co zadáváš často, ulož si v položce mezi oblíbené. Objeví se pak nad každou novou položkou a jedním klepnutím vyplní název, kategorii i částku.',
+  guideSplit: 'Rozdělení a vratky',
+  guideSplitBody: 'Jedna účtenka pro víc kategorií? Otevři položku a klepni na „{split}“. Když se peníze vrátí, zadej je přes „{refund}“ tam, kde byl nákup – sníží výdaje a nepočítají se jako příjem.',
+  guideReceipts: 'Účtenky a štítky',
+  guideReceiptsBody: '„{receipt}“ připojí k položce fotku nebo PDF; částku přečte Spartopf přímo v zařízení. „# {tag}“ označí položky, třeba #dovolená – najde je hledání i statistika.',
+  guideCaptureBody: 'Platby kartou a oznámení banky se mohou zapisovat samy – přes automatizaci v aplikaci Zkratky. Spartopf ti ukáže postup.',
+  guideBudgetsBody: 'Dej kategorii rozpočet na měsíc nebo na rok. Její pruh ukazuje, kolik zbývá, a Spartopf dá vědět, když dochází. Zbytek může přejít do dalšího měsíce.',
+  guideGoalsBody: 'Pokladnička je cíl s částkou a datem – dovolená, nové kolo. Plní ji položky, které k ní přiřadíš; „{plan}“ ukazuje, jak daleko jsi.',
+  guideOutlookBody: '„{plan}“ se dívá dopředu: příštích 30 dní, další měsíce a rezerva na účty, které chodí jen jednou ročně. „{whatIf}“ prověří nákup předem.',
+  guideContractsBody: 'Všechny pevné náklady na jednom místě. Zadej, do kdy smlouva běží a jak dlouho předem ji musíš vypovědět – Spartopf včas připomene.',
+  guideDebtsBody: 'Úvěry, splátky nebo půjčené peníze: Spartopf spočítá, kolik zbývá, kdy bude splaceno a co změní mimořádná splátka.',
+  guideStatsBody: 'Pohled zpět: míra úspor, příjmy a výdaje v čase, za co peníze jdou a ve které dny. Přejeď prstem po grafu – a ⓘ vysvětlí, jak se číslo počítá.',
+  guideReportsBody: 'Po každém měsíci shrne přehled, co vyčnívalo; na konci roku přijde ohlédnutí za rokem. Obojí lze sdílet jako PDF.',
+  guideBank: 'Import pohybů z banky',
+  guideBankBody: 'V nabídce „⋯“ měsíce: soubor CSV nebo výpis PDF z banky, případně fotka z bankovní aplikace. Všechno zkontroluješ, než se cokoli zapíše. Pravidla příště zařadí položky sama.',
+  guideInvoiceBody: 'Vyfoť QR kód na faktuře: příjemce, částka a účel platby se vyplní jako čekající položka.',
+  guideExcelBody: 'Vedeš rozpočet zatím v Excelu? Spartopf načte tabulku s jedním listem na měsíc a napřed ukáže, co převezme.',
+  guideReconcileBody: 'Spartopf nesouhlasí s bankou? Zadej, co ukazuje banka – rozdíl se zapíše jako položka, nebo se upraví počáteční zůstatek.',
+  guideAccountsBody: 'Na začátek stačí jeden účet. V části „{accounts}“ přidáš hotovost, spořicí účet nebo další – a převody mezi nimi, které nejsou příjem ani výdaj.',
+  guideProjectsBody: 'Vlastní rozpočet na dovolenou, stěhování nebo rekonstrukci – když chceš, s obdobím a v místní měně.',
+  guideMonthStartBody: 'Tvůj měsíc může začínat v den výplaty místo prvního – Spartopf pak plánuje od výplaty k výplatě.',
+  guidePrivate: 'Všechno zůstává v zařízení',
+  guidePrivateBody: 'Žádný účet, žádný server, žádné reklamy. Data opustí zařízení jen tehdy, když je exportuješ.',
+  guideBackupBody: 'Exportuj zálohu s heslem a nahraj ji na novém zařízení. Je tam i export CSV pro tabulkový procesor.',
+  guideLock: 'Zámek a skryté částky',
+  guideLockBody: 'V části „{settings}“ můžeš skrýt všechny částky, když se někdo dívá – a v aplikaci v telefonu zapnout zámek, aby ji neotevřel nikdo jiný.',
+  guideRemindersBody: 'Nech si připomenout čekající položky před splatností – a večer zápis denních výdajů. Bez částek, dokud je nezapneš.',
+  guideLookBody: '14 jazyků, světlý nebo tmavý vzhled, osm barev a tvoje měna: vše v části „{settings}“, v oddílu „{display}“.',
+
+  // The tour of the month page, one sentence a mark.
+  tourBalance: 'Nahoře: kolik je teď na účtu. Pod tím: kolik zbude na konci měsíce, až bude zaplaceno všechno, co čeká.',
+  tourTick: 'Klepnutí na kolečko položku odškrtne: zaplaceno místo čeká.',
+  tourMonth: 'Tady přepínáš měsíc. Opakované položky přejdou samy.',
+  tourTabs: '„{stats}“ se dívá zpět, „{plan}“ dopředu. Celého průvodce najdeš v části „{settings}“.',
+  tourAdd: 'A tady něco zadáš – nejdřív částku.',
+};
+
+export default cs;

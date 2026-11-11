@@ -1,0 +1,69 @@
+import type { GuidePages } from './de';
+
+/* The guide's pages and the tour's sentences (see ./de.ts for the rules). */
+const pt: GuidePages = {
+  guideIntro: 'Em resumo. «Mostrar» leva-te ao sítio certo.',
+  guideSearch: 'Pesquisar no guia',
+  guideShow: 'Mostrar',
+  guideRead: 'lido',
+  guideTourBody: 'A página do mês em poucos passos – menos de um minuto.',
+
+  // The chapters (Planen is the tab’s own name).
+  guideChBasics: 'O essencial',
+  guideChEntering: 'Registar',
+  guideChLooking: 'Analisar',
+  guideChImporting: 'Importar',
+  guideChMore: 'Mais no teu orçamento',
+  guideChSafe: 'Segurança e dados',
+
+  // The topics: a title where the feature has no label of its own in the app, and two or three sentences.
+  guideBalances: 'Os dois saldos',
+  guideBalancesBody: '«{now}» conta o que está pago ou recebido – o que o teu banco mostra. «{end}» inclui tudo o que ainda está pendente. A linha entre os dois mostra o caminho.',
+  guidePaid: 'Pago ou pendente',
+  guidePaidBody: 'O círculo antes de cada registo: vazio significa pendente, cheio significa pago. Um toque marca-o, e deslizar para a direita também. Deslizar para a esquerda apaga – e pode ser anulado.',
+  guideMonths: 'Meses e transição',
+  guideMonthsBody: 'Com ‹ › mudas de mês; um toque no nome mostra todos. Um mês novo começa sozinho: o saldo transita e os registos recorrentes vêm como pendentes.',
+  guideCategoriesBody: 'Cada categoria é um cartão na página do mês. Um toque no cabeçalho recolhe-o; mantém um registo premido para o mover. As tuas categorias, cores e palavras-chave configuram-se em «{settings}».',
+  guideSearchBody: 'O campo de pesquisa por baixo do nome do mês encontra nomes, notas, #etiquetas e valores – em todos os meses. O botão ao lado mostra só o que está pendente.',
+  guideDueBody: 'Os registos pendentes com data ficam no topo do mês em curso e podem ser marcados aí. Passado o dia, ficam assinalados como em atraso.',
+  guideAddBody: 'Toca no + redondo. Primeiro o valor, depois o nome – a categoria é sugerida pelo Spartopf. Por cima do teclado estão + − × ÷: 12,50+4,80 passa a 17,30 ao guardar.',
+  guideRepeats: 'Registos recorrentes',
+  guideRepeatsBody: 'Renda, ordenado, subscrições: define «{repeat}» no registo como todos os meses, de 2 em 2 meses, por trimestre, por semestre ou por ano. O registo volta depois sozinho – se quiseres, só até um último mês.',
+  guideFavoritesBody: 'O que registas muitas vezes, guarda como favorito a partir do próprio registo. Fica depois por cima de cada registo novo e preenche nome, categoria e valor com um toque.',
+  guideSplit: 'Dividir e reembolsos',
+  guideSplitBody: 'Um talão para várias categorias? Abre o registo e toca em «{split}». Quando o dinheiro volta, regista-o com «{refund}» onde estava a compra – reduz a despesa e não conta como receita.',
+  guideReceipts: 'Recibos e etiquetas',
+  guideReceiptsBody: '«{receipt}» anexa uma foto ou um PDF a um registo; o Spartopf lê o valor no próprio dispositivo. «# {tag}» marca registos, por exemplo #férias – a pesquisa e a análise voltam a encontrá-los.',
+  guideCaptureBody: 'Os pagamentos com cartão e as notificações do teu banco podem registar-se sozinhos – com uma automatização na app Atalhos. O Spartopf mostra-te os passos.',
+  guideBudgetsBody: 'Dá a uma categoria um orçamento por mês ou por ano. A barra mostra quanto falta, e o Spartopf avisa quando está a acabar. O que sobrar pode passar para o mês seguinte.',
+  guideGoalsBody: 'Um mealheiro é um objetivo com valor e data – as férias, a bicicleta nova. Os registos que lhe atribuis enchem-no; «{plan}» mostra até onde chegaste.',
+  guideOutlookBody: '«{plan}» olha em frente: os próximos 30 dias, os meses seguintes e a reserva para as contas que só chegam uma vez por ano. «{whatIf}» testa uma compra antes de a fazeres.',
+  guideContractsBody: 'Todos os teus custos fixos num relance. Indica até quando dura um contrato e com que antecedência tens de o cancelar – o Spartopf lembra-te a tempo.',
+  guideDebtsBody: 'Créditos, prestações ou dinheiro emprestado: o Spartopf calcula quanto falta, quando terminas e o que muda um pagamento extra.',
+  guideStatsBody: 'Um olhar para trás: taxa de poupança, receitas e despesas ao longo do tempo, para onde vai o dinheiro e em que dias. Passa o dedo por um gráfico – e o ⓘ explica como um número é calculado.',
+  guideReportsBody: 'Depois de cada mês, um relatório resume o que se destacou; no fim do ano chega o resumo do ano. Ambos podem ser partilhados em PDF.',
+  guideBank: 'Importar movimentos bancários',
+  guideBankBody: 'No menu «⋯» do mês: o ficheiro CSV ou o extrato em PDF do teu banco, ou uma foto da app do banco. Verificas tudo antes de algo ser registado. As regras classificam sozinhas da próxima vez.',
+  guideInvoiceBody: 'Tira uma foto ao código QR de uma fatura: beneficiário, valor e descritivo ficam preenchidos, como registo pendente.',
+  guideExcelBody: 'Tinhas o orçamento no Excel? O Spartopf lê uma folha com um separador por mês e mostra primeiro o que vai trazer.',
+  guideReconcileBody: 'O Spartopf e o banco não coincidem? Escreve o que o banco mostra – a diferença é lançada como registo, ou o saldo inicial é ajustado.',
+  guideAccountsBody: 'Para começar basta uma conta. Em «{accounts}» acrescentas dinheiro vivo, uma conta poupança ou outras – e transferências entre elas, que não são receita nem despesa.',
+  guideProjectsBody: 'Um orçamento próprio para as férias, a mudança ou as obras – se quiseres, com datas e na moeda local.',
+  guideMonthStartBody: 'O teu mês pode começar no dia do ordenado em vez do dia 1 – o Spartopf planeia então de ordenado a ordenado.',
+  guidePrivate: 'Tudo fica no dispositivo',
+  guidePrivateBody: 'Sem conta, sem servidor, sem anúncios. Os teus dados só saem do dispositivo se os exportares tu.',
+  guideBackupBody: 'Exporta uma cópia de segurança com palavra-passe e volta a carregá-la num dispositivo novo. A exportação CSV para folha de cálculo também está lá.',
+  guideLock: 'Bloqueio e valores ocultos',
+  guideLockBody: 'Em «{settings}» podes ocultar todos os valores quando alguém está a ver – e, na app do telemóvel, ativar o bloqueio para só tu a abrires.',
+  guideRemindersBody: 'Recebe um lembrete dos registos pendentes antes de vencerem – e à noite para registar as despesas do dia. Sem valores, até os ativares.',
+  guideLookBody: '14 idiomas, claro ou escuro, oito cores e a tua moeda: tudo em «{settings}», em «{display}».',
+
+  // The tour of the month page, one sentence a mark.
+  tourBalance: 'Em cima: o que está agora na conta. Por baixo: o que sobra no fim do mês, depois de pago tudo o que está pendente.',
+  tourTick: 'Um toque no círculo marca um registo: pago em vez de pendente.',
+  tourMonth: 'É aqui que mudas de mês. Os registos recorrentes vêm sozinhos.',
+  tourTabs: '«{stats}» olha para trás, «{plan}» olha em frente. O guia completo está em «{settings}».',
+  tourAdd: 'E é aqui que registas algo – primeiro o valor.',
+};
+
+export default pt;
