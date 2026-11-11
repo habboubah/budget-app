@@ -732,6 +732,8 @@ const pt: Strings = {
   moveDown: 'Mover para baixo',
   transferTitle: 'Cópia de segurança e transferência',
   transferFooter: 'Cópia de segurança, importação do Excel e exportação CSV. Tudo fica neste dispositivo.',
+  moreSection: 'Mais funcionalidades',
+  transferRowSub: 'Cópia de segurança, Excel e CSV',
   debugSection: 'Teste (só desenvolvimento)',
   debugWipeWebData: 'Apagar dados do WebKit',
   debugWiped: 'Dados do WebKit apagados – reinicia agora a app',

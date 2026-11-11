@@ -1314,6 +1314,8 @@ export default function App() {
             currency={store.currency}
             onCurrency={store.setCurrency}
             t={t}
+            monthCount={data.months.length}
+            entryCount={allView.entries.length}
             categoryCount={categories.length}
             onLanguage={store.setLanguage}
             onTheme={store.setThemeMode}

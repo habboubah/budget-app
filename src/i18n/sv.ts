@@ -732,6 +732,8 @@ const sv: Strings = {
   moveDown: 'Flytta ned',
   transferTitle: 'Säkerhetskopiera och flytta',
   transferFooter: 'Säkerhetskopia, Excel-import och CSV-export. Allt stannar på den här enheten.',
+  moreSection: 'Fler funktioner',
+  transferRowSub: 'Säkerhetskopia, Excel och CSV',
   debugSection: 'Test (bara utveckling)',
   debugWipeWebData: 'Radera WebKit-data',
   debugWiped: 'WebKit-data raderad – starta om appen nu',

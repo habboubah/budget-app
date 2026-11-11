@@ -187,6 +187,17 @@ amounts in a file only readable while the phone is unlocked)
   08 (SE keyboard), 09 (0/3/8 favourites), 10, 11, 12 (VoiceOver on the
   ring), 20, 21, 26, 29.
 
+## Optionen, reordered (November 2026)
+
+On the branch `redesign-settings`, which sits on top of `tutorial` (the guide
+is one of the two cards at the top), so merging it brings the guide along:
+
+- [ ] **Look through Optionen once on the iPhone**, in the app (the lock,
+  reminders and the phone's backup only show there): is everything where you
+  expect it? The order is in `docs/features.md` under *Optionen*.
+- [ ] `Weitere Funktionen` and the short line under *Sichern und übertragen*
+  are two new strings, machine-drafted in the eleven other languages.
+
 ## Statistik and Planen, third pass (November 2026)
 
 On `main` (11 Nov, merged from `redesign-statistik-planen`). Built and

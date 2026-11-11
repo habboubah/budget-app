@@ -732,6 +732,8 @@ const fr: Strings = {
   moveDown: 'Descendre',
   transferTitle: 'Sauvegarder et transférer',
   transferFooter: 'Sauvegarde, import Excel et export CSV. Tout reste sur cet appareil.',
+  moreSection: 'Autres fonctions',
+  transferRowSub: 'Sauvegarde, Excel et CSV',
   debugSection: 'Test (développement seulement)',
   debugWipeWebData: 'Effacer les données WebKit',
   debugWiped: 'Données WebKit effacées – redémarrez l’appli maintenant',

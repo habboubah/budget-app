@@ -734,6 +734,8 @@ const tr: Strings = {
   moveDown: 'Aşağı taşı',
   transferTitle: 'Yedekle ve aktar',
   transferFooter: 'Yedek, Excel’den içe aktarma ve CSV dışa aktarma. Her şey bu cihazda kalır.',
+  moreSection: 'Diğer özellikler',
+  transferRowSub: 'Yedek, Excel ve CSV',
   debugSection: 'Test (yalnızca geliştirme)',
   debugWipeWebData: 'WebKit verilerini sil',
   debugWiped: 'WebKit verileri silindi – şimdi uygulamayı yeniden başlat',

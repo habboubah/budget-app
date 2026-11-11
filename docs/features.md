@@ -94,7 +94,7 @@ Nothing stands between a new user and the month page — the setup card is the
 first thing to do, not something to read. What there is to learn is there
 when it is wanted:
 
-- **Anleitung** — the first row of *Optionen*. Every feature in two or three
+- **Anleitung** — the first card of *Optionen*. Every feature in two or three
   sentences, in seven chapters (*Die Grundlagen, Eintragen, Planen, Auswerten,
   Importieren, Mehr im Haushaltsbuch, Sicherheit und Daten*), with a search
   over all of it. A row opens to its text and **Zeigen**, which goes to the
@@ -211,7 +211,7 @@ when it is wanted:
 - **Import rules.** Correct an imported entry's category and Spartopf offers
   to remember it — *nur diesen*, *auch künftige „REWE"*, or *auch alle
   bisherigen*. Rules can also leave transfers out (*nicht übernehmen*).
-  Manage them in *Optionen › Haushaltsbuch › Regeln*.
+  Manage them in *Optionen › Weitere Funktionen › Regeln*.
 - **Scan an invoice.** "⋯" → *Rechnung scannen (QR-Code)*: take a photo (or
   pick a screenshot) of the payment QR code many invoices carry — the
   GiroCode. The entry sheet opens with the payee, the amount and, as the
@@ -422,6 +422,26 @@ when it is wanted:
   takes a tap, shows a preview and is undoable; the crash screen can restore
   the latest. After 90 days without a copy leaving the phone, a dismissable
   card reminds you to export one.
+
+## Optionen — in the order they're needed
+
+The page opens with what the app is — its name and version, "ohne Konto,
+ohne Server", and how much your book holds (months and entries, never an
+amount). Under it two large cards: the **Anleitung**, and **Sichern und
+übertragen**. Then:
+
+- **Haushaltsbuch** — what every book has: categories and budgets,
+  accounts, favourites, the day the month begins.
+- **Weitere Funktionen** — what you may use: debts and loans, trips and
+  projects, the tax list, import rules, automatic capture (iPhone).
+- **Darstellung** — language, light or dark, the colour, the currency.
+- **Sicherheit und Mitteilungen** — hide amounts, the lock, reminders, the
+  phone's backup.
+- **Ausprobieren** (test data), **Über Spartopf** (rate, feedback, privacy),
+  and last, on its own, *App zurücksetzen*.
+
+Every row has an icon in its own colour within its group; counts (21
+categories, 3 favourites) sit in a small pill at the row's end.
 
 ## Look, languages, accessibility
 

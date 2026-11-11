@@ -734,6 +734,8 @@ const pl: Strings = {
   moveDown: 'Przesuń w dół',
   transferTitle: 'Kopia i przenoszenie',
   transferFooter: 'Kopia zapasowa, import z Excela i eksport CSV. Wszystko zostaje na tym urządzeniu.',
+  moreSection: 'Więcej funkcji',
+  transferRowSub: 'Kopia zapasowa, Excel i CSV',
   debugSection: 'Test (tylko dla deweloperów)',
   debugWipeWebData: 'Usuń dane WebKit',
   debugWiped: 'Usunięto dane WebKit – uruchom teraz aplikację ponownie',

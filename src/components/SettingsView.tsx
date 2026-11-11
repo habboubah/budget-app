@@ -1,5 +1,5 @@
-import { CSSProperties, ReactNode, useId, useState } from 'react';
-import { ArrowUpRight, Bell, Check, ChevronRight, CloudUpload, Coins, Compass, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Landmark, Languages, Lock, Luggage, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins, CalendarRange, Zap } from 'lucide-react';
+import React, { CSSProperties, ReactNode, useId, useState } from 'react';
+import { ArrowUpRight, Bell, CalendarDays, Check, ChevronRight, CloudUpload, Coins, Compass, Download, EyeOff, Filter, FlaskConical, FlaskConicalOff, Fingerprint, Landmark, Languages, ListChecks, Lock, Luggage, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Tags, Trash2, Wallet, HandCoins, CalendarRange, Zap } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -16,6 +16,9 @@ interface Props {
   themeMode: ThemeMode;
   accent: Accent;
   t: Strings;
+  /** How much the book holds, for the card at the top: its started months and its entries (no amounts). */
+  monthCount: number;
+  entryCount: number;
   categoryCount: number;
   onLanguage: (l: Language) => void;
   onTheme: (m: ThemeMode) => void;
@@ -78,13 +81,45 @@ function Away() {
   return <ArrowUpRight className="shrink-0 w-5 h-5 text-fg-faint rtl:-scale-x-100" aria-hidden="true" />;
 }
 
-/** A row's end when it pushes a screen: a value (the count), then ›. */
+/** A row's end when it pushes a screen: a value (a count, a day) in a soft pill, then ›. */
 function Next({ value }: { value?: ReactNode }) {
   return (
-    <span className="shrink-0 flex items-center gap-1 text-fg-mute">
-      {value !== undefined && <span className="num text-body">{value}</span>}
+    <span className="shrink-0 flex items-center gap-1.5 text-fg-mute">
+      {value !== undefined && (
+        <span className="min-w-[1.75rem] min-h-[1.5rem] px-2 rounded-full bg-surface-2 inline-flex items-center justify-center text-caption font-semibold tabular-nums">{value}</span>
+      )}
       <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
     </span>
+  );
+}
+
+/**
+ * One of the two cards under the header — the guide, and backup and transfer:
+ * where help and safety are looked for, so they are large and first. A card
+ * that is one button (it gives a little under the finger); the two sit side
+ * by side and stack when large text no longer fits them abreast.
+ */
+function QuickTile({ icon, hue, label, sub, onClick }: {
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  hue: string;
+  label: string;
+  sub: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => { tapLight(); onClick(); }}
+      // A column from the top: a button would centre its content, and the taller card's icon would sit lower than its neighbour's.
+      className="flex-1 basis-[9.5rem] min-w-0 rounded-md bg-surface card-edge press p-[14px] flex flex-col items-stretch justify-start text-start focus-visible:ring-focus"
+    >
+      <span className="flex items-center justify-between gap-2">
+        <IconTile icon={icon} hue={hue} />
+        <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
+      </span>
+      <span className="block mt-2.5 text-body font-semibold text-fg wrap-compound">{label}</span>
+      <span className="block mt-0.5 text-caption text-fg-mute wrap-compound">{sub}</span>
+    </button>
   );
 }
 
@@ -143,14 +178,24 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
 }
 
 /**
- * Optionen, grouped as iOS Settings is: the guide on top, then Sicherheit und Mitteilungen (the
- * Face ID lock, hiding amounts, the iPhone backup, reminders — the lock, the
- * backup and reminders in the iPhone app only), Darstellung (language, light
- * or dark, the colour), Haushaltsbuch (categories and budgets; backup and
- * transfer on a screen of their own), Ausprobieren (test data in, test data
- * out), Über Spartopf (rate it, send feedback, the privacy policy — plan 15),
- * then resetting the app and what the app is. Later features join
- * their group.
+ * Optionen, in the order they are needed rather than the order they were
+ * built:
+ *
+ *   1. the header on the hero — what the app is, its version, how much the
+ *      book holds (months and entries; never an amount);
+ *   2. two large cards: the guide, and backup and transfer;
+ *   3. *Haushaltsbuch* — what every book has: categories and budgets,
+ *      accounts, favourites, the day the month begins;
+ *   4. *Weitere Funktionen* — what a book may use: debts, trips and projects,
+ *      the tax list, import rules, automatic capture (iPhone);
+ *   5. *Darstellung* — language, light or dark, the colour, the currency
+ *      (the guide sends people here by this name: keep those four in it);
+ *   6. *Sicherheit und Mitteilungen* — hiding amounts first (every device
+ *      has it), then the lock, reminders and the phone's backup (apps only);
+ *   7. *Ausprobieren*, *Über Spartopf*, and last, on its own, resetting.
+ *
+ * Every icon tile in a group has its own colour, so a row is found by it. A
+ * later feature joins its group; a new group needs a reason.
  */
 export function SettingsView(p: Props) {
   const { t } = p;
@@ -160,61 +205,100 @@ export function SettingsView(p: Props) {
   const [pendingCurrency, setPendingCurrency] = useState<Currency | null>(null);
   const lockLabel = p.lockKind === 'faceId' ? t.lockFaceId : p.lockKind === 'touchId' ? t.lockTouchId : t.lockCode;
   const LockIcon = p.lockKind === 'faceId' ? ScanFace : p.lockKind === 'touchId' ? Fingerprint : Lock;
+  // From two on: the strings are plurals ("14 Monate").
+  const facts = [
+    ...(p.monthCount > 1 ? [{ icon: CalendarDays, text: fmt(t.averageSpanN, { n: p.monthCount }) }] : []),
+    ...(p.entryCount > 1 ? [{ icon: ListChecks, text: fmt(t.tagEntries, { n: p.entryCount }) }] : []),
+  ];
 
   return (
     <Screen title={t.tabSettings} tabbed>
-      {/* First, where help is looked for: the guide to everything below and beyond. */}
-      <Group>
+      <section className="rounded-lg hero hero-glow hero-art overflow-hidden text-on-hero p-[18px]" aria-labelledby="about-title">
+        <div className="flex items-center gap-3.5">
+          <img src="/icon.svg" alt="" className="w-[52px] h-[52px] rounded-[14px] shrink-0 shadow-[0_0_0_1px_rgb(255_255_255/0.2)]" />
+          <div className="min-w-0 flex-1">
+            <h2 id="about-title" className="display text-heading font-semibold wrap-compound">{t.about}</h2>
+            <p className="text-caption text-on-hero-mute tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
+          </div>
+        </div>
+        <p className="mt-3 text-label text-on-hero-mute wrap-prose">{t.aboutBody}</p>
+        {facts.length > 0 && (
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {facts.map(f => (
+              <li key={f.text} className="min-h-[30px] ps-2.5 pe-3 py-1 rounded-full hero-panel inline-flex items-center gap-1.5 text-caption font-semibold text-on-hero tabular-nums">
+                <f.icon className="w-[15px] h-[15px] shrink-0 text-on-hero-soft" strokeWidth={2.2} aria-hidden="true" />
+                {f.text}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Where help and safety are looked for: large, and first. */}
+      <div className="flex flex-wrap gap-[12px]">
+        <QuickTile icon={Compass} hue="blue" label={t.guideTitle} sub={t.guideRowSub} onClick={p.onGuide} />
+        <QuickTile icon={Download} hue="sky" label={t.transferTitle} sub={t.transferRowSub} onClick={p.onTransfer} />
+      </div>
+
+      <Group title={t.bookSection}>
         <Row
-          label={t.guideTitle}
-          sub={t.guideRowSub}
-          leading={<IconTile icon={Compass} hue="blue" />}
-          trailing={<Next />}
-          onClick={p.onGuide}
+          label={t.categoriesTitle}
+          leading={<IconTile icon={Tags} hue="lavender" />}
+          trailing={<Next value={p.categoryCount} />}
+          onClick={p.onCategories}
+        />
+        <Row
+          label={t.accountsTitle}
+          sub={t.accountsRowSub}
+          leading={<IconTile icon={Wallet} hue="leaf" />}
+          trailing={<Next value={p.accountCount > 1 ? p.accountCount : undefined} />}
+          onClick={p.onAccounts}
+        />
+        <Row
+          label={t.favorites}
+          sub={t.favoritesSub}
+          leading={<IconTile icon={Star} hue="lemon" />}
+          trailing={<Next value={p.favoriteCount || undefined} />}
+          onClick={p.onFavorites}
+        />
+        <Row
+          label={t.monthStartRow}
+          sub={t.monthStartRowSub}
+          leading={<IconTile icon={CalendarRange} hue="tomato" />}
+          trailing={<Next value={fmt(t.monthStartValue, { day: p.monthStart })} />}
+          onClick={p.onMonthStart}
         />
       </Group>
 
-      <Group title={t.securitySection}>
-        {p.lockKind && (
-          <Row
-            label={lockLabel}
-            sub={t.lockSub}
-            leading={<IconTile icon={LockIcon} hue="leaf" />}
-            trailing={<Switch checked={p.lockOn} onChange={p.onLock} label={lockLabel} className="-me-2" />}
-          />
-        )}
+      <Group title={t.moreSection}>
         <Row
-          label={t.hideAmounts}
-          sub={t.hideAmountsSub}
-          leading={<IconTile icon={EyeOff} hue="berry" />}
-          trailing={<Switch checked={p.hideAmounts} onChange={p.onHideAmounts} label={t.hideAmounts} className="-me-2" />}
+          label={t.debtsTitle}
+          sub={t.debtsRowSub}
+          leading={<IconTile icon={HandCoins} hue="carrot" />}
+          trailing={<Next value={p.debtCount || undefined} />}
+          onClick={p.onDebts}
         />
-        {p.deviceBackup !== null && (
-          <Row
-            label={t.deviceBackup}
-            sub={p.deviceBackup ? t.deviceBackupOn : t.deviceBackupOff}
-            leading={<IconTile icon={CloudUpload} hue="sky" />}
-            trailing={
-              <Switch
-                checked={p.deviceBackup}
-                onChange={on => { if (!p.deviceBackupBusy) p.onDeviceBackup(on); }}
-                label={t.deviceBackup}
-                className={`-me-2 ${p.deviceBackupBusy ? 'opacity-60' : ''}`}
-              />
-            }
-          />
-        )}
-        {p.reminders && (
-          <Row
-            label={t.remindersRow}
-            // The setting as a line under it: long in German, and text in Arabic (no `num`).
-            sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}`
-              : p.reminders.nudge ? `${t.nudgeRow} · ${timeLabel(p.reminders.nudgeTime, t.locale)}` : t.remindersOff}
-            leading={<IconTile icon={Bell} hue="tomato" />}
-            trailing={<Next />}
-            onClick={p.onReminders}
-          />
-        )}
+        <Row
+          label={t.projectsTitle}
+          sub={t.projectsRowSub}
+          leading={<IconTile icon={Luggage} hue="mint" />}
+          trailing={<Next value={p.projectCount || undefined} />}
+          onClick={p.onProjects}
+        />
+        <Row
+          label={t.taxTitle}
+          sub={t.taxRowSub}
+          leading={<IconTile icon={Landmark} hue="stone" />}
+          trailing={<Next />}
+          onClick={p.onTax}
+        />
+        <Row
+          label={t.rulesRow}
+          sub={t.rulesRowSub}
+          leading={<IconTile icon={Filter} hue="plum" />}
+          trailing={<Next value={p.ruleCount || undefined} />}
+          onClick={p.onRules}
+        />
         {p.onCapture && (
           <Row
             label={t.captureRow}
@@ -255,68 +339,47 @@ export function SettingsView(p: Props) {
         />
       </Group>
 
-      <Group title={t.bookSection} footer={t.transferFooter}>
+      <Group title={t.securitySection}>
         <Row
-          label={t.categoriesTitle}
-          leading={<IconTile icon={Tags} hue="lavender" />}
-          trailing={<Next value={p.categoryCount} />}
-          onClick={p.onCategories}
+          label={t.hideAmounts}
+          sub={t.hideAmountsSub}
+          leading={<IconTile icon={EyeOff} hue="berry" />}
+          trailing={<Switch checked={p.hideAmounts} onChange={p.onHideAmounts} label={t.hideAmounts} className="-me-2" />}
         />
-        <Row
-          label={t.favorites}
-          sub={t.favoritesSub}
-          leading={<IconTile icon={Star} hue="lemon" />}
-          trailing={<Next value={p.favoriteCount || undefined} />}
-          onClick={p.onFavorites}
-        />
-        <Row
-          label={t.accountsTitle}
-          sub={t.accountsRowSub}
-          leading={<IconTile icon={Wallet} hue="leaf" />}
-          trailing={<Next value={p.accountCount > 1 ? p.accountCount : undefined} />}
-          onClick={p.onAccounts}
-        />
-        <Row
-          label={t.debtsTitle}
-          sub={t.debtsRowSub}
-          leading={<IconTile icon={HandCoins} hue="sand" />}
-          trailing={<Next value={p.debtCount || undefined} />}
-          onClick={p.onDebts}
-        />
-        <Row
-          label={t.projectsTitle}
-          sub={t.projectsRowSub}
-          leading={<IconTile icon={Luggage} hue="sand" />}
-          trailing={<Next value={p.projectCount || undefined} />}
-          onClick={p.onProjects}
-        />
-        <Row
-          label={t.taxTitle}
-          sub={t.taxRowSub}
-          leading={<IconTile icon={Landmark} hue="sand" />}
-          trailing={<Next />}
-          onClick={p.onTax}
-        />
-        <Row
-          label={t.rulesRow}
-          sub={t.rulesRowSub}
-          leading={<IconTile icon={Filter} hue="sand" />}
-          trailing={<Next value={p.ruleCount || undefined} />}
-          onClick={p.onRules}
-        />
-        <Row
-          label={t.monthStartRow}
-          sub={t.monthStartRowSub}
-          leading={<IconTile icon={CalendarRange} hue="sky" />}
-          trailing={<Next value={fmt(t.monthStartValue, { day: p.monthStart })} />}
-          onClick={p.onMonthStart}
-        />
-        <Row
-          label={t.transferTitle}
-          leading={<IconTile icon={Download} hue="sky" />}
-          trailing={<Next />}
-          onClick={p.onTransfer}
-        />
+        {p.lockKind && (
+          <Row
+            label={lockLabel}
+            sub={t.lockSub}
+            leading={<IconTile icon={LockIcon} hue="leaf" />}
+            trailing={<Switch checked={p.lockOn} onChange={p.onLock} label={lockLabel} className="-me-2" />}
+          />
+        )}
+        {p.reminders && (
+          <Row
+            label={t.remindersRow}
+            // The setting as a line under it: long in German, and text in Arabic (no `num`).
+            sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}`
+              : p.reminders.nudge ? `${t.nudgeRow} · ${timeLabel(p.reminders.nudgeTime, t.locale)}` : t.remindersOff}
+            leading={<IconTile icon={Bell} hue="tomato" />}
+            trailing={<Next />}
+            onClick={p.onReminders}
+          />
+        )}
+        {p.deviceBackup !== null && (
+          <Row
+            label={t.deviceBackup}
+            sub={p.deviceBackup ? t.deviceBackupOn : t.deviceBackupOff}
+            leading={<IconTile icon={CloudUpload} hue="sky" />}
+            trailing={
+              <Switch
+                checked={p.deviceBackup}
+                onChange={on => { if (!p.deviceBackupBusy) p.onDeviceBackup(on); }}
+                label={t.deviceBackup}
+                className={`-me-2 ${p.deviceBackupBusy ? 'opacity-60' : ''}`}
+              />
+            }
+          />
+        )}
       </Group>
 
       <Group title={t.demoSection} footer={t.demoFooter}>
@@ -343,16 +406,10 @@ export function SettingsView(p: Props) {
         <Row label={t.privacyPolicy} leading={<IconTile icon={ShieldCheck} hue="leaf" />} trailing={<Away />} onClick={p.onPrivacy} />
       </Group>
 
+      {/* Last and alone: nothing else sits beside what erases everything. */}
       <Group>
         <Row label={t.deleteAll} danger leading={<IconTile icon={Trash2} hue="tomato" />} onClick={() => setConfirmDelete(true)} />
       </Group>
-
-      <section className="text-center pt-4 pb-2 px-6">
-        <img src="/icon.svg" alt="" className="w-14 h-14 rounded-[14px] mx-auto" />
-        <p className="display text-heading font-semibold text-fg mt-3">{t.about}</p>
-        <p className="text-label text-fg-mute mt-1 wrap-prose">{t.aboutBody}</p>
-        <p className="text-caption text-fg-mute mt-3 tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
-      </section>
 
       <Confirm
         open={!!pendingCurrency}

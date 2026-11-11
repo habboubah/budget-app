@@ -735,6 +735,8 @@ const cs: Strings = {
   moveDown: 'Posunout dolů',
   transferTitle: 'Záloha a přenos',
   transferFooter: 'Záloha, import z Excelu a export CSV. Vše zůstává v tomto zařízení.',
+  moreSection: 'Další funkce',
+  transferRowSub: 'Záloha, Excel a CSV',
   debugSection: 'Test (jen pro vývoj)',
   debugWipeWebData: 'Smazat data WebKitu',
   debugWiped: 'Data WebKitu smazána – teď aplikaci restartuj',

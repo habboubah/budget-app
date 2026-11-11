@@ -119,7 +119,7 @@ try {
   await step('the guide opened, searched, and the tour taken', async () => {
     // The guide's screen, its words and the tour are chunks loaded here for the first time: from this origin only.
     await tab(3);
-    await page.locator('main section button').first().click();
+    await page.locator('main button', { hasText: 'Anleitung' }).first().click();
     await page.waitForSelector('[data-guide-topic]', { timeout: 10000 });
     await page.locator('input[type="search"]').fill('pdf');
     await page.waitForTimeout(200);

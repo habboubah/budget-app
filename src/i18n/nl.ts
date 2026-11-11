@@ -731,6 +731,8 @@ const nl: Strings = {
   moveDown: 'Omlaag',
   transferTitle: 'Back-up en overzetten',
   transferFooter: 'Back-up, Excel-import en CSV-export. Alles blijft op dit apparaat.',
+  moreSection: 'Meer functies',
+  transferRowSub: 'Back-up, Excel en CSV',
   debugSection: 'Test (alleen ontwikkeling)',
   debugWipeWebData: 'WebKit-gegevens wissen',
   debugWiped: 'WebKit-gegevens gewist – start de app nu opnieuw',

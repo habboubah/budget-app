@@ -166,6 +166,21 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   - Debug: `localStorage['spartopf-debug'] = '1'` (Safari Web Inspector on a
     device) shows *WebKit-Daten löschen* in *Sichern und übertragen* — what
     iOS does when it reclaims web storage; after a relaunch the file has it all.
+- **Optionen (`SettingsView`) is ordered by need, not by history:** the
+  header on the hero (icon, name, version, the tagline, how many months and
+  entries the book holds — counts from two on, since the strings are
+  plurals, and never an amount), two `QuickTile` cards (the guide; backup
+  and transfer), then *Haushaltsbuch* (what every book has: categories,
+  accounts, favourites, the month's first day), *Weitere Funktionen* (what a
+  book may use: debts, projects, the tax list, import rules, automatic
+  capture), *Darstellung* (language, appearance, colour, currency — the
+  guide's `{display}` sends people here, so those four stay in it),
+  *Sicherheit und Mitteilungen* (hide amounts first, then the lock,
+  reminders, the phone's backup), *Ausprobieren*, *Über Spartopf*, and
+  resetting last and alone. A new row joins the group it belongs to and
+  takes an `IconTile` hue no other row of that group has; a count goes into
+  `Next`'s pill. Scripts find rows by their text (`main button` with the
+  label), so a row may move freely but must stay a button with its label.
 - **Screens** live in `src/components/XxxView.tsx`; forms shown in a bottom
   sheet are `XxxSheet.tsx`. Named exports, `Props` interface above.
 - **Shared primitives** live in `src/ui/` (`Screen`, `Sheet`, `Button`,
@@ -359,7 +374,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   **schema 28** `AppData.projects` (below);
   **schema 29** `Entry.tax` (a `TaxKind`; `taxYear` / `taxYears` in
   `insights/tax.ts` list what is marked *and paid* by kind, in the year of
-  the entry's date; `TaxView` under *Optionen › Haushaltsbuch*, whose switch
+  the entry's date; `TaxView` under *Optionen › Weitere Funktionen*, whose switch
   — view preference `spartopf-tax-marks`, or any marked entry — puts the
   *Steuer* pill into the entry sheet; the PDF is `PrintSpec.kind: 'tax'`
   through `PrintReport`. The app collects and says it gives no tax advice:
@@ -627,7 +642,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   first action), tips at the moment they help (above), and — new — a place to
   look things up that is always in the same spot, plus a tour that only runs
   when asked for.
-  - **The guide** is the first row of *Optionen* (`GuideView`, pushed as
+  - **The guide** is the first card of *Optionen* (a `QuickTile`) (`GuideView`, pushed as
     `guide`): the tour's card, then `GUIDE_TOPICS` by chapter — a row opens
     to two or three sentences and *Zeigen* (`GuideAction`, run by
     `guideGo` in App: a tab, a pushed screen, or something on the month page
@@ -713,7 +728,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   currency, takes a **new** entry's amount in that currency:
   `fromProjectCurrency(typed, project)` is what is saved, the typed amount
   becomes the note. Rates are typed, never fetched. `ProjectsView` (from
-  *Optionen › Haushaltsbuch*, the way in), `ProjectSheet`, and Planen's
+  *Optionen › Weitere Funktionen*, the way in), `ProjectSheet`, and Planen's
   `ProjectsCard` once there is one. Deleting a project keeps the tags.
 - **Debts and loans (plan 31, `src/insights/debts.ts`, pure and tested).**
   `Debt { name, direction: 'owe' | 'owed', principal, start, rate?, payment?,

@@ -731,6 +731,8 @@ const da: Strings = {
   moveDown: 'Flyt ned',
   transferTitle: 'Sikkerhedskopi og overførsel',
   transferFooter: 'Sikkerhedskopi, Excel-import og CSV-eksport. Alt bliver på denne enhed.',
+  moreSection: 'Flere funktioner',
+  transferRowSub: 'Sikkerhedskopi, Excel og CSV',
   debugSection: 'Test (kun udvikling)',
   debugWipeWebData: 'Slet WebKit-data',
   debugWiped: 'WebKit-data slettet – genstart appen nu',

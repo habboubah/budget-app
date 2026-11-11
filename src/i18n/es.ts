@@ -731,6 +731,8 @@ const es: Strings = {
   moveDown: 'Bajar',
   transferTitle: 'Copia de seguridad y traspaso',
   transferFooter: 'Copia de seguridad, importación de Excel y exportación CSV. Todo se queda en este dispositivo.',
+  moreSection: 'Más funciones',
+  transferRowSub: 'Copia de seguridad, Excel y CSV',
   debugSection: 'Pruebas (solo desarrollo)',
   debugWipeWebData: 'Borrar datos de WebKit',
   debugWiped: 'Datos de WebKit borrados – reinicia la app ahora',

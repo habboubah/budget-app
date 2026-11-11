@@ -154,6 +154,12 @@ Write 1–3 short lines per release, e.g.
 
 ### Next release (after 1.2.0)
 
+**DE:** Optionen neu geordnet: oben die Anleitung und „Sichern und übertragen“, darunter erst dein Haushaltsbuch, dann weitere Funktionen, Darstellung und Sicherheit.
+
+**EN:** Settings, reordered: the guide and "Back up and transfer" on top, then your budget book, more features, display and security.
+
+**AR:** إعادة ترتيب الإعدادات: الدليل و«النسخ الاحتياطي والنقل» في الأعلى، ثم دفتر ميزانيتك، فالميزات الإضافية والعرض والأمان.
+
 **DE:** Neu: die Anleitung. Unter Optionen findest du jede Funktion kurz erklärt – mit „Zeigen“ bist du gleich an der richtigen Stelle. Dazu eine kurze Tour über die Monatsseite, wenn du sie möchtest.
 
 **EN:** New: the guide. Under Settings you'll find every feature explained in brief – "Show me" takes you straight to the right place. Plus a short tour of the month page, whenever you want it.
