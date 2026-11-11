@@ -87,6 +87,8 @@ try {
     localStorage.setItem('spartopf-contracts', JSON.stringify(y.contracts));
     localStorage.setItem('spartopf-meta', JSON.stringify({ schemaVersion: 10, seeded: true }));
     localStorage.setItem('spartopf-intro-done', '1');
+    // Not a new install's month page: the tip about the guide has been met.
+    localStorage.setItem('spartopf-tip-state', '{"done":["guide"]}');
     // Long tasks, from the first moment on.
     window.__long = [];
     new PerformanceObserver(list => { for (const e of list.getEntries()) window.__long.push(e.duration); }).observe({ type: 'longtask', buffered: true });

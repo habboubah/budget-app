@@ -218,6 +218,8 @@ async function shoot(browser, lang, demo) {
     localStorage.setItem('spartopf-meta', JSON.stringify({ schemaVersion: d.schema, seeded: true }));
     localStorage.setItem('spartopf-lang', lng);
     localStorage.setItem('spartopf-intro-done', '1');
+    // Not a new install's month page: the tip about the guide has been met.
+    localStorage.setItem('spartopf-tip-state', '{"done":["guide"]}');
   }, [data, lang]);
 
   const failed = [];

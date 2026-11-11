@@ -63,6 +63,7 @@ const LANGS = {
   de: {
     locale: 'de-DE',
     categories: 'Kategorien',
+    guide: 'Anleitung',
     transfer: 'Sichern und übertragen',
     reminders: 'An offene Posten erinnern',
     capture: 'Automatisch erfassen',
@@ -79,6 +80,7 @@ const LANGS = {
   ar: {
     locale: 'ar',
     categories: 'الفئات',
+    guide: 'الدليل',
     transfer: 'النسخ الاحتياطي والنقل',
     reminders: 'التذكير بالبنود المعلّقة',
     capture: 'التسجيل التلقائي',
@@ -199,6 +201,24 @@ const tab = n => async page => { await page.locator('nav button:not(.hero)').nth
 const openCategories = async (page, l) => {
   await tab(3)(page);
   await page.locator('main button', { hasText: l.categories }).first().click();
+  await page.waitForTimeout(500);
+};
+/** Optionen → Anleitung (src/guide.ts). */
+const openGuide = async (page, l) => {
+  await tab(3)(page);
+  await page.locator('main button', { hasText: l.guide }).first().click();
+  await page.waitForTimeout(500);
+};
+/** The guide's short tour, started from its card, `steps` times *Weiter* on. */
+const openTour = steps => async (page, l) => {
+  await openGuide(page, l);
+  await page.locator('main section .hero.hero-glow').first().click();
+  await page.waitForSelector('[data-tour-open]', { timeout: 5000 });
+  await page.waitForTimeout(700);
+  for (let i = 0; i < steps; i++) {
+    await page.locator('[data-tour-open] [role="dialog"] button.hero').click();
+    await page.waitForTimeout(450);
+  }
   await page.waitForTimeout(500);
 };
 /** Statistik → the first row of "Wofür das Geld geht": the category's own screen. */
@@ -405,6 +425,27 @@ const SCREENS = [
   }, audit: 'page' },
   // After the setup: the gestures card on the running month.
   { name: 'tips', storage: { 'spartopf-tips-done': '0' }, run: page => page.evaluate(() => window.scrollTo(0, 560)), audit: 'page' },
+  // The guide: its screen, a topic opened, a search, the tour's marks, and the one tip that points to it.
+  { name: 'guide', run: openGuide, audit: 'page' },
+  { name: 'guide-full', run: openGuide, full: true },
+  { name: 'guide-topic', run: async (page, l) => {
+    await openGuide(page, l);
+    const row = page.locator('main [data-guide-topic="add"] button').first();
+    await row.scrollIntoViewIfNeeded();
+    await row.click();
+    await page.waitForTimeout(350);
+    await page.evaluate(() => document.querySelector('[data-guide-topic="add"]')?.scrollIntoView({ block: 'center' }));
+  }, audit: 'page' },
+  { name: 'guide-search', run: async (page, l) => { await openGuide(page, l); await page.click('input[type="search"]'); await page.keyboard.type('pdf'); await page.waitForTimeout(300); }, audit: 'page' },
+  { name: 'guide-native', storage: { 'spartopf-dev-native': '1' }, run: openGuide, full: true },
+  { name: 'tour-balance', run: openTour(0), audit: 'dialog' },
+  { name: 'tour-tick', run: openTour(1), audit: 'dialog' },
+  { name: 'tour-month', run: openTour(2), audit: 'dialog' },
+  { name: 'tour-tabs', run: openTour(3), audit: 'dialog' },
+  { name: 'tour-add', run: openTour(4), audit: 'dialog' },
+  // A first run has no balance and nothing to tick: the tour is three steps.
+  { name: 'tour-fresh', fresh: true, run: openTour(0), audit: 'dialog' },
+  { name: 'hint-guide', storage: { 'spartopf-tip-state': '{"done":[]}' }, run: page => page.evaluate(() => document.querySelector('main section[aria-label]:not(.hero)')?.scrollIntoView({ block: 'center' })), audit: 'page' },
   { name: 'stats-empty', fresh: true, run: tab(1) },
   // Cash and savings accounts (plan 30): the switch on the balance card, the transfers card, Konten, the sheets.
   { name: 'accounts-month', accounts: true, audit: 'page' },
@@ -540,6 +581,8 @@ async function runContext(browser, c, report, safeAreaMode) {
       localStorage.setItem('spartopf-entries', JSON.stringify(seed.entries));
       localStorage.setItem('spartopf-months', JSON.stringify(seed.months));
       localStorage.setItem('spartopf-intro-done', '1');
+      // The guide's one tip is met (the `hint-guide` screen shows it): the month page as it is from the second week on.
+      localStorage.setItem('spartopf-tip-state', '{"done":["guide"]}');
       if (seed.categories) {
         localStorage.setItem('spartopf-categories', JSON.stringify(seed.categories));
         localStorage.setItem('spartopf-meta', JSON.stringify({ schemaVersion: seed.schema, seeded: true }));

@@ -2,8 +2,8 @@
 //
 // 1. Builds the app, serves dist/ with `vite preview`, and drives Chromium
 //    through what people do — the first run, an entry added and ticked off,
-//    every tab, a bank CSV imported, a screenshot read by the on-device OCR, a
-//    backup exported — recording every request. Any request to another origin
+//    every tab, the guide and its tour, a bank CSV imported, a screenshot read
+//    by the on-device OCR, a backup exported — recording every request. Any request to another origin
 //    fails the check (it is aborted, so nothing leaves this machine either).
 // 2. Every http(s) URL written into dist/ has to be on the allowlist below,
 //    with the reason it is harmless — so a new one gets looked at.
@@ -116,6 +116,31 @@ try {
     await page.waitForTimeout(300);
   });
   await step('every tab', async () => { for (const i of [1, 2, 3, 0]) await tab(i); });
+  await step('the guide opened, searched, and the tour taken', async () => {
+    // The guide's screen, its words and the tour are chunks loaded here for the first time: from this origin only.
+    await tab(3);
+    await page.locator('main section button').first().click();
+    await page.waitForSelector('[data-guide-topic]', { timeout: 10000 });
+    await page.locator('input[type="search"]').fill('pdf');
+    await page.waitForTimeout(200);
+    await page.locator('input[type="search"]').fill('');
+    await page.locator('main section .hero.hero-glow').first().click();
+    await page.waitForSelector('[data-tour-open]', { timeout: 10000 });
+    for (let i = 0; i < 6 && await page.locator('[data-tour-open] [role="dialog"] button.hero').count(); i++) {
+      await page.locator('[data-tour-open] [role="dialog"] button.hero').click();
+      await page.waitForTimeout(350);
+    }
+    // The last step's button opens the entry sheet: put it away again.
+    for (let i = 0; i < 5 && await page.locator('[role="dialog"]').count(); i++) {
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(300);
+    }
+    // Optionen still shows the guide (a tab keeps its place): back to its root for the steps below.
+    await tab(3);
+    await page.locator('header button').first().click();
+    await page.waitForTimeout(400);
+    await tab(0);
+  });
   await step('a statement PDF read on the device (pdf.js)', async () => {
     // A statement printed here from made-up lines — never a real one.
     const sheet = await ctx.newPage();
