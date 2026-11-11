@@ -561,6 +561,39 @@ In charts, amber (`chart-save`) goes away, so nothing drawn can be mistaken for 
 | 6 | trends (H4), full basis | — |
 | 13+ | year comparison (plan 29), *Jahresrückblick* against last year | — |
 
+### 9.12 Third pass (November 2026): more to see, more that moves
+
+Asked for after the second redesign: the two tabs should be more useful and
+more alive, with what current apps do well. Looked at again: Copilot (progress
+rings, charts you drag a finger across), Monarch (stat tiles with a trend),
+the calendar views of Bud's *Financial Calendar*, Balance, Spendly and Quicken
+(days shaded against your own average; the balance day by day until payday),
+Spendigo's weekday pattern. Taken, within §5:
+
+| What | Where | How it is shown | Why |
+|---|---|---|---|
+| The period at a glance | Statistik, top | Hero: the finding as a sentence, the Sparquote as a ring (a meter: one ratio against 100 %, 20 % notched), Ø gespart, Ø Einnahmen / Ø Ausgaben as stat tiles with a sparkline and the change against as many finished months before (pattern 3, was ◐) | The page opened on three paragraphs of hints; the answer to "how did it go?" comes first now |
+| The period control | Statistik, top | The segmented control moves above everything it governs | It sat under the hints, which don't follow it |
+| *Wann du Geld ausgibst* | Statistik, after *Wofür* | Seven columns (Ø per weekday, emphasis on one) and the picked month as a calendar heatmap; a day tapped is written out | New: *when*, beside *what for*. Everyday spending only (D3), by `entryDay` |
+| *Nächste 30 Tage* | Planen, after Budgets | A stepped, dashed line from *Jetzt auf dem Konto* through every open entry on its day; the lowest point ringed and named in the title | The gap between the month's two balances and the twelve-month *Ausblick*: "wird es vor dem Gehalt knapp?" (pattern 6). Only what is entered — no "≈" |
+| *Ausblick* in figures | Planen | Start, lowest month (when it dips), end as tiles | The line's three answers without reading the axis |
+| *November bis heute* | Planen, top | The finding and its three figures on a hero header | The figures were only in the chart's labels and for VoiceOver |
+| Scrubbing | every chart that fits its card | A finger dragged across moves tooltip and band from slot to slot, a tick each | HIG: charts answer direct touch; a tap per month was all there was |
+| Motion | every chart | Lines drawn in (the grid stays), the newest point pulses twice, rings sweep, bars run out one after another, days pop in | Once per appearance; none under reduced motion |
+
+Still not taken, for the reasons in §3: pies and donuts (the ring is a meter,
+never a split — *Wofür* got a thin segmented bar above its rows instead),
+Sankey, a health score, streaks.
+
+**Definitions added.** *Nächste 30 Tage*: today's *Jetzt auf dem Konto* (every
+account, as Planen counts), minus open expenses and plus open income on their
+date; overdue counts today; an open entry without a date counts on its
+month's last day; the next month counts with its open entries once started,
+else with what starting it would carry over. *Teuerster Wochentag*: the
+weekday whose average everyday spending (total on that weekday ÷ how often it
+came up, up to today, over the months in view) is highest — named only past
+the thresholds in §10.4.
+
 ---
 
 ## 10. Engine and code
@@ -641,6 +674,8 @@ interface Insight {
 | `PACE_RANGE` | max(25 €, 5 % of usual-today) | H1 |
 | `EARLY_DAYS` / `STALE_DAYS` | 3 / 7 | H1, H7 |
 | `DATED_SHARE` | 80 % | H1 method |
+| `WEEKDAY_LEAD` / `WEEKDAY_MIN_DAYS` | 1.2 × the average weekday / 4 | *Teuerster Wochentag* is named only when one leads, and each weekday has come up four times (§9.12) |
+| `RUNWAY_DAYS` | 30 | *Nächste 30 Tage* (§9.12) |
 
 For a household spending 2.500 € a month, `MATERIAL` is 37,50 €; at 5.000 € it's 75 €.
 

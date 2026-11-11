@@ -154,6 +154,12 @@ Write 1–3 short lines per release, e.g.
 
 ### Next release (after 1.2.0)
 
+**DE:** Statistik und Planen neu gestaltet: Oben siehst du auf einen Blick, wie viel du sparst – mit Sparquote, Durchschnitten und Trend. Neu: „Wann du Geld ausgibst“ mit Wochentagen und einem Kalender, und „Nächste 30 Tage“ – dein Kontostand Tag für Tag, mit dem tiefsten Stand vor dem nächsten Gehalt. Alle Diagramme lassen sich jetzt mit dem Finger abfahren.
+
+**EN:** Statistics and Plan, redesigned: the top now shows at a glance how much you save – your savings rate, averages and trend. New: "When you spend" with weekdays and a calendar, and "Next 30 days" – your balance day by day, with its lowest point before the next salary. Every chart now follows your finger as you drag across it.
+
+**AR:** تصميم جديد للإحصاءات والتخطيط: ترى في الأعلى بنظرة واحدة كم تدّخر – نسبة الادخار والمتوسطات والاتجاه. جديد: «متى تنفق مالك» بأيام الأسبوع وتقويم، و«الثلاثون يومًا القادمة» – رصيد حسابك يومًا بيوم مع أدنى رصيد قبل الراتب القادم. وكل الرسوم البيانية تتبع إصبعك الآن عند السحب عليها.
+
 **DE:** Neu: Monatsbudgets mit „pro Tag“, „Demnächst fällig“ und eine Suche über alle Monate. Der Tab „Planen“ zeigt deine Abos & Verträge mit Kündigungsfristen. Auf Wunsch erinnert Spartopf an offene Rechnungen und sperrt sich mit Face ID – und deine Daten liegen jetzt in einer eigenen, geprüften Datei auf dem iPhone.
 
 **EN:** New: monthly budgets with a per-day figure, "Due soon" and search across every month. The Plan tab lists your subscriptions & contracts with their notice deadlines. If you like, Spartopf reminds you of open bills and locks with Face ID – and your data now lives in its own checked file on your iPhone.
