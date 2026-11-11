@@ -382,6 +382,24 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   (a Vite plugin runs it for dev and every build; generated, gitignored, not
   precached by the PWA). Never commit a real bank export or screenshot.
   iOS needs `NSCameraUsageDescription` / `NSPhotoLibraryUsageDescription`.
+- **Statement PDFs (`src/pdfText.ts`, `src/statementPdf.ts`).** "⋯" →
+  *Kontoauszug importieren (PDF)*. `readPdfLines` reads the text and each
+  piece's place with Mozilla's **`pdfjs-dist`** (6.5.438, pinned; Apache-2.0;
+  the `legacy/build`, so iOS 15 can run it; text only — no rendering, no
+  fonts, no wasm, no fetching), a chunk of its own plus its worker, loaded
+  on the first PDF. `linesFromItems` (pure) groups pieces into lines by
+  baseline. `parseStatementLines` (pure, tested with made-up lines) finds
+  the transactions: a leading date, the last two-decimal figure as the
+  amount — on the date's line, or the line above or below when a table's
+  cells don't line up — in or out from a sign or S / H, else from the Soll /
+  Haben column the amount ends in, else from the words; details under it
+  give the payee when the first line is only the booking type. The result
+  takes the CSV's path (`planStatement`, the review sheet), so nothing is
+  saved unseen. **No look-behind in regular expressions anywhere in the main
+  bundle** — iOS 15 can't parse them. `privacy-check.mjs` allows pdf.js's
+  URL-looking strings in its own chunks only, and reads a generated PDF and
+  a generated QR code to prove nothing is fetched. Not yet tried on real
+  bank statements; never commit one.
 - **Invoice QR codes (`src/girocode.ts`, `src/qrScan.ts`).** The month's "⋯"
   → *Rechnung scannen*: `readQrCode(file)` draws the picture onto a canvas at
   up to three sizes and hands the pixels to the **`qr`** package's

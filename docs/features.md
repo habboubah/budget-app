@@ -11,8 +11,10 @@ Everything the app can do. Build and release steps are in the
   a bar for how much of it is paid, its ticks. Amounts run to their new value
   when something is ticked.
 - **Bank transactions in, without typing.** Import the CSV file from your
-  online banking (Sparkasse and others), or take a photo / screenshot of the
-  banking app — the text is read on the phone itself. Every transaction is
+  online banking (Sparkasse and others), the statement itself as a **PDF**
+  ("⋯" → *Kontoauszug importieren (PDF)*, for banks that offer nothing else),
+  or take a photo / screenshot of the banking app — the text is read on the
+  phone itself. Every transaction is
   shown to check first: new ones, ones already entered, and open bills they
   pay (those get ticked off).
 - **Scan an invoice.** "⋯" → *Rechnung scannen (QR-Code)*: take a photo (or

@@ -1162,6 +1162,10 @@ const fr: Strings = {
   scanInvoiceSub: 'Une photo de son code de paiement – devient une entrée en attente avec montant et référence',
   qrNone: 'Aucun code QR trouvé. Prenez la photo de plus près, bien en face et avec une bonne lumière.',
   qrNotInvoice: 'Ce n’est pas le code QR de paiement d’une facture (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Importer un relevé de compte (PDF)',
+  importPdfSub: 'Le relevé de votre banque en ligne – lu uniquement sur cet appareil, à vérifier avant de valider',
+  pdfLocked: 'Le PDF est protégé par un mot de passe. Enregistrez-le sans mot de passe et réessayez.',
 };
 
 export default fr;

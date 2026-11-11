@@ -1164,6 +1164,10 @@ const tr: Strings = {
   scanInvoiceSub: 'Ödeme QR kodunun fotoğrafı – tutar ve açıklamayla açık bir kayıt olur',
   qrNone: 'QR kodu bulunamadı. Fotoğrafı daha yakından, düz ve iyi ışıkta çek.',
   qrNotInvoice: 'Bu bir faturanın ödeme QR kodu değil (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Hesap ekstresi içe aktar (PDF)',
+  importPdfSub: 'İnternet bankacılığındaki ekstre – yalnızca bu cihazda okunur, aktarmadan önce kontrol edilir',
+  pdfLocked: 'PDF bir parolayla korunuyor. Parolasız kaydedip yeniden dene.',
 };
 
 export default tr;

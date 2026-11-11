@@ -1161,6 +1161,10 @@ const nl: Strings = {
   scanInvoiceSub: 'Een foto van de betaalcode – wordt een open post met bedrag en kenmerk',
   qrNone: 'Geen QR-code gevonden. Maak de foto dichterbij, recht van voren en bij goed licht.',
   qrNotInvoice: 'Dit is geen betaal-QR-code van een factuur (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Rekeningafschrift importeren (pdf)',
+  importPdfSub: 'Het afschrift uit internetbankieren – alleen op dit apparaat gelezen, te controleren voor het overnemen',
+  pdfLocked: 'De pdf is met een wachtwoord beveiligd. Sla hem zonder wachtwoord op en probeer het opnieuw.',
 };
 
 export default nl;

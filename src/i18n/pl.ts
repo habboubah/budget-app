@@ -1164,6 +1164,10 @@ const pl: Strings = {
   scanInvoiceSub: 'Zdjęcie kodu płatności – powstaje otwarta pozycja z kwotą i tytułem',
   qrNone: 'Nie znaleziono kodu QR. Zrób zdjęcie z bliska, na wprost i przy dobrym świetle.',
   qrNotInvoice: 'To nie jest kod QR płatności z faktury (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Importuj wyciąg z konta (PDF)',
+  importPdfSub: 'Wyciąg z bankowości internetowej – odczytywany tylko na tym urządzeniu, do sprawdzenia przed przejęciem',
+  pdfLocked: 'Plik PDF jest chroniony hasłem. Zapisz go bez hasła i spróbuj ponownie.',
 };
 
 export default pl;

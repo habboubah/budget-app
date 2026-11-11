@@ -81,6 +81,8 @@ import { StatementImportSheet, ImportState } from './components/StatementImportS
 import { PlannedRow, allCategoryNames, applyStatement, csvForMapping, parseBankCsv, parseMappedCsv, parseStatementText, planStatement } from './statementImport';
 import { readImageText, readTextFile } from './ocr';
 import { readQrCode } from './qrScan';
+import { PdfLockedError, readPdfLines } from './pdfText';
+import { parseStatementLines } from './statementPdf';
 import { giroCodeEntry, parseGiroCode } from './girocode';
 import { FileTooLargeError, LIMITS } from './limits';
 import { TabBar } from './ui/TabBar';
@@ -183,6 +185,7 @@ export default function App() {
   const statementInput = useRef<HTMLInputElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
   const invoiceInput = useRef<HTMLInputElement>(null);
+  const pdfInput = useRef<HTMLInputElement>(null);
   const [statement, setStatement] = useState<ImportState>(null);
   /** A category with entries waiting for "really delete?". */
   const [confirmCategory, setConfirmCategory] = useState<Category | null>(null);
@@ -597,11 +600,14 @@ export default function App() {
     }
   };
 
-  const onStatementFile = async (f: File | undefined, source: 'csv' | 'photo') => {
+  const onStatementFile = async (f: File | undefined, from: 'csv' | 'photo' | 'pdf') => {
     if (statementInput.current) statementInput.current.value = '';
     if (photoInput.current) photoInput.current.value = '';
+    if (pdfInput.current) pdfInput.current.value = '';
     if (!f) return;
-    const limit = source === 'csv' ? LIMITS.csvBytes : LIMITS.imageBytes;
+    // A statement's PDF is read like a CSV from here on: same review sheet, same matching.
+    const source = from === 'photo' ? 'photo' : 'csv';
+    const limit = from === 'csv' ? LIMITS.csvBytes : from === 'pdf' ? LIMITS.statementPdfBytes : LIMITS.imageBytes;
     if (f.size > limit) { show(t.importTooLarge); return; }
     setStatement({ phase: 'reading', source, progress: 0 });
     try {
@@ -615,7 +621,8 @@ export default function App() {
           ? parseMappedCsv(text, map.guess, store.currency)
           : [];
       };
-      const found = source === 'csv'
+      const found = from === 'pdf' ? parseStatementLines(await readPdfLines(f))
+        : source === 'csv'
         ? readCsv(await readTextFile(f))
         : parseStatementText(
           await readImageText(f, p => setStatement(s => (s?.phase === 'reading' ? { ...s, progress: p } : s))),
@@ -627,7 +634,7 @@ export default function App() {
     } catch (e) {
       setStatement(null);
       trouble.current = true;
-      show(e instanceof FileTooLargeError ? t[e.key] : t.importFailed);
+      show(e instanceof FileTooLargeError ? t[e.key] : e instanceof PdfLockedError ? t.pdfLocked : t.importFailed);
     }
   };
 
@@ -1639,6 +1646,7 @@ export default function App() {
         onImportCsv={() => statementInput.current?.click()}
         onImportPhoto={() => photoInput.current?.click()}
         onScanInvoice={() => invoiceInput.current?.click()}
+        onImportPdf={() => pdfInput.current?.click()}
         onDelete={deleteMonth}
         onReport={() => openReport(month)}
       />
@@ -1694,7 +1702,15 @@ export default function App() {
         onChange={e => void onStatementFile(e.target.files?.[0], 'photo')}
       />
       <input
+        ref={pdfInput}
+        type="file"
+        accept="application/pdf,.pdf"
+        className="sr-only" tabIndex={-1} aria-hidden="true"
+        onChange={e => void onStatementFile(e.target.files?.[0], 'pdf')}
+      />
+      <input
         ref={invoiceInput}
+        data-scan="invoice"
         type="file"
         accept="image/*"
         className="sr-only" tabIndex={-1} aria-hidden="true"

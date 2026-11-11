@@ -1,4 +1,4 @@
-import { ArrowLeftRight, BarChart3, Camera, ChevronsDownUp, ChevronsUpDown, FileSpreadsheet, QrCode, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, Camera, ChevronsDownUp, ChevronsUpDown, FileSpreadsheet, FileText, QrCode, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
 import { MonthKey } from '../types';
 import { monthLabel } from '../logic';
 import { Strings, fmt } from '../translations';
@@ -9,7 +9,7 @@ import { Menu, MenuItem } from '../ui/Menu';
  * fetch missing recurring entries, fold all categories; move money between
  * accounts (plan 30); import bank transactions; delete the month.
  */
-export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onReconcile, onPull, onCollapseAll, onImportCsv, onImportPhoto, onScanInvoice, onDelete, onReport, onTransfer }: {
+export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onReconcile, onPull, onCollapseAll, onImportCsv, onImportPdf, onImportPhoto, onScanInvoice, onDelete, onReport, onTransfer }: {
   /** The "⋯" button it opens from; null while closed. */
   anchor: HTMLElement | null;
   month: MonthKey;
@@ -29,6 +29,8 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
   /** Bank transactions from a CSV export, or from a photo / screenshot. */
   onImportCsv: () => void;
   onImportPhoto: () => void;
+  /** The statement itself, as the PDF the bank offers. */
+  onImportPdf: () => void;
   /** An invoice's QR code (GiroCode) from a photo: it becomes an open entry. */
   onScanInvoice: () => void;
   onDelete: () => void;
@@ -64,6 +66,7 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
   const imports: MenuItem[] = [
     { key: 'photo', label: t.importPhoto, sub: t.importPhotoSub, icon: Camera, onSelect: onImportPhoto },
     { key: 'csv', label: t.importCsv, sub: t.importCsvSub, icon: FileSpreadsheet, onSelect: onImportCsv },
+    { key: 'pdf', label: t.importPdf, sub: t.importPdfSub, icon: FileText, onSelect: onImportPdf },
     { key: 'invoice', label: t.scanInvoice, sub: t.scanInvoiceSub, icon: QrCode, onSelect: onScanInvoice },
   ];
   const danger: MenuItem[] = started

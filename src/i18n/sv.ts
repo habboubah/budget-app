@@ -1162,6 +1162,10 @@ const sv: Strings = {
   scanInvoiceSub: 'Ett foto av betalkoden – blir en obetald post med belopp och referens',
   qrNone: 'Ingen QR-kod hittades. Ta bilden närmare, rakt framifrån och i bra ljus.',
   qrNotInvoice: 'Det är ingen betal-QR-kod från en faktura (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Importera kontoutdrag (PDF)',
+  importPdfSub: 'Utdraget från internetbanken – läses bara på den här enheten, att granska innan något tas över',
+  pdfLocked: 'PDF-filen är lösenordsskyddad. Spara den utan lösenord och försök igen.',
 };
 
 export default sv;

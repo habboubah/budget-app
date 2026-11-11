@@ -16,6 +16,9 @@ export const LIMITS = {
   backupEntries: 500_000,
   /** A bank CSV export. */
   csvBytes: 10 * MB,
+  /** A bank statement as a PDF: its bytes, and how many pages are read. */
+  statementPdfBytes: 20 * MB,
+  statementPdfPages: 60,
   csvRows: 50_000,
   /** An .xlsx workbook (the zip itself). */
   xlsxBytes: 20 * MB,

@@ -1165,6 +1165,10 @@ const cs: Strings = {
   scanInvoiceSub: 'Fotka platebního kódu – vznikne otevřená položka s částkou a zprávou',
   qrNone: 'QR kód nenalezen. Vyfoť ho zblízka, rovně a při dobrém světle.',
   qrNotInvoice: 'To není platební QR kód faktury (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Importovat výpis z účtu (PDF)',
+  importPdfSub: 'Výpis z internetového bankovnictví – čte se jen v tomto zařízení, před převzetím ke kontrole',
+  pdfLocked: 'Soubor PDF je chráněn heslem. Ulož ho bez hesla a zkus to znovu.',
 };
 
 export default cs;

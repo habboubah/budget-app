@@ -1191,6 +1191,10 @@ const de = {
   scanInvoiceSub: 'Foto vom GiroCode – wird ein offener Eintrag mit Betrag und Verwendungszweck',
   qrNone: 'Kein QR-Code erkannt. Fotografier ihn näher, gerade und bei gutem Licht.',
   qrNotInvoice: 'Das ist kein Zahlungs-QR-Code einer Rechnung (GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Kontoauszug importieren (PDF)',
+  importPdfSub: 'Der Auszug aus dem Online-Banking – gelesen nur auf diesem Gerät, vor dem Übernehmen zu prüfen',
+  pdfLocked: 'Die PDF-Datei ist mit einem Passwort geschützt. Speichere sie ohne Passwort und versuch es noch einmal.',
 };
 
 export type Strings = { [K in keyof typeof de]: string };
@@ -2353,6 +2357,10 @@ const en: Strings = {
   scanInvoiceSub: 'A photo of its payment QR code – becomes a pending entry with amount and reference',
   qrNone: 'No QR code found. Take the photo closer, straight on and in good light.',
   qrNotInvoice: 'That isn’t an invoice’s payment QR code (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Import a bank statement (PDF)',
+  importPdfSub: 'The statement from your online banking – read on this device only, to check before anything is taken over',
+  pdfLocked: 'The PDF is protected with a password. Save it without one and try again.',
 };
 
 /*
@@ -3529,6 +3537,10 @@ const ar: Strings = {
   scanInvoiceSub: 'صورة لرمز الدفع – تصبح بندًا مفتوحًا بالمبلغ والمرجع',
   qrNone: 'لم يُعثر على رمز QR. التقط الصورة من مسافة أقرب وبشكل مستقيم وفي إضاءة جيدة.',
   qrNotInvoice: 'هذا ليس رمز دفع لفاتورة (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'استيراد كشف حساب (PDF)',
+  importPdfSub: 'الكشف من الخدمات المصرفية عبر الإنترنت – يُقرأ على هذا الجهاز فقط، ويُراجع قبل الاعتماد',
+  pdfLocked: 'ملف PDF محمي بكلمة مرور. احفظه بدون كلمة مرور وحاول مرة أخرى.',
 };
 
 /**

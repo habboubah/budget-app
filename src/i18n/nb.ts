@@ -1162,6 +1162,10 @@ const nb: Strings = {
   scanInvoiceSub: 'Et bilde av betalingskoden – blir en åpen post med beløp og referanse',
   qrNone: 'Fant ingen QR-kode. Ta bildet nærmere, rett på og i godt lys.',
   qrNotInvoice: 'Dette er ikke en betalings-QR-kode fra en faktura (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Importer kontoutskrift (PDF)',
+  importPdfSub: 'Utskriften fra nettbanken – leses bare på denne enheten, til gjennomsyn før noe tas inn',
+  pdfLocked: 'PDF-filen er passordbeskyttet. Lagre den uten passord og prøv igjen.',
 };
 
 export default nb;

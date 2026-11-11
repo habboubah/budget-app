@@ -1162,6 +1162,10 @@ const pt: Strings = {
   scanInvoiceSub: 'Uma foto do código de pagamento – torna-se um registo pendente com valor e referência',
   qrNone: 'Nenhum código QR encontrado. Tira a foto mais perto, de frente e com boa luz.',
   qrNotInvoice: 'Isto não é o código QR de pagamento de uma fatura (EPC / GiroCode).',
+  // Bank statement as a PDF
+  importPdf: 'Importar um extrato bancário (PDF)',
+  importPdfSub: 'O extrato do homebanking – lido apenas neste dispositivo, para rever antes de aceitar',
+  pdfLocked: 'O PDF está protegido por palavra-passe. Guarda-o sem palavra-passe e tenta de novo.',
 };
 
 export default pt;

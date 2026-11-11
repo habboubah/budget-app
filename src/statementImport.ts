@@ -129,7 +129,7 @@ export function cleanPayee(raw: string, purpose = '', type = ''): string {
 
 const NOTE_AMOUNT = /(?:(€|EUR)\s?)?([+\-−–]?\s?(?:\d{1,3}(?:[.,\s’']\d{3})+|\d+)(?:[.,]\d{1,2})?)\s?(€|EUR\b)?/gi;
 const NOT_THE_PAYMENT = /(kontostand|saldo|verf[üu]gbar\w*|guthaben|balance|available|limit|rest\w*)(?:\s+[\p{L}]+){0,2}\s*:?\s*$/iu;
-const NOTE_INCOME = /gutschrift|geldeingang|zahlungseingang|eingegangen|eingang\b|erhalten|hat (?:dir|ihnen|euch)\b|gutgeschrieben|erstattung|r[üu]ckzahlung|gehalt|received|sent you|refund|incoming|credited|payment from|[üu]berweisung von/i;
+export const NOTE_INCOME = /gutschrift|geldeingang|zahlungseingang|eingegangen|eingang\b|erhalten|hat (?:dir|ihnen|euch)\b|gutgeschrieben|erstattung|r[üu]ckzahlung|gehalt|received|sent you|refund|incoming|credited|payment from|[üu]berweisung von/i;
 const NOTE_STOP = /\s+(?:am \d|on \d|um \d|mit (?:deiner|ihrer|der)|with your|[üu]ber \d|in h[öo]he|i\.\s?h\.\s?v|wurde|wurden|ist |war |was |has |get[äa]tigt|abgebucht|bezahlt|gebucht|erhalten|eingegangen|gutgeschrieben|gesendet|[üu]berwiesen|geschickt)|[.;:!?|\n]|,\s|\s[-–—]\s|$/i;
 const GENERIC_TITLE = /^(kartenzahlung|kartenumsatz|zahlung|lastschrift|gutschrift|geldeingang|zahlungseingang|[üu]berweisung|umsatz|neue[rs]? (umsatz|buchung|transaktion)|buchung|transaktion|konto\w*|payment|card payment|transaction|purchase|incoming payment|apple pay|google pay|girocard|visa|mastercard|debitkarte|kreditkarte)\b[\s\w]*$/i;
 
@@ -195,7 +195,7 @@ export function parseNotificationText(text: string): { amount: number; name: str
   return { amount, name: name === '?' ? '' : name, income, ...(date ? { date } : {}) };
 }
 
-const fingerprint = (date: string | undefined, cents: number, raw: string, purpose = '') =>
+export const fingerprint = (date: string | undefined, cents: number, raw: string, purpose = '') =>
   `${date ?? ''}|${cents}|${normalizeName(raw).slice(0, 40)}|${normalizeName(purpose).slice(0, 40)}`;
 
 /** CSV text → rows of cells. Detects ";", "," or tab; quotes and line breaks inside quotes are kept. */
