@@ -430,6 +430,8 @@ export default function App() {
     if (!entry.debtId) delete entry.debtId;
     if (!entry.files?.length) delete entry.files;
     if (!entry.refund) delete entry.refund;
+    if (!entry.warrantyUntil) delete entry.warrantyUntil;
+    if (!entry.returnUntil) delete entry.returnUntil;
     if (!entry.every) delete entry.every;
     if (!entry.until) delete entry.until;
     store.addEntry(entry);

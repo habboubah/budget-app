@@ -27,8 +27,9 @@ import { isSupportedCurrency } from './currency';
  *      `Entry.until` (a recurring entry's last month) — optional, unset = yearly / no end.
  *  25: `Category.limitPer` (a budget for the year) and `Category.rollover` / `rolloverFrom`
  *      (a monthly budget whose rest moves on) — optional, unset = a plain monthly budget.
- *  26: `Entry.refund` (money back in an expense category; its amount is negative) — optional. */
-export const SCHEMA_VERSION = 26;
+ *  26: `Entry.refund` (money back in an expense category; its amount is negative) — optional.
+ *  27: `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is kept for) — optional. */
+export const SCHEMA_VERSION = 27;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -588,6 +589,18 @@ export function defaultEntryDate(key: MonthKey, today = new Date()): string {
 /** Which day of the running month today is, counted from 1 (plan 32: the 25th can be day 1). */
 export function dayOfMonth(today = new Date()): number {
   return dayIndex(isoDay(today), monthKeyOf(today)) ?? today.getDate();
+}
+
+/** A day shifted by whole days ("2026-11-11" + 14 → "2026-11-25"). */
+export function shiftDays(iso: string, n: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return isoDay(new Date(y, m - 1, d + n));
+}
+
+/** "11. Nov. 2028" — a day with its year, for dates that lie further off (a warranty's end). */
+export function dayLabelYear(date: string, locale: string): string {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(y, m - 1, d));
 }
 
 /** "3. Nov." / "3 Nov" — an entry's date on the month page, where the year goes without saying. */
@@ -1635,6 +1648,8 @@ function normalizeEntry(v: unknown, start = 1): Entry | null {
   if (debtId) e.debtId = debtId.slice(0, 80);
   const files = normalizeAttachments(v.files);
   if (files.length) e.files = files;
+  if (isIsoDay(v.warrantyUntil)) e.warrantyUntil = v.warrantyUntil;
+  if (isIsoDay(v.returnUntil)) e.returnUntil = v.returnUntil;
   const tags = normalizeTags(v.tags);
   if (tags.length) e.tags = tags;
   const splitId = str(v.splitId);

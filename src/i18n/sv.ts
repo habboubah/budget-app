@@ -1130,6 +1130,15 @@ const sv: Strings = {
   budgetNotes: 'Säg till när en budget tar slut',
   budgetNote80: '{name}: {p} av budgeten använd',
   budgetNoteOver: '{name}: budgeten överskriden',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Retur och garanti',
+  returnAdd: 'Retur',
+  returnUntil: 'Retur senast {date}',
+  warrantyAdd: 'Garanti',
+  warrantyUntil: 'Garanti till {date}',
+  remindReturn: 'Retur möjlig till {date}: {name}',
+  remindWarranty: 'Garantin går ut {date}: {name}',
+  remindReceiptBody: 'Kvittot finns vid posten i Spartopf.',
 };
 
 export default sv;

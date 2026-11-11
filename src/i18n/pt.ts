@@ -1130,6 +1130,15 @@ const pt: Strings = {
   budgetNotes: 'Avisar quando um orçamento estiver a acabar',
   budgetNote80: '{name}: {p} do orçamento usado',
   budgetNoteOver: '{name}: orçamento ultrapassado',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Devolução e garantia',
+  returnAdd: 'Devolução',
+  returnUntil: 'Devolução até {date}',
+  warrantyAdd: 'Garantia',
+  warrantyUntil: 'Garantia até {date}',
+  remindReturn: 'Devolução possível até {date}: {name}',
+  remindWarranty: 'A garantia termina a {date}: {name}',
+  remindReceiptBody: 'O recibo está junto do registo no Spartopf.',
 };
 
 export default pt;

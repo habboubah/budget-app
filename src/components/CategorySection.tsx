@@ -2,7 +2,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, ChevronsDownUp, ChevronsUpDown, Circle, CircleMinus, Gauge, ListFilter, MoreHorizontal, Paperclip, Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
-import { dayLabel, displayName, formatMoney, isOverdue, spoken } from '../logic';
+import { dayLabel, displayName, formatMoney, isOverdue, isoDay, spoken } from '../logic';
 import { BudgetStatus } from '../budgets';
 import { budgetCarried, budgetLine } from '../budgetLabel';
 import { BudgetBar } from './BudgetBar';
@@ -364,6 +364,8 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   if (e.note) meta.push(<span key="note" className="wrap-compound"><Highlight text={e.note} query={search} /></span>);
   // A part of a split payment (plan 21): a quiet marker; tapping the row opens its editor.
   if (e.splitId) meta.push(<span key="split" className="text-fg-mute">{t.splitPayPart}</span>);
+  // Still time to send it back (schema 27): the last day, while it lies ahead.
+  if (e.returnUntil && e.returnUntil >= isoDay()) meta.push(<span key="return" className="whitespace-nowrap">{fmt(t.returnUntil, { date: dayLabel(e.returnUntil, t.locale) })}</span>);
   // A receipt is attached (plan 27): a paperclip; the entry's sheet shows it.
   if (e.files?.length) {
     meta.push(

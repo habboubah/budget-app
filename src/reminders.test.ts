@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_REMINDERS, NUDGE_DAYS, REMINDER_LIMIT, ReminderPrefs, ReminderSource, billSource, normalizeReminderPrefs, nudgePlan, reminderId, reminderPlan,
+  DEFAULT_REMINDERS, NUDGE_DAYS, REMINDER_LIMIT, ReminderPrefs, ReminderSource, billSource, normalizeReminderPrefs, nudgePlan, reminderId, reminderPlan, returnSource, warrantySource,
 } from './reminders';
 import { defaultCategories } from './data/defaults';
+import { carryOver } from './logic';
 import translations from './translations';
 import { AppData, Entry } from './types';
 
@@ -183,5 +184,31 @@ describe('an awaited refund', () => {
   it('is not a bill to be reminded of', () => {
     const refund = e('2026-11', 'clothing', 'Zalando', -40, { refund: true, date: '2026-11-09' });
     expect(billSource.items(data([refund]), morning)).toEqual([]);
+  });
+});
+
+describe('what a receipt is kept for (schema 27)', () => {
+  const kettle = e('2026-11', 'extra', 'Wasserkocher', 34.99, { paid: true, date: '2026-11-05', returnUntil: '2026-11-19', warrantyUntil: '2028-11-05' });
+
+  it('reminds three days before the last day to return it', () => {
+    const plan = reminderPlan(data([kettle]), on, t, morning);
+    const back = plan.find(p => p.title.includes('Rückgabe'))!;
+    expect(back.at).toBe('2026-11-16T09:00');
+    expect(sp(back.title)).toBe('Rückgabe noch bis 19. Nov.: Wasserkocher');
+    expect(back.body).toBe(t.remindReceiptBody);
+  });
+
+  it('reminds a month before the warranty ends, and says nothing once a day has passed', () => {
+    const late = new Date(2028, 9, 1, 8, 0);
+    const plan = reminderPlan(data([kettle]), on, t, late);
+    expect(plan.map(p => p.at)).toEqual(['2028-10-06T09:00']);
+    expect(sp(plan[0].title)).toBe('Garantie endet am 5. Nov.: Wasserkocher');
+    expect(warrantySource.items(data([kettle]), new Date(2028, 10, 6))).toEqual([]);
+    expect(returnSource.items(data([kettle]), new Date(2026, 10, 20))).toEqual([]);
+  });
+
+  it('is not carried into the next month with a recurring entry', () => {
+    const [copy] = carryOver([{ ...kettle, repeat: 'monthly' }], '2026-12', 1);
+    expect([copy.returnUntil, copy.warrantyUntil]).toEqual([undefined, undefined]);
   });
 });

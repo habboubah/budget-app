@@ -250,3 +250,10 @@ describe('version 26 (refunds)', () => {
     expect(now(data)).toBe(now(stored('storage-v25.json').data) + 1999);
   });
 });
+
+describe('version 27 (warranty and return dates)', () => {
+  it('keeps what a receipt is kept for', () => {
+    const { data } = stored('storage-v27.json');
+    expect(data.entries.find(e => e.id === 'x4')).toMatchObject({ returnUntil: '2026-11-26', warrantyUntil: '2028-11-12' });
+  });
+});

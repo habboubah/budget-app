@@ -236,7 +236,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   **schema 23** `AppData.monthStart` (plan 32, below);
   **schema 24** `Entry.every` and `Entry.until` (below);
   **schema 25** `Category.limitPer`, `rollover`, `rolloverFrom` (below);
-  **schema 26** `Entry.refund` (below) — all
+  **schema 26** `Entry.refund` (below);
+  **schema 27** `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is
+  kept for: two ISO days, set in the entry sheet once a receipt is attached,
+  not carried over; `returnSource` and `warrantySource` in reminders.ts
+  remind 3 and 30 days ahead) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,

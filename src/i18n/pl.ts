@@ -1132,6 +1132,15 @@ const pl: Strings = {
   budgetNotes: 'Informuj, gdy budżet się kończy',
   budgetNote80: '{name}: wykorzystano {p} budżetu',
   budgetNoteOver: '{name}: budżet przekroczony',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Zwrot i gwarancja',
+  returnAdd: 'Zwrot',
+  returnUntil: 'Zwrot do: {date}',
+  warrantyAdd: 'Gwarancja',
+  warrantyUntil: 'Gwarancja do: {date}',
+  remindReturn: 'Zwrot możliwy do {date}: {name}',
+  remindWarranty: 'Gwarancja kończy się {date}: {name}',
+  remindReceiptBody: 'Paragon jest przy wpisie w Spartopf.',
 };
 
 export default pl;

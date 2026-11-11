@@ -1130,6 +1130,15 @@ const fr: Strings = {
   budgetNotes: 'Me prévenir quand un budget s’épuise',
   budgetNote80: '{name} : {p} du budget utilisés',
   budgetNoteOver: '{name} : budget dépassé',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Retour et garantie',
+  returnAdd: 'Retour',
+  returnUntil: 'Retour jusqu’au {date}',
+  warrantyAdd: 'Garantie',
+  warrantyUntil: 'Garantie jusqu’au {date}',
+  remindReturn: 'Retour possible jusqu’au {date} : {name}',
+  remindWarranty: 'La garantie prend fin le {date} : {name}',
+  remindReceiptBody: 'Le reçu se trouve avec l’entrée dans Spartopf.',
 };
 
 export default fr;

@@ -1129,6 +1129,15 @@ const da: Strings = {
   budgetNotes: 'Sig til, når et budget er ved at være brugt',
   budgetNote80: '{name}: {p} af budgettet brugt',
   budgetNoteOver: '{name}: budgettet er overskredet',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Retur og garanti',
+  returnAdd: 'Retur',
+  returnUntil: 'Retur senest {date}',
+  warrantyAdd: 'Garanti',
+  warrantyUntil: 'Garanti til {date}',
+  remindReturn: 'Retur mulig til {date}: {name}',
+  remindWarranty: 'Garantien udløber {date}: {name}',
+  remindReceiptBody: 'Kvitteringen ligger ved posten i Spartopf.',
 };
 
 export default da;

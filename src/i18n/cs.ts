@@ -1133,6 +1133,15 @@ const cs: Strings = {
   budgetNotes: 'Upozornit, když rozpočet dochází',
   budgetNote80: '{name}: vyčerpáno {p} rozpočtu',
   budgetNoteOver: '{name}: rozpočet překročen',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Vrácení a záruka',
+  returnAdd: 'Vrácení',
+  returnUntil: 'Vrácení do: {date}',
+  warrantyAdd: 'Záruka',
+  warrantyUntil: 'Záruka do: {date}',
+  remindReturn: 'Vrácení možné do {date}: {name}',
+  remindWarranty: 'Záruka končí {date}: {name}',
+  remindReceiptBody: 'Účtenka je u položky ve Spartopf.',
 };
 
 export default cs;

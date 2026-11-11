@@ -128,7 +128,37 @@ export const contractSource: ReminderSource = {
   }),
 };
 
-export const REMINDER_SOURCES: ReminderSource[] = [billSource, contractSource];
+/** What a receipt is kept for (schema 27): the entries whose warranty or return window ends on a day from today on. */
+const receiptDates = (field: 'warrantyUntil' | 'returnUntil') => (data: AppData, today: Date): ReminderItem[] => {
+  const todayKey = isoDay(today);
+  return data.entries
+    .filter(e => { const day = e[field]; return !!day && day >= todayKey; })
+    .map(e => ({ day: e[field]!, name: e.name, month: e.month }));
+};
+
+/** A warranty about to end, a month ahead: time to check the thing while a claim is still possible. */
+export const warrantySource: ReminderSource = {
+  kind: 'warranty',
+  lead: 30,
+  items: receiptDates('warrantyUntil'),
+  text: (items, _days, _prefs, t) => ({
+    title: fmt(t.remindWarranty, { date: dayLabel(items[0].day, t.locale), name: names(items, t) }),
+    body: t.remindReceiptBody,
+  }),
+};
+
+/** The last days to send something back, three days ahead. */
+export const returnSource: ReminderSource = {
+  kind: 'return',
+  lead: 3,
+  items: receiptDates('returnUntil'),
+  text: (items, _days, _prefs, t) => ({
+    title: fmt(t.remindReturn, { date: dayLabel(items[0].day, t.locale), name: names(items, t) }),
+    body: t.remindReceiptBody,
+  }),
+};
+
+export const REMINDER_SOURCES: ReminderSource[] = [billSource, contractSource, returnSource, warrantySource];
 
 /** A notification to have pending. */
 export interface PlannedReminder {

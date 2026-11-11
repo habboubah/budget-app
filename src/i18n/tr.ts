@@ -1132,6 +1132,15 @@ const tr: Strings = {
   budgetNotes: 'Bütçe azalınca haber ver',
   budgetNote80: '{name}: bütçenin {p} kadarı kullanıldı',
   budgetNoteOver: '{name}: bütçe aşıldı',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'İade ve garanti',
+  returnAdd: 'İade',
+  returnUntil: 'İade son gün: {date}',
+  warrantyAdd: 'Garanti',
+  warrantyUntil: 'Garanti bitişi: {date}',
+  remindReturn: 'İade için son gün {date}: {name}',
+  remindWarranty: 'Garanti {date} tarihinde bitiyor: {name}',
+  remindReceiptBody: 'Fiş, Spartopf’taki kayıtla birlikte duruyor.',
 };
 
 export default tr;

@@ -1129,6 +1129,15 @@ const it: Strings = {
   budgetNotes: 'Avvisami quando un budget sta finendo',
   budgetNote80: '{name}: usato il {p} del budget',
   budgetNoteOver: '{name}: budget superato',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Reso e garanzia',
+  returnAdd: 'Reso',
+  returnUntil: 'Reso entro il {date}',
+  warrantyAdd: 'Garanzia',
+  warrantyUntil: 'Garanzia fino al {date}',
+  remindReturn: 'Reso possibile fino al {date}: {name}',
+  remindWarranty: 'La garanzia scade il {date}: {name}',
+  remindReceiptBody: 'Lo scontrino è con la voce in Spartopf.',
 };
 
 export default it;

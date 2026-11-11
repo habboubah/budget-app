@@ -131,6 +131,9 @@ export interface Entry {
   debtId?: string;
   /** Receipts and documents attached to it (schema 22, plan 27): what each is; the file itself is kept by storage.ts under its id. */
   files?: Attachment[];
+  /** What a receipt is kept for (schema 27): the last day of the warranty, and the last day to send it back — YYYY-MM-DD. Not carried over. */
+  warrantyUntil?: string;
+  returnUntil?: string;
   /**
    * One side of a transfer between two accounts (plan 30): money leaving one
    * account (`out`) and arriving in another (`in`), two entries sharing a
@@ -326,4 +329,7 @@ export interface EntryDraft {
   debtId?: string;
   /** Receipts and documents (plan 27). */
   files?: Attachment[];
+  /** The warranty's last day and the last day to return it (schema 27). */
+  warrantyUntil?: string;
+  returnUntil?: string;
 }

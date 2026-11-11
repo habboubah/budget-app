@@ -73,6 +73,12 @@ Everything the app can do. Build and release steps are in the
   the entry shows it full screen. *Betrag vom Beleg lesen* suggests the total
   and the shop, read on the device. Photos are saved without their location
   data; receipts are part of the backup and are erased with the book.
+  With a receipt attached, two more pills say what it is kept for:
+  *Rückgabe* (a first tap sets 14 days from the entry's date) and *Garantie*
+  (two years) — each a date that can be changed or cleared. The row shows
+  "Rückgabe bis 25. Nov." while there is still time, and with reminders on a
+  notification comes three days before the last day to send it back and a
+  month before the warranty ends.
 - **Android.** The same app for Android phones: fingerprint or face unlock,
   no screenshots while the lock is on, *Im Gerätebackup sichern* decides
   whether the book may go into Google's backup, reports through the print

@@ -1129,6 +1129,15 @@ const nl: Strings = {
   budgetNotes: 'Meld het als een budget opraakt',
   budgetNote80: '{name}: {p} van het budget gebruikt',
   budgetNoteOver: '{name}: budget overschreden',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Retour en garantie',
+  returnAdd: 'Retour',
+  returnUntil: 'Retour t/m {date}',
+  warrantyAdd: 'Garantie',
+  warrantyUntil: 'Garantie t/m {date}',
+  remindReturn: 'Retour mogelijk t/m {date}: {name}',
+  remindWarranty: 'Garantie eindigt op {date}: {name}',
+  remindReceiptBody: 'De bon staat bij de post in Spartopf.',
 };
 
 export default nl;

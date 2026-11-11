@@ -1130,6 +1130,15 @@ const nb: Strings = {
   budgetNotes: 'Si fra når et budsjett går mot slutten',
   budgetNote80: '{name}: {p} av budsjettet brukt',
   budgetNoteOver: '{name}: over budsjett',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Retur og garanti',
+  returnAdd: 'Retur',
+  returnUntil: 'Retur innen {date}',
+  warrantyAdd: 'Garanti',
+  warrantyUntil: 'Garanti til {date}',
+  remindReturn: 'Retur mulig til {date}: {name}',
+  remindWarranty: 'Garantien utløper {date}: {name}',
+  remindReceiptBody: 'Kvitteringen ligger ved posten i Spartopf.',
 };
 
 export default nb;

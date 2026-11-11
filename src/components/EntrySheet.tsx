@@ -1,15 +1,16 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, Star, Trash2, Undo2 } from 'lucide-react';
+import { CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, ShieldCheck, Star, Trash2, Undo2 } from 'lucide-react';
 import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, Interval, MonthKey, Repeat } from '../types';
 import { REPEAT_CHOICES, repeatName } from '../repeatLabel';
+import { shiftDay } from '../contracts';
 import { NotAReceiptError, addAttachment, attachmentBlob, dropAttachment, readReceipt } from '../receipts';
 import { readImageText } from '../ocr';
 import { FileTooLargeError } from '../limits';
 import { ReceiptViewer } from './ReceiptViewer';
 import { budgetOf } from '../data/defaults';
 import {
-  amountToInput, cleanText, dayLabel, isMonthKey, monthLabel, periodRange, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
+  amountToInput, cleanText, dayLabel, dayLabelYear, shiftDays, isMonthKey, monthLabel, periodRange, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
   normalizeDigits, topCategories, MAIN_ACCOUNT, MAX_ATTACHMENTS, currencySymbol } from '../logic';
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
 import { Strings, fmt } from '../translations';
@@ -128,6 +129,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [debtAt, setDebtAt] = useState<HTMLElement | null>(null);
   /** Receipts and documents (plan 27): what is attached, the one being looked at, and what is busy. */
   const [files, setFiles] = useState<Attachment[]>([]);
+  // What the receipt is kept for (schema 27): the warranty's last day, the last day to return it.
+  const [warranty, setWarranty] = useState('');
+  const [returnBy, setReturnBy] = useState('');
   const [fileAt, setFileAt] = useState<HTMLElement | null>(null);
   const [viewing, setViewing] = useState<Attachment | null>(null);
   const [fileBusy, setFileBusy] = useState<'adding' | 'reading' | null>(null);
@@ -196,6 +200,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setAccountId(defaultAccount);
     setDebtId(undefined);
     setFiles([]);
+    setWarranty('');
+    setReturnBy('');
   };
 
   useEffect(() => {
@@ -223,6 +229,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       setAccountId(e.accountId ?? MAIN_ACCOUNT);
       setDebtId(e.debtId);
       setFiles(e.files ?? []);
+      setWarranty(e.warrantyUntil ?? '');
+      setReturnBy(e.returnUntil ?? '');
       // An entry being edited keeps its category: guesses are only pointed out.
       setNameTyped(false);
       setCategoryChosen(true);
@@ -370,6 +378,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     if (debts) d.debtId = debtId && debts.some(x => x.id === debtId) ? debtId : undefined;
     // Always said, so the last receipt can be taken off again (plan 27).
     d.files = files.length ? files : undefined;
+    // The same for what the receipt is kept for (schema 27).
+    d.warrantyUntil = isIsoDay(warranty) ? warranty : undefined;
+    d.returnUntil = isIsoDay(returnBy) ? returnBy : undefined;
     return d;
   };
 
@@ -863,6 +874,34 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               </li>
             )}
           </ul>
+        )}
+        {/* With a receipt: how long it is good for. A first tap sets the usual (14 days to return, two years of warranty), the date can then be changed or cleared. */}
+        {(files.length > 0 || !!warranty || !!returnBy) && !income && (
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t.receiptDates}>
+            {([
+              { value: returnBy, set: setReturnBy, add: t.returnAdd, until: t.returnUntil, usual: shiftDays(dateText || isoDay(), 14), Icon: Undo2 },
+              { value: warranty, set: setWarranty, add: t.warrantyAdd, until: t.warrantyUntil, usual: shiftDay(dateText || isoDay(), 24), Icon: ShieldCheck },
+            ]).map(({ value, set, add, until, usual, Icon }) => (value ? (
+              <label key={add} className={`${PILL} focus-within:ring-focus`}>
+                <Icon className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
+                <span aria-hidden="true">{fmt(until, { date: dayLabelYear(value, t.locale) })}</span>
+                <input
+                  type="date"
+                  value={value}
+                  onChange={e => set(e.target.value)}
+                  onClick={e => { try { e.currentTarget.showPicker?.(); } catch { /* not allowed here: the tap still focuses it */ } }}
+                  aria-label={fmt(until, { date: dayLabelYear(value, t.locale) })}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </label>
+            ) : (
+              <button key={add} type="button" onMouseDown={e => e.preventDefault()} onClick={() => { tapLight(); set(usual); }}
+                className={`${PILL} text-fg-mute focus-visible:ring-focus`}>
+                <Icon className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+                <span>{add}</span>
+              </button>
+            )))}
+          </div>
         )}
         <input ref={cameraInput} type="file" accept="image/*" capture="environment" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={e => void attach(e.currentTarget)} />
         <input ref={pickInput} type="file" accept="image/*,application/pdf,.pdf" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={e => void attach(e.currentTarget)} />

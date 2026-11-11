@@ -1159,6 +1159,15 @@ const de = {
   budgetNotes: 'Hinweis, wenn ein Budget knapp wird',
   budgetNote80: '{name}: {p} des Budgets verbraucht',
   budgetNoteOver: '{name}: Budget überschritten',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Rückgabe und Garantie',
+  returnAdd: 'Rückgabe',
+  returnUntil: 'Rückgabe bis {date}',
+  warrantyAdd: 'Garantie',
+  warrantyUntil: 'Garantie bis {date}',
+  remindReturn: 'Rückgabe noch bis {date}: {name}',
+  remindWarranty: 'Garantie endet am {date}: {name}',
+  remindReceiptBody: 'Der Beleg liegt beim Eintrag in Spartopf.',
 };
 
 export type Strings = { [K in keyof typeof de]: string };
@@ -2289,6 +2298,15 @@ const en: Strings = {
   budgetNotes: 'Tell me when a budget runs low',
   budgetNote80: '{name}: {p} of the budget used',
   budgetNoteOver: '{name}: over budget',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'Return and warranty',
+  returnAdd: 'Return',
+  returnUntil: 'Return by {date}',
+  warrantyAdd: 'Warranty',
+  warrantyUntil: 'Warranty until {date}',
+  remindReturn: 'Return possible until {date}: {name}',
+  remindWarranty: 'Warranty ends on {date}: {name}',
+  remindReceiptBody: 'The receipt is with the entry in Spartopf.',
 };
 
 /*
@@ -3433,6 +3451,15 @@ const ar: Strings = {
   budgetNotes: 'نبّهني عندما تقترب ميزانية من النفاد',
   budgetNote80: '{name}: تم استخدام {p} من الميزانية',
   budgetNoteOver: '{name}: تم تجاوز الميزانية',
+  // Warranty and return dates (schema 27)
+  receiptDates: 'الإرجاع والضمان',
+  returnAdd: 'الإرجاع',
+  returnUntil: 'الإرجاع حتى {date}',
+  warrantyAdd: 'الضمان',
+  warrantyUntil: 'الضمان حتى {date}',
+  remindReturn: 'الإرجاع ممكن حتى {date}: {name}',
+  remindWarranty: 'ينتهي الضمان في {date}: {name}',
+  remindReceiptBody: 'الإيصال محفوظ مع البند في Spartopf.',
 };
 
 /**
