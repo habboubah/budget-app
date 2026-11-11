@@ -2,9 +2,8 @@
 
 These plans take today's app to the best household budget book on the App Store and Google Play. The app stays private, secure, free and simple.
 
-There is one plan per feature, built strictly in order. The plans draw on three sources:
+There is one plan per feature, built strictly in order. The plans draw on two sources:
 - [COMPETITOR_ANALYSIS.md](../COMPETITOR_ANALYSIS.md): the gaps, user requests and complaints.
-- [REDESIGN.md](../REDESIGN.md): the redesign, built in plan 00.
 - [STATISTICS_AND_INSIGHTS.md](../STATISTICS_AND_INSIGHTS.md): what Statistik and Planen show, and how (plans 06a and 13).
 
 ## Ground rules (every plan)
@@ -24,7 +23,7 @@ There is one plan per feature, built strictly in order. The plans draw on three 
    - adds no required field and no first-run step;
    - has a default that works, and an undo.
 5. **The maths is never wrong.**
-   - Money rules are pure, tested functions in `src/logic.ts`, `src/insights.ts` and `src/budgets.ts`.
+   - Money rules are pure, tested functions in `src/logic.ts`, `src/insights/` and `src/budgets.ts`.
    - Old data always loads (`normalizeState`, `SCHEMA_VERSION`; bump to the next free number, optional fields only).
 6. **CLAUDE.md applies:** tokens only, logical properties (RTL), 44 pt targets, VoiceOver labels, Dynamic Type, reduced motion, and strings in de/en/ar (tr from plan 25).
 
@@ -36,7 +35,7 @@ There is one plan per feature, built strictly in order. The plans draw on three 
   - Pin exact versions.
   - Vet each one (maintenance, licence, code) and note it in the plan.
   - Anything that touches secrets or financial data gets our own small native plugin, not a third-party one.
-- Ask before changing `ios/` or `android/` and before committing, as CLAUDE.md and REDESIGN.md do.
+- Ask before changing `ios/` or `android/` and before committing, as CLAUDE.md does.
 - Tick the plan off in [Status](#status) and keep notes in the plan file.
 
 ## Gates (end of every plan)
@@ -48,7 +47,7 @@ There is one plan per feature, built strictly in order. The plans draw on three 
   - New screens also get a pass with `--text 2`.
 - **Old data:** `localStorage` data and backups from earlier versions still load (plan 01's fixtures).
 - **Native plans:** tested on a real iPhone, and on Android devices from plan 23 on.
-- **User-visible changes:** update docs/features.md (features), CLAUDE.md (rules) and the What's New text in `store/listing.md`.
+- **User-visible changes:** update `docs/features.md` (features), `docs/CLAUDE.md` (rules) and the What's New text in `store/listing.md`.
 - **Simplicity:** run plan 37's checklist after plans 06a, 13, 21 and 32 as well.
 
 ## Decisions already taken
@@ -72,7 +71,7 @@ Change them here if you disagree, before the plan that depends on them starts.
 
 ## Order
 
-Only the plans still open have a file here. A finished plan's file is deleted once it is built (November 2026: 00–15, 06a, 18, 20, 21, 25–32); what it built is described in `docs/CLAUDE.md` and `docs/features.md`, its one-line result is under [Status](#status) below, and the file itself is in the git history (`git log --diff-filter=D -- plans/`).
+Only the plans still open have a file here. A finished plan's file is deleted once it is built (November 2026: 00–15, 06a, 18, 20, 21, 25–32); what it built is described in `docs/CLAUDE.md` and `docs/features.md`, its one-line result is under [Status](#status) below, and the file itself is in the git history (`git log --diff-filter=D -- plans/ docs/plans/`).
 
 ### Phase 3 — native foundation and store presence
 | # | Plan | Covers | Depends on | Size | Native |
@@ -145,7 +144,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 | Currency hard-coded to EUR | `moneyFormat()` and friends in `src/logic.ts` | 07 |
 | Permission prompts in English only | `ios/App/App/Info.plist` | 16 |
 | Store listing and App Review note out of date | `store/listing.md` | 16 |
-| Arabic € placement inconsistent (REDESIGN.md §9) | translations | 16 |
+| Arabic € placement inconsistent (see TODO.md) | translations | 16 |
 | No Android app | — | 23 |
 | Sparquote and 50/30/20 disagree once a savings category is used | `monthSeries` / `budgetSplit` in `src/insights.ts` | 06a |
 | *Notgroschen* divides today's balance by all spending | `InsightsView.tsx` | 06a |
@@ -180,7 +179,7 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - Dropped (decided November 2026): 17 widgets, 22 iPad and wide screens, 33 device-to-device transfer, 34 nearby sync and household sharing, 35 Apple Watch. Spartopf stays a phone app (Android: plan 23) whose data moves by backup file; the plan files and the two-column layout built for 22 are removed.
 - [ ] 23 Android app — steps 1 and 2 built, `npm run check` passes and Gradle builds a debug APK and a release bundle: `android/` (Capacitor 8.6), its own native plugin (links, PDF through the print dialog, FLAG_SECURE with the lock), backup rules for `files/spartopf/` only, Android's wording in 14 languages, Nunito for amounts, the system back, Pixel sizes in ui-review, `release-android.js`, the Play listing. **Never run on a device.** Open: two phones, the upload key, the Play Console (`docs/ANDROID_RELEASE.md`, TODO.md)
 - [ ] 24 Android capture and widgets
-- [x] 25 Turkish and more languages — closed November 2026: 14 languages in the app, Siri and Shortcuts texts and category guessing in all of them, store listing drafts (`store/listing-languages.md`), `plans/glossary.md`. The eleven newer languages are machine-drafted and were not read by a native speaker; the glossary's *Reviewed* column and TODO.md are there for whoever does.
+- [x] 25 Turkish and more languages — closed November 2026: 14 languages in the app, Siri and Shortcuts texts and category guessing in all of them, store listing drafts (`store/listing-languages.md`), `docs/plans/glossary.md`. The eleven newer languages are machine-drafted and were not read by a native speaker; the glossary's *Reviewed* column and TODO.md are there for whoever does.
 - [x] 26 Tags — built, `npm run check` passes; schema 14 (`Entry.tags`), `normalizeTags`/`tagTotals` tested, `#tag` search, entry-sheet "# Tag", Statistik Tags breakdown, CSV tags column (injection-guarded). ui-review on device still to do
 - [x] 27 Receipts and documents — built for the web and iPhone, `npm run check` passes (it now attaches a photo with EXIF and checks that none is stored): schema 22 (`Entry.files`), files beside the book, photos re-encoded, *Beleg* in the entry sheet with viewer and *Betrag vom Beleg lesen*, receipts inside the backup, removed with *Alle Daten löschen*. Android follows with plan 23; device check still to do
 - [x] 28 PDF report — built, `npm run check` passes. *Bericht teilen* under the Monatsbericht and the Jahresrückblick: `PrintReport` (the shared report bodies, an optional entries table, a footer; light, with amounts even when hidden on screen), the print stylesheet, `SpartopfShared.makePdf` (UIPrintPageRenderer → share sheet) and `window.print()` on the web. Checked through Chromium's print-to-PDF in DE, AR and a long year. Still to do on an iPhone: the PDF from the share sheet and a paper print
@@ -191,3 +190,4 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 36 On-device bank connection (FinTS)
 - [ ] 37 Simplicity review — checkpoint after plan 32 done, `npm run check` passes: the feature table, the first-viewport counts, *Optionen › Haushaltsbuch* reordered, and the tip system (`src/tips.ts`, five tips, one a week, tested). Open: the three-people test, VoiceOver / large text, speed on old phones (TODO.md)
 - [ ] 38 Screenshots, story and release
+- [x] Outside the numbered plans (merged 11 November 2026): the second redesign, and ten features — repeats every 2, 3 or 6 months and an end, yearly and rollover budgets, refunds, the daily nudge and the budget warning, return and warranty dates, *Kann ich mir das leisten?*, invoice QR codes, statement PDFs, trips and projects, the tax list. Device checks in `docs/TODO.md`.

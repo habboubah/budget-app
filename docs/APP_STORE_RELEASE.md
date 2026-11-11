@@ -10,6 +10,10 @@ do by hand once. This file walks through all of it.
 > release only. For later updates, see step 10.
 > App Store Connect labels are given in English with the German name in
 > [brackets], in case your account shows German.
+>
+> **Where it stands (November 2026):** the first version is submitted; App
+> Review answered with a Guideline 2.1 request for a screen recording. What
+> is still open is in [TODO.md](TODO.md) under *App Store*.
 
 **Overview**
 
@@ -309,7 +313,8 @@ the skill `.claude/skills/app-store-release` knows these steps.
 | `scripts/release.js` | Bump version + build, build, upload, commit |
 | `ios/App/ExportOptions.plist` | Tells `xcodebuild` to upload straight to App Store Connect |
 | `.env.release` (not in git) | `ASC_KEY_ID`, `ASC_ISSUER_ID` |
-| `scripts/screenshots.mjs` | Generates the store screenshots (DE + EN) |
-| `store/listing.md` | All store texts, ready to copy |
+| `scripts/screenshots.mjs` | Raw screenshots (DE + EN); `npm run store-screenshots` frames them |
+| `ios/AppReviewRecorder/` | Records the screen video App Review asks for (Guideline 2.1) |
+| `store/listing.md` | All store texts, ready to copy (`store/listing-languages.md` for the eleven other languages) |
 | `store/privacy/` | Privacy policy (EN + DE) for GitHub Pages |
 | `.claude/skills/app-store-release/` | Skill so Claude can run the release for you |

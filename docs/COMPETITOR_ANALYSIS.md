@@ -2,6 +2,10 @@
 
 Research for Spartopf 1.2.0, checked on **7 November 2026**. Research only: no code was changed.
 
+> **A snapshot.** Most of the features proposed here have been built since (see
+> [features.md](features.md)). The open plans in [plans/](plans/README.md) still
+> refer to its F / U / S numbers, which is why it stays.
+
 - **App Store** figures come from the **German storefront** (apps.apple.com/de) unless marked **US**.
 - **Google Play** figures come from **AppBrain** (global Google Play data, refreshed 25 Oct – 7 Nov 2026). My fetches of Google Play's own pages didn't return ratings or install counts.
 - **unknown** means I couldn't retrieve a number. Nothing here is estimated.

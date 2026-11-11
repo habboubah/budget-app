@@ -2,7 +2,7 @@
 
 The Android app is the same web app in a Capacitor shell (`android/`), built
 by plan 23. This is what it takes to get it onto a phone and into Google
-Play. Nothing here has run on a real device yet — see TODO.md.
+Play. Nothing here has run on a real device yet — see [TODO.md](TODO.md).
 
 ## Once per machine
 

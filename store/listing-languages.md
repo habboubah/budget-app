@@ -3,7 +3,7 @@
 Drafts for App Store Connect and the Play Console in the languages the app
 speaks beyond German, English and Arabic (those three are in `listing.md` and
 `play-listing.md`). **Machine-drafted: each needs a native speaker
-before it goes live** — the glossary in `plans/glossary.md` has the app's own
+before it goes live** — the glossary in `docs/plans/glossary.md` has the app's own
 terms to check against. Until a language is reviewed, leave its store listing
 on English.
 

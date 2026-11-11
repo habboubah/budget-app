@@ -135,7 +135,7 @@ const ascKeyPath = ASC_KEY_ID && (process.env.ASC_KEY_PATH
   || path.join(os.homedir(), `.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8`));
 if (!dryRun) {
   if (!ASC_KEY_ID || !ASC_ISSUER_ID) {
-    throw new Error('ASC_KEY_ID / ASC_ISSUER_ID not set — copy .env.release.example to .env.release (see APP_STORE_RELEASE.md).');
+    throw new Error('ASC_KEY_ID / ASC_ISSUER_ID not set — copy .env.release.example to .env.release (see docs/APP_STORE_RELEASE.md).');
   }
   if (!fs.existsSync(ascKeyPath)) {
     throw new Error(`App Store Connect API key not found at ${ascKeyPath}`);
@@ -149,7 +149,7 @@ if (!/DEVELOPMENT_TEAM = \w+;/.test(pbxproj)) {
 // by UIKit at launch. Korb's build 2 shipped that way; never repeat it.
 const infoPlist = fs.readFileSync(path.join(rootDir, 'ios/App/App/Info.plist'), 'utf8');
 if (!infoPlist.includes('UIApplicationSceneManifest') || !fs.existsSync(path.join(rootDir, 'ios/App/App/SceneDelegate.swift'))) {
-  throw new Error('ios/App/App is missing the UIScene setup (SceneDelegate.swift + UIApplicationSceneManifest) — the app would crash on launch. See CLAUDE.md, "Native iOS".');
+  throw new Error('ios/App/App is missing the UIScene setup (SceneDelegate.swift + UIApplicationSceneManifest) — the app would crash on launch. See docs/CLAUDE.md, "Native iOS".');
 }
 if (!/MARKETING_VERSION = /.test(pbxproj) || !/CURRENT_PROJECT_VERSION = /.test(pbxproj)) {
   throw new Error(`Could not find version settings in ${pbxprojPath}`);
@@ -224,4 +224,4 @@ run(`git commit -m "Prepare release v${newVersion} (build ${newBuild})"`);
 run(`git tag -f v${newVersion}`);
 console.log(`\nDone: Spartopf v${newVersion} (build ${newBuild}) uploaded to App Store Connect.`);
 console.log('It shows up in TestFlight after Apple finishes processing (usually 5–30 min).');
-console.log('Then submit it for review in App Store Connect — see APP_STORE_RELEASE.md, step 9.');
+console.log('Then submit it for review in App Store Connect — see docs/APP_STORE_RELEASE.md, step 9.');

@@ -147,8 +147,8 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
  * or dark, the colour), Haushaltsbuch (categories and budgets; backup and
  * transfer on a screen of their own), Ausprobieren (test data in, test data
  * out), Über Spartopf (rate it, send feedback, the privacy policy — plan 15),
- * then deleting everything and what the app is. Later features join
- * their group (REDESIGN.md §4, plans/00).
+ * then resetting the app and what the app is. Later features join
+ * their group.
  */
 export function SettingsView(p: Props) {
   const { t } = p;

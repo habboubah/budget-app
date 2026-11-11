@@ -1,8 +1,22 @@
 # CLAUDE.md
 
-Steering file for AI assistants working in this repository. See `PLAN.md` for
-the product concept and the money rules, `README.md` for running and installing,
-`STATISTICS_AND_INSIGHTS.md` for what Statistik and Planen show, and why.
+Steering file for AI assistants working in this repository: where the code
+lives, the rules it follows, and what to check before a change is done.
+
+All documentation lives in `docs/` — only `README.md` stays at the root. Paths
+in this file are from the repository root. The other docs:
+
+| File | What it is for |
+|---|---|
+| `README.md` | Install, run, build and release (iPhone, Android, web) |
+| `docs/features.md` | Every feature, as the user sees it |
+| `docs/PLAN.md` | The concept and the money rules |
+| `docs/STATISTICS_AND_INSIGHTS.md` | What Statistik and Planen show: definitions (§6), thresholds (§10.4), decisions D1–D8 |
+| `docs/SECURITY.md` | The threat model and how each threat is handled |
+| `docs/TODO.md` | What only Ahmad can do: devices, Xcode, the stores |
+| `docs/APP_STORE_RELEASE.md`, `docs/ANDROID_RELEASE.md` | The store releases step by step |
+| `docs/plans/` | The plans still open, in order (`README.md` has the rules) |
+| `docs/COMPETITOR_ANALYSIS.md` | The research the plans' F / U / S numbers refer to |
 
 ## What this app is
 Spartopf: a client-only React + Capacitor household budget book, modelled on
@@ -30,7 +44,50 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   on production builds (`vite.config.ts`); `src/crypto.ts` (WebCrypto) encrypts
   exports; `wipeAll()`/`onWipe()` in `storage.ts` erase everything on *Alle
   Daten löschen*; no `console.*` in app source (`check:security`). See
-  `SECURITY.md` for the threat model.
+  `docs/SECURITY.md` for the threat model.
+
+## Repository layout
+
+| Path | What |
+|---|---|
+| `src/App.tsx` | Tabs, pushed screens (no router), sheets, toasts |
+| `src/store.ts` | All state; view preferences in `localStorage` |
+| `src/storage.ts` | The household book on disk: a checksummed file written atomically in the apps, `localStorage` on the web; snapshots, the two folders, wiping |
+| `src/logic.ts` | Pure logic — money parsing and formatting, months, the two balances, carry-over, accounts and transfers, storage validation, CSV |
+| `src/types.ts` | The data model (`AppData`, `Category`, `Entry`, `MonthRecord` …) |
+| `src/insights/` | Statistik and Planen, pure and tested next to each module: the book, "usual" and the thresholds, the series, pace, hints, the outlook and *Kann ich mir das leisten?* (`whatif.ts`), the reserve, savings pots, debts, trips and projects, the tax list, Finanz-Check, the category and payee details, the month report and the year review |
+| `src/insightText.ts` | A hint in words, in every language |
+| `src/budgets.ts`, `src/budgetLabel.ts` | Budgets (monthly, yearly, with rollover) and their words |
+| `src/contracts.ts`, `src/due.ts` | Subscriptions and contracts with notice deadlines; what is due next |
+| `src/repeatLabel.ts` | Repeat intervals and their labels |
+| `src/reminders.ts`, `src/notify.ts`, `src/lock.ts` | The reminder plan (pure), scheduling it, the app lock |
+| `src/statementImport.ts` | Bank transactions from a CSV or the text of a photo into entries |
+| `src/pdfText.ts`, `src/statementPdf.ts` | A statement PDF's text (pdf.js) and its transactions |
+| `src/ocr.ts` | Text off a photo, on the device (tesseract, copied to `public/ocr/` by `scripts/copy-ocr.mjs`) |
+| `src/girocode.ts`, `src/qrScan.ts` | An invoice's payment QR code (GiroCode) |
+| `src/xlsx.ts`, `src/excelImport.ts` | Reading an .xlsx on the device; a budget sheet into months |
+| `src/receipts.ts` | Receipts and documents on an entry |
+| `src/keywords.ts` | Name completion and the category guessed from the name |
+| `src/tips.ts` | The one tip card on the month page |
+| `src/crypto.ts`, `src/export.ts`, `src/limits.ts` | Encrypted backups (WebCrypto), sharing files, the size limits of every import |
+| `src/currency.ts`, `src/links.ts`, `src/platform.ts` | Currencies; the links *Über Spartopf* opens; which app we run in |
+| `src/demo.ts` | The test data year |
+| `src/shareImage.ts` | The year review as a picture |
+| `src/dynamicType.ts` | iOS Larger Text → the root font size |
+| `src/native/` | The bridge to our own native plugin, `spartopf://` links, the inbox and the summary Siri reads |
+| `src/translations.ts`, `src/i18n/` | All UI text: `de`, `en`, `ar` in `translations.ts`, the eleven others loaded on demand; `i18n/android.ts` swaps Apple wording for Android's |
+| `src/data/` | Built-in categories, their names in every language, their keywords |
+| `src/components/` | Screens (`*View`), sheets (`*Sheet`), cards, the charts |
+| `src/ui/` | Shared primitives: Screen, Sheet, Button, Field, Menu, Toast, TabBar, SwipeRow … |
+| `src/fixtures/` | What older versions stored and backed up, and the golden demo year (`compat.test.ts`, `golden.test.ts`) |
+| `ios/App/` | The Capacitor iOS project (Swift Package Manager, UIScene); our Swift: `SpartopfShared.swift` (the plugin), `SpartopfIntents.swift` (Siri and Shortcuts) |
+| `ios/AppReviewRecorder/` | The UI test that records the App Review video, and its `scenes.json` |
+| `android/` | The Capacitor Android project; our plugin `SpartopfSharedPlugin.java` |
+| `scripts/` | `release.js` / `release-android.js` (store builds), `screenshots.mjs`, `ui-review.mjs`, the checks (`privacy-check`, `perf-check`, `contrast-audit`, `no-console`), the App Review rehearsal and recording |
+| `store/` | App Store and Google Play texts (`listing.md`, `listing-languages.md`, `play-listing.md`) and the privacy policy pages (`privacy/`) |
+| `docs/` | All documentation (see the table above) |
+| `.claude/skills/` | Design, UX, animation, screenshot and release skills |
+| `.github/workflows/ci.yml` | CI: `npm run check`, and a debug build of the Android app |
 
 ## Architecture rules (mirrors pizza-driver-log and shopping-list)
 - **No router.** `App.tsx` holds the active tab plus one state per pushed
@@ -64,7 +121,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     moment the move counts); a failure before that undoes the copies and
     rejects. `storage.test.ts` stops a move at every step, both ways, and the
     next launch must find the whole book. Snapshot, restore and rescue
-    functions default to the book's folder (`appFs()`); *Alle Daten löschen*
+    functions default to the book's folder (`appFs()`); *App zurücksetzen*
     empties both. A write that fails (Data Protection, phone locked) is kept
     and written again on resume (`saver.retry()`).
   - **The localStorage mirror** (`DATA_KEYS`: one key per part of `AppData` —
@@ -97,7 +154,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     are `.spartopf`; plain is `.json`. Import (`BackupGroup.tsx`) detects the
     envelope (`isEncryptedBackup`) and asks for the password before
     `parseBackup()`; old plain backups still import. All WebCrypto, no library.
-  - *Alle Daten löschen* calls `saver.forget()` first, so `data.prev.json`
+  - *App zurücksetzen* calls `saver.forget()` first, so `data.prev.json`
     (and the snapshots) keep no copy of the old book.
   - View preferences (language, theme, accent, folded cards, intro, tips,
     reminders, lock, hidden amounts) stay in localStorage in `store.ts`: losing
@@ -119,7 +176,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `src/excelImport.ts` plans the import as pure data (`planExcelImport`) that
   the preview sheet shows and `applyExcelImport` writes. Tests build their own
   .xlsx in memory; never commit a real one (it is someone's finances).
-- **Statistik and Planen** (`STATISTICS_AND_INSIGHTS.md`, plans 06a and 13;
+- **Statistik and Planen** (`docs/STATISTICS_AND_INSIGHTS.md`, plans 06a and 13;
   its definitions §6 and decisions §14 apply to every figure). Statistik looks
   back, Planen looks ahead; at most three hints per screen, ranked, each with a
   next step; no score; estimates rounded (`formatMoneyEstimate`, "≈") with
@@ -204,7 +261,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `npm run audit:contrast` (the `validate_palette.js` once cited here isn't in
   the repo). No pies, donuts or Sankeys on the phone. A projection is a dashed
   line with a hollow end point and "≈"; a baseline ("üblich") is a thin
-  `fg-mute` line (`STATISTICS_AND_INSIGHTS.md` §9.9).
+  `fg-mute` line (`docs/STATISTICS_AND_INSIGHTS.md` §9.9).
 - **Categories per month:** `MonthRecord.categories` lists what a month
   shows; `monthCategories()` adds anything with entries, so money never
   vanishes. Unset (months from before, Excel imports) = the standard ones. New
@@ -472,7 +529,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   line, else the largest amount; the shop's first line). A row shows a
   paperclip. Files a book no longer points to go at the next launch
   (`sweepFiles` in main.tsx) — so deleting an entry stays undoable; a sheet
-  left without saving drops what it stored at once; *Alle Daten löschen*
+  left without saving drops what it stored at once; *App zurücksetzen*
   removes them all. A backup carries them as `files` (id → base64) beside the
   book — still one JSON, encrypted as before, up to 150 MB; an import writes
   them first and keeps only the receipts that are really there
@@ -512,7 +569,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   the running month and after the setup and gestures cards. Closing or using
   it puts it in `store.tipState.done` for good (a device pref) and starts a
   seven-day pause. A new feature gets a tip here rather than anything on the
-  first screens; `plans/37-simplicity-review.md` has the table of where each
+  first screens; `docs/plans/37-simplicity-review.md` has the table of where each
   feature first appears and the first-viewport counts to compare with.
 - **Automatic capture (plan 19, iPhone).** Two more App Intents in
   `SpartopfIntents.swift` for Shortcuts automations — `LogPaymentIntent`
@@ -599,13 +656,14 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   schema 11, optional, unset = EUR, in backups). Only two-minor-digit currencies
   are offered (`CURRENCIES`). `logic.ts` holds a module-level active currency
   (`setActiveCurrency`, set by the store from the book); every money formatter
-  reads it, so there's no call-site churn — tests set it explicitly. A new book
-  picks the currency from the region (`currencyForLocale`); changing it in
+  reads it, so there's no call-site churn — tests set it explicitly. A new
+  install, and the app after *App zurücksetzen*, starts in English with EUR
+  (`currencyForLocale` is kept, tested, but no longer called); changing it in
   *Darstellung → Währung* only relabels, never converts. CSV export appends a
   `Währung` column; a bank CSV row in another currency shows "andere Währung"
   and starts unticked.
 - **Hidden amounts (plan 06).** *Beträge verbergen* (view preference
-  `spartopf-hide-amounts`, kept by *Alle Daten löschen*) works like the
+  `spartopf-hide-amounts`, kept by *App zurücksetzen*) works like the
   currency: one module-level switch in `logic.ts` (`setAmountsHidden`, set by
   App on every render before its screens) makes every money formatter —
   `formatMoney*`, `compactMoney`, the charts' `savedLabel` — write the locale's
@@ -846,16 +904,18 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     `protectBookFiles()` brings files written before that up to the same class
     at launch, and a debug build logs each file's class — the device check.
     The saver flushes on background, before the phone locks; a write that
-    still fails is retried on resume. App Group files for widgets (plan 14)
-    use `completeUntilFirstUserAuthentication`, written by our own Swift.
+    still fails is retried on resume. The App Group files (plan 14: the
+    summary Siri reads, the inbox) use `completeUntilFirstUserAuthentication`,
+    written by our own Swift.
   - **The native bridge (plan 14).** `SceneDelegate` makes
     `MainViewController` (a `CAPBridgeViewController`, in
     `ios/App/App/SpartopfShared.swift`) the root; its `capacitorDidLoad()`
     registers our own plugin `SpartopfShared` — our code, not a third party's,
     as it handles financial data. It shares the App Group
     `group.com.habboubah.spartopf` (`App.entitlements`; every extension gets
-    it too) with widgets and intents: `snapshot.json` (written
-    atomically, then `WidgetCenter.reloadAllTimelines()`) and `inbox/<id>.json`
+    it too) with the intents (there is no widget extension — that plan was
+    dropped): `snapshot.json` (written atomically, then
+    `WidgetCenter.reloadAllTimelines()`, harmless without a widget) and `inbox/<id>.json`
     (one file per item, so writers never race), both
     `completeUntilFirstUserAuthentication`, size-capped, JSON passed through as
     text. Methods: `writeSnapshot`, `readSnapshot` (debug), `readInbox` →
@@ -955,13 +1015,17 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | Type-check | `npm run lint` |
 | Unit tests | `npm test` |
 | **All the gates** (before a release, in CI) | `npm run check` |
-| Privacy check / performance budgets alone | `npm run check:privacy` / `npm run check:perf` |
+| Privacy check / performance budgets / contrast / security alone | `npm run check:privacy` / `npm run check:perf` / `npm run audit:contrast` / `npm run check:security` |
 | Re-record the golden year (a money rule changed on purpose) | `npx vitest run src/golden.test.ts -u` |
 | Web build | `npm run build:web` |
 | Build + open Xcode | `npm run build:ios` |
+| Build + open Android Studio / a debug APK | `npm run build:android` / `npm run android:debug` |
 | Regenerate icons/splash | `npm run assets:generate` |
-| App Store screenshots (DE + EN, 1290×2796) | `npm run screenshots` |
+| Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` |
+| App Store screenshots: raw captures (DE + EN) / the framed 6.3-inch set | `npm run screenshots` / `npm run store-screenshots` |
+| Rewrite `docs/plans/glossary.md` from the app's strings | `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts` |
 | Upload to App Store Connect / TestFlight | `npm run release` (first time: `npm run release:first`; preview: `npm run release:dry`) |
+| Signed Android bundle for Google Play | `npm run release:android` (once: `npm run android:key`) |
 | App Review screen recording: check the scenes against the code / record on the connected iPhone | `npm run rehearse:app-review` / `npm run record:app-review` (`ios/AppReviewRecorder/README.md`) |
 
 A change to a screen, a label or a flow that the App Review recording passes
@@ -975,7 +1039,10 @@ gates on `npm run check`, bumps `package.json` and the Xcode project's
 `cap sync ios`, archives and uploads via `ios/App/ExportOptions.plist`, then
 commits and tags. Credentials live in the gitignored `.env.release` — never
 print or commit them. Submitting for review is manual. Full checklist:
-`APP_STORE_RELEASE.md`; skill: `.claude/skills/app-store-release`.
+`docs/APP_STORE_RELEASE.md`; skill: `.claude/skills/app-store-release`.
+Android: `scripts/release-android.js` runs the same checks, builds and signs
+the bundle with the version from `package.json`; the upload is by hand
+(`docs/ANDROID_RELEASE.md`).
 
 ## Before calling a change done
 1. `npm run check` — it runs, in order:
@@ -1001,6 +1068,14 @@ print or commit them. Submitting for review is manual. Full checklist:
    the commit. A new schema version: add its `storage-v*.json` fixture.
 2. `npm run dev` and exercise the change at iPhone width (375–430px) and on desktop.
 3. If a screen changed: `node scripts/ui-review.mjs` before and after.
+4. Keep the docs true (all in `docs/`, never a new `.md` at the root):
+   - a feature added, changed or removed → `docs/features.md`, and the What's
+     New text in `store/listing.md`;
+   - a rule or a convention → this file; a money rule → `docs/PLAN.md`;
+   - anything left for Ahmad (Xcode, a device, the stores) → `docs/TODO.md`;
+   - a plan finished → its file in `docs/plans/` is deleted and its line in
+     `docs/plans/README.md` says what was built;
+   - a new threat or protection → `docs/SECURITY.md`.
 
 ## Commit style
 Short, imperative, feature-focused summaries, no conventional-commit prefixes

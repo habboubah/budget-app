@@ -3,7 +3,7 @@ import { devNative, isNative } from './platform';
 
 /*
  * The Face ID lock's device side, through @aparajita/capacitor-biometric-auth
- * (chosen in REDESIGN.md §10, step 12): LocalAuthentication only, with the
+ * (chosen in the first redesign): LocalAuthentication only, with the
  * device passcode to fall back on. It locks the interface; the data itself
  * is protected by iOS file protection (plan 06 goes further).
  */

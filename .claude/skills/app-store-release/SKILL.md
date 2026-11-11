@@ -8,7 +8,7 @@ description: Build Spartopf and upload it to App Store Connect / TestFlight, reg
 Spartopf ships exactly like pizza-driver-log (Fahrtwerk) and shopping-list
 (Korb): one command archives the iOS app with `xcodebuild` and uploads it to
 App Store Connect with an App Store Connect API key. Submitting for review is a manual click in App Store Connect.
-The full human checklist is `APP_STORE_RELEASE.md` — read it when anything
+The full human checklist is `docs/APP_STORE_RELEASE.md` — read it when anything
 below fails.
 
 ## Before running anything

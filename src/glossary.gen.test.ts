@@ -12,7 +12,7 @@ const TERMS: [string, string][] = [
   ['tabMonth', 'tab'], ['tabStats', 'tab'], ['tabInsights', 'tab'], ['tabSettings', 'tab'], ['save', ''], ['undo', ''],
 ];
 
-it.skipIf(!process.env.WRITE_GLOSSARY)('writes plans/glossary.md from the app’s own strings', async () => {
+it.skipIf(!process.env.WRITE_GLOSSARY)('writes docs/plans/glossary.md from the app’s own strings', async () => {
   await loadAllLanguages();
   const order = ['de', 'en', ...languages.filter(l => l !== 'de' && l !== 'en')];
   let out = '# Glossary\n\nThe app\'s core terms as each language has them **now**, taken from the strings themselves (the languages plan). German and English are the originals; Arabic was written with them; the other eleven are machine-drafted. A reviewer checks a language\'s column first — a term changed here must be changed everywhere it appears in `src/i18n/<language>.ts`.\n\nRegenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.\n';
@@ -23,5 +23,5 @@ it.skipIf(!process.env.WRITE_GLOSSARY)('writes plans/glossary.md from the app’
     out += `\n## ${LANGUAGE_NAMES[lang as keyof typeof LANGUAGE_NAMES]} (${lang})\n\n| Deutsch | English | ${lang} | Meaning | Reviewed |\n|---|---|---|---|---|\n`;
     for (const [key, note] of TERMS) out += `| ${de[key]} | ${en[key]} | ${t[key]} | ${note} | |\n`;
   }
-  writeFileSync('plans/glossary.md', out);
+  writeFileSync('docs/plans/glossary.md', out);
 });

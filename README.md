@@ -1,7 +1,8 @@
 # Spartopf – Haushaltsbuch 🪙
 
-A simple, private budget book for iPhone and the browser: one bank account (cash
-and savings accounts when you add them), one page per month, and the two numbers that matter — **what is on the account now**
+A simple, private budget book for iPhone, Android and the browser: one bank
+account (cash and savings accounts when you add them), one page per month, and
+the two numbers that matter — **what is on the account now**
 and **what will be left at the end of the month**. No sign-up, no server, no
 ads; everything stays on the device.
 
@@ -9,11 +10,22 @@ Bundle id `com.habboubah.spartopf` · Team Ahmad Habboubah (HZVBBHBAJN)
 
 ## Documentation
 
-- [docs/features.md](docs/features.md) — what the app does
-- [docs/project-layout.md](docs/project-layout.md) — where the code lives
-- [docs/ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md) — Android: run it, sign it, Google Play
-- [APP_STORE_RELEASE.md](docs/APP_STORE_RELEASE.md) — full first-time App Store checklist and troubleshooting
-- [CLAUDE.md](docs/CLAUDE.md) — conventions · [PLAN.md](PLAN.md) — concept and money rules
+Everything else is in [`docs/`](docs):
+
+| File | What |
+|---|---|
+| [features.md](docs/features.md) | Every feature of the app |
+| [PLAN.md](docs/PLAN.md) | The concept and the money rules |
+| [CLAUDE.md](docs/CLAUDE.md) | Where the code lives, and the conventions for working on it |
+| [TODO.md](docs/TODO.md) | What is left to do by hand: devices, Xcode, the stores |
+| [APP_STORE_RELEASE.md](docs/APP_STORE_RELEASE.md) | The first App Store release step by step, and troubleshooting |
+| [ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md) | Android: run it, sign it, Google Play |
+| [SECURITY.md](docs/SECURITY.md) | What the app protects, and how |
+| [STATISTICS_AND_INSIGHTS.md](docs/STATISTICS_AND_INSIGHTS.md) | What Statistik and Planen show, and the definitions behind them |
+| [plans/](docs/plans/README.md) | The plans still open, in build order |
+| [COMPETITOR_ANALYSIS.md](docs/COMPETITOR_ANALYSIS.md) | Research on other budget apps (November 2026) |
+
+The App Store and Google Play texts and the privacy policy are in `store/`.
 
 ## Requirements
 

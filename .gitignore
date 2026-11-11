@@ -9,6 +9,8 @@ coverage/
 !.env.example
 !.env.release.example
 *.p8
+__pycache__/
+*.pyc
 .vite/
 **/.idea/
 # Xcode per-user state and build output inside the native shell.

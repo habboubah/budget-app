@@ -36,9 +36,9 @@ A store page that shows what the app does, in their language and with accessibil
 4. **Privacy policy** (`store/privacy/`). Add local notifications, Face ID, file storage and automatic backups. It still says "no data collected".
 5. **Accessibility Nutrition Labels.**
    - Check the redesigned app against Apple's criteria for VoiceOver, Voice Control, Larger Text, Dark Interface, Differentiate Without Color Alone, Sufficient Contrast and Reduced Motion.
-   - Declare only what passes, and note the results in `APP_STORE_RELEASE.md`.
+   - Declare only what passes, and note the results in `docs/APP_STORE_RELEASE.md`.
 6. **Permission texts.** Move them to `InfoPlist.xcstrings` (or `de.lproj`, `en.lproj` and `ar.lproj` `InfoPlist.strings`) with DE, EN and AR texts. Later plans add their own keys there: Face ID, local network, and so on.
-7. **Arabic reader check.** Have an Arabic reader look at the € placement in Arabic sentences (REDESIGN.md §9). Decide, and record the rule in CLAUDE.md.
+7. **Arabic reader check.** Have an Arabic reader look at the € placement in Arabic sentences (see `docs/TODO.md`). Decide, and record the rule in CLAUDE.md.
 
 ## Done when
 

@@ -10,6 +10,8 @@ items off, or delete them once done. The details are in each plan's notes.
   Protection~~: done with release v1.2.6 (build 10) on 9 Nov.
 - [x] ~~Build again in Xcode~~: release v1.2.7 (build 11) on 10 Nov compiled
   plan 28's `makePdf` and plan 18's Siri code.
+- [ ] **`npm install`** on the Mac: the merged features brought two new
+  packages (`qr`, `pdfjs-dist`); without them the app doesn't build.
 - [ ] **Push** when you're ready: `main` is ahead of GitHub (`git status`
   shows how far).
 
@@ -25,8 +27,10 @@ items off, or delete them once done. The details are in each plan's notes.
   review page (plan 15, app id 6829541731).
 - [ ] **Accessibility Nutrition Labels:** check the app on a device and
   declare only what passes (plan 16).
-- [ ] **The € in Arabic sentences:** decide where it goes, and Claude writes
-  the rule into CLAUDE.md (plan 16, REDESIGN.md §9).
+- [ ] **The € in Arabic sentences:** in a sentence the € sits left of the
+  number ("€ 12,600.00 سنويًا"), on a plain amount right of it
+  ("255.00 €") — correct bidi, but inconsistent. Have an Arabic reader
+  decide; Claude then writes the rule into CLAUDE.md (plan 16).
 
 ## On the iPhone — with a build from Xcode
 
@@ -35,13 +39,13 @@ for plan 15.
 
 **Languages** (plan 25 is closed; this is what it left for people)
 - [ ] Find a native speaker for Turkish first, then the other ten. Give them
-  `plans/glossary.md` (tick *Reviewed*), the app in their language, and
+  `docs/plans/glossary.md` (tick *Reviewed*), the app in their language, and
   their section of `store/listing-languages.md`. Corrections go to Claude.
 - [ ] Build in Xcode: 22 new string files (Siri and Shortcuts in eleven
   languages) are registered in the project but not compiled yet.
 - [ ] Until a language is reviewed, leave its store listing on English.
 
-**Plan 23 — Android** (`docs/ANDROID_RELEASE.md` has every step)
+**Plan 23 — Android** ([ANDROID_RELEASE.md](ANDROID_RELEASE.md) has every step)
 - [ ] Install Android Studio, then `npm run build:android` and press Run on a
   phone or the emulator. **The app has never run on Android** — if it doesn't
   start, give Claude what Logcat says.
@@ -166,7 +170,7 @@ amounts in a file only readable while the phone is unlocked)
 - [ ] **Encryption test (needs two iPhones):** restore an iCloud backup and
   an encrypted and an unencrypted Finder backup to the second phone. Step 3
   of plan 06 (its file is in the git history); the result goes into
-  `SECURITY.md`.
+  [SECURITY.md](SECURITY.md).
 
 **Earlier plans**
 - [ ] 00: reminders (permission, delivery, tapping one) and the Face ID lock.
@@ -182,16 +186,11 @@ amounts in a file only readable while the phone is unlocked)
   08 (SE keyboard), 09 (0/3/8 favourites), 10, 11, 12 (VoiceOver on the
   ring), 20, 21, 26, 29.
 
-## The ten features on `new-features` (November 2026)
+## The ten new features and the second redesign (November 2026)
 
-Built and tested in the browser only. Before they go into a release:
+Both are merged into `main` (11 Nov). Built and tested in the browser only —
+before they go into a release:
 
-- [ ] **`npm install` first** — two new packages (`qr`, `pdfjs-dist`); without it
-  the app doesn't build.
-- [ ] **Merge:** `git checkout main && git merge new-features` when you're happy.
-  `redesign-2` touches some of the same components (the entry sheet, the
-  category card): merge one, then the other, and let Claude sort out the
-  conflicts.
 - [ ] **Invoice QR code** with the real camera: a paper invoice in normal light,
   and a PDF invoice as a screenshot.
 - [ ] **Statement PDF** from your own bank. Where it reads wrongly, tell Claude
@@ -208,6 +207,15 @@ Built and tested in the browser only. Before they go into a release:
   eleven newer ones want the same native-speaker pass as the rest.
 - [ ] **App Review recording:** `npm run rehearse:app-review` still passes; the
   scenes don't show the new features yet. Say if the recording should.
+
+**The second redesign** (the cloud machine had Chromium and Inter only)
+- [ ] The type on the iPhone: SF Pro and SF Rounded, not Inter.
+- [ ] Scroll a long month in the app: the shadows and tinted card headers
+  stay smooth (Safari Web Inspector timeline).
+- [ ] `npm run check:perf` on the Mac: the month switch against its 150 ms
+  budget (on the cloud machine it was over now and then, before and after).
+- [ ] Make the App Store screenshots again (`npm run screenshots`, `npm run
+  store-screenshots`) — the current ones show the old look.
 
 ## Decide
 
