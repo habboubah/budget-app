@@ -85,7 +85,33 @@ server, no ads; everything stays on the device.
   than one a week: after the same entry three times "Als Favorit merken",
   after the first yearly bill the reserve, after a month over budget "Budget
   anpassen", on the iPhone automatic capture, and a reminder to back up. ✕ or
-  using it ends that tip for good.
+  using it ends that tip for good. After the setup, the card *Gut zu wissen*
+  shows the three gestures — and offers the short tour and the guide (below).
+
+## Learning the app: the guide and the tour
+
+Nothing stands between a new user and the month page — the setup card is the
+first thing to do, not something to read. What there is to learn is there
+when it is wanted:
+
+- **Anleitung** — the first row of *Optionen*. Every feature in two or three
+  sentences, in seven chapters (*Die Grundlagen, Eintragen, Planen, Auswerten,
+  Importieren, Mehr im Haushaltsbuch, Sicherheit und Daten*), with a search
+  over all of it. A row opens to its text and **Zeigen**, which goes to the
+  real thing: the screen it is about, the entry sheet, the month picker or
+  the month's "⋯" menu — and *back* returns to the guide, the topic still
+  open. What was read gets a tick. Topics a device can't use are left out
+  (automatic capture off the iPhone, reminders in the browser). In all
+  fourteen languages, naming every button as the app names it.
+- **Kurze Tour** — from the guide or the *Gut zu wissen* card: the real month
+  page with one thing lit at a time and a sentence beside it — the two
+  balances, the circle that ticks an entry off, switching months, the tabs,
+  the add button — "2 von 5", *Weiter*, and *Tour beenden* on every step. It
+  ends on *Eintrag hinzufügen*. A page that has no balance or no entry yet
+  gets a shorter tour. It never starts by itself.
+- **Ausprobieren.** The guide also offers *Testdaten hinzufügen* (below): a
+  year of a household to try everything on without touching your own entries.
+- Whoever had the app before the guide came sees one tip about it, once.
 
 ## Entering
 

@@ -244,6 +244,29 @@ before they go into a release:
 - [ ] Make the App Store screenshots again (`npm run screenshots`, `npm run
   store-screenshots`) — the current ones show the old look.
 
+## The guide and the tour (November 2026)
+
+Built and tried in Chromium at iPhone sizes (German and Arabic, light and
+dark; `node scripts/ui-review.mjs --only guide,guide-topic,guide-search,tour-balance,tour-tick,tour-month,tour-tabs,tour-add,tour-fresh,hint-guide,tips`).
+Before it goes into a release:
+
+- [ ] **On the iPhone:** *Optionen › Anleitung › Tour starten* — the lit mark
+  sits on the balance card, the entry, the month's name, the tab bar and the
+  add button, also under the Dynamic Island and with large text; the card
+  never hides behind the home indicator.
+- [ ] **VoiceOver:** each step of the tour is read when it appears, *Weiter*
+  and *Tour beenden* are reachable, and the page behind is not.
+- [ ] **Zeigen:** try a few topics — the month's "⋯" menu opens (*Kontoumsätze
+  importieren*), *back* from *Kategorien und Budgets* returns to the guide.
+- [ ] **Android:** the system back ends the tour, and returns to the guide
+  from a screen it opened.
+- [ ] **Languages:** the guide's pages (`src/i18n/guide/`) are written by
+  Claude in all fourteen; German, English and Arabic are yours to read, the
+  eleven others want the same native-speaker pass as the rest.
+- [ ] **App Review recording:** `npm run rehearse:app-review` still passes;
+  *Optionen* now starts with the *Anleitung* row and the *Gut zu wissen* card
+  has two buttons more. Say if the recording should show the tour.
+
 ## Decide
 
 

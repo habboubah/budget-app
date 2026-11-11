@@ -154,6 +154,12 @@ Write 1–3 short lines per release, e.g.
 
 ### Next release (after 1.2.0)
 
+**DE:** Neu: die Anleitung. Unter Optionen findest du jede Funktion kurz erklärt – mit „Zeigen“ bist du gleich an der richtigen Stelle. Dazu eine kurze Tour über die Monatsseite, wenn du sie möchtest.
+
+**EN:** New: the guide. Under Settings you'll find every feature explained in brief – "Show me" takes you straight to the right place. Plus a short tour of the month page, whenever you want it.
+
+**AR:** جديد: الدليل. تجد في الإعدادات شرحًا موجزًا لكل ميزة – و«أرِني» ينقلك مباشرة إلى المكان الصحيح. ومعه جولة قصيرة في صفحة الشهر متى أردت.
+
 **DE:** Statistik und Planen neu gestaltet: Oben siehst du auf einen Blick, wie viel du sparst – mit Sparquote, Durchschnitten und Trend. Neu: „Wann du Geld ausgibst“ mit Wochentagen und einem Kalender, und „Nächste 30 Tage“ – dein Kontostand Tag für Tag, mit dem tiefsten Stand vor dem nächsten Gehalt. Alle Diagramme lassen sich jetzt mit dem Finger abfahren. Und die Kontostand-Karte zeigt den Monat als Linie – von Monatsanfang über heute bis zum Monatsende.
 
 **EN:** Statistics and Plan, redesigned: the top now shows at a glance how much you save – your savings rate, averages and trend. New: "When you spend" with weekdays and a calendar, and "Next 30 days" – your balance day by day, with its lowest point before the next salary. Every chart now follows your finger as you drag across it. And the balance card shows the month as a line – from its start through today to the month's end.

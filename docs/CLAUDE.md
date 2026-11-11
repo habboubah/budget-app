@@ -70,6 +70,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `src/receipts.ts` | Receipts and documents on an entry |
 | `src/keywords.ts` | Name completion and the category guessed from the name |
 | `src/tips.ts` | The one tip card on the month page |
+| `src/guide.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Optionen › Anleitung*) and the short tour: its topics, search and steps (pure, tested); its pages per language, loaded on demand |
 | `src/crypto.ts`, `src/export.ts`, `src/limits.ts` | Encrypted backups (WebCrypto), sharing files, the size limits of every import |
 | `src/currency.ts`, `src/links.ts`, `src/platform.ts` | Currencies; the links *Über Spartopf* opens; which app we run in |
 | `src/demo.ts` | The test data year |
@@ -93,7 +94,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 ## Architecture rules (mirrors pizza-driver-log and shopping-list)
 - **No router.** `App.tsx` holds the active tab plus one state per pushed
   screen. The `pushed` array is the nav's single source of truth (back
-  gesture, scroll reset) and must match the render ternary.
+  gesture, scroll reset) and must match the render ternary. Back goes to the
+  tab's root — except from a screen the guide opened, which returns to the
+  guide (`under`, see *The guide and the tour*).
 - **No global store library.** All state lives in `useAppStore()` in
   `src/store.ts`. Immutable updates only.
 - **`src/storage.ts` is the only module that reads or writes the user's
@@ -614,7 +617,54 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   it puts it in `store.tipState.done` for good (a device pref) and starts a
   seven-day pause. A new feature gets a tip here rather than anything on the
   first screens; `docs/plans/37-simplicity-review.md` has the table of where each
-  feature first appears and the first-viewport counts to compare with.
+  feature first appears and the first-viewport counts to compare with. The
+  first tip of all is `guide` (`ctx.guide`): one line that the guide exists,
+  for whoever had the app before it — `knowGuide` marks it met, without a
+  pause, once the guide was opened, a tour taken or the gestures card put away.
+- **The guide and the tour (`src/guide.ts`, pure and tested).** How the app
+  teaches, after a look at Apple's onboarding guidelines and the apps cited as
+  the best at it: nothing before the first screen (the setup card *is* the
+  first action), tips at the moment they help (above), and — new — a place to
+  look things up that is always in the same spot, plus a tour that only runs
+  when asked for.
+  - **The guide** is the first row of *Optionen* (`GuideView`, pushed as
+    `guide`): the tour's card, then `GUIDE_TOPICS` by chapter — a row opens
+    to two or three sentences and *Zeigen* (`GuideAction`, run by
+    `guideGo` in App: a tab, a pushed screen, or something on the month page
+    opened — the entry sheet, the month picker, the "⋯" menu via
+    `data-tour="actions"`). A search over titles and texts (`searchGuide`,
+    folded like the month's search). `only: 'ios' | 'app'` hides what a device
+    can't do. Opened topics are ticked (`spartopf-guide-seen`, a view
+    preference). **A new feature gets a topic** — title = the feature's own
+    label in `Strings` where it has one (`title: 'favorites'`), so the guide
+    says what the screen says; `guide.test.ts` holds the list together.
+  - **Its words** are not in `translations.ts`: `src/i18n/guide/<lang>.ts`
+    (type `GuidePages`, derived from `de.ts`) holds the pages and the tour's
+    sentences, one chunk a language, loaded by `src/guidePages.ts` when the
+    guide opens or a tour begins — so not even de / en / ar weigh on the main
+    bundle (the performance budget). `GuideView` and `Tour` are lazy chunks
+    too (`loadGuide` / `loadTour` in App; rendered only once loaded). Only
+    what shows outside the guide stays in `Strings`: the row, the gestures
+    card's two buttons, the tip, *Weiter* / *Tour beenden* / "{n} von {total}".
+    A text names a label through a placeholder — `{split}`, `{settings}`, …
+    (`guideLabels`) — never by typing it out, and names nothing of Apple's
+    (Android shows the same pages; the test checks).
+  - **Back from *Zeigen*.** A tab holds one pushed screen, so a screen of
+    Optionen takes the guide's place; `guideReturn` makes `under` the guide,
+    and `back` (the bar, the edge swipe, Android's back) returns there with
+    the topic still open (`guideTopic` lives in App). `slide` gives that
+    same-depth change its push / pop direction.
+  - **The tour** (`Tour`, a portal over everything, z-70): at most five marks
+    on the running month's page — balance, the first entry's row, the month's
+    name, the tab bar, the add button (`TOUR_ANCHORS`: `data-tour` attributes,
+    keep them) — a step whose mark isn't on the page is left out
+    (`tourSteps`; a first run has three). `tour-mark` (index.css) is the scrim
+    with a hole; it glides between marks (the one place a box is animated by
+    its geometry — one element, 280 ms, off under reduced motion). The card
+    goes under the mark, else above, else over its lower part
+    (`tourCardPlace`). A dialog: focus stays in the card, Escape and Android's
+    back end it; the last step offers *Eintrag hinzufügen*. Started only from
+    the guide or the gestures card (`TipsCard`), never by itself.
 - **Automatic capture (plan 19, iPhone).** Two more App Intents in
   `SpartopfIntents.swift` for Shortcuts automations — `LogPaymentIntent`
   (the *Transaction* trigger: merchant, amount, card) and
@@ -780,6 +830,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
      no category's name may equal another's in any language (keyword index).
   4. Tab labels at most ~11 letters (they truncate on an iPhone SE). Run
      ui-review on `se` in the language; a native speaker reviews before release.
+  5. The guide's pages: `src/i18n/guide/xx.ts` (every key of `de.ts`, the same
+     placeholders) and its loader in `src/guidePages.ts` — `guide.test.ts`
+     checks both.
 - **Plurals:** `plural()` picks between two forms. Where a language has more
   (Polish, Czech: 1 / 2–4 / 5+), the count goes after a colon or beside an
   abbreviation ("Pozycje: 5", "3 mies."), as in Arabic. A `…One` string may
@@ -1081,7 +1134,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | Build + open Xcode | `npm run build:ios` |
 | Build + open Android Studio / a debug APK | `npm run build:android` / `npm run android:debug` |
 | Regenerate icons/splash | `npm run assets:generate` |
-| Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` (`stats-rhythm` and `insights-runway` show a picked day and a chart in hand) |
+| Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` (`stats-rhythm` and `insights-runway` show a picked day and a chart in hand; `guide*`, `tour-*` and `hint-guide` the guide, each step of the tour and its tip) |
 | App Store screenshots: raw captures (DE + EN) / the framed 6.3-inch set | `npm run screenshots` / `npm run store-screenshots` |
 | Rewrite `docs/plans/glossary.md` from the app's strings | `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts` |
 | Upload to App Store Connect / TestFlight | `npm run release` (first time: `npm run release:first`; preview: `npm run release:dry`) |

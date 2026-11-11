@@ -94,6 +94,16 @@ Groups as plan 00 set them: *Sicherheit und Mitteilungen*, *Darstellung*, *Haush
 
 "Card payments" can't be told from cash, so tip 1 counts every paid one-off expense typed in.
 
+### The guide and the tour (November 2026)
+
+Ahmad asked for a tutorial covering every feature, built the way the best apps do it. What they do, and what Apple's guidelines ask for, is this plan's rule with one thing added: onboarding that is short and optional, learning by doing, tips next to the thing they are about — *and* a tutorial that is easy to find again later, in a help or settings area. So:
+
+- **Nothing new on the first screens.** No welcome slides, no tour that starts by itself. The setup card stays the first action.
+- **The guide** (*Optionen*, first row — the one change to item 4's groups: a row of its own above *Sicherheit und Mitteilungen*, because help is looked for at the top): every feature of the table above in two or three sentences, each with *Zeigen*. It is where the answer to "nowhere until …" can be read ahead.
+- **The tour**: five marks on the real month page, only when asked for — from the guide, or from the gestures card, whose two new buttons are the only addition to the month page (and go with the card).
+- **One more tip**, first in the order of item 5: "Neu: eine Anleitung zu allen Funktionen" — once, for whoever had the app before; a new user who put the gestures card away never sees it.
+- **First viewport counts** (item 3) are unchanged on the month page; *Optionen* gains one row.
+
 ### Not done here
 
 - **1 Fresh install with three people** and **7 VoiceOver / 200 % text / Voice Control** and **8 speed on the oldest phones**: on devices, with people — TODO.md.
