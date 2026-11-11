@@ -15,6 +15,7 @@ in this file are from the repository root. The other docs:
 | `docs/SECURITY.md` | The threat model and how each threat is handled |
 | `docs/TODO.md` | What only Ahmad can do: devices, Xcode, the stores |
 | `docs/APP_STORE_RELEASE.md`, `docs/ANDROID_RELEASE.md` | The store releases step by step |
+| `docs/STORE_LISTING.md` | Every store listing field for Google Play and the App Store on one page (texts from `store/`) |
 | `docs/plans/` | The plans still open, in order (`README.md` has the rules) |
 | `docs/COMPETITOR_ANALYSIS.md` | The research the plans' F / U / S numbers refer to |
 

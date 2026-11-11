@@ -20,6 +20,7 @@ Everything else is in [`docs/`](docs):
 | [TODO.md](docs/TODO.md) | What is left to do by hand: devices, Xcode, the stores |
 | [APP_STORE_RELEASE.md](docs/APP_STORE_RELEASE.md) | The first App Store release step by step, and troubleshooting |
 | [ANDROID_RELEASE.md](docs/ANDROID_RELEASE.md) | Android: run it, sign it, Google Play |
+| [STORE_LISTING.md](docs/STORE_LISTING.md) | Every store listing field for Google Play and the App Store, ready to copy |
 | [SECURITY.md](docs/SECURITY.md) | What the app protects, and how |
 | [STATISTICS_AND_INSIGHTS.md](docs/STATISTICS_AND_INSIGHTS.md) | What Statistik and Planen show, and the definitions behind them |
 | [plans/](docs/plans/README.md) | The plans still open, in build order |
