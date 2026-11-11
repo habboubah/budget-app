@@ -10,8 +10,6 @@ items off, or delete them once done. The details are in each plan's notes.
   Protection~~: done with release v1.2.6 (build 10) on 9 Nov.
 - [x] ~~Build again in Xcode~~: release v1.2.7 (build 11) on 10 Nov compiled
   plan 28's `makePdf` and plan 18's Siri code.
-- [ ] **`npm install`** on the Mac: the merged features brought two new
-  packages (`qr`, `pdfjs-dist`); without them the app doesn't build.
 - [ ] **Push** when you're ready: `main` is ahead of GitHub (`git status`
   shows how far).
 
