@@ -1,10 +1,10 @@
-import { CSSProperties, ReactNode, useId, useLayoutEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
+import { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode, useId, useLayoutEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Category, Hue, MonthKey } from '../types';
-import { MonthPoint, BudgetSplit, Outlook, OutlookItem, Pace, RulePart } from '../insights';
+import { MonthPoint, BudgetSplit, MonthDays, Outlook, OutlookItem, Pace, RulePart, Runway, WeekdayPattern, firstWeekday, heatLevel } from '../insights';
 import {
   MASK, areAmountsHidden, compactMoney, dayLabel, displayName, formatMoney, formatMoneyApprox, formatMoneyEstimate, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, parseMonthKey,
-  dateAt,
+  dateAt, isoDay, spoken,
 } from '../logic';
 import { Strings, fmt } from '../translations';
 import { useWidth } from '../ui/useWidth';
@@ -24,8 +24,13 @@ import { tapLight } from '../ui/haptics';
  * the newest month.
  *
  * Charts come in moving: columns grow from the baseline one after another
- * (`chart-grow`), a line is uncovered from the left (`reveal`). Once, when
- * they appear — never on a tap — and not at all under reduced motion.
+ * (`chart-grow`), a line is drawn from the left (`reveal`: the marks' clip
+ * runs across the plot, the grid stays), the newest point pulses twice.
+ * Once, when they appear — and not at all under reduced motion.
+ *
+ * And they answer the finger: where the plot doesn't scroll, a touch drags
+ * across the slots — a tick for each — and the tooltip and the band behind
+ * the marks slide along instead of jumping.
  */
 
 /** How a column grows from the baseline at `base` (px in the plot), the i-th a little later. */
@@ -163,6 +168,10 @@ function ChartFrame({ slots, minSlot, ticks, y, selected, t, label, onPick, mark
   const width = useWidth(box);
   const [active, setActive] = useState<number | null>(null);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const reduce = useReducedMotion();
+  const revealId = useId().replace(/[^a-zA-Z0-9_-]/g, '');
+  // The slot a dragging finger reached last: a tap after a drag picks that one.
+  const scrubbed = useRef<number | null>(null);
   // The axis is as wide as its longest label ("27.500" in German, "20 ألف" in
   // Arabic, larger with Dynamic Type) — measured, so nothing is cut off.
   const labels = ticks.map(v => (tickLabel ? tickLabel(v) : compact(v, t.locale)));
@@ -204,6 +213,17 @@ function ChartFrame({ slots, minSlot, ticks, y, selected, t, label, onPick, mark
   const tipW = 196;
   const tipLeft = active === null ? 0
     : Math.max(scrollLeft, Math.min(cx(active) - tipW / 2, scrollLeft + visible - tipW));
+  // A plot that fits is dragged across (the page still scrolls up and down); one that scrolls keeps its sideways pan.
+  const fits = plotW <= visible + 0.5;
+  const scrub = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse' && !targets) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const i = Math.max(0, Math.min(months.length - 1, Math.floor((e.clientX - r.left) / slot)));
+    if (i === active) return;
+    if (e.pointerType !== 'mouse' && active !== null) { tapLight(); scrubbed.current = i; }
+    setActive(i);
+  };
+  const drawn = marks(cx, slot, active);
 
   return (
     <div ref={box} dir="ltr" className="relative flex" onPointerLeave={() => setActive(null)}>
@@ -230,46 +250,50 @@ function ChartFrame({ slots, minSlot, ticks, y, selected, t, label, onPick, mark
             ))}
             {zero && <line x1={0} x2={plotW} y1={y(0)} y2={y(0)} className="stroke-fg-faint" strokeWidth={1} />}
             {active !== null && (
-              <rect x={cx(active) - Math.max(3, slot / 2 - 2)} width={Math.max(6, slot - 4)} y={PAD_T - 4} height={PLOT_H + 4}
-                rx={Math.min(10, Math.max(3, slot / 2 - 2))} className="fill-fg" opacity={0.06} />
+              // The band behind the slot in hand; it slides to the next one.
+              <rect x={-Math.max(3, slot / 2 - 2)} width={Math.max(6, slot - 4)} y={PAD_T - 4} height={PLOT_H + 4}
+                rx={Math.min(10, Math.max(3, slot / 2 - 2))} className="fill-fg chart-band" opacity={0.06}
+                style={{ transform: `translateX(${cx(active)}px)` }} />
             )}
-            {marks(cx, slot, active)}
+            {reveal ? (
+              // A line chart is drawn from the left: the clip runs across the marks once, the grid stays put.
+              <>
+                <defs>
+                  <clipPath id={revealId}>
+                    {reduce
+                      ? <rect x={0} y={0} width={plotW} height={H} />
+                      : <motion.rect x={0} y={0} height={H} initial={{ width: 0 }} animate={{ width: plotW }}
+                          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.15 }} />}
+                  </clipPath>
+                </defs>
+                <g clipPath={`url(#${revealId})`}>{drawn}</g>
+              </>
+            ) : drawn}
             {months.map((m, i) => {
               const on = m === selected;
               const lab = axis ? axis(i, wide) : { text: axisMonth(m, t.locale, wide), sub: m.endsWith('-01') || i === 0 ? m.slice(0, 4) : undefined };
               if (!lab) return null;
+              // In a narrow first slot a centred label would be cut off by the plot's edge: it starts at the edge instead.
+              const edge = i === 0 && slot < 34;
+              const at = { x: edge ? 0 : cx(i), textAnchor: edge ? 'start' as const : 'middle' as const };
               return (
                 <g key={m}>
-                  <text x={cx(i)} y={PAD_T + PLOT_H + 15} textAnchor="middle" className={`text-micro ${on ? 'fill-fg font-bold' : 'fill-fg-mute'}`}>
+                  <text {...at} y={PAD_T + PLOT_H + 15} className={`text-micro ${on ? 'fill-fg font-bold' : 'fill-fg-mute'}`}>
                     {lab.text}
                   </text>
                   {lab.sub && (
-                    <text x={cx(i)} y={PAD_T + PLOT_H + 29} textAnchor="middle" className="text-micro fill-fg-mute num">{lab.sub}</text>
+                    <text {...at} y={PAD_T + PLOT_H + 29} className="text-micro fill-fg-mute num">{lab.sub}</text>
                   )}
                 </g>
               );
             })}
           </svg>
-          {reveal && (
-            // The curtain a line chart comes out from under: the card's own colour, drawn aside once.
-            <motion.div
-              aria-hidden="true"
-              className="pointer-events-none absolute right-0 top-0 w-full bg-surface"
-              style={{ height: PAD_T + PLOT_H + 2, originX: 1 }}
-              initial={{ scaleX: 1 }}
-              animate={{ scaleX: 0 }}
-              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
-            />
-          )}
           {targets ? (
             // Runs of slots as targets; between them a finger (or the mouse) scrubs slot by slot.
             <div
               className="absolute inset-0 flex touch-pan-y"
               onPointerDown={e => { if (e.pointerType !== 'mouse') e.currentTarget.setPointerCapture(e.pointerId); }}
-              onPointerMove={e => {
-                const r = e.currentTarget.getBoundingClientRect();
-                setActive(Math.max(0, Math.min(months.length - 1, Math.floor((e.clientX - r.left) / slot))));
-              }}
+              onPointerMove={scrub}
             >
               {targets.map(g => (
                 <button
@@ -285,8 +309,12 @@ function ChartFrame({ slots, minSlot, ticks, y, selected, t, label, onPick, mark
               ))}
             </div>
           ) : (
-            // Hit targets: the whole slot, bigger than any mark.
-            <div className="absolute inset-0 flex">
+            // Hit targets: the whole slot, bigger than any mark; a finger put down drags across them.
+            <div
+              className={`absolute inset-0 flex ${fits ? 'touch-pan-y' : ''}`}
+              onPointerDown={() => { scrubbed.current = null; }}
+              onPointerMove={fits ? scrub : undefined}
+            >
               {months.map((m, i) => (
                 <button
                   key={m}
@@ -297,20 +325,28 @@ function ChartFrame({ slots, minSlot, ticks, y, selected, t, label, onPick, mark
                   onPointerEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
                   onBlur={() => setActive(null)}
-                  onClick={() => { tapLight(); setActive(i); onPick?.(m); }}
+                  onClick={() => {
+                    const k = scrubbed.current ?? i;
+                    scrubbed.current = null;
+                    tapLight(); setActive(k); onPick?.(months[k]);
+                  }}
                 />
               ))}
             </div>
           )}
           {active !== null && (
-            <div
+            // Follows the slot in hand: it glides along rather than jumping.
+            <motion.div
               role="status"
-              className="pointer-events-none absolute top-0 z-10 rounded-sm bg-raised card-edge shadow-e2 px-3 py-2 whitespace-nowrap"
-              style={{ left: tipLeft, width: tipW }}
+              className="pointer-events-none absolute top-0 left-0 z-10 rounded-sm bg-raised card-edge shadow-e2 px-3 py-2 whitespace-nowrap"
+              style={{ width: tipW }}
+              initial={{ x: tipLeft, opacity: 0 }}
+              animate={{ x: tipLeft, opacity: 1 }}
+              transition={{ x: { type: 'spring', duration: 0.28, bounce: 0 }, opacity: { duration: 0.12 } }}
             >
               <p className="text-caption font-semibold text-fg-mute">{tipTitle ? tipTitle(active) : monthLabel(months[active], t.locale)}</p>
               {tooltip(active)}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
@@ -378,6 +414,21 @@ interface SeriesProps {
 
 /* ------------------------------------------------- income vs expenses */
 
+/**
+ * A column's fill: its series colour, a touch lighter towards the foot, so a
+ * row of columns has some depth without a second colour. `className` sets
+ * the colour as text (`text-chart-in`); the gradient runs over the plot, so
+ * equal heights are shaded alike.
+ */
+function ColumnShade({ id, base, className }: { id: string; base: number; className: string }) {
+  return (
+    <linearGradient id={id} gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={PAD_T} y2={base} className={className}>
+      <stop offset="0" stopColor="currentColor" />
+      <stop offset="1" stopColor="currentColor" stopOpacity={0.7} />
+    </linearGradient>
+  );
+}
+
 /** A plain column segment, square at both ends (the paid part under an open one). */
 function rectPath(x: number, w: number, top: number, base: number): string {
   return base - top <= 0.5 ? '' : `M${x},${base}V${top}H${x + w}V${base}Z`;
@@ -415,9 +466,9 @@ export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps)
   const kinds = (['in', 'out'] as const).filter(on);
   const k = Math.max(1, kinds.length);
   const series = {
-    in: { total: (p: MonthPoint) => p.income, open: (p: MonthPoint) => p.incomeOpen ?? 0, fill: 'fill-chart-in', swatch: 'bg-chart-in', label: t.income },
+    in: { total: (p: MonthPoint) => p.income, open: (p: MonthPoint) => p.incomeOpen ?? 0, fill: 'fill-chart-in', ink: 'text-chart-in', swatch: 'bg-chart-in', label: t.income },
     // Ausgaben without what was put into savings categories (D1): that counts as saved, and the tooltip names it.
-    out: { total: (p: MonthPoint) => p.spending, open: (p: MonthPoint) => p.spendingOpen ?? 0, fill: 'fill-chart-out', swatch: 'bg-chart-out', label: t.expenses },
+    out: { total: (p: MonthPoint) => p.spending, open: (p: MonthPoint) => p.spendingOpen ?? 0, fill: 'fill-chart-out', ink: 'text-chart-out', swatch: 'bg-chart-out', label: t.expenses },
   } as const;
   const anyOpen = points.some(p => kinds.some(kind => series[kind].open(p) > 0));
   const parts = (p: MonthPoint) => [
@@ -447,6 +498,7 @@ export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps)
                     <rect width={2.2} height={5} className={series[kind].fill} />
                   </pattern>
                 ))}
+                {kinds.map(kind => <ColumnShade key={kind} id={`${hatch}-shade-${kind}`} base={base} className={series[kind].ink} />)}
               </defs>
               {points.map((p, i) => {
                 const x0 = cx(i) - (k * w + (k - 1) * 3) / 2;
@@ -461,7 +513,7 @@ export function IncomeExpenseChart({ points, selected, t, onPick }: SeriesProps)
                       const x = x0 + j * (w + 3);
                       return (
                         <g key={kind} {...grow(base, i * 2 + j)}>
-                          {paid > 0 && <path d={open > 0 ? rectPath(x, w, y(paid), base) : columnPath(x, w, y(paid), base)} className={s.fill} />}
+                          {paid > 0 && <path d={open > 0 ? rectPath(x, w, y(paid), base) : columnPath(x, w, y(paid), base)} fill={`url(#${hatch}-shade-${kind})`} />}
                           {open > 0 && <path d={columnPath(x, w, y(total), y(paid))} fill={`url(#${hatch}-${kind})`} />}
                         </g>
                       );
@@ -570,7 +622,8 @@ export function BalanceChart({ points, selected, t, onPick }: SeriesProps) {
             {stroke(dashed, 'stroke-chart-line', 'up', '4 4')}
             {stroke(dashed, 'stroke-neg', 'down', '4 4')}
             {/* A soft halo marks the newest point — where the line stands today. */}
-            <circle cx={cx(last)} cy={y(points[last].end)} r={11} className={points[last].end < 0 ? 'fill-neg' : 'fill-chart-line'} opacity={0.16} />
+            <circle cx={cx(last)} cy={y(points[last].end)} r={11} className={`chart-pulse ${points[last].end < 0 ? 'fill-neg' : 'fill-chart-line'}`} opacity={0.16}
+              style={{ transformOrigin: `${cx(last)}px ${y(points[last].end)}px` }} />
             {[...new Set([last, active ?? last])].map(i => (
               <circle
                 key={i} cx={cx(i)} cy={y(points[i].end)} r={5} strokeWidth={projected(i) ? 2.5 : 2}
@@ -648,6 +701,7 @@ export function CategoryTrendChart({ category, values, open, months, selected, l
                   <rect width={5} height={5} className="fill-hue-chart" opacity={0.32} />
                   <rect width={2.2} height={5} className="fill-hue-chart" />
                 </pattern>
+                <ColumnShade id={`${hatch}-shade`} base={base} className="text-hue-chart" />
               </defs>
               {months.map((m, i) => {
                 const total = value(m);
@@ -657,7 +711,7 @@ export function CategoryTrendChart({ category, values, open, months, selected, l
                 return (
                   <g key={m} opacity={active === null || active === i ? 1 : 0.45}>
                     <g {...grow(base, i)}>
-                      {paid > 0 && <path d={pending > 0 ? rectPath(x, w, y(paid), base) : columnPath(x, w, y(paid), base)} className="fill-hue-chart" />}
+                      {paid > 0 && <path d={pending > 0 ? rectPath(x, w, y(paid), base) : columnPath(x, w, y(paid), base)} fill={`url(#${hatch}-shade)`} />}
                       {pending > 0 && <path d={columnPath(x, w, y(total), y(paid))} fill={`url(#${hatch})`} />}
                     </g>
                   </g>
@@ -1002,7 +1056,8 @@ export function OutlookChart({ outlook: o, t }: { outlook: Outlook; t: Strings }
   const bills = (p: (typeof pts)[number]) => p.big.filter(b => !b.income);
   return (
     <ChartFrame
-      slots={pts.map(p => p.key)} minSlot={22} ticks={ticks} y={y} t={t} reveal
+      // Thirteen points must fit a phone's card without scrolling: 18 px each (an iPhone SE leaves about 250 px).
+      slots={pts.map(p => p.key)} minSlot={18} ticks={ticks} y={y} t={t} reveal
       zero={yLo < 0 && yHi > 0}
       label={i => {
         const p = pts[i];
@@ -1090,6 +1145,293 @@ export function MiniBars({ hue, rows }: { hue?: Hue; rows: { label: string; valu
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------ the next 30 days */
+
+/**
+ * *Nächste 30 Tage* (Planen): the account day by day from today — a stepped
+ * line, since a balance moves on the day a bill goes out or the salary comes
+ * in, dashed like every line that lies ahead. A dot on each day something
+ * is booked (the step says which way), a ring on the lowest point with its
+ * value, the last value at the end; red below zero. VoiceOver
+ * steps through the weeks (`groups`); a finger scrubs across every day.
+ */
+export function RunwayChart({ runway: r, t, groups }: {
+  runway: Runway;
+  t: Strings;
+  groups: { from: number; to: number; label: string }[];
+}) {
+  const clip = useId().replace(/[^a-zA-Z0-9_-]/g, '');
+  const values = r.days.map(d => d.balance);
+  const lo = Math.min(r.start, ...values);
+  const hi = Math.max(r.start, ...values);
+  const pad = Math.max((hi - lo) * 0.18, 5000);
+  const ticks = niceTicks(lo - pad, hi + pad);
+  const yLo = ticks[0];
+  const yHi = ticks[ticks.length - 1];
+  const y = (v: number) => PAD_T + PLOT_H - ((v - yLo) / (yHi - yLo)) * PLOT_H;
+  const base = Math.min(PAD_T + PLOT_H, Math.max(PAD_T, y(0)));
+  const money = (c: number) => formatMoney(c, t.locale);
+  const last = r.days.length - 1;
+  const low = r.lowest.index;
+  const dayName = (i: number) => dayLabel(r.days[i].date, t.locale);
+  const monthOf = (i: number) => r.days[i].date.slice(0, 7);
+  const monthShort = (i: number) => {
+    const [yy, mm] = r.days[i].date.split('-').map(Number);
+    return new Intl.DateTimeFormat(t.locale, { month: 'short' }).format(new Date(yy, mm - 1, 1));
+  };
+  const num = new Intl.NumberFormat(t.locale);
+  return (
+    <ChartFrame
+      slots={r.days.map(d => d.date)} minSlot={8} ticks={ticks} y={y} t={t} reveal
+      zero={yLo < 0 && yHi > 0}
+      label={dayName}
+      groups={groups}
+      // A tick a week, the month named under the first and wherever it turns.
+      axis={i => (i % 7 === 0 ? { text: num.format(Number(r.days[i].date.slice(8))), sub: i === 0 || monthOf(i) !== monthOf(i - 7) ? monthShort(i) : undefined } : null)}
+      tipTitle={i => (i === 0 ? `${dayName(i)} · ${t.paceToday}` : dayName(i))}
+      marks={(cx, _slot, active) => {
+        // Stepped: the balance holds until the day something is booked.
+        let line = `M${cx(0).toFixed(1)},${y(values[0]).toFixed(1)}`;
+        for (let i = 1; i <= last; i++) line += `H${cx(i).toFixed(1)}V${y(values[i]).toFixed(1)}`;
+        const area = `${line}L${cx(last).toFixed(1)},${base.toFixed(1)}L${cx(0).toFixed(1)},${base.toFixed(1)}Z`;
+        const fill = (v: number) => (v < 0 ? 'fill-neg' : 'fill-chart-line');
+        const ring = (v: number) => (v < 0 ? 'stroke-neg' : 'stroke-chart-line');
+        // The lowest point's label goes under it, the end's above — they keep apart.
+        const lowY = Math.min(PAD_T + PLOT_H - 5, y(values[low]) + 18);
+        const lowAnchor = low < 4 ? 'start' : low > last - 4 ? 'end' : 'middle';
+        // The end's label goes above its point — under it when the line comes down to it, so it stays off the line.
+        const endBelow = values.slice(Math.max(0, last - 10), last).some(v => y(v) < y(values[last]) - 6);
+        const endY = endBelow ? Math.min(PAD_T + PLOT_H - 5, y(values[last]) + 19) : Math.max(PAD_T + 8, y(values[last]) - 11);
+        return (
+          <>
+            <defs>
+              <clipPath id={`${clip}-up`}><rect x={0} y={0} width="100%" height={base} /></clipPath>
+              <clipPath id={`${clip}-down`}><rect x={0} y={base} width="100%" height={H - base} /></clipPath>
+              <linearGradient id={`${clip}-wash`} gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={PAD_T} y2={base} className="text-chart-line">
+                <stop offset="0" stopColor="currentColor" stopOpacity={0.26} />
+                <stop offset="1" stopColor="currentColor" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id={`${clip}-under`} gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={base} y2={PAD_T + PLOT_H} className="text-neg">
+                <stop offset="0" stopColor="currentColor" stopOpacity={0.04} />
+                <stop offset="1" stopColor="currentColor" stopOpacity={0.3} />
+              </linearGradient>
+            </defs>
+            <path d={area} fill={`url(#${clip}-wash)`} clipPath={`url(#${clip}-up)`} />
+            <path d={area} fill={`url(#${clip}-under)`} clipPath={`url(#${clip}-down)`} />
+            <path d={line} fill="none" className="stroke-chart-line" strokeWidth={2} strokeDasharray="4 4" strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-up)`} />
+            <path d={line} fill="none" className="stroke-neg" strokeWidth={2} strokeDasharray="4 4" strokeLinejoin="round" strokeLinecap="round" clipPath={`url(#${clip}-down)`} />
+            {r.days.map((d, i) => (d.items.length && i !== 0 && i !== low && i !== last ? (
+              <circle key={d.date} cx={cx(i)} cy={y(values[i])} r={3.5} strokeWidth={1.5}
+                className={`stroke-surface ${fill(values[i])}`} />
+            ) : null))}
+            {/* Today: where the line starts. */}
+            <circle cx={cx(0)} cy={y(values[0])} r={4.5} strokeWidth={2} className={`${fill(values[0])} stroke-surface`} />
+            {active !== null && active !== 0 && active !== low && active !== last && (
+              <circle cx={cx(active)} cy={y(values[active])} r={4.5} strokeWidth={2} className={`fill-surface ${ring(values[active])}`} />
+            )}
+            {low !== 0 && low !== last && (
+              <>
+                <circle cx={cx(low)} cy={y(values[low])} r={9} className={`chart-pulse ${fill(values[low])}`} opacity={0.16}
+                  style={{ transformOrigin: `${cx(low)}px ${y(values[low])}px` }} />
+                <circle cx={cx(low)} cy={y(values[low])} r={4.5} strokeWidth={2.5} className={`fill-surface ${ring(values[low])}`} />
+                {active === null && (
+                  <text x={cx(low)} y={lowY} textAnchor={lowAnchor} className="fill-fg text-micro font-bold num chart-halo">{money(values[low])}</text>
+                )}
+              </>
+            )}
+            <circle cx={cx(last)} cy={y(values[last])} r={4.5} strokeWidth={2.5} className={`fill-surface ${ring(values[last])}`} />
+            {active === null && (
+              <text x={cx(last) - 8} y={endY} textAnchor="end" className="fill-fg text-caption font-bold num chart-halo">{money(values[last])}</text>
+            )}
+          </>
+        );
+      }}
+      tooltip={i => {
+        const d = r.days[i];
+        return (
+          <>
+            {/* The day is the heading and there is one line: the amount needs no name beside it. */}
+            <TipRow swatch={d.balance < 0 ? 'bg-neg' : 'bg-chart-line'} value={money(d.balance)} label="" />
+            {d.items.slice(0, 3).map((x, k) => (
+              <p key={k} className="ps-5 text-caption text-fg-mute tabular-nums truncate">
+                {`${x.name} ${x.income || x.amount < 0 ? '+' : '−'}${money(Math.abs(x.amount))}`}
+              </p>
+            ))}
+          </>
+        );
+      }}
+    />
+  );
+}
+
+/* ------------------------------------------------------------- figures */
+
+/**
+ * A small line beside a figure (a stat tile's trend): no axis, no labels,
+ * the last point marked. It takes the colour of the text around it, is drawn
+ * once from the left, and says nothing to VoiceOver — the figure does.
+ */
+export function Sparkline({ values, width = 76, height = 28, className = '' }: { values: number[]; width?: number; height?: number; className?: string }) {
+  if (values.length < 2) return null;
+  const lo = Math.min(...values);
+  const span = (Math.max(...values) - lo) || 1;
+  const pts = values.map((v, i) => ({ x: 2 + (i * (width - 7)) / (values.length - 1), y: 4 + (1 - (v - lo) / span) * (height - 8) }));
+  const end = pts[pts.length - 1];
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className={`shrink-0 ${className}`} aria-hidden="true">
+      <path d={smoothPath(pts)} pathLength={1} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className="spark-draw" />
+      <circle cx={end.x} cy={end.y} r={2.75} fill="currentColor" className="chart-fade" />
+    </svg>
+  );
+}
+
+/**
+ * One ratio as a ring — a meter bent round, never a part-to-whole (that
+ * stays a bar): the arc runs from the top as far as `value` (0–1) on a
+ * track of the same ink, a notch outside marks the `target`. The figure
+ * itself is written in the middle (`children`); `label` says it all for
+ * VoiceOver. It sweeps in once.
+ */
+export function RingMeter({ value, target, size = 96, stroke = 9, label, children }: {
+  value: number;
+  target?: number;
+  size?: number;
+  stroke?: number;
+  label: string;
+  children: ReactNode;
+}) {
+  const v = Math.max(0, Math.min(1, value));
+  const c = size / 2;
+  const r = c - stroke / 2 - 6;
+  const notch = (a: number, from: number, to: number) => {
+    const rad = a * 2 * Math.PI;
+    return { x1: c + from * Math.cos(rad), y1: c + from * Math.sin(rad), x2: c + to * Math.cos(rad), y2: c + to * Math.sin(rad) };
+  };
+  return (
+    <div role="img" aria-label={label} className="relative shrink-0" style={{ width: size, height: size }}>
+      {/* Turned a quarter back, so the arc starts at twelve o'clock. */}
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block -rotate-90" aria-hidden="true">
+        <circle cx={c} cy={c} r={r} fill="none" stroke="currentColor" strokeOpacity={0.22} strokeWidth={stroke} />
+        {v > 0 && (
+          <circle cx={c} cy={c} r={r} fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round"
+            pathLength={100} strokeDasharray="100 100" strokeDashoffset={100 - v * 100} className="ring-sweep" />
+        )}
+        {target !== undefined && (
+          <line {...notch(target, r + stroke / 2 + 1.5, r + stroke / 2 + 6)} stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+        )}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center" aria-hidden="true">{children}</div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------- when the money goes */
+
+/** A weekday's name: 1 January 2024 was a Monday. */
+const weekdayName = (weekday: number, locale: string, style: 'long' | 'short' | 'narrow') =>
+  new Intl.DateTimeFormat(locale, { weekday: style }).format(new Date(2024, 0, 1 + weekday));
+
+/**
+ * The average per weekday as seven columns, the week in the locale's order:
+ * one of them stands out — the priciest, or the one tapped — with its value
+ * written above it, the rest step back (emphasis, not seven colours). Every
+ * column is a button that says its day and its average.
+ */
+export function WeekdayBars({ pattern, t }: { pattern: WeekdayPattern; t: Strings }) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const first = firstWeekday(t.locale);
+  const order = Array.from({ length: 7 }, (_, i) => (first + i) % 7);
+  const max = Math.max(1, ...pattern.average);
+  const shown = picked ?? pattern.top ?? pattern.average.indexOf(Math.max(...pattern.average));
+  const BAR_H = 84;
+  return (
+    // No gap: on an iPhone SE each day's column is then just the 44 pt a finger needs; the bars keep their own width.
+    <div className="flex">
+      {order.map((wd, i) => {
+        const v = pattern.average[wd];
+        const on = wd === shown;
+        const amount = formatMoneyApprox(v, t.locale);
+        return (
+          <button
+            key={wd}
+            type="button"
+            aria-pressed={picked === wd}
+            aria-label={`${weekdayName(wd, t.locale, 'long')}: Ø ${spoken(amount, t.amountHidden)}`}
+            onClick={() => { tapLight(); setPicked(p => (p === wd ? null : wd)); }}
+            className="flex-1 min-w-0 flex flex-col items-center rounded-sm focus-visible:ring-focus"
+          >
+            <span className={`h-4 text-micro font-bold num whitespace-nowrap transition-opacity ${on ? 'text-fg opacity-100' : 'opacity-0'}`} aria-hidden="true">{amount}</span>
+            <span className="mt-1 w-full flex items-end justify-center" style={{ height: BAR_H }} aria-hidden="true">
+              <span
+                className="col-grow w-full max-w-[26px] rounded-t-[7px] rounded-b-[2px] bg-chart-out transition-opacity"
+                style={{ height: Math.max(3, Math.round((v / max) * BAR_H)), opacity: on ? 1 : 0.34, animationDelay: `${i * 45}ms` }}
+              />
+            </span>
+            <span className={`mt-1.5 text-micro ${on ? 'text-fg font-bold' : 'text-fg-mute'}`} aria-hidden="true">{weekdayName(wd, t.locale, 'short')}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** A day's shade in the calendar: nothing, three tints of the accent, then the accent itself (its ink on it). */
+const HEAT = ['bg-surface-2 text-fg-mute', 'heat-1 text-fg', 'heat-2 text-fg', 'heat-3 text-fg', 'bg-accent-fill text-accent-fill-ink font-semibold'] as const;
+
+/**
+ * A month as a calendar, each day shaded by what went out on it (one hue,
+ * more is darker — `heatLevel`). A day is a button: it says its date and
+ * amount, and picking it lets the card write them out. Days still to come
+ * are outlined; today carries a dot. The legend runs from less to more.
+ */
+export function HeatCalendar({ month: m, t, selected, onSelect }: {
+  month: MonthDays;
+  t: Strings;
+  /** The picked day (the n-th of the month), if any. */
+  selected: number | null;
+  onSelect: (day: number | null) => void;
+}) {
+  const first = firstWeekday(t.locale);
+  const order = Array.from({ length: 7 }, (_, i) => (first + i) % 7);
+  const lead = m.days.length ? (m.days[0].weekday - first + 7) % 7 : 0;
+  const today = isoDay();
+  const num = new Intl.NumberFormat(t.locale);
+  return (
+    <div>
+      <div className="grid grid-cols-7 gap-[5px]" aria-hidden="true">
+        {order.map(wd => <span key={wd} className="text-center text-micro text-fg-mute">{weekdayName(wd, t.locale, 'narrow')}</span>)}
+      </div>
+      <div className="mt-1.5 grid grid-cols-7 gap-[5px]" role="group" aria-label={monthLabel(m.month, t.locale)}>
+        {Array.from({ length: lead }, (_, i) => <span key={`lead-${i}`} aria-hidden="true" />)}
+        {m.days.map((d, i) => {
+          const level = d.future ? 0 : heatLevel(d.amount, m.max);
+          const on = selected === d.day;
+          return (
+            <button
+              key={d.date}
+              type="button"
+              aria-pressed={on}
+              aria-label={`${dayLabel(d.date, t.locale)}: ${spoken(formatMoney(d.amount, t.locale), t.amountHidden)}`}
+              onClick={() => { tapLight(); onSelect(on ? null : d.day); }}
+              className={`heat-pop hit-44 relative aspect-square rounded-[10px] flex items-center justify-center text-caption tabular-nums focus-visible:ring-focus ${
+                d.future ? 'border border-dashed border-hairline text-fg-mute' : HEAT[level]} ${on ? 'heat-on' : ''}`}
+              style={{ animationDelay: `${Math.min(i * 14, 420)}ms` }}
+            >
+              {num.format(Number(d.date.slice(8)))}
+              {d.date === today && <span className="absolute bottom-[4px] w-1 h-1 rounded-full bg-current" aria-hidden="true" />}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-3 flex items-center justify-end gap-1.5 text-micro text-fg-mute" aria-hidden="true">
+        {t.heatLess}
+        {HEAT.map((c, i) => <span key={i} className={`w-3 h-3 rounded-[4px] ${c}`} />)}
+        {t.heatMore}
+      </div>
     </div>
   );
 }

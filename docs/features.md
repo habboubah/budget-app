@@ -257,18 +257,32 @@ server, no ads; everything stays on the device.
 
 ## Statistik — how did it go?
 
+- **The period at the top**: 3, 6, 9 or 12 months, a whole **year** or all —
+  everything under it follows. From 13 months on, *Mit Vorjahr vergleichen*
+  adds the spending change against the year before.
+- **The period at a glance**, on the accent's gradient: what it comes to as
+  a sentence ("Du sparst im Schnitt rund ein Drittel deines Einkommens"),
+  the savings rate as a ring with the 20 % target marked, Ø saved, and Ø
+  income and Ø spending — each with a small line over the months and how it
+  moved against as many months before (once the book has them).
 - **Das fällt auf.** At most three ranked hints, each with a next step: a
   category above its usual, a trend, a better or weaker month, a record, a
   month with items still open or a week without entries, one big expense.
   "⋯" hides one, *Wie berechnet?* explains it.
-- **Verlauf**, over 3, 6, 9 or 12 months, a whole **year** or all: the
-  average income, spending and savings of the finished months; one chart of
-  income and spending with what each month kept (still open or expected is
-  hatched); the balance at each month's end; where the money goes by
-  category (Ø, share, how it moved against the months before, the budget as
-  a tick), by payee or by tag; and the table — a month opens its
-  **Monatsbericht**. From 13 months on, *Mit Vorjahr vergleichen* adds the
-  spending change against the year before.
+- **Verlauf**: one chart of income and spending with what each month kept
+  (still open or expected is hatched); the balance at each month's end;
+  where the money goes — the whole split as one bar, then by category (Ø,
+  share, how it moved against the months before, the budget as a tick), by
+  payee or by tag; and the table — a month opens its **Monatsbericht**.
+- **Wann du Geld ausgibst**: everyday spending per weekday — "Teuerster
+  Wochentag: Samstag" when one clearly leads — and the picked month as a
+  calendar, each day shaded by what went out on it. A day tapped shows its
+  amount and what it was. Rent and contracts stay out, so the 1st isn't
+  every month's priciest day.
+- **The charts answer the finger**: put it down and drag across a chart —
+  the values follow from month to month (or day to day) with a tick each.
+  Lines are drawn in, columns grow, the ring sweeps round; all of it still
+  under *Bewegung reduzieren*.
 - **A category's screen**: its months with the Ø and its budget, so far / Ø /
   this year, the budget kept, where its money goes, its biggest entries and
   fixed costs. A payee opens a sheet with its months and *Alle Einträge*.
@@ -279,11 +293,20 @@ server, no ads; everything stays on the device.
 ## Planen — how is it going, what's coming?
 
 - **November bis heute**: everyday spending so far against a usual month at
-  the same day, where it would end, and where it goes.
+  the same day, where it would end, and where it goes — the finding and its
+  three figures (today, usually by today, the month's end) on the accent's
+  gradient, the chart under it.
 - **Budgets** of the month.
+- **Nächste 30 Tage**: your account day by day from today, from what is
+  entered and still open — every bill on its day, the salary on its — with
+  the lowest point before the next money comes in ("Tiefster Stand:
+  412,00 € am 27. Nov.", or the day it would go below zero), what comes in
+  and goes out in those days, and the way to *Demnächst fällig*. Nothing is
+  estimated: spending you haven't entered isn't in it.
 - **Ausblick**: the balance at the end of each of the next twelve months,
-  with yearly bills in their month, recurring entries until they end, and a
-  range from calm to pricey months.
+  with yearly bills in their month, recurring entries until they end, a
+  range from calm to pricey months, and the line in figures: where it
+  starts, its lowest month when it dips, where it ends.
 - **Kann ich mir das leisten?** under the outlook tries a purchase in a month
   or a new monthly cost against it — "Das passt", "Es wird knapp: Februar 2027
   endet mit ≈ 1.240 €" or "Das reicht nicht", with the lowest point and the

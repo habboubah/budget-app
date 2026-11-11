@@ -46,7 +46,7 @@ export function ExplainSheet({ explain, t, onClose }: { explain: Explain | null;
 }
 
 /** The ⓘ beside a key figure: a full 44 pt target, named after the figure. */
-export function ExplainButton({ name, t, onClick }: { name: string; t: Strings; onClick: () => void }) {
+export function ExplainButton({ name, t, onClick, onHero }: { name: string; t: Strings; onClick: () => void; /** On the gradient hero: its own ink. */ onHero?: boolean }) {
   const label = fmt(t.explainOpen, { name });
   return (
     <button
@@ -54,7 +54,8 @@ export function ExplainButton({ name, t, onClick }: { name: string; t: Strings; 
       aria-label={label}
       title={label}
       onClick={() => { tapLight(); onClick(); }}
-      className="shrink-0 -my-2.5 -me-2.5 h-tap w-tap inline-flex items-center justify-center rounded-full text-fg-mute active:bg-surface-2 transition-colors focus-visible:ring-focus"
+      className={`shrink-0 -my-2.5 -me-2.5 h-tap w-tap inline-flex items-center justify-center rounded-full transition-colors focus-visible:ring-focus ${
+        onHero ? 'text-on-hero active:opacity-60' : 'text-fg-mute active:bg-surface-2'}`}
     >
       <Info className="w-[18px] h-[18px]" strokeWidth={2.2} aria-hidden="true" />
     </button>

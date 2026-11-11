@@ -209,6 +209,10 @@
   /* How much of a category's colour its card's header and a due card take on (hue-wash, hue-tint). */
   --t-hue-wash: 0.7;
   --t-mark: rgb(var(--acc-l-rgb) / 0.22);
+  /* The calendar's three tints of the accent (Statistik, heat-1…3): how much of it lies on the card. */
+  --t-heat-1: 0.14;
+  --t-heat-2: 0.3;
+  --t-heat-3: 0.5;
 
   --t-pos:      #177536;
   --t-pos-dim:  rgba(52, 199, 89, 0.14);
@@ -298,6 +302,9 @@
   --t-wash: 0.19;
   --t-hue-wash: 0.8;
   --t-mark: rgb(var(--acc-d-rgb) / 0.30);
+  --t-heat-1: 0.16;
+  --t-heat-2: 0.3;
+  --t-heat-3: 0.46;
 
   --t-pos:      #4CD07D;
   --t-pos-dim:  rgba(48, 209, 88, 0.16);
@@ -648,6 +655,43 @@ input[type="search"]::-webkit-search-results-button {
   animation: bar-grow 640ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   [dir="rtl"] & { transform-origin: right center; }
 }
+
+/* What answers the finger in a chart: the band behind the slot in hand
+   slides to the next one. */
+@utility chart-band { transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+/* The newest point of a line (and a lowest point) pulses twice once the line
+   is drawn, then rests as a soft halo. */
+@keyframes chart-pulse { from { transform: scale(0.5); opacity: 0.34; } to { transform: scale(2); opacity: 0; } }
+@utility chart-pulse {
+  transform-box: view-box;
+  animation: chart-pulse 1300ms ease-out 1150ms 2 backwards;
+}
+/* A ring meter sweeps round to its value; a sparkline is drawn from its
+   start (both paths are measured in their own length: 100, and 1). */
+@keyframes ring-sweep { from { stroke-dashoffset: 100; } }
+@utility ring-sweep { animation: ring-sweep 1000ms cubic-bezier(0.22, 1, 0.36, 1) 150ms backwards; }
+@keyframes spark-draw { from { stroke-dashoffset: 1; } }
+@utility spark-draw {
+  stroke-dasharray: 1;
+  animation: spark-draw 900ms cubic-bezier(0.22, 1, 0.36, 1) 250ms backwards;
+}
+/* A column outside an SVG (the weekdays) grows from its foot; a calendar's
+   days pop in one after another. */
+@keyframes col-grow { from { transform: scaleY(0); } }
+@utility col-grow {
+  transform-origin: center bottom;
+  animation: col-grow 640ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@keyframes heat-pop { from { opacity: 0; transform: scale(0.6); } }
+@utility heat-pop { animation: heat-pop 380ms cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+/* The calendar's shades: the accent laid over the card at three strengths
+   (the fourth is the accent's own fill with its ink). The audit checks the
+   day's number on each. */
+@utility heat-1 { background-color: rgb(var(--t-accent-rgb) / var(--t-heat-1)); }
+@utility heat-2 { background-color: rgb(var(--t-accent-rgb) / var(--t-heat-2)); }
+@utility heat-3 { background-color: rgb(var(--t-accent-rgb) / var(--t-heat-3)); }
+/* The picked day: a ring of the text colour, set off from the day by the card's. */
+@utility heat-on { box-shadow: 0 0 0 2px var(--t-surface), 0 0 0 4px var(--t-fg); }
 
 /* A screen's cards coming in: each child of <main> rises into place, the
    next a moment later (ui/Screen). Only when it appears — a card added later

@@ -1,13 +1,14 @@
 import { CSSProperties } from 'react';
 import { Category } from '../types';
 import { formatMoney, formatMoneyEstimate, monthLabel, monthSpanLabel } from '../logic';
-import { Outlook, bigItems } from '../insights';
+import { Outlook, bigItems, outlookLowest } from '../insights';
 import { Strings, fmt } from '../translations';
 import { CircleHelp } from 'lucide-react';
 import { Picture } from '../ui/Picture';
 import { Button } from '../ui/Button';
 import { OutlookChart } from './Charts';
 import { Explain, ExplainButton } from './ExplainSheet';
+import { StatTiles } from './StatTiles';
 
 /** The sentence over the chart: where the account ends up, or the first month it gets tight or goes below zero. */
 export function outlookHeadline(o: Outlook, t: Strings): string {
@@ -19,8 +20,9 @@ export function outlookHeadline(o: Outlook, t: Strings): string {
 /**
  * *Ausblick* on Planen (§9.5; replaces *Prognose*): the account at the end of
  * each of the next twelve months — a dashed line inside a band from pricey
- * to calm months, rounded, its basis named — and the big items coming up
- * (yearly bills, entries already planned).
+ * to calm months, rounded, its basis named — the line in figures (where it
+ * starts, its lowest month when it dips, where it ends) and the big items
+ * coming up (yearly bills, entries already planned).
  */
 export function OutlookCard({ outlook: o, categories, t, onExplain, onWhatIf }: {
   outlook: Outlook;
@@ -36,6 +38,7 @@ export function OutlookCard({ outlook: o, categories, t, onExplain, onWhatIf }: 
   const byId = new Map(categories.map(c => [c.id, c]));
   const tone = o.headline.kind === 'neg' ? 'text-neg' : o.headline.kind === 'warn' ? 'text-warn' : 'text-fg';
   const firstOpen = o.months.find(m => !m.started) ?? o.months[0];
+  const low = outlookLowest(o);
   const explain = (): Explain => ({
     title: t.outlookTitle,
     definition: t.explainOutlookDef,
@@ -60,6 +63,16 @@ export function OutlookCard({ outlook: o, categories, t, onExplain, onWhatIf }: 
         <p className="text-caption text-fg-mute mt-1 tabular-nums wrap-prose">
           {[o.ranged ? fmt(t.outlookBand, { lo: est(end.lo), hi: est(end.hi) }) : null, items.length ? t.outlookDots : null].filter(Boolean).join(' · ')}
         </p>
+      )}
+      {end && (
+        // The line in figures: where it starts, where it dips lowest (when it does), where it ends.
+        <StatTiles className="mt-3" items={[
+          { label: monthLabel(o.from.key, t.locale, 'short'), value: `≈ ${est(o.from.end)}`, tone: o.from.end < 0 ? 'neg' as const : undefined },
+          ...(low.key !== o.from.key && low.key !== end.key
+            ? [{ label: `${t.lowestPoint} · ${monthLabel(low.key, t.locale, 'short')}`, value: `≈ ${est(low.amount)}`, tone: low.amount < 0 ? 'neg' as const : undefined }]
+            : []),
+          { label: monthLabel(end.key, t.locale, 'short'), value: `≈ ${est(end.mid)}`, tone: end.mid < 0 ? 'neg' as const : undefined },
+        ]} />
       )}
       {items.length > 0 && (
         <div className="mt-4 pt-3 hairline-t">

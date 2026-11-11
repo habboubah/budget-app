@@ -295,6 +295,15 @@ const SCREENS = [
   { name: 'category', run: openCategory1, audit: 'page' },
   { name: 'category-full', run: openCategory1, full: true },
   { name: 'stats-payees', full: true, run: openPayees },
+  // "Wann du Geld ausgibst": a weekday and a day of the calendar picked.
+  { name: 'stats-rhythm', run: async page => {
+    await tab(1)(page);
+    const day = page.locator('main button.heat-pop').nth(6);
+    await day.scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollBy(0, 160));
+    await day.click();
+    await page.waitForTimeout(500);
+  } },
   // A payee row → its sheet.
   { name: 'payee-sheet', run: async page => {
     await openPayees(page);
@@ -315,6 +324,16 @@ const SCREENS = [
   { name: 'year-review-full', storage: { 'spartopf-dev-season': '1' }, run: openYearReview, full: true },
   { name: 'insights', run: tab(2), audit: 'page' },
   { name: 'insights-full', run: tab(2), full: true },
+  // "Nächste 30 Tage" with a day in hand: the tooltip and the band behind it.
+  { name: 'insights-runway', run: async page => {
+    await tab(2)(page);
+    const card = page.locator('main section[aria-labelledby="runway-title"]');
+    await card.scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollBy(0, 120));
+    const plot = card.locator('[dir="ltr"] button').nth(1);
+    await plot.hover({ position: { x: 20, y: 60 } });
+    await page.waitForTimeout(500);
+  } },
   // Finanz-Check's first row opened: the savings rate and 50/30/20.
   { name: 'check-detail', full: true, run: async page => {
     await tab(2)(page);

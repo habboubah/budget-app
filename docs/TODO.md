@@ -184,6 +184,27 @@ amounts in a file only readable while the phone is unlocked)
   08 (SE keyboard), 09 (0/3/8 favourites), 10, 11, 12 (VoiceOver on the
   ring), 20, 21, 26, 29.
 
+## Statistik and Planen, third pass (November 2026)
+
+On `main` (11 Nov, merged from `redesign-statistik-planen`). Built and
+checked in the browser only (iPhone SE to Pro Max, light and dark, German
+and Arabic, text at 200 %):
+
+- [ ] **On the iPhone:** drag a finger across the charts in Statistik and
+  Planen — the tooltip should follow with a light tick per month or day, and
+  the page should still scroll up and down from a chart. Watch the charts
+  come in once (lines drawn from the left, the ring, the calendar), then
+  again with *Bewegung reduzieren* on: everything should simply be there.
+- [ ] **Nächste 30 Tage against your own book:** does the lowest point match
+  what you expect before the next salary? It only knows what is entered and
+  open.
+- [ ] **Store screenshots:** `06-stats`, `07-history` and `10-plan` look
+  different now — `npm run screenshots`, then `npm run store-screenshots`,
+  before the next upload.
+- [ ] **The 14 new strings** (weekdays, calendar, the next 30 days) are
+  machine-drafted in the eleven languages beyond German, English and Arabic,
+  like the rest: a native reader checks them with the others.
+
 ## The ten new features and the second redesign (November 2026)
 
 Both are merged into `main` (11 Nov). Built and tested in the browser only —

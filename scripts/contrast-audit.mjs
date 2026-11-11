@@ -125,6 +125,15 @@ for (const [name, accent] of accents) {
         ['accent text on lit page top', c('--t-accent'), wash, TEXT],
         ['balance line on card', c('--t-chart-line'), surface, ICON],
         ['marked word (always fg ink)', c('--t-fg'), over(c('--t-mark'), surface), TEXT],
+        // The calendar's days (Statistik): the day's number on each tint of the accent, and a day without spending.
+        ...['--t-heat-1', '--t-heat-2', '--t-heat-3'].map((heat, i) => [
+          `day number on calendar tint ${i + 1}`, c('--t-fg'),
+          over([...accentRgb.map(x => x / 255), parseFloat(resolve(`var(${heat})`, scopeOf(theme, accent)))], surface), TEXT,
+        ]),
+        ['day number on an empty day', c('--t-fg-mute'), surface2, TEXT],
+        // The steps must stay apart from each other and from the card: 3:1 between the lightest and the strongest.
+        ['calendar: strongest day against the lightest', c('--t-accent-fill'),
+          over([...accentRgb.map(x => x / 255), parseFloat(resolve('var(--t-heat-1)', scopeOf(theme, accent)))], surface), ICON],
       ];
     });
   }

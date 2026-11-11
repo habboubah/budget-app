@@ -193,7 +193,18 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     outflow; `upToNow` — Statistik stops at the running month), `rules.ts`
     (50/30/20, commitments), `hints.ts` (`unusual` with the robust usual and
     no yearly entries, trends without yearly entries, …), `pace.ts`,
-    `outlook.ts`, `health.ts` (Grundbedarf, Finanz-Check), `highlights.ts`
+    `outlook.ts` (`outlookLowest`: the month the line dips to), `runway.ts`
+    (*Nächste 30 Tage*: `runway(book, today)` — *Jetzt auf dem Konto*, then
+    every open entry on its day, overdue ones today, undated ones at their
+    month's end, the next month with what it brings (`nextMonthDue`);
+    nothing estimated; null when nothing open falls into the days),
+    `rhythm.ts` (*Wann du Geld ausgibst*: `monthDays` — everyday spending per
+    day with the count and the largest entry, days after today marked —
+    `weekdayPattern` — Ø per weekday ÷ how often it came up, `top` only when
+    one leads by `WEEKDAY_LEAD` and each came up `WEEKDAY_MIN_DAYS` times —
+    `heatLevel`, `firstWeekday(locale)`), `series.ts`'s `periodChange` (a
+    period's averages against as many finished months before; null with
+    fewer), `health.ts` (Grundbedarf, Finanz-Check), `highlights.ts`
     (hints as `Insight` data: ranked by impact × confidence × kind weight, one
     per category, `rank`; `highlights` for Statistik, `contractHints` for
     Planen, `monthHints` for a report), `detail.ts` (category screen, payee
@@ -207,16 +218,28 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     Grundbedarf), `extraPayment(data, debt, extra)` reruns a debt's schedule
     with more a month. Estimates only ("≈"), nothing stored; the sheet's
     *vormerken* opens the entry sheet with the plan as an open entry.
-  - **`StatsView`**: the year card (15 Dec – 31 Jan, ≥ 6 months),
-    *Das fällt auf* (`HintRows.tsx`; "⋯" → *Wie berechnet?* / *Ausblenden*,
-    undoable), then *Verlauf* with 3 / 6 / 9 / 12 / Alle ("3 M", read out as
-    "3 Monate"; the range lives in App:
-    the category screen follows it): the averages with ⓘ and "davon Ø …
-    angelegt", income vs. spending (Angelegt in the tooltip), balance,
-    *Wofür* (rows → `CategoryView`, payees → `PayeeSheet`), the table (an
+  - **`StatsView`** (third pass, November 2026): the year card (15 Dec –
+    31 Jan, ≥ 6 months); the period — 3 / 6 / 9 / 12 / Alle ("3 M", read out
+    as "3 Monate") or a year — at the very top, as everything under it
+    follows (the range lives in App: the category screen follows it);
+    `PeriodHero` on the hero (the savings headline, the Sparquote as a
+    `RingMeter` against 20 %, Ø gespart counting up, Ø Einnahmen and
+    Ø Ausgaben on two panels with a `Sparkline` and their `periodChange`,
+    ⓘ, "davon Ø … angelegt"); *Das fällt auf* (`HintRows.tsx`; "⋯" → *Wie
+    berechnet?* / *Ausblenden*, undoable); then under the heading *Verlauf*
+    (`#history-title` — the store screenshot scrolls to it): income vs.
+    spending (Angelegt in the tooltip), balance, *Wofür* (a `ShareBar` of the
+    whole split, rows → `CategoryView`, payees → `PayeeSheet`), `RhythmCard`
+    (*Wann du Geld ausgibst*: `WeekdayBars`, and the picked month as a
+    `HeatCalendar` — a day tapped is written out above it), the table (an
     *Angelegt* column when any; a month → its report).
   - **`InsightsView`** (Planen, id `insights`): `PaceCard` (*November bis
-    heute*), `BudgetsCard`, `OutlookCard` (from three finished months),
+    heute*: the finding and its three figures on a hero header — today's
+    in `on-hero-warn` / `-pos` on the panel — the chart under it),
+    `BudgetsCard`, `RunwayCard` (*Nächste 30 Tage*, once anything open falls
+    into them: `RunwayChart`, what comes in and goes out, → *Demnächst
+    fällig*), `OutlookCard` (from three finished months; `StatTiles` under
+    the chart: start, the lowest month when the line dips, end),
     `ContractsCard` (+ new subscriptions, missing payments with *Eintragen* —
     the entry sheet prefilled and open — and a price change's yearly effect),
     the slots for plans 11 / 12, *Vermögen* (plan 30), `DebtsCard` (plan 31), `FinanceCheckCard` (rows with details: the
@@ -240,15 +263,32 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     through `formatPercent()`; axis amounts through `compactMoney()`
     ("4.000" beside "20.000").
 - **Charts** (`components/Charts.tsx`) share one `ChartFrame` for any slots
-  — months, or days (`PaceChart`), where `groups` give VoiceOver week
-  targets and a finger scrubs every day; labels inside a plot get
-  `chart-halo`. They follow the dataviz skill. Series
+  — months, or days (`PaceChart`, `RunwayChart`), where `groups` give
+  VoiceOver week targets and a finger scrubs every day; labels inside a plot
+  get `chart-halo`. **Every chart answers the finger**: where the plot fits
+  (no sideways scroll) the slots take `touch-pan-y` and a touch drags across
+  them — a light tick per slot, the tap that ends a drag picks the slot
+  reached — and the tooltip and the band behind the slot glide to the next
+  one (`motion`, `chart-band`); a plot that scrolls keeps its pan and its
+  taps. A narrow first slot's axis label starts at the plot's edge instead
+  of being cut by it; a chart of fixed length (`OutlookChart`: 13 points at
+  18 px) must fit an iPhone SE's card without scrolling. Beside the frame:
+  `Sparkline` (a stat tile's trend, in the ink around it), `RingMeter` (**one
+  ratio** as a ring, a notch for its target — a meter bent round; a
+  part-to-whole stays a bar, so still no pies or donuts), `WeekdayBars`
+  (emphasis: one column stands out, six step back), `HeatCalendar` (one hue,
+  more is darker: `heat-1` … `heat-3` lay the accent over the card at
+  `--t-heat-1…3`, the fourth step is `bg-accent-fill` with its ink; the
+  audit checks the day's number on each — change a strength and run it),
+  `StatTiles` (`StatTiles.tsx`: a row of small figures under a chart). They
+  follow the dataviz skill. Series
   colours are tokens: `chart-in` / `chart-out` / `chart-save` / `chart-line` / `chart-want`
   (saved columns stand above the zero line, an overspend hangs below it in
   `neg`; in the 50/30/20 bars *saved* is `chart-in`, as `chart-save` sits too
   close to `chart-want`). Every legend with two or more series is
   `LegendToggles`: aria-pressed chips that hide a series, and the axis
-  rescales to what is left. Columns have a round data end on a square foot;
+  rescales to what is left. Columns have a round data end on a square foot
+  and a fill a touch lighter towards the foot (`ColumnShade`, one colour);
   the grid is dotted above a solid floor; a month line (the balance) is
   smoothed with `smoothPath` — monotone, so it never rises above or dips
   below a value it doesn't have — over a wash that thins out downwards, its
@@ -843,10 +883,15 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   forward out of a slight depth, a pushed screen slides. A category's paid
   bar slides in from empty (a transform under the track's round mask), a paid tick pops with a ring spreading out of it, the chosen tab's
   symbol lands with a bounce. Charts come in once: columns grow from the
-  baseline (`chart-grow`, via `grow()` in Charts.tsx), a line chart is
-  uncovered from the left (`ChartFrame reveal`), horizontal bars run out
-  (`bar-grow`). Transform and opacity only, once per appearance, never on a
-  tap. All of it collapses under reduced motion.
+  baseline (`chart-grow`, via `grow()` in Charts.tsx; `col-grow` outside an
+  SVG), a line chart is drawn from the left (`ChartFrame reveal`: a clip
+  runs across the marks — its width a `motion` attribute, so the grid stays
+  put), its newest point pulses twice (`chart-pulse`), horizontal bars run
+  out one after another (`bar-grow`), a ring sweeps round (`ring-sweep`), a
+  sparkline is drawn (`spark-draw`), a calendar's days pop in (`heat-pop`).
+  Transform, opacity and a stroke's offset only, once per appearance, never
+  on a tap. All of it collapses under reduced motion (the clip is then a
+  plain full-width rect — keep that branch).
 - Amounts use the `num` utility (tabular, LTR); big amounts the `display` face.
 - Type scale in rem (follows Dynamic Type); touch targets in px
   (`min-h-control`, `h-tap`, `w-tap`).
@@ -1021,7 +1066,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | Build + open Xcode | `npm run build:ios` |
 | Build + open Android Studio / a debug APK | `npm run build:android` / `npm run android:debug` |
 | Regenerate icons/splash | `npm run assets:generate` |
-| Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` |
+| Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` (`stats-rhythm` and `insights-runway` show a picked day and a chart in hand) |
 | App Store screenshots: raw captures (DE + EN) / the framed 6.3-inch set | `npm run screenshots` / `npm run store-screenshots` |
 | Rewrite `docs/plans/glossary.md` from the app's strings | `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts` |
 | Upload to App Store Connect / TestFlight | `npm run release` (first time: `npm run release:first`; preview: `npm run release:dry`) |
