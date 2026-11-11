@@ -182,6 +182,33 @@ amounts in a file only readable while the phone is unlocked)
   08 (SE keyboard), 09 (0/3/8 favourites), 10, 11, 12 (VoiceOver on the
   ring), 20, 21, 26, 29.
 
+## The ten features on `new-features` (November 2026)
+
+Built and tested in the browser only. Before they go into a release:
+
+- [ ] **`npm install` first** — two new packages (`qr`, `pdfjs-dist`); without it
+  the app doesn't build.
+- [ ] **Merge:** `git checkout main && git merge new-features` when you're happy.
+  `redesign-2` touches some of the same components (the entry sheet, the
+  category card): merge one, then the other, and let Claude sort out the
+  conflicts.
+- [ ] **Invoice QR code** with the real camera: a paper invoice in normal light,
+  and a PDF invoice as a screenshot.
+- [ ] **Statement PDF** from your own bank. Where it reads wrongly, tell Claude
+  what the lines look like (made-up numbers) — the parser is generic and will
+  need tuning per bank.
+- [ ] **The daily nudge:** switch it on, wait for the time, then enter something
+  and check that today's is gone (*Erinnerungen › Als Nächstes*).
+- [ ] **Month and date pickers** in the entry sheet's new pills (*Ohne Ende*,
+  *Rückgabe*, *Garantie*) and in *Kann ich mir das leisten?*: they are the
+  system's pickers and were only seen in Chrome.
+- [ ] **Small screen:** the entry sheet's pill row on an iPhone SE with every
+  pill showing (repeat + end, refund, a project, tax, an account).
+- [ ] **Languages:** the new strings are written by Claude in all fourteen; the
+  eleven newer ones want the same native-speaker pass as the rest.
+- [ ] **App Review recording:** `npm run rehearse:app-review` still passes; the
+  scenes don't show the new features yet. Say if the recording should.
+
 ## Decide
 
 

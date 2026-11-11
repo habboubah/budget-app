@@ -308,6 +308,24 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** تصميم جديد بأسلوب iOS – اسحب لتحديد البند كمدفوع أو لحذفه، واضغط على اسم الشهر للانتقال إلى أي شهر. جديد: اللغة العربية، وتاريخ لكل بند، وفلتر للبنود المعلّقة، واقتراحات أذكى أثناء الكتابة. عمودا «مدفوع» و«معلّق» يُظهران ما سيتبقى في نهاية الشهر.
 
+**DE:** Neu: Einträge wiederholen sich jetzt auch alle 2 Monate, vierteljährlich oder halbjährlich und können enden. Budgets gibt es pro Jahr oder mit Übertrag in den nächsten Monat. Eine Erstattung senkt die Ausgaben ihrer Kategorie, statt als Einkommen zu zählen.
+
+**EN:** New: entries can repeat every 2 months, quarterly or every 6 months, and can end. Budgets can run per year or carry what's left into the next month. A refund lowers its category's spending instead of counting as income.
+
+**AR:** جديد: يمكن تكرار البنود كل شهرين أو كل ثلاثة أو ستة أشهر، ويمكن أن تنتهي. الميزانيات متاحة سنويًا أو مع ترحيل المتبقي إلى الشهر التالي. والمبلغ المُسترد يخفّض مصروفات فئته بدل أن يُحتسب دخلًا.
+
+**DE:** Neu in Planen: „Kann ich mir das leisten?“ – probier einen Kauf oder neue monatliche Kosten gegen den Ausblick aus. Dazu Reisen und Projekte mit eigenem Budget, auch in fremder Währung.
+
+**EN:** New in Plan: "Can I afford it?" – try a purchase or a new monthly cost against the outlook. Plus trips and projects with a budget of their own, in a foreign currency if you like.
+
+**AR:** جديد في «التخطيط»: «هل أستطيع تحمّل ذلك؟» – جرّب عملية شراء أو تكلفة شهرية جديدة مقابل التوقعات. وكذلك الرحلات والمشاريع بميزانية خاصة، وبعملة أجنبية إن شئت.
+
+**DE:** Neu: Rechnung per QR-Code (GiroCode) scannen, Kontoauszug als PDF importieren, Rückgabe- und Garantiefrist am Beleg, eine Steuerliste fürs Jahr als PDF und eine tägliche Erinnerung ans Eintragen – alles nur auf deinem Gerät.
+
+**EN:** New: scan an invoice's QR code, import a bank statement as a PDF, keep a receipt's return and warranty dates, get the year's tax list as a PDF and a daily reminder to enter your spending – all on your device only.
+
+**AR:** جديد: امسح رمز QR للفاتورة، واستورد كشف الحساب بصيغة PDF، واحفظ مهلة الإرجاع والضمان مع الإيصال، واحصل على قائمة الضرائب السنوية بصيغة PDF وعلى تذكير يومي بالتسجيل – كل ذلك على جهازك فقط.
+
 ## App Review information
 
 - Sign-in required: **No**
