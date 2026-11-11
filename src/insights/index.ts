@@ -13,6 +13,7 @@
  *   pace.ts      "November bis heute": everyday spending against a usual month (H1)
  *   outlook.ts   Ausblick: the balance in the coming twelve months (P2)
  *   runway.ts    Nächste 30 Tage: the account day by day from the open entries
+ *   track.ts     a month's balance day by day: the line on the balance card
  *   rhythm.ts    Wann du Geld ausgibst: a month as a calendar, the average per weekday
  *   whatif.ts    "Kann ich mir das leisten?": a plan laid over the Ausblick, an extra debt payment
  *   reserve.ts   Rücklage für jährliche Kosten (plan 11)
@@ -34,6 +35,7 @@ export * from './hints';
 export * from './pace';
 export * from './outlook';
 export * from './runway';
+export * from './track';
 export * from './rhythm';
 export * from './whatif';
 export * from './reserve';

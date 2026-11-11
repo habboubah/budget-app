@@ -258,6 +258,8 @@ const SCREENS = [
   { name: 'month-picker', run: page => page.click('h1 button[aria-haspopup="dialog"]'), wait: dialog, audit: 'dialog' },
   { name: 'month-actions', run: page => page.locator('header button').last().click(), wait: '[role="menu"]', audit: 'menu' },
   { name: 'month-details', run: openDetails, audit: 'page' },
+  // The month before (the first header button is "‹"): finished, so the balance card's line is all solid.
+  { name: 'month-before', run: async page => { await page.locator('header button').first().click(); await page.waitForTimeout(700); } },
   { name: 'card-menu', run: page => page.locator('main section[data-drop-category] h2 button[aria-haspopup="menu"]').first().click(), wait: '[role="menu"]', audit: 'menu' },
   // Groceries' "⋯" → its second item, the monthly budget.
   { name: 'budget-sheet', run: async page => {

@@ -19,12 +19,17 @@ server, no ads; everything stays on the device.
   Monat* jumps back.
 - **Two balances.** The balance card shows *Kontostand jetzt* — the bank
   balance, counting what is paid or received — with a ring for how many of
-  the month's bills are paid. Below it two panels: *Am Monatsende* ("nach 6
-  offenen Posten"), what is left once everything open is settled, and
-  *Diesen Monat übrig* with "≈ 72 € pro Tag". A row opens the details: what
-  was carried over (tap to correct it) and income and expenses in two
-  columns, *Bezahlt* and *Offen*. Amounts run to their new value when
-  something is ticked.
+  the month's bills are paid. Under it **the month as a line**: from what it
+  opened with, through today (the dot stands at the balance now) and,
+  dashed, on to the month's end through what is still open — so a salary
+  still to come or a big bill ahead shows at a glance. Below it two panels:
+  *Am Monatsende* ("nach 6 offenen Posten"), what is left once everything
+  open is settled, and *Diesen Monat übrig* with "≈ 72 € pro Tag". A row
+  opens the details: what was carried over (tap to correct it), then income
+  and expenses each as a bar — received or paid so far, and what is still
+  expected or open in amber, with both amounts — and the month's net, paid
+  and with what is open. Amounts run to their new value when something is
+  ticked.
 - **Categories in the order money moves.** **Einkommen** first, then
   **Wohnen** (rent, utilities, phone …), **Auto**, **Sonstiges**,
   **Lebensmittel und Drogerie**, **Restaurants**, **Familie**, **Kinder** —

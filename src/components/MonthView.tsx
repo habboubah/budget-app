@@ -17,6 +17,7 @@ import { rise, stagger } from '../ui/stagger';
 import { Picture } from '../ui/Picture';
 import { SearchField } from '../ui/SearchField';
 import { AccountSwitch, BalanceCard } from './BalanceCard';
+import { MonthTrack } from '../insights';
 import { CategorySection } from './CategorySection';
 import { StartMonthCard } from './StartMonthCard';
 import { EmptyCategories } from './EmptyCategories';
@@ -40,6 +41,8 @@ interface Props {
   /** A search to open with ("Alle Einträge" of a payee), used once. */
   searchSeed?: string | null;
   onSearchSeedUsed?: () => void;
+  /** The month's balance day by day, for the line on the balance card (App builds it). */
+  track?: MonthTrack | null;
   /** No balance card yet: the setup asks for the balance first, instead of a card full of zeros. */
   hideBalance?: boolean;
   /** When this month was last matched against the bank (plan 10). */
@@ -278,7 +281,7 @@ export function MonthView(p: Props) {
           onOpenMonth={m => { setQuery(''); p.onMonth(m); }}
         />
       ) : (<>
-      {!p.hideBalance && <BalanceCard balance={balance} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account} />}
+      {!p.hideBalance && <BalanceCard balance={balance} track={p.track} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account} />}
 
       {/* Keyed by month: stepping to another one brings its cards in afresh
           (the balance card above stays, and its numbers run to the new values). */}

@@ -195,6 +195,11 @@ and Arabic, text at 200 %):
   the page should still scroll up and down from a chart. Watch the charts
   come in once (lines drawn from the left, the ring, the calendar), then
   again with *Bewegung reduzieren* on: everything should simply be there.
+- [ ] **The balance card** (redesigned the same evening, merged from
+  `redesign-balance-card`): swipe it sideways with a finger on the new line —
+  the month should still turn, and the line should be drawn in again for the
+  new month. Open the details and check the two bars against your own
+  figures. `01-month` of the store screenshots changed with it.
 - [ ] **Nächste 30 Tage against your own book:** does the lowest point match
   what you expect before the next salary? It only knows what is entered and
   open.
