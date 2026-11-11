@@ -7,7 +7,8 @@ import { clearShared, downloadFile } from './export.ts';
 import { attachmentIds, isoDay } from './logic.ts';
 import { KEY_PREFIX, hydrate, installFlushTriggers, rawFiles, restoreLatestToData, setHydrated, sweepFiles } from './storage.ts';
 import { isAndroid, isNative } from './platform.ts';
-import { isLanguage, DEFAULT_LANGUAGE, loadLanguage, setPlatformStrings, stringsFor } from './translations.ts';
+import { isLanguage, loadLanguage, setPlatformStrings, stringsFor } from './translations.ts';
+import { systemLanguage } from './systemLocale.ts';
 import { initialLanguage } from './store.ts';
 import './index.css';
 
@@ -48,7 +49,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
   render() {
     if (!this.state.error) return this.props.children;
     const saved = (() => { try { return localStorage.getItem('spartopf-lang'); } catch { return null; } })();
-    const t = stringsFor(isLanguage(saved) ? saved : DEFAULT_LANGUAGE);
+    const t = stringsFor(isLanguage(saved) ? saved : systemLanguage());
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-6">
         <div className="max-w-sm w-full bg-surface rounded-lg card-edge p-6 text-center space-y-4">

@@ -46,6 +46,11 @@ const REGION_CURRENCY: Record<string, Currency> = {
   SA: 'SAR', AE: 'AED', QA: 'QAR', EG: 'EGP', MA: 'MAD',
 };
 
+/** A region's (ISO 3166) currency, when we offer it; EUR otherwise. */
+export function currencyForRegion(region: string): Currency {
+  return REGION_CURRENCY[region.toUpperCase()] ?? DEFAULT_CURRENCY;
+}
+
 /** The currency to start a new book with, from the phone's region; EUR otherwise. */
 export function currencyForLocale(locale: string): Currency {
   try {

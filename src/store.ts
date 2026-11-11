@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ACCENTS, Accent, Account, AppData, Category, Contract, Debt, DemoInfo, Entry, Favorite, Goal, MonthKey, MonthRecord, Project, Rule, ThemeMode } from './types';
-import { Language, isLanguage, DEFAULT_LANGUAGE, loadLanguage, stringsFor } from './translations';
+import { Language, isLanguage, loadLanguage, stringsFor } from './translations';
 import {
   ALL_ACCOUNTS, AccountView, MAIN_ACCOUNT, MAX_ACCOUNTS, MAX_FAVORITES, TransferDraft, canDeleteAccount, canRemoveFromMonth, carryCandidates, carryOver,
   computeBalances, laterCopies, laterTransferCopies, mainAccount, makeTransfer, monthKeyOf, moveEntry as move, normalizeState,
@@ -9,6 +9,7 @@ import {
 import { TipId, TipState, closeTip, knowGuide, readTipState } from './tips';
 import { GuideTopicId, readGuideSeen } from './guide';
 import { Currency, DEFAULT_CURRENCY, isSupportedCurrency } from './currency';
+import { systemCurrency, systemLanguage } from './systemLocale';
 import { defaultCategories } from './data/defaults';
 import { ReminderPrefs, normalizeReminderPrefs } from './reminders';
 import { hydratedData, loadStored, saver, wipeAll } from './storage';
@@ -60,14 +61,14 @@ function readString(key: string): string | null {
 }
 
 /**
- * The language to start with: the one picked before, else English (the
- * default on a fresh install and after "Reset app"). main.tsx loads its
- * strings before the first render.
+ * The language to start with: the one picked before, else the phone's (on a
+ * fresh install and after "Reset app"; German when the app doesn't speak
+ * it). main.tsx loads its strings before the first render.
  */
 export function initialLanguage(): Language {
   const saved = readString(K.lang);
   if (isLanguage(saved)) return saved;
-  return DEFAULT_LANGUAGE;
+  return systemLanguage();
 }
 
 /** The book as main.tsx's `hydrate()` found it (the file in the app); localStorage when rendered without it. */
@@ -87,12 +88,14 @@ export function useAppStore() {
   const [contracts, setContracts] = useState<Record<string, Contract>>(initial.contracts ?? {});
   /**
    * The book's currency — data, so part of a backup (plan 07). A loaded book
-   * keeps its currency; a brand-new book starts in euros (DEFAULT_CURRENCY).
+   * keeps its currency (unset = euros); a fresh install starts in the phone's
+   * region's currency, euros when there is none we offer.
    * `setActiveCurrency` keeps the formatters in sync.
    */
   const [currency, setCurrency] = useState<Currency>(() => {
     const loaded = isSupportedCurrency(initial.currency) ? initial.currency : undefined;
-    const value = loaded ?? DEFAULT_CURRENCY;
+    const freshInstall = readString(K.firstUse) === null && initial.entries.length === 0;
+    const value = loaded ?? (freshInstall ? systemCurrency() : DEFAULT_CURRENCY);
     setActiveCurrency(value);
     return value;
   });
@@ -728,9 +731,11 @@ export function useAppStore() {
     setAccountView(MAIN_ACCOUNT);
     setDebts([]);
     setProjects([]);
-    // Back to the defaults of a fresh install: euros and English.
-    setCurrency(DEFAULT_CURRENCY);
-    setLanguage(DEFAULT_LANGUAGE);
+    // Back to the defaults of a fresh install: the phone's currency, language
+    // and appearance (euros, German and light when it gives none).
+    setCurrency(systemCurrency());
+    chooseLanguage(systemLanguage());
+    setThemeMode('system');
     setIntroDone(false);
     setTipsDone(false);
     setLastExport('');

@@ -3773,7 +3773,8 @@ export const languages = ['cs', 'da', 'de', 'en', 'es', 'fr', 'it', 'nl', 'nb', 
 export type Language = (typeof languages)[number];
 export const isLanguage = (v: unknown): v is Language =>
   typeof v === 'string' && (languages as readonly string[]).includes(v);
-export const DEFAULT_LANGUAGE: Language = 'en';
+/** When the phone's language is none the app speaks (src/systemLocale.ts). */
+export const DEFAULT_LANGUAGE: Language = 'de';
 
 /** Each language's name in itself — for the picker, before its strings are loaded. */
 export const LANGUAGE_NAMES: Record<Language, string> = {
