@@ -303,7 +303,7 @@ final class SceneRunner {
     }
 
     /// Every element in screen-reader order.
-    private func flatSnapshot(of root: XCUIApplication) -> [XCUIElementSnapshot] {
+    private func flatSnapshot(of root: XCUIElement) -> [XCUIElementSnapshot] {
         guard let snap = try? root.snapshot() else { return [] }
         var out: [XCUIElementSnapshot] = []
         func walk(_ s: XCUIElementSnapshot) { out.append(s); s.children.forEach(walk) }
@@ -333,40 +333,73 @@ final class SceneRunner {
         let allowed = types(for: role)
         let deadline = Date().addingTimeInterval(timeout)
         repeat {
-            // Fast: let the device search by label.
-            for wanted in labels {
-                for mode in modes {
-                    let format = mode == .exact ? "label == %@" : mode == .prefix ? "label BEGINSWITH %@" : "label CONTAINS %@"
-                    let found = root.descendants(matching: .any).matching(NSPredicate(format: format, wanted)).allElementsBoundByIndex
-                    guard !found.isEmpty else { continue }
-                    let typed = found.map { ($0, $0.elementType) }
-                    for type in allowed {
-                        let ofType = typed.filter { $0.1 == type }.map { $0.0 }
-                        if ofType.count > nth, ofType[nth].exists { return uncovered(ofType, nth: nth) }
-                    }
-                }
-            }
-            // Thorough: the whole tree, with commas and runs of spaces ignored.
-            let all = flatSnapshot(of: root)
-            for wanted in labels {
-                for mode in modes {
-                    let hits = all.filter { allowed.contains($0.elementType) && matches($0.label, wanted, mode) }
-                    guard !hits.isEmpty else { continue }
-                    for type in allowed {
-                        let ofType = hits.filter { $0.elementType == type }
-                        guard ofType.count > nth else { continue }
-                        let pick = ofType[nth]
-                        // Find it again as a live element: same type, same label, same position among those.
-                        let sameLabel = all.filter { $0.elementType == type && $0.label == pick.label }
-                        let k = sameLabel.firstIndex { ($0 as AnyObject) === (pick as AnyObject) } ?? 0
-                        let el = root.descendants(matching: type).matching(NSPredicate(format: "label == %@", pick.label)).element(boundBy: k)
-                        if el.exists { return el }
-                    }
-                }
+            // Like the rehearsal: while a dialog is open, look in it first. WebKit keeps
+            // what is behind a confirmation in the tree, and its "Reset app" button came
+            // after the row that opened it – the tap went to the row behind the dialog,
+            // hit the dimmed background and closed it. Then the whole app, as before.
+            var scopes: [XCUIElement] = []
+            if root === app, let dialog = openDialog() { scopes.append(dialog) }
+            scopes.append(root)
+            for scope in scopes {
+                if let el = search(labels, nth: nth, allowed: allowed, modes: modes, in: scope) { return el }
             }
             rest(0.4)
         } while Date() < deadline
         throw StepFailure("not found: \(labels.joined(separator: " | "))\(nth > 0 ? " #\(nth)" : "")")
+    }
+
+    /// The open web dialog (a sheet or a confirmation), the newest if several:
+    /// WebKit labels it "<title>, web dialog" / "web alert dialog" ("dialogue" in
+    /// British English, "Dialog" in German). The outermost of nested copies.
+    private func openDialog() -> XCUIElement? {
+        let found = app.descendants(matching: .other)
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "dialog")).allElementsBoundByIndex
+            .filter { $0.exists }
+        let frames = found.map { $0.frame }
+        let outer = found.indices.filter { i in
+            !frames[i].isEmpty && !found.indices.contains { j in
+                j != i && frames[j].contains(frames[i]) && (frames[j] != frames[i] || j < i)
+            }
+        }
+        return outer.last.map { found[$0] }
+    }
+
+    /// One search for `element`, inside `scope`: the device's own label search first,
+    /// then the whole tree with commas and runs of spaces ignored.
+    private func search(_ labels: [String], nth: Int, allowed: [XCUIElement.ElementType], modes: [Mode],
+                        in scope: XCUIElement) -> XCUIElement? {
+        // Fast: let the device search by label.
+        for wanted in labels {
+            for mode in modes {
+                let format = mode == .exact ? "label == %@" : mode == .prefix ? "label BEGINSWITH %@" : "label CONTAINS %@"
+                let found = scope.descendants(matching: .any).matching(NSPredicate(format: format, wanted)).allElementsBoundByIndex
+                guard !found.isEmpty else { continue }
+                let typed = found.map { ($0, $0.elementType) }
+                for type in allowed {
+                    let ofType = typed.filter { $0.1 == type }.map { $0.0 }
+                    if ofType.count > nth, ofType[nth].exists { return uncovered(ofType, nth: nth) }
+                }
+            }
+        }
+        // Thorough: the whole tree, with commas and runs of spaces ignored.
+        let all = flatSnapshot(of: scope)
+        for wanted in labels {
+            for mode in modes {
+                let hits = all.filter { allowed.contains($0.elementType) && matches($0.label, wanted, mode) }
+                guard !hits.isEmpty else { continue }
+                for type in allowed {
+                    let ofType = hits.filter { $0.elementType == type }
+                    guard ofType.count > nth else { continue }
+                    let pick = ofType[nth]
+                    // Find it again as a live element: same type, same label, same position among those.
+                    let sameLabel = all.filter { $0.elementType == type && $0.label == pick.label }
+                    let k = sameLabel.firstIndex { ($0 as AnyObject) === (pick as AnyObject) } ?? 0
+                    let el = scope.descendants(matching: type).matching(NSPredicate(format: "label == %@", pick.label)).element(boundBy: k)
+                    if el.exists { return el }
+                }
+            }
+        }
+        return nil
     }
 
     /// Waits until some element's label or value contains one of the texts.
