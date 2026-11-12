@@ -1,4 +1,4 @@
-# 19 · Apple Pay, bank notifications and "Teilen an Spartopf"
+# 19 · Apple Pay, bank notifications and "Teilen an Haushaltsbuch Einfach"
 
 - **Covers:**
   - F8.
@@ -26,7 +26,7 @@ Both run on the phone, with no bank login.
    - the user's own name for that payee, as in the CSV import;
    - the right category;
    - booked as paid.
-3. **Teilen an Spartopf.** Share a banking screenshot from Photos, or a CSV from Files or Mail, to Spartopf. It opens the existing import review.
+3. **Teilen an Haushaltsbuch Einfach.** Share a banking screenshot from Photos, or a CSV from Files or Mail, to Haushaltsbuch Einfach. It opens the existing import review.
 4. **Mode switch:**
    - **Gleich buchen** (default): one undo toast.
    - **Erst prüfen**: a *Neu* row on the month page lists the new payments, one tap each.
@@ -39,7 +39,7 @@ Nothing happens until the user sets up an automation. The guide is one screen wi
 
 - **No credentials, no network.** No bank login, no network use.
 - **Notification texts** are parsed once and thrown away; only the entry is kept.
-- **Only chosen apps.** Spartopf only sees notifications from the apps the user picks in their own automation.
+- **Only chosen apps.** Haushaltsbuch Einfach only sees notifications from the apps the user picks in their own automation.
 - **No duplicates.** Each item gets a fingerprint (`Entry.ref`), so a later CSV import of the same payment shows it as already entered.
 - **The ready-made shortcut link** opens Apple's shortcut page in Safari; the app sends nothing. The guide also explains how to build the shortcut by hand.
 
@@ -76,14 +76,14 @@ Nothing happens until the user sets up an automation. The guide is one screen wi
 ## Done when
 
 - [ ] Apple Pay payments and bank notifications become entries without typing, with undo or review.
-- [ ] Sharing a screenshot or a CSV to Spartopf opens the import.
+- [ ] Sharing a screenshot or a CSV to Haushaltsbuch Einfach opens the import.
 
 ## Notes (built, steps 1, 2 and 4)
 
 Built without a device, so the first *Done when* stays open until it has run on an iPhone:
 
-- **The two actions** are `LogPaymentIntent` ("Zahlung in Spartopf erfassen") and `LogNotificationIntent` ("Mitteilung in Spartopf erfassen") in `SpartopfIntents.swift` — the app target, no new target. They take **plain text** for every field instead of `IntentCurrencyAmount`: what a Shortcuts automation hands over as "Shortcut Input" then always fits, and the app reads the amount ("12,40 €", "€12.40", "12.4"). The notification action has a *Subtitle* too — iOS 27's trigger gives title, subtitle and body.
+- **The two actions** are `LogPaymentIntent` ("Zahlung in Haushaltsbuch Einfach erfassen") and `LogNotificationIntent` ("Mitteilung in Haushaltsbuch Einfach erfassen") in `SpartopfIntents.swift` — the app target, no new target. They take **plain text** for every field instead of `IntentCurrencyAmount`: what a Shortcuts automation hands over as "Shortcut Input" then always fits, and the app reads the amount ("12,40 €", "€12.40", "12.4"). The notification action has a *Subtitle* too — iOS 27's trigger gives title, subtitle and body.
 - **The parser** (`parseNotificationText`) is written from the usual shapes of German banking pushes. **Its samples are made up** — nobody's real notifications were available. It needs real ones (anonymised) from the banks in use; that is in TODO.md. A text it can't read books nothing.
 - **Review mode** keeps the captured payments in the inbox (the App Group, protected by iOS) instead of a second list in the app: *Neu: 3* on the running month opens them in the import review; confirmed, they are gone.
 - **The guide** describes the steps in words, in 14 languages, with the menu names as iOS shows them as far as known — check them once on an iPhone in German. No pictures yet, and **no ready-made shortcut link**: an iCloud link has to be made on a device; automations can't be shared as links anyway, only shortcuts.
-- **Not built: step 3, the share extension** (*Teilen an Spartopf*). It is a new Xcode target with its own App Group entitlement and provisioning — to be added in Xcode.
+- **Not built: step 3, the share extension** (*Teilen an Haushaltsbuch Einfach*). It is a new Xcode target with its own App Group entitlement and provisioning — to be added in Xcode.

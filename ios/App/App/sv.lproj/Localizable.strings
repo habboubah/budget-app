@@ -2,7 +2,7 @@
    Machine-drafted (plan 25): a native speaker still has to read these. */
 
 "Add entry" = "Lägg till post";
-"Books an expense or an income in Spartopf." = "Bokför en utgift eller inkomst i Spartopf.";
+"Books an expense or an income in Haushaltsbuch Einfach." = "Bokför en utgift eller inkomst i Haushaltsbuch Einfach.";
 "Amount" = "Belopp";
 "How much?" = "Hur mycket?";
 "Name" = "Namn";
@@ -14,20 +14,20 @@
 "Booked: %@ %@" = "Bokfört: %1$@ %2$@";
 "Booked as open: %@ %@" = "Bokfört som väntande: %1$@ %2$@";
 "What’s left at the end of the month?" = "Vad blir kvar i slutet av månaden?";
-"Says what Spartopf expects in your account at the end of the month." = "Säger vad Spartopf räknar med på ditt konto i slutet av månaden.";
-"Open Spartopf to see it." = "Öppna Spartopf för att se det.";
+"Says what Haushaltsbuch Einfach expects in your account at the end of the month." = "Säger vad Haushaltsbuch Einfach räknar med på ditt konto i slutet av månaden.";
+"Open Haushaltsbuch Einfach to see it." = "Öppna Haushaltsbuch Einfach för att se det.";
 "At the end of the month: %@. In your account now: %@." = "I slutet av månaden: %1$@. På kontot nu: %2$@.";
 "Open bills" = "Obetalda räkningar";
-"Says which of this month’s bills are still open in Spartopf." = "Säger vilka av månadens räkningar som fortfarande är obetalda i Spartopf.";
+"Says which of this month’s bills are still open in Haushaltsbuch Einfach." = "Säger vilka av månadens räkningar som fortfarande är obetalda i Haushaltsbuch Einfach.";
 "No bills are open this month." = "Inga räkningar är obetalda den här månaden.";
 "Open: %@. Next: %@." = "Väntar: %1$@. Närmast: %2$@.";
-"Spartopf can’t be reached right now." = "Spartopf går inte att nå just nu.";
+"Haushaltsbuch Einfach can’t be reached right now." = "Haushaltsbuch Einfach går inte att nå just nu.";
 "That amount can’t be booked." = "Det beloppet kan inte bokföras.";
-"Log payment in Spartopf" = "Registrera betalning i Spartopf";
-"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Bokför en kortbetalning i Spartopf. För automationen ”Transaktion” i Genvägar.";
+"Log payment in Haushaltsbuch Einfach" = "Registrera betalning i Haushaltsbuch Einfach";
+"Books a card payment in Haushaltsbuch Einfach. For the Transaction automation in Shortcuts." = "Bokför en kortbetalning i Haushaltsbuch Einfach. För automationen ”Transaktion” i Genvägar.";
 "Merchant" = "Handlare";
 "Card" = "Kort";
-"Log notification in Spartopf" = "Registrera notis i Spartopf";
+"Log notification in Haushaltsbuch Einfach" = "Registrera notis i Haushaltsbuch Einfach";
 "Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Bokför betalningen som en notis från bankappen berättar om. För automationen ”Notis” i Genvägar.";
 "Title" = "Titel";
 "Subtitle" = "Undertitel";

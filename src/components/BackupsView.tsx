@@ -9,7 +9,7 @@ import { Confirm } from '../ui/Sheet';
 
 /**
  * Optionen → Sichern und übertragen → Automatische Sicherungen (pushed, plan
- * 03): the versions Spartopf keeps on the device, newest first, each
+ * 03): the versions Haushaltsbuch Einfach keeps on the device, newest first, each
  * restorable with a preview and an undo. A torn snapshot shows as "beschädigt"
  * but never breaks the list. Everything stays on the device.
  */

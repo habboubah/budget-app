@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Spartopf</string>
-    <string name="title_activity_main">Spartopf</string>
+    <string name="app_name">Haushaltsbuch Einfach</string>
+    <string name="title_activity_main">Haushaltsbuch Einfach</string>
     <string name="package_name">com.habboubah.spartopf</string>
     <string name="custom_url_scheme">com.habboubah.spartopf</string>
 </resources>

@@ -3,7 +3,7 @@ name: store-screenshot-studio
 description: Turn the raw app captures in screenshots/<locale>/ into polished, store-ready marketing screenshots — device mockup frames, branded backgrounds, benefit headlines — plus the Google Play feature graphic. Use when asked to refresh, restyle or regenerate marketing screenshots, store listing images, App Store or Play Store artwork, headlines on screenshots, or the feature graphic.
 ---
 
-> Adapted from pizza-driver-log (Fahrtwerk) for Spartopf: the ten captures of
+> Adapted from pizza-driver-log (Fahrtwerk) for Haushaltsbuch Einfach: the ten captures of
 > `scripts/screenshots.mjs` per language, the petrol theme, DE / EN copy. App
 > Store only so far — the Play targets and feature graphic come back through
 > the config (see its `//targets` note) once there is an Android app.

@@ -1,4 +1,4 @@
-# Spartopf – concept and money rules
+# Haushaltsbuch Einfach – concept and money rules
 
 What the app is and the rules its numbers follow. What it does feature by
 feature is in [features.md](features.md); how the code is built, in

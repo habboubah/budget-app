@@ -683,7 +683,7 @@ export default function App() {
       const readCsv = (text: string) => {
         const byTitle = parseBankCsv(text, store.currency);
         if (byTitle.length) return byTitle;
-        // An app Spartopf doesn't recognise by its column titles: map by the
+        // An app Haushaltsbuch Einfach doesn't recognise by its column titles: map by the
         // best guess (date / payee / amount), so it still imports (plan 20).
         const map = csvForMapping(text);
         return map && (map.guess.amount !== undefined || map.guess.debit !== undefined || map.guess.credit !== undefined) && map.guess.date !== undefined
@@ -978,7 +978,7 @@ export default function App() {
     }
     setPrinting(null);
   };
-  /** Optionen › Über Spartopf. */
+  /** Optionen › Über Haushaltsbuch Einfach. */
   const sendFeedback = async () => { void openExternal(feedbackMail(t, __APP_VERSION__, await systemVersion())); };
 
   // ---- Statistik and Planen: hints, reports, the drill-down (STATISTICS_AND_INSIGHTS.md).

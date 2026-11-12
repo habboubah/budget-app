@@ -8,11 +8,11 @@
 
 ## Why
 
-Half the people who would want Spartopf can't install it.
+Half the people who would want Haushaltsbuch Einfach can't install it.
 
 ## What the user gets
 
-Spartopf on Google Play: the same app, free, with no ads, no account, and everything on the phone.
+Haushaltsbuch Einfach on Google Play: the same app, free, with no ads, no account, and everything on the phone.
 
 ## Keep it simple
 
@@ -65,7 +65,7 @@ Where the build differs from the plan above:
 - **Backup folders.** The plan put the not-backed-up copy in `no_backup/`. The file plugin can't reach that folder — and on Android its `Library` and `LibraryNoCloud` are both `files/`, so the iPhone's two folders would have been one and the same. So: `files/spartopf/` when the switch is on, `files/no-backup/spartopf/` when it is off, and the rules include `files/spartopf/` only. Same effect.
 - **Lock.** The plugin of plan 00 supports Android. Fingerprint shows as "Mit Fingerabdruck sperren", face or iris unlock as "Mit Gesichtserkennung sperren"; the screen lock is the way back.
 - **Wording.** Thirteen strings name the iPhone, iOS, iCloud, Face ID or Touch ID. Android has its own for each, in all 14 languages (`src/i18n/android.ts`, a chunk only the Android app loads); a test fails when a new Apple-named string has no Android twin.
-- **Not on Android:** Siri, the Shortcuts capture and its tip (iPhone only; plan 24), the in-app rating prompt (it needs Google's Play library — *Spartopf bewerten* opens the Play page instead).
+- **Not on Android:** Siri, the Shortcuts capture and its tip (iPhone only; plan 24), the in-app rating prompt (it needs Google's Play library — *Haushaltsbuch Einfach bewerten* opens the Play page instead).
 - **PDF:** Android's print dialog (*Als PDF speichern*) instead of a share sheet.
 - **Exact alarms:** the notifications plugin asks for `SCHEDULE_EXACT_ALARM`; Google Play allows that only for alarm clocks and calendars, so the manifest removes it and reminders are scheduled inexactly.
 - **`INTERNET` stays** in the manifest. The app makes no request, but whether Capacitor's web view loads its local pages without the permission could not be tried here. If it does, removing it would be the strongest privacy statement Android has — TODO.md.

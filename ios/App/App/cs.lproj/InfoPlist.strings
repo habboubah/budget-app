@@ -1,6 +1,6 @@
 /* Permission prompts. The English base text is in Info.plist; keep both in sync. */
 
-"NSCameraUsageDescription" = "Spartopf čte bankovní pohyby z fotky, kterou pořídíš. Fotka se čte v tomto iPhonu a nikdy ho neopustí.";
-"NSPhotoLibraryUsageDescription" = "Spartopf čte bankovní pohyby ze snímku obrazovky, který vybereš. Čte se v tomto iPhonu a nikdy ho neopustí.";
-"NSPhotoLibraryAddUsageDescription" = "Spartopf uloží obrázek tvého ročního přehledu do Fotek, když zvolíš Uložit obrázek.";
-"NSFaceIDUsageDescription" = "Spartopf používá Face ID k odemknutí tvého rozpočtu, aby ho nikdo kromě tebe neotevřel.";
+"NSCameraUsageDescription" = "Haushaltsbuch Einfach čte bankovní pohyby z fotky, kterou pořídíš. Fotka se čte v tomto iPhonu a nikdy ho neopustí.";
+"NSPhotoLibraryUsageDescription" = "Haushaltsbuch Einfach čte bankovní pohyby ze snímku obrazovky, který vybereš. Čte se v tomto iPhonu a nikdy ho neopustí.";
+"NSPhotoLibraryAddUsageDescription" = "Haushaltsbuch Einfach uloží obrázek tvého ročního přehledu do Fotek, když zvolíš Uložit obrázek.";
+"NSFaceIDUsageDescription" = "Haushaltsbuch Einfach používá Face ID k odemknutí tvého rozpočtu, aby ho nikdo kromě tebe neotevřel.";

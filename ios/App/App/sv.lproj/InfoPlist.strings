@@ -1,6 +1,6 @@
 /* Permission prompts. The English base text is in Info.plist; keep both in sync. */
 
-"NSCameraUsageDescription" = "Spartopf läser banktransaktioner från ett foto du tar. Fotot läses på den här iPhonen och lämnar den aldrig.";
-"NSPhotoLibraryUsageDescription" = "Spartopf läser banktransaktioner från en skärmbild du väljer. Den läses på den här iPhonen och lämnar den aldrig.";
-"NSPhotoLibraryAddUsageDescription" = "Spartopf sparar bilden av din årsöversikt i Bilder när du väljer Spara bild.";
-"NSFaceIDUsageDescription" = "Spartopf använder Face ID för att låsa upp din hushållsbudget, så att bara du kan öppna den.";
+"NSCameraUsageDescription" = "Haushaltsbuch Einfach läser banktransaktioner från ett foto du tar. Fotot läses på den här iPhonen och lämnar den aldrig.";
+"NSPhotoLibraryUsageDescription" = "Haushaltsbuch Einfach läser banktransaktioner från en skärmbild du väljer. Den läses på den här iPhonen och lämnar den aldrig.";
+"NSPhotoLibraryAddUsageDescription" = "Haushaltsbuch Einfach sparar bilden av din årsöversikt i Bilder när du väljer Spara bild.";
+"NSFaceIDUsageDescription" = "Haushaltsbuch Einfach använder Face ID för att låsa upp din hushållsbudget, så att bara du kan öppna den.";

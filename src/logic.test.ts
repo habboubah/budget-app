@@ -1139,7 +1139,7 @@ describe('when to ask for a rating (plan 15)', () => {
   });
 });
 
-describe('Über Spartopf links (plan 15)', () => {
+describe('Über Haushaltsbuch Einfach links (plan 15)', () => {
   it('the review page carries the app’s id; the policy is German or English', () => {
     expect(REVIEW_URL).toContain(`id${APP_STORE_ID}`);
     expect(privacyUrl('de')).toBe('https://habboubah.github.io/privacy-policy/spartopf/de/');
@@ -1150,8 +1150,8 @@ describe('Über Spartopf links (plan 15)', () => {
     const mail = feedbackMail(translations.de, '1.2.4', 'iOS 18.1');
     expect(mail.startsWith(`mailto:${FEEDBACK_TO}?subject=`)).toBe(true);
     const body = decodeURIComponent(mail.split('&body=')[1]);
-    expect(body).toBe('\n\n\n— Spartopf 1.2.4 · iOS 18.1');
-    expect(decodeURIComponent(mail.split('subject=')[1].split('&')[0])).toBe('Feedback zu Spartopf');
+    expect(body).toBe('\n\n\n— Haushaltsbuch Einfach 1.2.4 · iOS 18.1');
+    expect(decodeURIComponent(mail.split('subject=')[1].split('&')[0])).toBe('Feedback zu Haushaltsbuch Einfach');
   });
 
   it('reads the system from a user agent on the web', () => {

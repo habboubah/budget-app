@@ -1,7 +1,7 @@
 /* Siri and Shortcuts (plan 18, SpartopfIntents.swift). The English text is the key. */
 
 "Add entry" = "إضافة بند";
-"Books an expense or an income in Spartopf." = "يسجّل مصروفًا أو دخلًا في Spartopf.";
+"Books an expense or an income in Haushaltsbuch Einfach." = "يسجّل مصروفًا أو دخلًا في Haushaltsbuch Einfach.";
 "Amount" = "المبلغ";
 "How much?" = "كم المبلغ؟";
 "Name" = "الاسم";
@@ -13,22 +13,22 @@
 "Booked: %@ %@" = "سُجّل: %1$@ %2$@";
 "Booked as open: %@ %@" = "سُجّل كمفتوح: %1$@ %2$@";
 "What’s left at the end of the month?" = "ماذا يبقى في نهاية الشهر؟";
-"Says what Spartopf expects in your account at the end of the month." = "يخبرك بما يتوقعه Spartopf في حسابك في نهاية الشهر.";
-"Open Spartopf to see it." = "افتح Spartopf لتراه.";
+"Says what Haushaltsbuch Einfach expects in your account at the end of the month." = "يخبرك بما يتوقعه Haushaltsbuch Einfach في حسابك في نهاية الشهر.";
+"Open Haushaltsbuch Einfach to see it." = "افتح Haushaltsbuch Einfach لتراه.";
 "At the end of the month: %@. In your account now: %@." = "في نهاية الشهر: %1$@. في الحساب الآن: %2$@.";
 "Open bills" = "الفواتير المفتوحة";
-"Says which of this month’s bills are still open in Spartopf." = "يخبرك بفواتير هذا الشهر التي لا تزال مفتوحة في Spartopf.";
+"Says which of this month’s bills are still open in Haushaltsbuch Einfach." = "يخبرك بفواتير هذا الشهر التي لا تزال مفتوحة في Haushaltsbuch Einfach.";
 "No bills are open this month." = "لا فواتير مفتوحة هذا الشهر.";
 "Open: %@. Next: %@." = "المفتوحة: %1$@. التالية: %2$@.";
-"Spartopf can’t be reached right now." = "تعذّر الوصول إلى Spartopf الآن.";
+"Haushaltsbuch Einfach can’t be reached right now." = "تعذّر الوصول إلى Haushaltsbuch Einfach الآن.";
 "That amount can’t be booked." = "لا يمكن تسجيل هذا المبلغ.";
 
 /* Automatic capture (plan 19). */
-"Log payment in Spartopf" = "تسجيل دفعة في Spartopf";
-"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "يسجّل دفعة بالبطاقة في Spartopf. لأتمتة «عملية» في الاختصارات.";
+"Log payment in Haushaltsbuch Einfach" = "تسجيل دفعة في Haushaltsbuch Einfach";
+"Books a card payment in Haushaltsbuch Einfach. For the Transaction automation in Shortcuts." = "يسجّل دفعة بالبطاقة في Haushaltsbuch Einfach. لأتمتة «عملية» في الاختصارات.";
 "Merchant" = "التاجر";
 "Card" = "البطاقة";
-"Log notification in Spartopf" = "تسجيل إشعار في Spartopf";
+"Log notification in Haushaltsbuch Einfach" = "تسجيل إشعار في Haushaltsbuch Einfach";
 "Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "يسجّل الدفعة التي يُخبر بها إشعار تطبيق البنك. لأتمتة «إشعار» في الاختصارات.";
 "Title" = "العنوان";
 "Subtitle" = "العنوان الفرعي";

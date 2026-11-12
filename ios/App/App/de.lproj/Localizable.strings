@@ -1,7 +1,7 @@
 /* Siri and Shortcuts (plan 18, SpartopfIntents.swift). The English text is the key. */
 
 "Add entry" = "Eintrag hinzufügen";
-"Books an expense or an income in Spartopf." = "Bucht eine Ausgabe oder Einnahme in Spartopf.";
+"Books an expense or an income in Haushaltsbuch Einfach." = "Bucht eine Ausgabe oder Einnahme in Haushaltsbuch Einfach.";
 "Amount" = "Betrag";
 "How much?" = "Wie viel?";
 "Name" = "Name";
@@ -13,22 +13,22 @@
 "Booked: %@ %@" = "Gebucht: %1$@ %2$@";
 "Booked as open: %@ %@" = "Als offen gebucht: %1$@ %2$@";
 "What’s left at the end of the month?" = "Was bleibt am Monatsende?";
-"Says what Spartopf expects in your account at the end of the month." = "Sagt, was Spartopf am Monatsende auf deinem Konto erwartet.";
-"Open Spartopf to see it." = "Öffne Spartopf, um es zu sehen.";
+"Says what Haushaltsbuch Einfach expects in your account at the end of the month." = "Sagt, was Haushaltsbuch Einfach am Monatsende auf deinem Konto erwartet.";
+"Open Haushaltsbuch Einfach to see it." = "Öffne Haushaltsbuch Einfach, um es zu sehen.";
 "At the end of the month: %@. In your account now: %@." = "Am Monatsende: %1$@. Jetzt auf dem Konto: %2$@.";
 "Open bills" = "Offene Rechnungen";
-"Says which of this month’s bills are still open in Spartopf." = "Sagt, welche Rechnungen diesen Monat in Spartopf noch offen sind.";
+"Says which of this month’s bills are still open in Haushaltsbuch Einfach." = "Sagt, welche Rechnungen diesen Monat in Haushaltsbuch Einfach noch offen sind.";
 "No bills are open this month." = "Diesen Monat ist keine Rechnung mehr offen.";
 "Open: %@. Next: %@." = "Offen: %1$@. Als Nächstes: %2$@.";
-"Spartopf can’t be reached right now." = "Spartopf ist gerade nicht erreichbar.";
+"Haushaltsbuch Einfach can’t be reached right now." = "Haushaltsbuch Einfach ist gerade nicht erreichbar.";
 "That amount can’t be booked." = "Dieser Betrag lässt sich nicht buchen.";
 
 /* Automatic capture (plan 19). */
-"Log payment in Spartopf" = "Zahlung in Spartopf erfassen";
-"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Bucht eine Kartenzahlung in Spartopf. Für die Automation „Transaktion“ in Kurzbefehle.";
+"Log payment in Haushaltsbuch Einfach" = "Zahlung in Haushaltsbuch Einfach erfassen";
+"Books a card payment in Haushaltsbuch Einfach. For the Transaction automation in Shortcuts." = "Bucht eine Kartenzahlung in Haushaltsbuch Einfach. Für die Automation „Transaktion“ in Kurzbefehle.";
 "Merchant" = "Händler";
 "Card" = "Karte";
-"Log notification in Spartopf" = "Mitteilung in Spartopf erfassen";
+"Log notification in Haushaltsbuch Einfach" = "Mitteilung in Haushaltsbuch Einfach erfassen";
 "Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Bucht die Zahlung, die eine Mitteilung der Banking-App meldet. Für die Automation „Mitteilung“ in Kurzbefehle.";
 "Title" = "Titel";
 "Subtitle" = "Untertitel";

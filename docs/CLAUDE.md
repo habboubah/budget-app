@@ -18,10 +18,10 @@ in this file are from the repository root. The other docs:
 | `docs/STORE_LISTING.md` | Every store listing field for Google Play and the App Store on one page (texts from `store/`) |
 | `docs/plans/` | The plans still open, in order (`README.md` has the rules) |
 | `docs/COMPETITOR_ANALYSIS.md` | The research the plans' F / U / S numbers refer to |
-| `docs/MONETIZATION.md` | A proposal for how Spartopf could earn money: the options, a one-time "Plus", when to start, timeline, marketing. Not decided: "no paid tier" in `docs/plans/README.md` stands until Ahmad says otherwise. `docs/MONETIZATION_ar.md` is the same text in Arabic; the English one is the reference, and a change there has to be made in both |
+| `docs/MONETIZATION.md` | A proposal for how Haushaltsbuch Einfach could earn money: the options, a one-time "Plus", when to start, timeline, marketing. Not decided: "no paid tier" in `docs/plans/README.md` stands until Ahmad says otherwise. `docs/MONETIZATION_ar.md` is the same text in Arabic; the English one is the reference, and a change there has to be made in both |
 
 ## What this app is
-Spartopf: a client-only React + Capacitor household budget book, modelled on
+Haushaltsbuch Einfach: a client-only React + Capacitor household budget book, modelled on
 Ahmad's monthly Excel sheet. One month per page, entries per category, each
 entry paid or still open, recurring entries carried into the next month, and
 two balances: *Jetzt auf dem Konto* and *Am Monatsende*. One bank account by
@@ -73,7 +73,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `src/tips.ts` | The one tip card on the month page |
 | `src/guide.ts`, `src/guideKit.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Optionen › Anleitung*), the tours and what *Zeigen* points at: topics and what is remembered (`guide.ts`, in the main bundle); labels, search and the tours' marks (`guideKit.ts`, a lazy chunk); its pages per language, loaded on demand (all pure, tested) |
 | `src/crypto.ts`, `src/export.ts`, `src/limits.ts` | Encrypted backups (WebCrypto), sharing files, the size limits of every import |
-| `src/currency.ts`, `src/links.ts`, `src/platform.ts` | Currencies; the links *Über Spartopf* opens; which app we run in |
+| `src/currency.ts`, `src/links.ts`, `src/platform.ts` | Currencies; the links *Über Haushaltsbuch Einfach* opens; which app we run in |
 | `src/demo.ts` | The test data year |
 | `src/shareImage.ts` | The year review as a picture |
 | `src/dynamicType.ts` | iOS Larger Text → the root font size |
@@ -177,7 +177,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   capture), *Darstellung* (language, appearance, colour, currency — the
   guide's `{display}` sends people here, so those four stay in it),
   *Sicherheit und Mitteilungen* (hide amounts first, then the lock,
-  reminders, the phone's backup), *Ausprobieren*, *Über Spartopf*, and
+  reminders, the phone's backup), *Ausprobieren*, *Über Haushaltsbuch Einfach*, and
   resetting last and alone. A new row joins the group it belongs to and
   takes an `IconTile` hue no other row of that group has; a count goes into
   `Next`'s pill. Scripts find rows by their text (`main button` with the
@@ -724,7 +724,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `inboxReview` opens them in `StatementImportSheet` (`source: 'inbox'`);
   confirmed, they leave the inbox. `CaptureView` (*Optionen › Automatisch
   erfassen*, native only) is the guide and the mode switch. The share
-  extension (*Teilen an Spartopf*) needs its own Xcode target — not built.
+  extension (*Teilen an Haushaltsbuch Einfach*) needs its own Xcode target — not built.
 - **Month from payday (plan 32, `src/period.test.ts`).** `AppData.monthStart`
   (2–28; absent = the 1st, schema 23) is the day the book's month begins. A
   month is then a *period*: with the 25th, "2026-11" runs 25 Oct – 24 Nov — a
@@ -1103,7 +1103,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     Complete, written with the snapshot only while the app lock is off (removed
     otherwise), and only for the running month; both have
     `authenticationPolicy = .requiresAuthentication`. Without it they answer
-    "Öffne Spartopf". A new phrase or answer goes into both `.strings` files.
+    "Öffne Haushaltsbuch Einfach". A new phrase or answer goes into both `.strings` files.
   - **PDF report (plan 28).** *Bericht teilen* under the Monatsbericht and the
     Jahresrückblick opens `ReportPdfSheet` (one switch: every entry or not).
     `PrintReport` draws the report a second time, as a portal on `<body>`
@@ -1116,7 +1116,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     with `@theme`). The PDF always has its amounts: an `AmountsShown` pair
     around the print copy lifts *Beträge verbergen* for it alone. Web:
     `window.print()`.
-  - **Ratings and feedback (plan 15).** *Optionen › Über Spartopf*: *Spartopf
+  - **Ratings and feedback (plan 15).** *Optionen › Über Haushaltsbuch Einfach*: *Haushaltsbuch Einfach
     bewerten* (iPhone app only; `REVIEW_URL` with `APP_STORE_ID`),
     *Feedback senden* (Mail with the app's and the system's version, nothing
     else — `feedbackMail`), *Datenschutz* (`privacyUrl`: German, else

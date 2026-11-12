@@ -1,6 +1,6 @@
-# Spartopf — competitor analysis and feature roadmap
+# Haushaltsbuch Einfach — competitor analysis and feature roadmap
 
-Research for Spartopf 1.2.0, checked on **7 November 2026**. Research only: no code was changed.
+Research for Haushaltsbuch Einfach 1.2.0, checked on **7 November 2026**. Research only: no code was changed.
 
 > **A snapshot.** Most of the features proposed here have been built since (see
 > [features.md](features.md)). The open plans in [plans/](plans/README.md) still
@@ -9,8 +9,8 @@ Research for Spartopf 1.2.0, checked on **7 November 2026**. Research only: no c
 - **App Store** figures come from the **German storefront** (apps.apple.com/de) unless marked **US**.
 - **Google Play** figures come from **AppBrain** (global Google Play data, refreshed 25 Oct – 7 Nov 2026). My fetches of Google Play's own pages didn't return ratings or install counts.
 - **unknown** means I couldn't retrieve a number. Nothing here is estimated.
-- Spartopf's column is based on the code (see the [appendix](#appendix--spartopf-today-from-the-code)), not only on the README.
-- A web search didn't turn up a public App Store page for Spartopf, so I couldn't check whether it's live or read its ratings.
+- Haushaltsbuch Einfach's column is based on the code (see the [appendix](#appendix--spartopf-today-from-the-code)), not only on the README.
+- A web search didn't turn up a public App Store page for Haushaltsbuch Einfach, so I couldn't check whether it's live or read its ratings.
 
 ---
 
@@ -19,17 +19,17 @@ Research for Spartopf 1.2.0, checked on **7 November 2026**. Research only: no c
 The most important gaps, in order:
 
 1. **Data safety (P0).** All data lives in the web view's `localStorage`, and backups are manual. Capacitor's own docs say localStorage must be treated as temporary, because iOS can reclaim web-view storage when the device runs low on space. Lost data is the angriest theme in competitors' reviews (MoneyControl, Bluecoins, Monefy). → **F23**
-2. **No category budgets (P0).** All 13 competitors have per-category limits. Spartopf only runs the 50/30/20 check. → **F1**
-3. **Every entry still has to be typed.** Spartopf has no widgets, no Siri/Shortcuts and no Apple Pay capture. Spendee and Wallet now log Apple Pay payments by themselves, and iOS 27 lets a Shortcut react to a banking app's push notification. Both run on the device with no bank login. The effort per entry is the main reason people give up on a Haushaltsbuch. → **F8, F18, F19**
-4. **No reminders.** Spartopf knows every due date but never sends a notification. Cashew, Wallet, Copilot, Finanzguru, Outbank, finanzblick and Bluecoins do. → **F16**
+2. **No category budgets (P0).** All 13 competitors have per-category limits. Haushaltsbuch Einfach only runs the 50/30/20 check. → **F1**
+3. **Every entry still has to be typed.** Haushaltsbuch Einfach has no widgets, no Siri/Shortcuts and no Apple Pay capture. Spendee and Wallet now log Apple Pay payments by themselves, and iOS 27 lets a Shortcut react to a banking app's push notification. Both run on the device with no bank login. The effort per entry is the main reason people give up on a Haushaltsbuch. → **F8, F18, F19**
+4. **No reminders.** Haushaltsbuch Einfach knows every due date but never sends a notification. Cashew, Wallet, Copilot, Finanzguru, Outbank, finanzblick and Bluecoins do. → **F16**
 5. **No app lock.** Monefy, Money Manager, finanzblick and Goodbudget offer a passcode or Face ID. A privacy-first finance app without one looks unfinished. → **F17**
-6. **Limited reach.** Spartopf is iPhone-only (`TARGETED_DEVICE_FAMILY = 1`), has no Android app, and the currency is hard-coded to EUR even though the app speaks Arabic. In Germany, Android has a much larger share than iOS, and every competitor except Copilot ships on Android. → **F20, F21, F26, F27**
+6. **Limited reach.** Haushaltsbuch Einfach is iPhone-only (`TARGETED_DEVICE_FAMILY = 1`), has no Android app, and the currency is hard-coded to EUR even though the app speaks Arabic. In Germany, Android has a much larger share than iOS, and every competitor except Copilot ships on Android. → **F20, F21, F26, F27**
 7. **No savings goals.** The app is literally called "savings pot". YNAB, Copilot, Outbank, MoneyControl and Monefy all have goals. → **F2**
-8. **No sync or sharing for couples.** YNAB, Monefy, Spendee, Wallet, Goodbudget and Bluecoins let two people share a budget. Spartopf could do this through the user's own iCloud without running a server, but the wording of the privacy promise would change. → **F24, F25**
+8. **No sync or sharing for couples.** YNAB, Monefy, Spendee, Wallet, Goodbudget and Bluecoins let two people share a budget. Haushaltsbuch Einfach could do this through the user's own iCloud without running a server, but the wording of the privacy promise would change. → **F24, F25**
 9. **The store listing lags behind the product.** It doesn't mention bank CSV/photo import or the Insights tab. There's no Arabic listing, no accessibility labels and no rating prompt. → **S1–S4**
 10. **Bank connection.** This is what puts Finanzguru, Outbank and finanzblick on top in Germany, and Stiftung Warentest rated apps with account linking higher. Treat it as a strategic decision. On-device FinTS (Outbank's model) is the only route that keeps the privacy promise. → **F11**
 
-**Bottom line:** Spartopf's core is ahead of most manual apps: two balances, paid/open, carry-over, bank import on the device, free in-depth insights, and real privacy. To feel professional it still needs trust basics (durable data, an app lock, reminders), budgets and goals, and faster capture from outside the app. None of that requires breaking the privacy promise. Quick wins and a three-release plan are in [§9](#9-roadmap).
+**Bottom line:** Haushaltsbuch Einfach's core is ahead of most manual apps: two balances, paid/open, carry-over, bank import on the device, free in-depth insights, and real privacy. To feel professional it still needs trust basics (durable data, an app lock, reminders), budgets and goals, and faster capture from outside the app. None of that requires breaking the privacy promise. Quick wins and a three-release plan are in [§9](#9-roadmap).
 
 ---
 
@@ -44,7 +44,7 @@ All 13 apps shipped at least one store update in 2026, so all are active.
 
 | App | Type | Platforms | Price (App Store DE) | App Store ★ (ratings) | Google Play ★ (ratings) | Play installs | Last update | Notable features |
 |---|---|---|---|---|---|---|---|---|
-| **Spartopf** 1.2.0 | Private budget book | iPhone; PWA in any browser | Free, no IAP | not verified | — | — | — | Two balances, paid/open, carry-over, bank CSV and screenshot import on the device, Excel import, Insights, DE/EN/AR |
+| **Haushaltsbuch Einfach** 1.2.0 | Private budget book | iPhone; PWA in any browser | Free, no IAP | not verified | — | — | — | Two balances, paid/open, carry-over, bank CSV and screenshot import on the device, Excel import, Insights, DE/EN/AR |
 | YNAB | Zero-based budgeting (US) | iPhone, iPad, Watch, Android | 30-day trial, then 15.49 €/mo or 119 €/yr | 4.7 (1,082) · **US** 4.8 (62K) | 4.62 (24,702) | 3.4M | iOS ~4 Nov 2026 · Play 27 Nov 2024 (per AppBrain) | Plans shared with up to 6 people, bank import, goals, loan planner, Siri |
 | Copilot Money | Premium bank sync (US only) | iPhone, iPad, Mac, web; no Android | **US**: 1-month trial, then $18/mo or $109/yr | **US** 4.8 (31K) | — (no Android app) | — | iOS ~5 Nov 2026 | AI "Money Assistant", auto-categorization, recurring-charge detection, alerts, investments; Apple Editors' Choice |
 | Monefy | Fast manual tracker | iPhone, Android | Free; Premium 41.99–69.99 € | 4.5 (4,819) | 3.98 (190,548) | 11M | iOS 30 Oct · Play 11 Aug 2026 | Entering an amount is all it takes, budget mode, multi-currency, sync via your own Google Drive/Dropbox, passcode, widgets, calculator |
@@ -69,9 +69,9 @@ All 13 apps shipped at least one store update in 2026, so all are active.
 - ❌ = absent according to the listing (for example its compatibility list) or reviews.
 - ? = not mentioned in anything I read. It may still exist.
 
-Spartopf's column comes from the code.
+Haushaltsbuch Einfach's column comes from the code.
 
-| Feature | Spartopf | YNAB | Copilot | Monefy | Spendee | Wallet | MoneyMgr | Goodbudget | Finanzguru | Outbank | finanzblick | MoneyCtrl | Cashew | Bluecoins |
+| Feature | Haushaltsbuch Einfach | YNAB | Copilot | Monefy | Spendee | Wallet | MoneyMgr | Goodbudget | Finanzguru | Outbank | finanzblick | MoneyCtrl | Cashew | Bluecoins |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Quick manual entry | ✅ | ✅ | ? | ✅ | ✅ | ✅ | ✅ | ✅ | ◐ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Recurring entries | ✅ | ? | ✅ | ✅ | ? | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -106,10 +106,10 @@ Spartopf's column comes from the code.
 - ¹ This is the planned label from `store/listing.md`. I couldn't verify a live listing.
 - ² The PWA runs in any browser, including on Android and iPad. There is no Play Store app, and the iOS app is iPhone-only.
 - **Privacy label values:** "Linked" = data linked to your identity, "Tracking" = data used to track you, as declared on each product page.
-- **Spartopf's partial marks:**
+- **Haushaltsbuch Einfach's partial marks:**
   - Search covers one month at a time.
   - Contracts: Insights lists fixed costs and flags price changes and missing regular payments, but there are no notice periods.
-  - Spartopf has no per-category limits, only the 50/30/20 split and a 20 % savings-rate target.
+  - Haushaltsbuch Einfach has no per-category limits, only the 50/30/20 split and a 20 % savings-rate target.
 
 ---
 
@@ -157,13 +157,13 @@ All review content is paraphrased.
 ### Requests that come up again and again
 
 - **Capture without typing.** A Monefy reviewer asks for expenses to be read from bank messages, with approval. iOS 27's notification trigger makes this possible on the device (→ F8).
-- **Track cash.** A Finanzguru reviewer wants to follow cash withdrawals. Spartopf already handles cash by hand.
-- **Adjust to the real bank balance.** A MoneyControl reviewer asks for a "Kontostand anpassen" button. Spartopf has an opening-balance override, and U6 would complete it.
-- **Spending by shop or place.** A MoneyControl reviewer asks for this. Spartopf already has the payee card.
+- **Track cash.** A Finanzguru reviewer wants to follow cash withdrawals. Haushaltsbuch Einfach already handles cash by hand.
+- **Adjust to the real bank balance.** A MoneyControl reviewer asks for a "Kontostand anpassen" button. Haushaltsbuch Einfach has an opening-balance override, and U6 would complete it.
+- **Spending by shop or place.** A MoneyControl reviewer asks for this. Haushaltsbuch Einfach already has the payee card.
 - **Other currencies.** A [Finanzfluss Copilot reviewer](https://apps.apple.com/ch/app/finanzfluss-copilot/id6482296545?platform=iphone&see-all=reviews) asks for CHF (→ F26).
 - **Own rules, and transfers excluded from totals.** finanzblick reviewers ask for this.
 
-### What this means for Spartopf
+### What this means for Haushaltsbuch Einfach
 
 - **Reliability beats features.** Durable data (F23) comes first. Updates must never break the maths or slow down entry, and the existing vitest suite is an asset here.
 - **If you ever charge, keep it one-time and never lock existing data.** MoneyControl reviewers who bought the one-time full version are happy. Monefy and Bluecoins buyers are angry when purchases vanish.
@@ -171,7 +171,7 @@ All review content is paraphrased.
 
 ---
 
-## 5. Where Spartopf is already strong
+## 5. Where Haushaltsbuch Einfach is already strong
 
 | Strength | Why it matters against the competition | Highlight in the listing? |
 |---|---|---|
@@ -184,7 +184,7 @@ All review content is paraphrased.
 | **Correct maths by design:** one account, so no double-counted transfers; opening balance can be corrected | These are exactly the errors Finanzguru and finanzblick users complain about | No (internal) |
 | **Undo for every destructive action,** plus a crash screen that rescues data | Trust; the opposite of the "lost my data" reviews | Indirectly |
 | **Arabic with right-to-left layout and Arabic digits** | The German leaders are DE/EN only. Among the 13, only Wallet, Cashew and Bluecoins offer Arabic. | Yes |
-| **Native iOS craft and accessibility:** Dynamic Type, VoiceOver labels, reduced motion, a contrast audit for every accent | YNAB and Outbank show Accessibility Nutrition Labels; Spartopf could too (S2) | Yes, via labels |
+| **Native iOS craft and accessibility:** Dynamic Type, VoiceOver labels, reduced motion, a contrast audit for every accent | YNAB and Outbank show Accessibility Nutrition Labels; Haushaltsbuch Einfach could too (S2) | Yes, via labels |
 | **Payee analysis** ("Lidl · 6× · 12 %") | A MoneyControl reviewer asks for this kind of per-shop view | Optional |
 
 ---
@@ -204,7 +204,7 @@ I ranked by verified number of ratings and installs. Money Manager says it has 2
 - Automatic import from all bank accounts, depots and crypto accounts.
 - AI contract detection, a contract alarm for notice periods, and free one-tap cancellation.
 - Smart budgets per category.
-- "Freely available income" until month end or the next salary (Plus). Spartopf has *Am Monatsende*, but not tied to payday.
+- "Freely available income" until month end or the next salary (Plus). Haushaltsbuch Einfach has *Am Monatsende*, but not tied to payday.
 - Savings-potential analysis and notifications.
 - iPad, Mac and Android apps.
 - A test win at Stiftung Warentest (Finanztest 11/2023, according to [mystipendium.de](https://www.mystipendium.de/geld/haushaltsbuch-apps)).
@@ -214,7 +214,7 @@ I ranked by verified number of ratings and installs. Money Manager says it has 2
 
 - A chart of where the money went, and entry where the amount is all you need to type.
 - Budget mode, multiple accounts and multi-currency.
-- **Sync with a partner through the user's own Google Drive or Dropbox, with no Monefy server.** This is the closest model to what Spartopf could do with iCloud.
+- **Sync with a partner through the user's own Google Drive or Dropbox, with no Monefy server.** This is the closest model to what Haushaltsbuch Einfach could do with iCloud.
 - Passcode, home-screen widgets and a built-in calculator.
 - 16 languages and an Android app.
 
@@ -278,7 +278,7 @@ I ranked by verified number of ratings and installs. Money Manager says it has 2
 #### F3 · Reserve for yearly bills — P1, quick win
 - **What:** Based on yearly entries (Kfz-Steuer, insurance), show "lege 42 € im Monat zurück", list the next yearly bills, and say whether the reserve covers them.
 - **Who has it:** YNAB ("Cost to Be Me" and goals). Finanzguru reviewers praise being warned early about the yearly Kfz-Steuer.
-- **Value:** No more surprise months, using data Spartopf already has.
+- **Value:** No more surprise months, using data Haushaltsbuch Einfach already has.
 - **Impact:** Medium · **Effort:** S · **Priority:** P1
 - **Privacy:** None.
 - **Code:** `src/insights.ts` (`commitments()` already returns `yearly`; add `yearlyReserve()` and a test), `InsightsView.tsx`, `translations.ts`.
@@ -513,7 +513,7 @@ I ranked by verified number of ratings and installs. Money Manager says it has 2
 - **Code:** a native CloudKit plugin, `src/store.ts` (per-record `updatedAt` and deletions so changes can be merged), `src/types.ts`, merge tests in `logic.test.ts`.
 
 #### F25 · Shared household budget — P2, ⚠ privacy wording
-- **What:** Share one Spartopf with a partner through iCloud sharing. Both can add and tick off entries.
+- **What:** Share one Haushaltsbuch Einfach with a partner through iCloud sharing. Both can add and tick off entries.
 - **Who has it:** YNAB (up to six people), Monefy (partner via sync), Spendee (shared finances), Wallet (shared accounts), Goodbudget (five devices), Bluecoins (with a spouse).
 - **Value:** A household book is often kept by two people, and YNAB reviewers single out budgeting together.
 - **Impact:** High for couples · **Effort:** L (after F24) · **Priority:** P2
@@ -559,7 +559,7 @@ I ranked by verified number of ratings and installs. Money Manager says it has 2
 #### S2 · Accessibility Nutrition Labels — P1, quick win
 - **What:** Declare the supported features in App Store Connect after checking each one against [Apple's criteria](https://developer.apple.com/help/app-store-connect/manage-app-accessibility/overview-of-accessibility-nutrition-labels): VoiceOver, Larger Text, Dark Interface, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion.
 - **Who has it:** YNAB and Outbank show these labels on their German product pages.
-- **Value:** Spartopf already does the work (VoiceOver labels, Dynamic Type, reduced motion, `npm run audit:contrast`). The labels make it visible.
+- **Value:** Haushaltsbuch Einfach already does the work (VoiceOver labels, Dynamic Type, reduced motion, `npm run audit:contrast`). The labels make it visible.
 - **Impact:** Medium · **Effort:** S · **Priority:** P1
 - **Privacy:** None.
 - **Code:** none. It's done in App Store Connect; add it to the `APP_STORE_RELEASE.md` checklist.
@@ -577,18 +577,18 @@ I ranked by verified number of ratings and installs. Money Manager says it has 2
 #### S4 · Screenshots that lead with the difference — P1
 - **What:** Start with "Kein Konto. Keine Cloud. Kein Tracking." and "Kontoumsätze per CSV oder Screenshot – ohne Bank-Login". Then show the two balances, Insights and the Excel import. Consider a short App Preview video.
 - **Who has it:** Copilot leads with its design awards, and Finanzguru with "Die Höhle der Löwen". Privacy is the one angle none of the big German apps can claim: Finanzguru and finanzblick declare tracking data, and Finanzguru shows ads.
-- **Value:** Screenshots are what people look at before installing, so they should show what Spartopf does that the market leaders don't.
+- **Value:** Screenshots are what people look at before installing, so they should show what Haushaltsbuch Einfach does that the market leaders don't.
 - **Impact:** Medium–High · **Effort:** S–M · **Priority:** P1
 - **Privacy:** None.
 - **Code:** `scripts/screenshots.mjs`, `.claude/skills/app-store-screenshots/`.
 
 #### S5 · Check the name and keywords — P2
-- **What:** "Spartopf" is also the name of the Sparkasse app's savings-pot feature ([Spartöpfe](https://www.sparkasse.de/pk/produkte/konten-und-karten/banking/online-services/spartoepfe.html)), so store and web searches may mix the two up.
+- **What:** "Haushaltsbuch Einfach" is also the name of the Sparkasse app's savings-pot feature ([Spartöpfe](https://www.sparkasse.de/pk/produkte/konten-und-karten/banking/online-services/spartoepfe.html)), so store and web searches may mix the two up.
   - Keep "Haushaltsbuch" in the name, as it is now.
   - Watch your search rank after launch.
   - Keep bank brand names out of the keywords; [guideline 2.3.7](https://developer.apple.com/app-store/review/guidelines/#2.3.7) rules out trademarked terms.
 - **Who has it:** —
-- **Value:** People who hear about "Spartopf" should find this app and not a Sparkasse help page. Keeping the listing within the rules also avoids a rejection at review.
+- **Value:** People who hear about "Haushaltsbuch Einfach" should find this app and not a Sparkasse help page. Keeping the listing within the rules also avoids a rejection at review.
 - **Impact:** Low–Medium · **Effort:** S · **Priority:** P2
 - **Privacy:** None.
 - **Code:** `store/listing.md`.
@@ -796,12 +796,12 @@ All checked on 7 Nov 2026. Store texts and reviews are paraphrased; content was 
 - Mobiloud citing StatCounter (global share, 2026): https://mobiloud.com/blog/android-vs-ios-market-share
 - Sparkasse "Spartöpfe": https://www.sparkasse.de/pk/produkte/konten-und-karten/banking/online-services/spartoepfe.html
 
-### Spartopf (this repo)
+### Haushaltsbuch Einfach (this repo)
 `README.md`, `PLAN.md`, `CLAUDE.md`, `store/listing.md`, `src/` (files listed in the appendix), `ios/App/App.xcodeproj/project.pbxproj`, `capacitor.config.ts`, `package.json`.
 
 ---
 
-## Appendix — Spartopf today (from the code)
+## Appendix — Haushaltsbuch Einfach today (from the code)
 
 | Area | What it does | Where it lives |
 |---|---|---|

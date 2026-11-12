@@ -13,7 +13,7 @@ Third-party skill, vendored unchanged.
 
 ## Licence note
 
-Spartopf is free (store/listing.md: *Price: Free*) and this file is a dev-time
+Haushaltsbuch Einfach is free (store/listing.md: *Price: Free*) and this file is a dev-time
 reference that never ships in the app, which keeps it inside CC BY-NC. If the
 app ever becomes paid, ask Data to Viz before keeping `caveats.md` here.
 

@@ -15,7 +15,7 @@
 |---|---|---|
 | `d246b026f4f29b5823a9cc857f9edf3d2507002e055e32040cadeaf3b38e0234` | `reference/command.md` | none |
 | `6cd1609c9c12233507cdd2ce0d32e9a721e3c27494951be06b90090deeeb7af2` | `LICENSE` | none |
-| — | `SKILL.md` | local wrapper with the Spartopf overrides |
+| — | `SKILL.md` | local wrapper with the Haushaltsbuch Einfach overrides |
 
 ## Updating
 

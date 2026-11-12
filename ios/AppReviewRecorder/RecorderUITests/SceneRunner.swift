@@ -2,7 +2,7 @@ import XCTest
 
 // Plays a scene file (scenes.json) on a real iPhone: taps, typing, swipes,
 // file pickers, system alerts and the iOS screen recording. Nothing in here
-// knows about Spartopf — the app, its labels and the flow all come from the
+// knows about Haushaltsbuch Einfach — the app, its labels and the flow all come from the
 // scene file, so the same runner records any app.
 //
 // Elements are found the way scripts/rehearse-app-review.mjs finds them in
@@ -483,7 +483,7 @@ final class SceneRunner {
 
     /// Scrolls the element into view and makes sure the finger lands on it. With
     /// the keyboard up, the element can be behind it, or behind something the
-    /// page keeps just above it: Spartopf's + − × ÷ row covers the Date and Paid
+    /// page keeps just above it: Haushaltsbuch Einfach's + − × ÷ row covers the Date and Paid
     /// buttons, and a tap meant for the date once typed "+" into the amount.
     /// Then the keyboard goes away first, the way a person would put it away.
     private func reach(_ el: XCUIElement, dx: CGFloat = 0.5) throws {
@@ -766,7 +766,7 @@ final class SceneRunner {
             choose.tap()
             rest(1.2)
         }
-        // The Files picker's search field – not one of the page's own (Spartopf's
+        // The Files picker's search field – not one of the page's own (Haushaltsbuch Einfach's
         // "Search all months" came first and took the typing).
         var picked: XCUIElement? = nil
         let deadline = Date().addingTimeInterval(10)

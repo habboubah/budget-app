@@ -80,7 +80,7 @@ Counted by script (every button, link and field touching the viewport — a cate
 
 ### 4 · Optionen
 
-Groups as plan 00 set them: *Sicherheit und Mitteilungen*, *Darstellung*, *Haushaltsbuch*, *Ausprobieren*, *Über Spartopf*. *Haushaltsbuch* is the longest: 481 px on an SE (667 px), seven rows. **Changed:** its rows now run from everyday to advanced — Kategorien und Budgets, Favoriten, Konten, Schulden und Kredite, Regeln, Monat beginnt am — with *Sichern und übertragen* last, where the group's footer explains it.
+Groups as plan 00 set them: *Sicherheit und Mitteilungen*, *Darstellung*, *Haushaltsbuch*, *Ausprobieren*, *Über Haushaltsbuch Einfach*. *Haushaltsbuch* is the longest: 481 px on an SE (667 px), seven rows. **Changed:** its rows now run from everyday to advanced — Kategorien und Budgets, Favoriten, Konten, Schulden und Kredite, Regeln, Monat beginnt am — with *Sichern und übertragen* last, where the group's footer explains it.
 
 ### 5 · Tips
 

@@ -8,7 +8,7 @@
 
 ## Why
 
-Most people expect to link their bank. Spartopf can offer that without breaking its promise:
+Most people expect to link their bank. Haushaltsbuch Einfach can offer that without breaking its promise:
 - Like Outbank, the app talks directly to the user's own bank over FinTS.
 - The data stays on the phone.
 - No aggregator, no server of our own.

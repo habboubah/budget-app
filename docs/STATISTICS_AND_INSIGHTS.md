@@ -1,4 +1,4 @@
-# Spartopf — plan for statistics and insights
+# Haushaltsbuch Einfach — plan for statistics and insights
 
 Research and plan, written on **7 November 2026**. No app code was changed.
 
@@ -16,11 +16,11 @@ Research and plan, written on **7 November 2026**. No app code was changed.
 
 ## 1. Summary
 
-1. **Spartopf already computes more than most manual apps:** savings rate, 50/30/20, reserve, forecast, unusual spending, price changes, missing payments, budgets with pace. What holds it back is how it's shown:
+1. **Haushaltsbuch Einfach already computes more than most manual apps:** savings rate, 50/30/20, reserve, forecast, unusual spending, price changes, missing payments, budgets with pace. What holds it back is how it's shown:
    - *Planen* (formerly *Analyse*) is still a scroll of up to 13 cards with five different time scopes. Step 9 put Budgets and Abos & Verträge on top and left the rest as it was.
    - The hints sit in the middle, nothing ranks them, and nothing leads to an action.
    - Once a savings category is in use, two cards contradict each other about how much the user saves (§4, I1).
-2. **The competition converges on eight patterns** (§3). Spartopf has two fully and four in part. The biggest gaps:
+2. **The competition converges on eight patterns** (§3). Haushaltsbuch Einfach has two fully and four in part. The biggest gaps:
    - "Am I on track this month?"
    - Drilling down from a total to a category, a payee and its entries.
    - A forward view of the balance.
@@ -102,9 +102,9 @@ Statistics and insights only; COMPETITOR_ANALYSIS.md covers the rest. Content is
 | [Cashew](https://apps.apple.com/sg/app/cashew-expense-budget-tracker/id6463662930) | Compares periods; line, pie and bar charts; history of past budget periods | per-budget history | — | pies |
 | Apple Health (pattern) | [*Highlights*](https://support.apple.com/en-nz/guide/iphone/iphe3d379c32/ios): one sentence plus a small comparison chart; *Trends* | Summary tab | the highlight card | — |
 
-### The eight patterns, and where Spartopf stands
+### The eight patterns, and where Haushaltsbuch Einfach stands
 
-| # | Pattern | Who | Spartopf |
+| # | Pattern | Who | Haushaltsbuch Einfach |
 |---|---|---|---|
 | 1 | What's left after what's promised | PocketGuard, Monzo, Copilot, Emma, Simplifi | ✅ *Am Monatsende*, *übrig ≈ pro Tag* |
 | 2 | Pace against a baseline mid-month | Copilot, Money Lover, Monzo, Revolut | ◐ per budget only |
@@ -133,7 +133,7 @@ Statistics and insights only; COMPETITOR_ANALYSIS.md covers the rest. Content is
 
 ---
 
-## 4. Where Spartopf stands (from the code)
+## 4. Where Haushaltsbuch Einfach stands (from the code)
 
 **Strengths:**
 - All of it is pure and tested: `src/insights.ts`, `src/budgets.ts`, `src/due.ts`.

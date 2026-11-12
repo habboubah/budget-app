@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Records the App Review screen recording on the iPhone connected to this Mac.
 #
-# Runs the UI test in ios/AppReviewRecorder: it drives the Spartopf installed
+# Runs the UI test in ios/AppReviewRecorder: it drives the Haushaltsbuch Einfach installed
 # on the iPhone (the TestFlight build), starts the iOS screen recording from
 # Control Center, plays ios/AppReviewRecorder/scenes.json and stops the
 # recording. The video is then in the iPhone's Photos.
@@ -66,7 +66,7 @@ echo "iPhone: $DEVICE"
 # state the phone is in). RESET=0: no reset, stop if the app isn't empty.
 RESET="${RESET:-1}"
 if [ "${FROM:-1}" = "1" ] && [ "$RESET" = "1" ]; then
-  echo "Spartopf on the iPhone is reset first (entries, settings and automatic backups are erased)."
+  echo "Haushaltsbuch Einfach on the iPhone is reset first (entries, settings and automatic backups are erased)."
 fi
 [ "${DRY_RUN:-}" = "1" ] && echo "Dry run: nothing is recorded."
 echo "Keep the iPhone unlocked and facing you (Face ID is needed twice). Don't touch it until the test ends."

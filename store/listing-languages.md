@@ -20,7 +20,7 @@ text 170 (App Store). Every text below fits; the lengths are in brackets.
 
 | Field | Text |
 |---|---|
-| Name (26) | `Spartopf – Budget familial` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (25) | `Budget privé, sans compte` |
 | Short description (74) | `Livre de comptes sans compte ni publicité. Tout reste sur votre téléphone.` |
 | Keywords (90) | `dépenses,argent,finances,épargne,revenus,factures,salaire,loyer,ménage,mensuel,abonnements` |
@@ -30,7 +30,7 @@ text 170 (App Store). Every text below fits; the lengths are in brackets.
 **Description:**
 
 ```
-Spartopf est votre livre de comptes, mois après mois – gratuit, sans publicité, sans abonnement et sans inscription. Tout reste sur votre téléphone.
+Haushaltsbuch Einfach est votre livre de comptes, mois après mois – gratuit, sans publicité, sans abonnement et sans inscription. Tout reste sur votre téléphone.
 
 DEUX CHIFFRES QUI COMPTENT
 En haut : ce qu’il y a sur votre compte maintenant, et ce qui restera à la fin du mois une fois tout payé.
@@ -54,7 +54,7 @@ Pas de compte, pas de publicité, pas de suivi, pas besoin d’Internet. Verroui
 
 | Field | Text |
 |---|---|
-| Name (26) | `Spartopf – Libro de gastos` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (30) | `Presupuesto privado sin cuenta` |
 | Short description (69) | `Libro de gastos sin cuenta ni anuncios. Todo se queda en tu teléfono.` |
 | Keywords (91) | `gastos,dinero,finanzas,ahorro,ingresos,facturas,nómina,alquiler,hogar,mensual,suscripciones` |
@@ -64,7 +64,7 @@ Pas de compte, pas de publicité, pas de suivi, pas besoin d’Internet. Verroui
 **Description:**
 
 ```
-Spartopf es tu libro de gastos para cada mes: gratis, sin anuncios, sin suscripción y sin registro. Todo se queda en tu teléfono.
+Haushaltsbuch Einfach es tu libro de gastos para cada mes: gratis, sin anuncios, sin suscripción y sin registro. Todo se queda en tu teléfono.
 
 DOS CIFRAS QUE CUENTAN
 Arriba ves lo que hay ahora en tu cuenta y lo que quedará a fin de mes cuando todo lo pendiente esté pagado.
@@ -88,7 +88,7 @@ Sin cuenta, sin anuncios, sin rastreo, sin necesidad de internet. Bloqueo biomé
 
 | Field | Text |
 |---|---|
-| Name (29) | `Spartopf – Bilancio familiare` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (29) | `Budget privato, senza account` |
 | Short description (75) | `Bilancio di casa senza account né pubblicità. Tutto resta sul tuo telefono.` |
 | Keywords (89) | `spese,soldi,finanze,risparmio,entrate,bollette,stipendio,affitto,casa,mensile,abbonamenti` |
@@ -98,7 +98,7 @@ Sin cuenta, sin anuncios, sin rastreo, sin necesidad de internet. Bloqueo biomé
 **Description:**
 
 ```
-Spartopf è il tuo bilancio di casa, mese per mese: gratis, senza pubblicità, senza abbonamento e senza registrazione. Tutto resta sul tuo telefono.
+Haushaltsbuch Einfach è il tuo bilancio di casa, mese per mese: gratis, senza pubblicità, senza abbonamento e senza registrazione. Tutto resta sul tuo telefono.
 
 DUE NUMERI CHE CONTANO
 In alto vedi quanto c’è ora sul conto e quanto resterà a fine mese, quando tutto ciò che è in sospeso sarà pagato.
@@ -122,7 +122,7 @@ Nessun account, nessuna pubblicità, nessun tracciamento, internet non serve. Bl
 
 | Field | Text |
 |---|---|
-| Name (29) | `Spartopf – Orçamento familiar` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (28) | `Orçamento privado, sem conta` |
 | Short description (67) | `Livro de contas sem conta nem anúncios. Tudo fica no teu telemóvel.` |
 | Keywords (89) | `despesas,dinheiro,finanças,poupança,receitas,contas,salário,renda,casa,mensal,subscrições` |
@@ -132,7 +132,7 @@ Nessun account, nessuna pubblicità, nessun tracciamento, internet non serve. Bl
 **Description:**
 
 ```
-O Spartopf é o teu livro de contas para cada mês – grátis, sem anúncios, sem subscrição e sem registo. Tudo fica no teu telemóvel.
+O Haushaltsbuch Einfach é o teu livro de contas para cada mês – grátis, sem anúncios, sem subscrição e sem registo. Tudo fica no teu telemóvel.
 
 DOIS NÚMEROS QUE CONTAM
 No topo vês o que está agora na conta e o que vai sobrar no fim do mês, quando tudo o que está pendente estiver pago.
@@ -156,7 +156,7 @@ Sem conta, sem anúncios, sem rastreio, sem precisar de internet. Bloqueio biom�
 
 | Field | Text |
 |---|---|
-| Name (25) | `Spartopf – Huishoudboekje` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (26) | `Privébudget zonder account` |
 | Short description (77) | `Huishoudboekje zonder account en zonder reclame. Alles blijft op je telefoon.` |
 | Keywords (87) | `uitgaven,geld,financiën,sparen,inkomsten,rekeningen,salaris,huur,huishouden,maandelijks` |
@@ -166,7 +166,7 @@ Sem conta, sem anúncios, sem rastreio, sem precisar de internet. Bloqueio biom�
 **Description:**
 
 ```
-Spartopf is je huishoudboekje voor elke maand – gratis, zonder reclame, zonder abonnement en zonder aanmelden. Alles blijft op je telefoon.
+Haushaltsbuch Einfach is je huishoudboekje voor elke maand – gratis, zonder reclame, zonder abonnement en zonder aanmelden. Alles blijft op je telefoon.
 
 TWEE GETALLEN DIE TELLEN
 Bovenaan zie je wat er nu op je rekening staat en wat er aan het eind van de maand overblijft als alles wat open staat betaald is.
@@ -190,7 +190,7 @@ Geen account, geen reclame, geen tracking, geen internet nodig. Biometrisch slot
 
 | Field | Text |
 |---|---|
-| Name (25) | `Spartopf – Hushållsbudget` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (24) | `Privat budget utan konto` |
 | Short description (68) | `Hushållsbok utan konto och utan reklam. Allt stannar på din telefon.` |
 | Keywords (90) | `utgifter,pengar,ekonomi,sparande,inkomster,räkningar,lön,hyra,hushåll,månadsvis,abonnemang` |
@@ -200,7 +200,7 @@ Geen account, geen reclame, geen tracking, geen internet nodig. Biometrisch slot
 **Description:**
 
 ```
-Spartopf är din hushållsbok för varje månad – gratis, utan reklam, utan prenumeration och utan registrering. Allt stannar på din telefon.
+Haushaltsbuch Einfach är din hushållsbok för varje månad – gratis, utan reklam, utan prenumeration och utan registrering. Allt stannar på din telefon.
 
 TVÅ SIFFROR SOM RÄKNAS
 Överst ser du vad som finns på kontot nu och vad som blir kvar vid månadens slut när allt som väntar är betalt.
@@ -224,7 +224,7 @@ Inget konto, ingen reklam, ingen spårning, inget internet behövs. Biometriskt 
 
 | Field | Text |
 |---|---|
-| Name (26) | `Spartopf – Husholdningsbok` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (26) | `Privat budsjett uten konto` |
 | Short description (70) | `Husholdningsbok uten konto og uten reklame. Alt blir på telefonen din.` |
 | Keywords (85) | `utgifter,penger,økonomi,sparing,inntekter,regninger,lønn,husleie,husholdning,månedlig` |
@@ -234,7 +234,7 @@ Inget konto, ingen reklam, ingen spårning, inget internet behövs. Biometriskt 
 **Description:**
 
 ```
-Spartopf er husholdningsboken din for hver måned – gratis, uten reklame, uten abonnement og uten registrering. Alt blir på telefonen din.
+Haushaltsbuch Einfach er husholdningsboken din for hver måned – gratis, uten reklame, uten abonnement og uten registrering. Alt blir på telefonen din.
 
 TO TALL SOM TELLER
 Øverst ser du hva som står på kontoen nå, og hva som er igjen ved slutten av måneden når alt som venter er betalt.
@@ -258,7 +258,7 @@ Ingen konto, ingen reklame, ingen sporing, ikke behov for internett. Biometrisk 
 
 | Field | Text |
 |---|---|
-| Name (29) | `Spartopf – Husholdningsbudget` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (24) | `Privat budget uden konto` |
 | Short description (71) | `Husholdningsbog uden konto og uden reklamer. Alt bliver på din telefon.` |
 | Keywords (85) | `udgifter,penge,økonomi,opsparing,indtægter,regninger,løn,husleje,husholdning,månedlig` |
@@ -268,7 +268,7 @@ Ingen konto, ingen reklame, ingen sporing, ikke behov for internett. Biometrisk 
 **Description:**
 
 ```
-Spartopf er din husholdningsbog for hver måned – gratis, uden reklamer, uden abonnement og uden tilmelding. Alt bliver på din telefon.
+Haushaltsbuch Einfach er din husholdningsbog for hver måned – gratis, uden reklamer, uden abonnement og uden tilmelding. Alt bliver på din telefon.
 
 TO TAL, DER TÆLLER
 Øverst ser du, hvad der står på kontoen nu, og hvad der er tilbage ved månedens slutning, når alt, der afventer, er betalt.
@@ -292,7 +292,7 @@ Ingen konto, ingen reklamer, ingen sporing, intet internet nødvendigt. Biometri
 
 | Field | Text |
 |---|---|
-| Name (24) | `Spartopf – Budżet domowy` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (25) | `Prywatny budżet bez konta` |
 | Short description (74) | `Budżet domowy bez konta i bez reklam. Wszystko zostaje na twoim telefonie.` |
 | Keywords (86) | `wydatki,pieniądze,finanse,oszczędności,przychody,rachunki,pensja,czynsz,dom,miesięczny` |
@@ -302,7 +302,7 @@ Ingen konto, ingen reklamer, ingen sporing, intet internet nødvendigt. Biometri
 **Description:**
 
 ```
-Spartopf to twój budżet domowy na każdy miesiąc – za darmo, bez reklam, bez abonamentu i bez rejestracji. Wszystko zostaje na twoim telefonie.
+Haushaltsbuch Einfach to twój budżet domowy na każdy miesiąc – za darmo, bez reklam, bez abonamentu i bez rejestracji. Wszystko zostaje na twoim telefonie.
 
 DWIE LICZBY, KTÓRE SIĘ LICZĄ
 Na górze widzisz, ile jest teraz na koncie i ile zostanie na koniec miesiąca, gdy wszystko, co oczekuje, będzie zapłacone.
@@ -326,7 +326,7 @@ Bez konta, bez reklam, bez śledzenia, bez internetu. Blokada biometryczna i kop
 
 | Field | Text |
 |---|---|
-| Name (26) | `Spartopf – Domácí rozpočet` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (26) | `Soukromý rozpočet bez účtu` |
 | Short description (71) | `Domácí rozpočet bez účtu a bez reklam. Všechno zůstává v tvém telefonu.` |
 | Keywords (84) | `výdaje,peníze,finance,spoření,příjmy,účty,výplata,nájem,domácnost,měsíční,předplatné` |
@@ -336,7 +336,7 @@ Bez konta, bez reklam, bez śledzenia, bez internetu. Blokada biometryczna i kop
 **Description:**
 
 ```
-Spartopf je tvůj domácí rozpočet na každý měsíc – zdarma, bez reklam, bez předplatného a bez registrace. Všechno zůstává v tvém telefonu.
+Haushaltsbuch Einfach je tvůj domácí rozpočet na každý měsíc – zdarma, bez reklam, bez předplatného a bez registrace. Všechno zůstává v tvém telefonu.
 
 DVĚ ČÍSLA, KTERÁ SE POČÍTAJÍ
 Nahoře vidíš, kolik je teď na účtu a kolik zbyde na konci měsíce, až bude zaplaceno všechno, co čeká.
@@ -360,7 +360,7 @@ SOUKROMÉ A BEZPEČNÉ
 
 | Field | Text |
 |---|---|
-| Name (23) | `Spartopf – Aile Bütçesi` |
+| Name (21) | `Haushaltsbuch Einfach` |
 | Subtitle (28) | `Hesapsız, özel bütçe defteri` |
 | Short description (65) | `Hesap ve reklam olmadan bütçe defteri. Her şey telefonunda kalır.` |
 | Keywords (74) | `gider,para,finans,birikim,gelir,fatura,maaş,kira,ev,aylık,abonelik,harcama` |
@@ -370,7 +370,7 @@ SOUKROMÉ A BEZPEČNÉ
 **Description:**
 
 ```
-Spartopf her ay için bütçe defterin – ücretsiz, reklamsız, aboneliksiz ve kayıt gerektirmeden. Her şey telefonunda kalır.
+Haushaltsbuch Einfach her ay için bütçe defterin – ücretsiz, reklamsız, aboneliksiz ve kayıt gerektirmeden. Her şey telefonunda kalır.
 
 ÖNEMLİ İKİ RAKAM
 En üstte hesabında şu an ne olduğunu ve bekleyen her şey ödendiğinde ay sonunda ne kalacağını görürsün.

@@ -68,7 +68,7 @@ interface Props {
   onReminders: () => void;
   /** Plan 19, iPhone only: the guide to the Shortcuts automations. */
   onCapture?: () => void;
-  /** Über Spartopf (plan 15): the App Store's review page — iPhone app only; Mail with the versions; the privacy policy. */
+  /** Über Haushaltsbuch Einfach (plan 15): the App Store's review page — iPhone app only; Mail with the versions; the privacy policy. */
   onRate?: () => void;
   onFeedback: () => void;
   onPrivacy: () => void;
@@ -195,7 +195,7 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
  *      (the guide sends people here by this name: keep those four in it);
  *   6. *Sicherheit und Mitteilungen* — hiding amounts first (every device
  *      has it), then the lock, reminders and the phone's backup (apps only);
- *   7. *Ausprobieren*, *Über Spartopf*, and last, on its own, resetting.
+ *   7. *Ausprobieren*, *Über Haushaltsbuch Einfach*, and last, on its own, resetting.
  *
  * Every icon tile in a group has its own colour, so a row is found by it. A
  * later feature joins its group; a new group needs a reason.

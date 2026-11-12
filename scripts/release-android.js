@@ -31,7 +31,7 @@
 //                               A service account belongs to the developer
 //                               account, not to one app: the one that ships
 //                               pizza-driver-log works here once it has been
-//                               given Spartopf in the Play Console.
+//                               given Haushaltsbuch Einfach in the Play Console.
 //
 // Release notes: release-notes/<version>/<language>.txt, else
 // release-notes/default/ — only the languages the store listing has are sent.
@@ -344,7 +344,7 @@ export async function prepareAndroid(args, { dryRun }) {
       `  ${error.message}`,
       '',
       `Check in the Play Console that the app ${PACKAGE} exists with a first release uploaded by hand, and that`,
-      `${account.client_email} is listed under Users and permissions with "Release apps to testing tracks" for Spartopf.`,
+      `${account.client_email} is listed under Users and permissions with "Release apps to testing tracks" for Haushaltsbuch Einfach.`,
       'To only build the bundle: npm run release:android -- --no-upload',
     );
   }
@@ -440,11 +440,11 @@ export async function shipAndroid(ctx, forVersion, buildNumber) {
 
   const withNotes = sent.notes.length ? `, release notes in ${sent.notes.join(', ')}` : '';
   if (sent.status === 'draft') {
-    console.log(`\nGoogle Play: Spartopf ${version} (version code ${sent.versionCode}) is uploaded to the ${track} track as a draft${withNotes}.`);
+    console.log(`\nGoogle Play: Haushaltsbuch Einfach ${version} (version code ${sent.versionCode}) is uploaded to the ${track} track as a draft${withNotes}.`);
     console.log('Google Play only takes drafts from the API while the app has never been published:');
     console.log('open the Play Console, go to the track and roll the release out. Once the app is live, this command does that too.');
   } else {
-    console.log(`\nGoogle Play: Spartopf ${version} (version code ${sent.versionCode}) is released on the ${track} track${withNotes}.`);
+    console.log(`\nGoogle Play: Haushaltsbuch Einfach ${version} (version code ${sent.versionCode}) is released on the ${track} track${withNotes}.`);
   }
   return { uploaded: true, ...sent };
 }

@@ -1,6 +1,6 @@
 /* Permission prompts. The English base text is in Info.plist; keep both in sync. */
 
-"NSCameraUsageDescription" = "يقرأ Spartopf حركات الحساب من صورة تلتقطها. تُقرأ الصورة على هذا الجهاز ولا تغادره أبدًا.";
-"NSPhotoLibraryUsageDescription" = "يقرأ Spartopf حركات الحساب من لقطة شاشة تختارها. تُقرأ على هذا الجهاز ولا تغادره أبدًا.";
-"NSPhotoLibraryAddUsageDescription" = "يحفظ Spartopf صورة مراجعة العام في صورك عندما تختار «حفظ الصورة».";
-"NSFaceIDUsageDescription" = "يستخدم Spartopf تقنية Face ID لفتح دفتر ميزانيتك، كي لا يفتحه أحد سواك.";
+"NSCameraUsageDescription" = "يقرأ Haushaltsbuch Einfach حركات الحساب من صورة تلتقطها. تُقرأ الصورة على هذا الجهاز ولا تغادره أبدًا.";
+"NSPhotoLibraryUsageDescription" = "يقرأ Haushaltsbuch Einfach حركات الحساب من لقطة شاشة تختارها. تُقرأ على هذا الجهاز ولا تغادره أبدًا.";
+"NSPhotoLibraryAddUsageDescription" = "يحفظ Haushaltsbuch Einfach صورة مراجعة العام في صورك عندما تختار «حفظ الصورة».";
+"NSFaceIDUsageDescription" = "يستخدم Haushaltsbuch Einfach تقنية Face ID لفتح دفتر ميزانيتك، كي لا يفتحه أحد سواك.";

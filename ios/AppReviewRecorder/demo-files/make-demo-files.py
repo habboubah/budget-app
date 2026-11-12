@@ -1,4 +1,4 @@
-"""Demo files for the Spartopf App Review screen recording.
+"""Demo files for the Haushaltsbuch Einfach App Review screen recording.
 
 Regenerate for another month: change the dates below, then
   python3 make-demo-files.py .   (needs openpyxl and Pillow)

@@ -1,4 +1,4 @@
-# Spartopf — how it can earn money
+# Haushaltsbuch Einfach — how it can earn money
 
 Research and plan, checked on **12 November 2026**. Research only: no code and no store setting was changed.
 
@@ -14,7 +14,7 @@ Research and plan, checked on **12 November 2026**. Research only: no code and n
 
 **Contents**
 1. [The short answer](#1-the-short-answer)
-2. [Where Spartopf stands today](#2-where-spartopf-stands-today)
+2. [Where Haushaltsbuch Einfach stands today](#2-where-haushaltsbuch-einfach-stands-today)
 3. [What the stores allow: free first, paid later](#3-what-the-stores-allow-free-first-paid-later)
 4. [What the competitors charge, and what works](#4-what-the-competitors-charge-and-what-works)
 5. [The options, compared](#5-the-options-compared)
@@ -34,11 +34,11 @@ Research and plan, checked on **12 November 2026**. Research only: no code and n
 ## 1. The short answer
 
 1. **Keep the download free on both stores, for good.** Google Play never lets a free app become a paid one. Apple does, but there is no reason to. The money comes from in-app purchases added later, which both stores allow at any time.
-2. **Sell one thing: "Spartopf Plus", bought once.** Suggested price 14.99 €, and 9.99 € in the launch month. It unlocks *new* features. Everything in the app today stays free. No ads, and no subscription for the budget book.
+2. **Sell one thing: "Haushaltsbuch Einfach Plus", bought once.** Suggested price 14.99 €, and 9.99 € in the launch month. It unlocks *new* features. Everything in the app today stays free. No ads, and no subscription for the budget book.
 3. **Why this model.** German budget books that are filled in by hand sell as one-time purchases (MoneyControl, Money Manager, Cashew's lifetime option). It keeps the listing's promise "ohne Werbung, ohne Abo" true. It needs no server. And reviewers in this category punish forced subscriptions.
 4. **Switch it on by numbers, not by date:** 3,000 downloads in total, 300 new downloads a month, 50 ratings averaging 4.5 or better, and two Plus features that users asked for. A realistic target is summer 2027.
 5. **A subscription only for a running service**, such as the bank connection (plan 36) or sharing a book between two phones. That is the only income that repeats. Decide once Plus has six months of numbers.
-6. **Will it make money?** Probably some, unlikely much. One 14.99 € sale pays out about 10.71 €. For 1,000 € a month Spartopf needs about 93 sales, which means roughly 2,300 to 4,700 downloads a month. The median new subscription app earns about $72 a month a year after launch, and 17.3 % reach $1,000 a month within two years.
+6. **Will it make money?** Probably some, unlikely much. One 14.99 € sale pays out about 10.71 €. For 1,000 € a month Haushaltsbuch Einfach needs about 93 sales, which means roughly 2,300 to 4,700 downloads a month. The median new subscription app earns about $72 a month a year after launch, and 17.3 % reach $1,000 a month within two years.
 7. **Is more time worth it?** More *features*: no, not now. The app already offers about as much as the paid manual books, and has no users. Time on shipping and on being found: yes, up to the checkpoint in [§8](#the-checkpoint). Keeping the app alive costs about 100 € a year, which ten Plus sales cover.
 8. **The most urgent thing is the launch date.** Finance apps are installed most in the first quarter of the year. Be live before 1 January 2027.
 9. **Attention comes from** store search, ratings, German comparison articles and app blogs, the privacy angle, and Arabic. Paid ads cost more per download than a download earns.
@@ -46,7 +46,7 @@ Research and plan, checked on **12 November 2026**. Research only: no code and n
 
 ---
 
-## 2. Where Spartopf stands today
+## 2. Where Haushaltsbuch Einfach stands today
 
 | | |
 |---|---|
@@ -58,7 +58,7 @@ Research and plan, checked on **12 November 2026**. Research only: no code and n
 | Numbers you can see | Only what App Store Connect and the Play Console show. The app has no analytics, on purpose |
 | Languages | 14. German, English and Arabic are the main ones; the other eleven are machine-drafted and wait for a native reader |
 
-**What Spartopf has to sell** (from [COMPETITOR_ANALYSIS.md §5](COMPETITOR_ANALYSIS.md#5-where-spartopf-is-already-strong)):
+**What Haushaltsbuch Einfach has to sell** (from [COMPETITOR_ANALYSIS.md §5](COMPETITOR_ANALYSIS.md#5-where-haushaltsbuch-einfach-is-already-strong)):
 - Privacy by architecture. Among the 13 competitors only Cashew and Bluecoins (iOS) carry Apple's "Data Not Collected" label.
 - Two balances and paid/open, bank transactions without a bank login, Excel import.
 - Arabic with right-to-left layout, which none of the German leaders has.
@@ -136,7 +136,7 @@ Prices: the apps' App Store pages (MoneyControl and Cashew read on 12 Nov 2026),
 
 ## 5. The options, compared
 
-| Option | How it would work | For Spartopf | Verdict |
+| Option | How it would work | For Haushaltsbuch Einfach | Verdict |
 |---|---|---|---|
 | **Paid download** | A price on the store page | Nobody can try the app first, and an unknown app without ratings doesn't sell. On Google Play the choice can't be made later anyway | No |
 | **A second, paid "Pro" app** | A free and a paid app side by side | Splits ratings and downloads over two listings and doubles the release work. Apple's review treats near-identical apps as spam (Guideline 4.3) | No |
@@ -144,7 +144,7 @@ Prices: the apps' App Store pages (MoneyControl and Cashew read on 12 Nov 2026),
 | **Limit the free version** | Free up to a limit (MoneyControl: 20 entries a month), pay to lift it | Probably the strongest converter for a manual book. But it takes away what is free today | No: it breaks "keep the current state free" |
 | **Subscription for the whole book** | A monthly or yearly fee | In RevenueCat's data, apps that put everything behind a paywall turn 10.7 % of downloads into payers; freemium apps 2.1 %. Against it here: there is no running service to justify it, the listing says "ohne Abo", reviewers of manual books object to subscriptions, and only about 28 % of yearly subscribers are still there after a year | Not for the book |
 | **One-time "Plus" for new features** | A free app; one purchase unlocks extras for good | Matches how manual books sell in Germany. Keeps "ohne Werbung, ohne Abo" true. No server. The weakness: income only grows with new downloads | **Yes: the core** |
-| **Tip jar** | "Spartopf unterstützen": 1.99 €, 4.99 € or 9.99 € | Locks nothing and brings small money. It already makes you a trader ([§12](#12-before-the-first-euro-germany)) | Optional first step |
+| **Tip jar** | "Haushaltsbuch Einfach unterstützen": 1.99 €, 4.99 € or 9.99 € | Locks nothing and brings small money. It already makes you a trader ([§12](#12-before-the-first-euro-germany)) | Optional first step |
 | **Subscription for a service** | A fee for the bank connection, or for sharing a book between phones | The only income that repeats. Big to build and to keep running, because banks change | Later, with data |
 | **Partner offers** | Commission on products recommended in the app, as Finanzguru does with insurance | Needs many users, and puts the app's neutrality and its privacy promise in question | No |
 
@@ -152,13 +152,13 @@ Prices: the apps' App Store pages (MoneyControl and Cashew read on 12 Nov 2026),
 
 ## 6. The recommended model
 
-**Free app + "Spartopf Plus" bought once + later, perhaps, a subscription for one service.**
+**Free app + "Haushaltsbuch Einfach Plus" bought once + later, perhaps, a subscription for one service.**
 
 ### 6.1 What stays free
 
 Everything in the first public version. Say so in the app and in the listing: *"Was heute kostenlos ist, bleibt kostenlos."*
 
-Nobody has installed Spartopf yet, so strictly speaking "what is free today" is still open: a feature built last week could be held back for Plus before the launch. I advise against it. You asked to keep the current state free, the listing already describes these features as free, and a generous free app is what earns the first ratings. But from the launch on:
+Nobody has installed Haushaltsbuch Einfach yet, so strictly speaking "what is free today" is still open: a feature built last week could be held back for Plus before the launch. I advise against it. You asked to keep the current state free, the listing already describes these features as free, and a generous free app is what earns the first ratings. But from the launch on:
 
 - **free feature work stops**, apart from fixes and small things real users ask for;
 - **every larger new feature is planned as a Plus feature from the start.**
@@ -169,7 +169,7 @@ Only new things. The candidates, with the evidence that people pay for them:
 
 | Candidate | Who sells it | Size | Note |
 |---|---|---|---|
-| **Share the book** with a partner or a second phone, through the user's own iCloud or Google Drive, without a Spartopf server | Monefy (Premium), Money Manager (2.49 € a month), YNAB | L | The strongest reason to pay in a household book. It reverses "no sync" in [plans/README.md](plans/README.md) and changes the privacy wording: the data then also lies in the user's own cloud |
+| **Share the book** with a partner or a second phone, through the user's own iCloud or Google Drive, without a Haushaltsbuch Einfach server | Monefy (Premium), Money Manager (2.49 € a month), YNAB | L | The strongest reason to pay in a household book. It reverses "no sync" in [plans/README.md](plans/README.md) and changes the privacy wording: the data then also lies in the user's own cloud |
 | **Several books:** private, a side business, a club, a child's pocket money | Common in the paid tiers of budget apps | M | No conflict with any rule |
 | **Reports for power users:** any date range, this year against last year, a tax-year export | MoneyControl sells PDF reports as a 2.49 € add-on | M | Today's reports stay free |
 | **Look:** more themes, more accent colours, other app icons | A common cosmetic extra | S | No risk, but too weak to carry Plus alone |
@@ -198,7 +198,7 @@ A first version to aim at: *sharing the book* as the reason to buy, with *severa
 
 ### 6.5 A tip jar, if you want a first step
 
-*Optionen › Spartopf unterstützen* with three one-time amounts and a thank-you. Apple's guidelines allow in-app purchases as tips for the developer.
+*Optionen › Haushaltsbuch Einfach unterstützen* with three one-time amounts and a thank-you. Apple's guidelines allow in-app purchases as tips for the developer.
 
 - **For it:** it tests the whole chain (agreements, tax forms, purchase code, payouts) with nothing locked and nobody annoyed.
 - **Against it:** little money, the store pages then say "In-App Purchases", and it starts the trader duties in [§12](#12-before-the-first-euro-germany). So it belongs in phase 2 of the timeline, not in the launch.
@@ -273,7 +273,7 @@ Proceeds per month from Plus at 14.99 € (10.71 € per sale):
 
 **Will it make money?** The likely result a year after the launch lies between nothing and a few hundred euros a month. A living from one-time sales alone is unlikely: it needs MoneyControl's download numbers, or a service that people subscribe to.
 
-**For Spartopf:**
+**For Haushaltsbuch Einfach:**
 - Costs are close to zero, so it never has to earn anything to survive.
 - The position is clear and rare: no account, no ads, no subscription, nothing leaves the phone.
 - Arabic, where the German leaders don't compete.
@@ -286,7 +286,7 @@ Proceeds per month from Plus at 14.99 € (10.71 € per sale):
 
 **Is more time worth it?** It depends on which time:
 
-1. **Features: no.** Not until real users ask. Spartopf already offers about as much as the paid manual books.
+1. **Features: no.** Not until real users ask. Haushaltsbuch Einfach already offers about as much as the paid manual books.
 2. **Launch and being found: yes.** Two to four hours a week until the checkpoint. This is the one part where nobody knows the answer yet, and it is cheap to find out.
 3. **Purchase code and Plus features: later.** Only when the gates in [§7](#7-when-to-start-charging) are within reach.
 
@@ -311,7 +311,7 @@ Twelve months after the launch (target: December 2027), read the numbers once an
 | **0 — Ship** | now → 31 Dec 2026 | Answer Apple's 2.1 questions and release. First Android run, Play listing, the closed test if the account needs one. Price: Free, all countries. Privacy policy published. A one-page website. Plan 37's test with three strangers. **No new features** | iPhone app live by 20 December. Android by the end of January |
 | **1 — First 1,000** | Jan → Mar 2027 | Launch posts and pitches ([§10](#10-how-to-get-attention)). Featuring nomination. Every review and mail answered within two days. Releases with fixes only. Count what people ask for | 1,000 downloads · 25 ratings at 4.5 or better · 20 messages from users |
 | **2 — Prepare** | Apr → Jun 2027 | Paperwork ([§12](#12-before-the-first-euro-germany)). Purchase code with "restore", switched off. The first two Plus features. A second round on keywords and screenshots. Turkish read by a native speaker. Optional: the tip jar | 3,000 downloads · 300 a month · 50 ratings |
-| **3 — Spartopf Plus** | Jul → Sep 2027, or whenever the gates are met | Version 2.0 with Plus. 9.99 € for four weeks, then 14.99 €. Early users keep everything. A second press round: "einmal kaufen statt Abo" | 2 % of new downloads buy · 100 € a month by the end of September · rating still 4.5 or better |
+| **3 — Haushaltsbuch Einfach Plus** | Jul → Sep 2027, or whenever the gates are met | Version 2.0 with Plus. 9.99 € for four weeks, then 14.99 €. Early users keep everything. A second press round: "einmal kaufen statt Abo" | 2 % of new downloads buy · 100 € a month by the end of September · rating still 4.5 or better |
 | **4 — Checkpoint** | Oct → Dec 2027 | Read the numbers against [the checkpoint](#the-checkpoint) | A decision, written into this file |
 
 If the gates are not met in summer 2027, Plus waits and the work of phase 1 goes on. The checkpoint in December 2027 stays where it is.
@@ -325,17 +325,17 @@ If the gates are not met in summer 2027, Plus waits and the work of phase 1 goes
 Ordered by what they bring for the effort. All free, except the last.
 
 1. **Store search.** Most people find a budget book by typing "Haushaltsbuch" into the store. See [§11](#11-the-store-listings).
-2. **Ratings.** The rating prompt and *Spartopf bewerten* exist (plan 15). Ask the first testers in person. Reply to every review.
+2. **Ratings.** The rating prompt and *Haushaltsbuch Einfach bewerten* exist (plan 15). Ask the first testers in person. Reply to every review.
 3. **The January wave.** Finance apps see more installs in the first quarter than in any other, driven by New Year's resolutions. Be live, show "2027" in the screenshots, and run an in-app event such as "Haushaltsbuch 2027 starten".
 4. **Comparison articles.** They sit at the top of Google for "Haushaltsbuch App": Finanztip (table updated October 2026, with a column "Konto erforderlich"), finanzwissen.de, mystipendium.de, Handelsblatt, WirtschaftsWoche. Stiftung Warentest tested these apps in Finanztest 11/2023. Send each editor three sentences, the store links and a press kit: icon, five screenshots, one page of facts.
 5. **App and tech blogs.** Candidates: iphone-ticker.de, appgefahren.de, Caschys Blog, mobiFlip, GIGA, SmartDroid. The story: one developer, free, no tracking, no subscription.
 6. **Privacy sites.** Candidates: mobilsicher.de, the Kuketz blog and its forum. Have the Android app scanned by Exodus Privacy and link the report. A finance app with no trackers is rare.
 7. **Communities.** r/Finanzen, the Finanzfluss and Finanztip forums, mydealz for free apps; in English r/iosapps, r/androidapps, Product Hunt, and "Show HN" on Hacker News. Read each community's rules on self-promotion first. Post as the developer, ask for feedback, answer every comment.
 8. **Arabic.** Among the 13 competitors only Wallet, Cashew and Bluecoins offer Arabic. The Arabic listing exists, and you can speak to this audience yourself: Arabic keywords, Arabic finance groups and channels, short videos. Turkish follows once a native speaker has read it.
-9. **A website.** Today there are only the privacy pages. Make one page per language: what the app does, screenshots, store buttons, the Impressum. Host the web build next to it as "Im Browser ausprobieren". Then write a few pages people search for: an Excel Haushaltsbuch template that Spartopf imports, "Haushaltsbuch ohne Anmeldung", "50/30/20-Regel".
+9. **A website.** Today there are only the privacy pages. Make one page per language: what the app does, screenshots, store buttons, the Impressum. Host the web build next to it as "Im Browser ausprobieren". Then write a few pages people search for: an Excel Haushaltsbuch template that Haushaltsbuch Einfach imports, "Haushaltsbuch ohne Anmeldung", "50/30/20-Regel".
 10. **Short videos.** 20 to 40 seconds of screen: the two balances, the photo import, the Excel import. The App Review recorder (`ios/AppReviewRecorder/`) can film such scenes by itself. In German and Arabic, on TikTok, Reels and Shorts.
 11. **Apple's editors.** App Store Connect › Featuring › Nominations. Angles: the New Year, Data Privacy Day on 28 January, accessibility and right-to-left support.
-12. **Inside the app.** Put the app's name in small print on the year review picture, so every share is a small advert. Add a "Spartopf empfehlen" row that shares the store link.
+12. **Inside the app.** Put the app's name in small print on the year review picture, so every share is a small advert. Add a "Haushaltsbuch Einfach empfehlen" row that shares the store link.
 13. **Paid ads: not now.** On Apple's search ads a download in Germany costs about $1.34 on average over all categories (another report gives a median of $2.14), and finance is among the dearest categories. With Plus at 2 %, a download earns about 0.21 €. Ads would lose about a euro per download, or more. The one use: 30–50 € once, to see which search words bring people.
 
 ---
@@ -351,7 +351,7 @@ Every listing text is in [STORE_LISTING.md](STORE_LISTING.md). This section only
 | Price | **Free**, and it stays Free | **Free**, and it has to stay Free |
 | Countries | All | All |
 | In-app products at launch | None | None |
-| In-app products later | `Spartopf Plus` as a non-consumable with Family Sharing; tips as consumables | The same, as one-time products |
+| In-app products later | `Haushaltsbuch Einfach Plus` as a non-consumable with Family Sharing; tips as consumables | The same, as one-time products |
 | Category | Finance; secondary Productivity | Finance |
 
 ### What I would change in the texts now
@@ -366,7 +366,7 @@ Every listing text is in [STORE_LISTING.md](STORE_LISTING.md). This section only
 
 ### What changes on the day Plus ships
 
-- **The promise.** "Kostenlos, ohne Werbung und ohne Abo" stays true. Add "Spartopf Plus: einmal kaufen, für immer." From then on never write "keine In-App-Käufe".
+- **The promise.** "Kostenlos, ohne Werbung und ohne Abo" stays true. Add "Haushaltsbuch Einfach Plus: einmal kaufen, für immer." From then on never write "keine In-App-Käufe".
 - **[STORE_LISTING.md](STORE_LISTING.md) §1:** the price row ("no in-app purchases").
 - **The Play description** says "keine Google-Dienste". Purchases run through Google Play's billing library, so that line has to go or be reworded.
 - **App Privacy and Data safety.** If the app only asks the store on the device whether Plus was bought, and sends nothing anywhere, "no data collected" should still hold. Read each form's own definitions again when you fill it in.
@@ -387,7 +387,7 @@ Not legal or tax advice. This is the list to take to a Steuerberater, and what t
 6. **Your employer.** Check the contract: side work usually has to be reported, and some contracts claim software written outside working hours.
 7. **Benefits and insurance.** Side income can change income-tested benefits such as Elterngeld. Check before the first payout.
 8. **Impressum.** A business needs one on the website, and it should be reachable from the app. It should name the same address as the store page.
-9. **The name.** "Spartöpfe" is a feature of the Sparkasse app ([COMPETITOR_ANALYSIS.md](COMPETITOR_ANALYSIS.md), S5). Look up "Spartopf" in the DPMA and EUIPO trade mark registers before you earn money under the name. The DPMA does not check for older marks when it registers one, and I could not confirm either way.
+9. **The name.** "Spartöpfe" is a feature of the Sparkasse app ([COMPETITOR_ANALYSIS.md](COMPETITOR_ANALYSIS.md), S5). Look up "Haushaltsbuch Einfach" in the DPMA and EUIPO trade mark registers before you earn money under the name. The DPMA does not check for older marks when it registers one, and I could not confirm either way.
 10. **The fee programmes.** Enrol in Apple's Small Business Program. In the Play Console, check that the account is on the reduced fee tier.
 
 ---

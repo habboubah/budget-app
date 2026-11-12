@@ -3,7 +3,7 @@ import XCTest
 /// Records the App Review screen recording on a connected iPhone.
 ///
 /// Run it with `npm run record:app-review` (scripts/record-app-review.sh).
-/// It drives the Spartopf that is installed on the iPhone (the TestFlight
+/// It drives the Haushaltsbuch Einfach that is installed on the iPhone (the TestFlight
 /// build), starts the iOS screen recording from Control Center, plays
 /// scenes.json and stops the recording; the video lands in Photos.
 ///

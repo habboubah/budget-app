@@ -1,6 +1,6 @@
-# What Spartopf does
+# What Haushaltsbuch Einfach does
 
-Every feature of the app, by area. Spartopf runs on the iPhone, on Android and
+Every feature of the app, by area. Haushaltsbuch Einfach runs on the iPhone, on Android and
 in the browser; where a feature is only in one of them, it says so. Labels are
 the German ones (the app speaks 14 languages). How to build and release it is
 in the [README](../README.md); the money rules behind the numbers are in
@@ -67,7 +67,7 @@ server, no ads; everything stays on the device.
   are flagged with a link to them. "⋯" → *Wiederkehrende aus … holen* brings
   recurring entries from the month before into a month that missed them.
 - **Match the bank.** "⋯" → *Mit Bank abgleichen*: type what your bank shows,
-  and Spartopf books the difference as a "Kontoabgleich" entry (so you see
+  and Haushaltsbuch Einfach books the difference as a "Kontoabgleich" entry (so you see
   where it came from) or, if you prefer, moves the month's opening balance.
   Undoable; the balance card then notes "Abgeglichen am …".
 - **Month from payday.** *Optionen › Haushaltsbuch › Monat beginnt am*: the
@@ -184,9 +184,9 @@ when it is wanted:
   of its budget, or over it, says so in its confirmation ("Restaurants: 83 %
   des Budgets verbraucht") — once per mark, no amounts. Switch it off in
   *Kategorien und Budgets*.
-- **Siri and Shortcuts** (iPhone). "Ausgabe in Spartopf" — Siri asks how much
+- **Siri and Shortcuts** (iPhone). "Ausgabe in Haushaltsbuch Einfach" — Siri asks how much
   and what for, and the entry is booked (with an undo when the app opens).
-  "Was bleibt am Monatsende in Spartopf" and "Offene Rechnungen in Spartopf"
+  "Was bleibt am Monatsende in Haushaltsbuch Einfach" and "Offene Rechnungen in Haushaltsbuch Einfach"
   answer once the phone is unlocked, never while the app lock is on. All
   three are in the Shortcuts app and Spotlight too, for automations, in every
   language of the app.
@@ -215,7 +215,7 @@ when it is wanted:
 - **From other apps.** CSV exports from other budget apps (Finanzguru,
   Outbank, YNAB, Cashew and more) are recognised by their columns, and an
   unfamiliar file is mapped by its best guess.
-- **Import rules.** Correct an imported entry's category and Spartopf offers
+- **Import rules.** Correct an imported entry's category and Haushaltsbuch Einfach offers
   to remember it — *nur diesen*, *auch künftige „REWE"*, or *auch alle
   bisherigen*. Rules can also leave transfers out (*nicht übernehmen*).
   Manage them in *Optionen › Weitere Funktionen › Regeln*.
@@ -291,7 +291,7 @@ when it is wanted:
   Pflege, Sonstiges. The screen lists what is marked and paid by kind and
   year (a refund comes off, a recurring entry stays marked), with each kind's
   sum and the year's, and *Bericht teilen* makes the PDF for the tax return
-  or the adviser. Spartopf only collects; it says so, and gives no tax advice.
+  or the adviser. Haushaltsbuch Einfach only collects; it says so, and gives no tax advice.
 
 ## Statistik — how did it go?
 
@@ -397,7 +397,7 @@ when it is wanted:
   build is checked for any request to another address. Bank texts, receipts
   and QR codes are read on the phone.
 - **App lock**: Face ID, Touch ID or the passcode on the iPhone, fingerprint
-  or face on Android, when opening Spartopf. While it is on, Siri doesn't
+  or face on Android, when opening Haushaltsbuch Einfach. While it is on, Siri doesn't
   answer and Android allows no screenshots.
 - **Hide amounts** (*Beträge verbergen*): every amount shows as "•••• €" — for
   using the app in public. The eye beside *Kontostand jetzt* shows them for
@@ -444,7 +444,7 @@ amount). Under it two large cards: the **Anleitung**, and **Sichern und
 - **Darstellung** — language, light or dark, the colour, the currency.
 - **Sicherheit und Mitteilungen** — hide amounts, the lock, reminders, the
   phone's backup.
-- **Ausprobieren** (test data), **Über Spartopf** (rate, feedback, privacy),
+- **Ausprobieren** (test data), **Über Haushaltsbuch Einfach** (rate, feedback, privacy),
   and last, on its own, *App zurücksetzen*.
 
 Every row has an icon in its own colour within its group; counts (21
@@ -489,11 +489,11 @@ categories, 3 favourites) sit in a small pill at the row's end.
   in beside your own entries; *Testdaten entfernen* takes out only the test
   data. Both undoable. In German when the app is in German, in English
   otherwise.
-- **Über Spartopf**: rate the app in the App Store or on Google Play, send
+- **Über Haushaltsbuch Einfach**: rate the app in the App Store or on Google Play, send
   feedback by mail (with the app's and the system's version, nothing else),
   and the privacy policy. On the iPhone, now and then, right after something
   good — a month that saved money, a savings pot reached, a big import —
-  Spartopf asks iOS for Apple's own rating prompt (at most every 120 days,
+  Haushaltsbuch Einfach asks iOS for Apple's own rating prompt (at most every 120 days,
   never after trouble).
 
 ## Where it runs

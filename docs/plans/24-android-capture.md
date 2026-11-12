@@ -8,10 +8,10 @@
 
 ## What the user gets
 
-- **Bank notifications become entries.** With the user's permission, Spartopf reads notifications from the banking and payment apps they choose and books the payments, as plan 19 does on iOS.
+- **Bank notifications become entries.** With the user's permission, Haushaltsbuch Einfach reads notifications from the banking and payment apps they choose and books the payments, as plan 19 does on iOS.
 - **Widgets:** balances, open bills, favourite buttons.
 - **Quick Settings tile** and **app shortcuts** (long press on the icon): *Ausgabe* and *Einnahme*.
-- **Share to Spartopf:** screenshots and CSV files from any app.
+- **Share to Haushaltsbuch Einfach:** screenshots and CSV files from any app.
 
 ## Keep it simple
 
@@ -20,7 +20,7 @@ Nothing changes for people who don't use it. Notification access is a single scr
 ## Privacy and security
 
 - **Permission:** `NotificationListenerService` starts only after the user grants notification access in the system settings.
-- **Chosen apps only:** Spartopf ignores every app that isn't on the user's list.
+- **Chosen apps only:** Haushaltsbuch Einfach ignores every app that isn't on the user's list.
 - **On the phone:** texts are parsed on the device, and only the resulting entry is kept.
 - **Widgets:** same rule as on iOS, no amounts by default.
 

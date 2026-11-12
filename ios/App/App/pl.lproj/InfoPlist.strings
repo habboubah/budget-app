@@ -1,6 +1,6 @@
 /* Permission prompts. The English base text is in Info.plist; keep both in sync. */
 
-"NSCameraUsageDescription" = "Spartopf odczytuje transakcje bankowe ze zdjęcia, które robisz. Zdjęcie jest odczytywane na tym iPhonie i nigdy go nie opuszcza.";
-"NSPhotoLibraryUsageDescription" = "Spartopf odczytuje transakcje bankowe ze zrzutu ekranu, który wybierasz. Jest odczytywany na tym iPhonie i nigdy go nie opuszcza.";
-"NSPhotoLibraryAddUsageDescription" = "Spartopf zapisuje obraz podsumowania twojego roku w Zdjęciach, gdy wybierzesz Zachowaj obrazek.";
-"NSFaceIDUsageDescription" = "Spartopf używa Face ID do odblokowania twojego budżetu domowego, aby nikt poza tobą go nie otworzył.";
+"NSCameraUsageDescription" = "Haushaltsbuch Einfach odczytuje transakcje bankowe ze zdjęcia, które robisz. Zdjęcie jest odczytywane na tym iPhonie i nigdy go nie opuszcza.";
+"NSPhotoLibraryUsageDescription" = "Haushaltsbuch Einfach odczytuje transakcje bankowe ze zrzutu ekranu, który wybierasz. Jest odczytywany na tym iPhonie i nigdy go nie opuszcza.";
+"NSPhotoLibraryAddUsageDescription" = "Haushaltsbuch Einfach zapisuje obraz podsumowania twojego roku w Zdjęciach, gdy wybierzesz Zachowaj obrazek.";
+"NSFaceIDUsageDescription" = "Haushaltsbuch Einfach używa Face ID do odblokowania twojego budżetu domowego, aby nikt poza tobą go nie otworzył.";

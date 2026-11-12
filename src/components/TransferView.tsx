@@ -11,7 +11,7 @@ const NUDGE_AFTER_DAYS = 90;
 /**
  * Optionen → Sichern und übertragen (pushed): the whole household book as
  * one backup file and back, the old Excel sheet in, every entry out as CSV,
- * and the versions Spartopf keeps automatically on the device (plan 03).
+ * and the versions Haushaltsbuch Einfach keeps automatically on the device (plan 03).
  * Nothing leaves the device unless the user sends a file somewhere.
  * With the debug flag (storage.ts `debugTools`), a test of plan 02: wipe the
  * web view's data, then relaunch — everything must come back from the file;

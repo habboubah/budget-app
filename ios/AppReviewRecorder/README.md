@@ -2,13 +2,13 @@
 
 Records the screen recording App Review asks for (Guideline 2.1: "captured
 on a physical device … beginning with launching the app"): a UI test taps
-through every feature of the Spartopf installed on your iPhone while iOS
+through every feature of the Haushaltsbuch Einfach installed on your iPhone while iOS
 records the screen. About 15–20 minutes; the video ends up in Photos.
 
 | File | What it is |
 |---|---|
 | `scenes.json` | The recording, one step per line — the only file to change when the app changes |
-| `RecorderUITests/SceneRunner.swift` | Plays a scene file on the iPhone (knows nothing about Spartopf) |
+| `RecorderUITests/SceneRunner.swift` | Plays a scene file on the iPhone (knows nothing about Haushaltsbuch Einfach) |
 | `RecorderUITests/AppReviewRecordingTests.swift` | The test: preflight, scenes, stop the recording |
 | `RecorderHost/` | An empty app the UI test belongs to (a UI test needs one) |
 | `demo-files/` | Invented demo files the scenes import — no real finances |
@@ -22,7 +22,7 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
    the phone). Then Settings › Developer › **Enable UI Automation** on.
 2. **Control Center:** long-press an empty spot › Add a Control › **Screen
    Recording**. Microphone off.
-3. Put the **Spartopf icon on the first home screen page**.
+3. Put the **Haushaltsbuch Einfach icon on the first home screen page**.
 4. iPhone language **English or German** — the system buttons the recorder
    taps (Screen Recording, Choose File, Allow …) are listed in those two in
    `scenes.json` › `system`; add your language there to use another.
@@ -36,7 +36,7 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
 
 ## Every recording
 
-1. **Save your own data:** Spartopf › Settings › Back up and transfer ›
+1. **Save your own data:** Haushaltsbuch Einfach › Settings › Back up and transfer ›
    Export backup, to iCloud Drive.
 2. `npm run rehearse:app-review` — checks every step against the current
    code in 5 minutes. It also writes `demo-files/spartopf-demo-backup.spartopf`
