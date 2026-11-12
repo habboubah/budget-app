@@ -18,7 +18,7 @@ in this file are from the repository root. The other docs:
 | `docs/STORE_LISTING.md` | Every store listing field for Google Play and the App Store on one page (texts from `store/`) |
 | `docs/plans/` | The plans still open, in order (`README.md` has the rules) |
 | `docs/COMPETITOR_ANALYSIS.md` | The research the plans' F / U / S numbers refer to |
-| `docs/MONETIZATION.md` | A proposal for how Spartopf could earn money: the options, a one-time "Plus", when to start, timeline, marketing. Not decided: "no paid tier" in `docs/plans/README.md` stands until Ahmad says otherwise |
+| `docs/MONETIZATION.md` | A proposal for how Spartopf could earn money: the options, a one-time "Plus", when to start, timeline, marketing. Not decided: "no paid tier" in `docs/plans/README.md` stands until Ahmad says otherwise. `docs/MONETIZATION_ar.md` is the same text in Arabic; the English one is the reference, and a change there has to be made in both |
 
 ## What this app is
 Spartopf: a client-only React + Capacitor household budget book, modelled on
