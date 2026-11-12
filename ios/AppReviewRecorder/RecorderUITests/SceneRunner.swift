@@ -148,7 +148,7 @@ final class SceneRunner {
         guard app.wait(for: .runningForeground, timeout: 20) else {
             throw StepFailure("\(spec.bundleId) didn't start. Is it installed from TestFlight on this iPhone?")
         }
-        rest(1.2)
+        rest(0.6)
         // With reset on, every full run starts from a freshly reset app: what
         // shows on screen doesn't prove it's empty (a run that stopped in scene 2
         // left the balance and the salary behind the welcome card), and changed
@@ -164,15 +164,13 @@ final class SceneRunner {
             // Reset app lands on the month page with the setup card: check it there
             // (a relaunch here cost ~6 s; the recording starts with one anyway).
             guard spec.mustSeeFirst.isEmpty || (try? seen(spec.mustSeeFirst, timeout: 12)) != nil else {
-                throw StepFailure("The app was reset but the first setup question doesn't show. Nothing was recorded.")
+                throw StepFailure("After Reset app the first setup question doesn't show – the screenshot in the .xcresult shows where it stopped. Nothing was recorded.")
             }
             log("App reset – it's empty now.")
         } else if !spec.mustSeeFirst.isEmpty && (try? seen(spec.mustSeeFirst, timeout: 12)) == nil {
             throw StepFailure("The app isn't empty on this iPhone (the first setup question doesn't show). Run it without RESET=0 to reset it, or delete the app and install it again from TestFlight. Nothing was recorded.")
         }
-        app.terminate()
-        XCUIDevice.shared.press(.home)
-        rest(0.5)
+        app.terminate() // the recording starts with a cold launch from the home screen
     }
 
     func run(scenes range: ClosedRange<Int>) throws {
@@ -535,15 +533,25 @@ final class SceneRunner {
     func scrollIntoView(_ el: XCUIElement) throws {
         guard el.exists else { throw StepFailure("gone: \(el.label)") }
         var tries = 0
+        var before: CGRect? = nil
         while tries < 8 {
             let f = el.frame, area = visibleArea(), v = area.rect
+            // The last scroll didn't move it: fixed on screen (a tab, a header) or the
+            // page is at its end – more scrolling won't help.
+            if let before = before, before == f { return }
             let middle = CGPoint(x: f.midX, y: f.midY)
-            if v.contains(middle) && el.isHittable { return }
+            let onScreen = v.contains(middle)
             // On screen, away from the bars: close enough, whatever WebKit says about hittability.
             // (Above a keyboard the tab bar is covered, so only a small margin is needed there.)
             let below: CGFloat = area.keyboard ? 20 : 100
-            if v.contains(middle) && f.midY > v.minY + 90 && f.midY < v.maxY - below { return }
-            scroll(down: f.midY > v.midY, by: abs(f.midY - v.midY) / max(v.height, 1))
+            if onScreen && f.midY > v.minY + 90 && f.midY < v.maxY - below { return }
+            // Near an edge (a tab, a header button): only when nothing is over it. WebKit
+            // calls a row under the floating tab bar hittable, and the tap meant for
+            // Reset app went to the tab bar.
+            if onScreen && el.isHittable && coveringElement(el, at: middle) == nil { return }
+            before = f
+            let distance = abs(f.midY - v.midY) / max(v.height, 1)
+            if distance > 1.6 { fling(down: f.midY > v.midY) } else { scroll(down: f.midY > v.midY, by: distance) }
             tries += 1
         }
     }
@@ -562,6 +570,17 @@ final class SceneRunner {
         let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(end)))
         from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .default, thenHoldForDuration: 0.1)
         rest(0.35)
+    }
+
+    /// A quick flick for a target screens away: the page coasts most of the way in
+    /// one go instead of several slow drags of about 3 s each.
+    func fling(down: Bool) {
+        let v = visible, w = window
+        let y = { (part: CGFloat) in (v.minY + v.height * part - w.minY) / w.height }
+        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(down ? 0.75 : 0.3)))
+        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(down ? 0.3 : 0.75)))
+        from.press(forDuration: 0.02, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 0)
+        rest(0.8) // let it coast to a stop
     }
 
     /// A swipe across the whole row, like a thumb (85 % → 10 % of the width).
@@ -759,11 +778,11 @@ final class SceneRunner {
     // MARK: Screen recording
 
     private func openControlCenter() {
-        // Slow, short pull with a hold at the end: a fast fling opens Control Center
+        // Short pull with a hold at the end: a fling (no hold) opens Control Center
         // and carries on to its second page (connectivity), away from Screen Recording.
         let start = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.005))
         let end = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.3))
-        start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.4)
+        start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .default, thenHoldForDuration: 0.4)
         rest(0.6) // tapRecordButton waits for the page to stand still
     }
 
@@ -811,7 +830,7 @@ final class SceneRunner {
         // Out of Control Center at once: the 3-2-1 countdown goes on without it,
         // and the video starts on the home screen instead of in Control Center.
         XCUIDevice.shared.press(.home)
-        rest(3.6)
+        rest(2) // the tap (it waits for the screen) and Home took the rest of the 3 s
     }
 
     func stopScreenRecording() throws {
