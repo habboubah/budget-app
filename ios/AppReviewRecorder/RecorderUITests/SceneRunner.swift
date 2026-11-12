@@ -582,6 +582,10 @@ final class SceneRunner {
         var tries = 0
         var before: CGRect? = nil
         while tries < 8 {
+            // After a scroll, let the page settle first: at the top the large title
+            // grows back and pushes the search row down – a tap aimed before that
+            // landed on the month's ⋯ instead of the filter button.
+            if before != nil { _ = steady(el) }
             let f = el.frame, area = visibleArea(), v = area.rect
             // The last scroll didn't move it: fixed on screen (a tab, a header) or the
             // page is at its end – more scrolling won't help.
@@ -619,6 +623,20 @@ final class SceneRunner {
         // (at the default speed one drag took ~1.8 s).
         from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 0.15)
         rest(0.35)
+    }
+
+    /// Whether the element stood still for a moment (checked for up to ~1.2 s).
+    /// False if it was still moving at the end – then the caller measures again.
+    private func steady(_ el: XCUIElement) -> Bool {
+        var last = el.frame
+        for _ in 0..<6 {
+            rest(0.2)
+            guard el.exists else { return true }
+            let now = el.frame
+            if now == last { return true }
+            last = now
+        }
+        return false
     }
 
     /// A quick flick for a target screens away: the page coasts most of the way in
