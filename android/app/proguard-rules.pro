@@ -1,21 +1,29 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# R8 rules for Spartopf (release builds; minifyEnabled true in build.gradle).
+# The point is the mapping file Play uses to de-obfuscate crash and ANR reports,
+# so the app's own and the Capacitor code is kept whole: the bridge and the plugins
+# are found by reflection and called from JavaScript. Unused library code is still removed.
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep line numbers in stack traces; hide the real source file names.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Capacitor bridge and runtime.
+-keep class com.getcapacitor.** { *; }
+-keep interface com.getcapacitor.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Plugins (registered and called by name from the web layer).
+-keep class com.capacitorjs.plugins.** { *; }
+-keep class com.aparajita.capacitor.** { *; }
+
+# The app's own native code (MainActivity, SpartopfSharedPlugin).
+-keep class com.habboubah.spartopf.** { *; }
+
+# Methods the WebView calls from JavaScript.
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# Cordova compatibility layer used by Capacitor.
+-keep class org.apache.cordova.** { *; }
+-dontwarn org.apache.cordova.**
