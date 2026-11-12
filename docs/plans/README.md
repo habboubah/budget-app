@@ -98,6 +98,7 @@ Only the plans still open have a file here. A finished plan's file is deleted on
 | # | Plan | Covers | Depends on | Size | Native |
 |---|---|---|---|---|---|
 | 37 | [Simplicity review](37-simplicity-review.md) | simplicity | all | M | — |
+| 39 | [The first five minutes](39-first-five-minutes.md) | simplicity for a first-time user, U1 | 37; before 38 | L | — |
 | 38 | [Screenshots, story and release](38-release.md) | S4 | 37 | M | — |
 
 F/U/S numbers refer to sections 7 and 8 of COMPETITOR_ANALYSIS.md.
@@ -190,4 +191,5 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 36 On-device bank connection (FinTS)
 - [ ] 37 Simplicity review — checkpoint after plan 32 done, `npm run check` passes: the feature table, the first-viewport counts, *Optionen › Haushaltsbuch* reordered, and the tip system (`src/tips.ts`, five tips, one a week, tested). Open: the three-people test, VoiceOver / large text, speed on old phones (TODO.md)
 - [ ] 38 Screenshots, story and release
+- [ ] 39 The first five minutes — plan written November 2026 from a measured walk through 1.2.18 (21 tappable elements on the first screen, 25 in the first entry sheet, a coffee that reads as three negative balances). Nothing built; its five decisions are open, and decision 1 would change ground rule 4's "first run, the month page and the add button"
 - [x] Outside the numbered plans (merged 11 November 2026): the second redesign, and ten features — repeats every 2, 3 or 6 months and an end, yearly and rollover budgets, refunds, the daily nudge and the budget warning, return and warranty dates, *Kann ich mir das leisten?*, invoice QR codes, statement PDFs, trips and projects, the tax list. Device checks in `docs/TODO.md`.
