@@ -3,7 +3,7 @@
 Records the screen recording App Review asks for (Guideline 2.1: "captured
 on a physical device … beginning with launching the app"): a UI test taps
 through every feature of the Spartopf installed on your iPhone while iOS
-records the screen. About 15–20 minutes; the video ends up in Photos.
+records the screen. About 25–30 minutes; the video ends up in Photos.
 
 | File | What it is |
 |---|---|
@@ -39,12 +39,16 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
 1. **Save your own data:** Spartopf › Settings › Back up and transfer ›
    Export backup, to iCloud Drive.
 2. `npm run rehearse:app-review` — checks every step against the current
-   code in 5 minutes. It also writes `demo-files/spartopf-demo-backup.spartopf`
-   fresh.
-3. **AirDrop the three demo files** to the iPhone (they land in Files ›
-   Downloads): `spartopf-demo-bank.csv` (in US dollars, like the recording),
-   `spartopf-demo-banking-app.png`, `spartopf-demo-backup.spartopf`. The
-   earlier months come from Settings › Add test data, not from Excel.
+   code in about 10 minutes. It also writes
+   `demo-files/spartopf-demo-backup.spartopf` fresh.
+3. **AirDrop the seven demo files** to the iPhone and save them in Files
+   (Downloads), so the picker finds them by name:
+   `spartopf-demo-bank.csv` (in US dollars, like the recording),
+   `spartopf-demo-banking-app.png`, `spartopf-demo-statement.pdf`,
+   `spartopf-demo-other-app.csv`, `spartopf-demo-invoice.png` (the GiroCode),
+   `spartopf-demo-receipt.png`, and the fresh `spartopf-demo-backup.spartopf`.
+   Replace older copies. The earlier months come from Settings › Add test
+   data, not from Excel.
 4. Make sure the build you submit is the one installed from **TestFlight**
    (install it once when there is a new build). No need to delete it before
    each run: every full run resets it in the app (Settings › Reset app)
@@ -98,12 +102,13 @@ counts from 0 in screen order.
 | Step | Does |
 |---|---|
 | `{"tap": "Save"}` | Taps it (scrolls to it first). `nth`, `role` (`button`, `switch`, `textbox`), `timeout` |
-| `{"tap": "Import from Excel", "pickFile": "x.xlsx"}` | Taps, then picks the file in the Files picker (searches its name) |
+| `{"tap": "Import bank transactions", "pickFile": "x.csv"}` | Taps, then picks the file in the Files picker (searches its name) |
 | `{"fill": "What for?", "text": "Lidl"}` | Replaces a field's text, typed in one go |
 | `{"amount": "12.50", "into": "Amount"}` | An amount, typed digit by digit with the iPhone's decimal separator |
 | `{"placeholderMinus": 20, "into": "…"}` | Types the field's placeholder minus 20 (the app's own figure) |
 | `{"select": "English", "in": "Language"}` | Opens a `<select>` and taps the option |
-| `{"pickDay": 3, "on": "Date:"}` | The system date picker: that day of the shown month |
+| `{"pickDay": 3, "on": "Date:"}` | The system date picker of that field: that day of the shown month |
+| `{"pickYearAhead": 1, "on": "Ends:"}` | A month field (`<input type=month>`): turns the year wheel that many years on |
 | `{"swipe": "left", "on": "Edit Bakery"}` | Swipes across that row |
 | `{"drag": "Edit Toys", "to": "Restaurants €", "hold": 0.8}` | Long-press and drag |
 | `{"see": "Garage", "timeout": 10}` | Waits until the text is on screen |
@@ -119,3 +124,12 @@ counts from 0 in screen order.
 Any step with `"soft": true` may fail without stopping the recording.
 `saveDownloadAs` on a tap is for the rehearsal only (it keeps the web
 download); the iPhone shows a share sheet there instead.
+
+## What the video can't show
+
+Write these into the Review Notes, one sentence each — the recorder can't
+play them: the Siri phrases and the Shortcuts automations behind automatic
+capture (the guide screen is shown), `spartopf://` links, the + − × ÷ keys
+above the keyboard, the weekly tip card, the rating prompt, a notification
+arriving (the reminders for open bills, a return or a warranty are shown
+under Coming up), and Year in review outside 15 December to January.

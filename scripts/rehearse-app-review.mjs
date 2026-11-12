@@ -111,9 +111,12 @@ async function swipe(el, dir) {
       bubbles: true, cancelable: true, composed: true, pointerId: 7, pointerType: 'touch', isPrimary: true,
       clientX: x, clientY: y, buttons: type === 'pointerup' ? 0 : 1,
     }));
-    ev('pointerdown', x0, document.elementFromPoint(x0, y));
-    for (let i = 1; i <= 12; i++) { await new Promise(r => setTimeout(r, 16)); ev('pointermove', x0 + (x1 - x0) * i / 12, document); }
-    ev('pointerup', x1, document);
+    // Like a touch on the iPhone, every event goes to what was touched first
+    // (it bubbles on to the document for handlers listening there).
+    const start = document.elementFromPoint(x0, y) ?? document;
+    ev('pointerdown', x0, start);
+    for (let i = 1; i <= 12; i++) { await new Promise(r => setTimeout(r, 16)); ev('pointermove', x0 + (x1 - x0) * i / 12, start); }
+    ev('pointerup', x1, start);
   }, dir);
 }
 
@@ -223,7 +226,19 @@ async function run(step) {
     return page.waitForTimeout(400);
   }
   if ('pickDay' in step) {
-    await page.locator('input[type="date"]:visible').first().fill(dayInMonth(step.pickDay));
+    // The date field named by "on" (as on the iPhone), else the first one.
+    let field = page.locator('input[type="date"]:visible').first();
+    for (const l of [].concat(step.on ?? [])) {
+      const named = (await scopes()).at(-1).getByRole('textbox', { name: new RegExp(`^${esc(l)}`) }).and(page.locator('input[type="date"]')).filter({ visible: true });
+      if (await named.count()) { field = named.first(); break; }
+    }
+    await field.fill(dayInMonth(step.pickDay));
+    return page.waitForTimeout(200);
+  }
+  if ('pickYearAhead' in step) {
+    // <input type=month>: the iPhone turns the year wheel; here the same month n years on.
+    const d = new Date();
+    await page.locator('input[type="month"]:visible').first().fill(`${d.getFullYear() + step.pickYearAhead}-${String(d.getMonth() + 1).padStart(2, '0')}`);
     return page.waitForTimeout(200);
   }
   if ('scroll' in step) { await page.mouse.wheel(0, step.scroll === 'up' ? -600 : 600); return page.waitForTimeout(300); }
