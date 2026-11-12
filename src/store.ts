@@ -740,6 +740,10 @@ export function useAppStore() {
     setTipsDone(false);
     setLastExport('');
     setCopyCardDismissed(false);
+    // A fresh start shows the month reviews and hints again (opening a review
+    // or hiding a hint was remembered across a reset).
+    setReviewsSeen([]);
+    setHintsHidden([]);
     try { localStorage.removeItem(K.lastExport); } catch { /* a preference */ }
   };
 
