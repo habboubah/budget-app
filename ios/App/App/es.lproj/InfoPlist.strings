@@ -1,6 +1,6 @@
 /* Permission prompts. The English base text is in Info.plist; keep both in sync. */
 
-"NSCameraUsageDescription" = "Haushaltsbuch Einfach lee los movimientos bancarios de una foto que tomas. La foto se lee en este iPhone y nunca sale de él.";
-"NSPhotoLibraryUsageDescription" = "Haushaltsbuch Einfach lee los movimientos bancarios de una captura de pantalla que eliges. Se lee en este iPhone y nunca sale de él.";
-"NSPhotoLibraryAddUsageDescription" = "Haushaltsbuch Einfach guarda la imagen de tu resumen del año en Fotos cuando eliges Guardar imagen.";
-"NSFaceIDUsageDescription" = "Haushaltsbuch Einfach usa Face ID para desbloquear tu presupuesto, para que solo tú puedas abrirlo.";
+"NSCameraUsageDescription" = "Spartopf lee los movimientos bancarios de una foto que tomas. La foto se lee en este iPhone y nunca sale de él.";
+"NSPhotoLibraryUsageDescription" = "Spartopf lee los movimientos bancarios de una captura de pantalla que eliges. Se lee en este iPhone y nunca sale de él.";
+"NSPhotoLibraryAddUsageDescription" = "Spartopf guarda la imagen de tu resumen del año en Fotos cuando eliges Guardar imagen.";
+"NSFaceIDUsageDescription" = "Spartopf usa Face ID para desbloquear tu presupuesto, para que solo tú puedas abrirlo.";

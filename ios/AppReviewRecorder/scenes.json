@@ -1,8 +1,8 @@
 {
- "about": "The App Review screen recording for Haushaltsbuch Einfach, one step per line. The iPhone UI test (RecorderUITests) plays it on a real iPhone; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
+ "about": "The App Review screen recording for Spartopf, one step per line. The iPhone UI test (RecorderUITests) plays it on a real iPhone; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
  "app": {
   "bundleId": "com.habboubah.spartopf",
-  "iconName": "Haushaltsbuch Einfach"
+  "iconName": "Spartopf"
  },
  "preflight": {
   "mustSee": ["Wie viel ist gerade auf deinem Konto?", "How much is in your account right now?", "كم يوجد في حسابك الآن؟", "Kolik máš teď na účtu?", "Hvor mange penge har du på kontoen lige nu?", "¿Cuánto tienes ahora mismo en la cuenta?", "Combien avez-vous sur votre compte en ce moment", "Quanto hai sul conto in questo momento?", "Hvor mye har du på kontoen akkurat nå?", "Hoeveel staat er nu op je rekening?", "Ile masz teraz na koncie?", "Quanto tens agora na conta?", "Hur mycket har du på kontot just nu?", "Şu anda hesabında ne kadar var?"],

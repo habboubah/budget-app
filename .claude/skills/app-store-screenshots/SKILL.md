@@ -1,6 +1,6 @@
 ---
 name: app-store-screenshots
-description: Regenerate the raw App Store screenshots of Haushaltsbuch Einfach (npm run screenshots → screenshots/<de|en>/, ten screens per language). Use when asked to update, refresh or regenerate store screenshots, or to add, drop or reorder a screen in the set. The framed, captioned upload set is the store-screenshot-studio skill.
+description: Regenerate the raw App Store screenshots of Spartopf (npm run screenshots → screenshots/<de|en>/, ten screens per language). Use when asked to update, refresh or regenerate store screenshots, or to add, drop or reorder a screen in the set. The framed, captioned upload set is the store-screenshot-studio skill.
 ---
 
 # App Store screenshots (raw captures)

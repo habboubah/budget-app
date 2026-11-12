@@ -150,7 +150,7 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    /// Hosts `open` may hand to iOS (Optionen › Über Haushaltsbuch Einfach, src/links.ts); mail goes to Mail.
+    /// Hosts `open` may hand to iOS (Optionen › Über Spartopf, src/links.ts); mail goes to Mail.
     static let openHosts: Set<String> = ["apps.apple.com", "habboubah.github.io"]
 
     /// Plan 15: opens a link outside the app — the App Store, Safari or Mail. Only https links to
@@ -192,7 +192,7 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
     /// `.print-root`) — drawn on A4 pages into a PDF, then offered in the share sheet. The file
     /// lives in the temporary folder and is deleted once the sheet closes.
     @objc func makePdf(_ call: CAPPluginCall) {
-        let name = (call.getString("name") ?? "Haushaltsbuch Einfach")
+        let name = (call.getString("name") ?? "Spartopf")
             .components(separatedBy: CharacterSet(charactersIn: "/\\:*?\"<>|")).joined(separator: "-")
         Task { @MainActor in
             guard let webView = self.bridge?.webView, let presenter = self.bridge?.viewController else {

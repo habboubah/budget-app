@@ -1,11 +1,11 @@
 ---
 name: app-store-release
-description: Build Haushaltsbuch Einfach and upload it to App Store Connect / TestFlight, regenerate the App Store screenshots, or prepare a new App Store version. Use when asked to release, ship, publish, upload to the App Store or TestFlight, bump the version, or refresh store screenshots for this app.
+description: Build Spartopf and upload it to App Store Connect / TestFlight, regenerate the App Store screenshots, or prepare a new App Store version. Use when asked to release, ship, publish, upload to the App Store or TestFlight, bump the version, or refresh store screenshots for this app.
 ---
 
-# Releasing Haushaltsbuch Einfach to the App Store
+# Releasing Spartopf to the App Store
 
-Haushaltsbuch Einfach ships exactly like pizza-driver-log (Fahrtwerk) and shopping-list
+Spartopf ships exactly like pizza-driver-log (Fahrtwerk) and shopping-list
 (Korb): one command archives the iOS app with `xcodebuild` and uploads it to
 App Store Connect with an App Store Connect API key. Submitting for review is a manual click in App Store Connect.
 The full human checklist is `docs/APP_STORE_RELEASE.md` — read it when anything
@@ -50,7 +50,7 @@ number always +1), runs `vite build` + `cap sync ios`, archives, uploads via
 Tell the user:
 - the version and build number that went up,
 - it appears in TestFlight after Apple's processing (5–30 min),
-- to submit: App Store Connect → Haushaltsbuch Einfach → the version → Build → pick it →
+- to submit: App Store Connect → Spartopf → the version → Build → pick it →
   "Add for Review" (guide step 9), with "What's New" text from
   `store/listing.md` for updates.
 

@@ -1,4 +1,4 @@
-// The privacy promise, checked: Haushaltsbuch Einfach talks to nobody.
+// The privacy promise, checked: Spartopf talks to nobody.
 //
 // 1. Builds the app, serves dist/ with `vite preview`, and drives Chromium
 //    through what people do — the first run, an entry added and ticked off,
@@ -32,9 +32,9 @@ const ALLOWED_URLS = [
   [/^https:\/\/cdn\.jsdelivr\.net\/npm\/(tesseract\.js|tesseract\.js-core|@tesseract\.js-data)\b/,
     "tesseract.js's default download paths; src/ocr.ts passes local ones (ocr/) — the OCR step below proves none is used"],
   [/^https:\/\/apps\.apple\.com\/app\/id\d+\?action=write-review$/,
-    'Optionen › Haushaltsbuch Einfach bewerten (src/links.ts): handed to the App Store when tapped, never fetched'],
+    'Optionen › Spartopf bewerten (src/links.ts): handed to the App Store when tapped, never fetched'],
   [/^https:\/\/play\.google\.com\/store\/apps\/details\?id=com\.habboubah\.spartopf$/,
-    'Optionen › Haushaltsbuch Einfach bewerten in the Android app (src/links.ts): handed to Google Play when tapped, never fetched'],
+    'Optionen › Spartopf bewerten in the Android app (src/links.ts): handed to Google Play when tapped, never fetched'],
   [/^https:\/\/habboubah\.github\.io\/privacy-policy\/spartopf\/(de\/)?$/,
     'Optionen › Datenschutz (src/links.ts): opened in Safari when tapped, never fetched'],
   // Only in pdf.js's own chunks (pdfjs-dist, legacy build): the third entry limits a rule to those files.

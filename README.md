@@ -1,4 +1,4 @@
-# Haushaltsbuch Einfach 🪙
+# Spartopf – Haushaltsbuch 🪙
 
 A simple, private budget book for iPhone, Android and the browser.
 Bundle id `com.habboubah.spartopf`.

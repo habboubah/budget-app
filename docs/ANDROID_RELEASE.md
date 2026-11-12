@@ -1,4 +1,4 @@
-# Releasing Haushaltsbuch Einfach for Android
+# Releasing Spartopf for Android
 
 The Android app is the same web app in a Capacitor shell (`android/`), built
 by plan 23. This is what it takes to get it onto a phone and into Google
@@ -47,7 +47,7 @@ too: set `ANDROID_KEYSTORE_PATH` and `ANDROID_KEY_ALIAS` there.
 1. A Google Play developer account (25 USD, once). A personal account created
    after November 2023 must run a **closed test with 12 testers for 14 days**
    before it may publish to production.
-2. *Create app*: name *Haushaltsbuch Einfach*, default language German,
+2. *Create app*: name *Spartopf – Haushaltsbuch*, default language German,
    App, Free. The package name `com.habboubah.spartopf` is fixed by the first
    upload.
 3. Fill in *Store listing*, *Data safety*, *App content* from
@@ -57,12 +57,12 @@ too: set `ANDROID_KEYSTORE_PATH` and `ANDROID_KEY_ALIAS` there.
 
 `npm run release:android` uploads through the Play Developer API as a
 **service account**. A service account belongs to the developer account, not
-to one app — the one that ships pizza-driver-log (Fahrtwerk) ships Haushaltsbuch Einfach
+to one app — the one that ships pizza-driver-log (Fahrtwerk) ships Spartopf
 too:
 
 1. *Play Console › Users and permissions*: open the service account (its
    address ends in `.iam.gserviceaccount.com`), *App permissions › Add app ›
-   Haushaltsbuch Einfach*, and tick *Release apps to testing tracks*. (No service account
+   Spartopf*, and tick *Release apps to testing tracks*. (No service account
    yet: create one in Google Cloud, turn on the *Google Play Android
    Developer API*, download its JSON key and invite its address here.)
 2. In `.env.release`, `PLAY_SERVICE_ACCOUNT_JSON` is the path of that JSON
@@ -123,7 +123,7 @@ above); **its first run against Google Play itself is still to come.**
   while the lock is on the window is `FLAG_SECURE` (no screenshots, a blank
   card in Recents).
 - **No Google services.** No Firebase, no Play Services library, no in-app
-  review prompt — *Haushaltsbuch Einfach bewerten* opens the Play page.
+  review prompt — *Spartopf bewerten* opens the Play page.
 - **No Siri, no Shortcuts capture** (iPhone only). Android's own capture is
   plan 24.
 - **PDF.** *Bericht teilen* opens Android's print dialog (*Save as PDF*).

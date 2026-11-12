@@ -20,7 +20,7 @@
    - devices: iPhone 6.9", an Android phone
    - languages: DE, EN, AR, TR
    - light mode, plus one dark screenshot
-3. **App Preview video** (15–30 s): pay for a coffee with Apple Pay → it shows up in Haushaltsbuch Einfach → *pro Tag* updates.
+3. **App Preview video** (15–30 s): pay for a coffee with Apple Pay → it shows up in Spartopf → *pro Tag* updates.
 4. **Listings.**
    - Final texts in every language, following plan 16's rules.
    - What's New and keywords.

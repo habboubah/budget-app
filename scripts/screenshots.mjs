@@ -1,4 +1,4 @@
-// App Store screenshots for Haushaltsbuch Einfach, in German and English.
+// App Store screenshots for Spartopf, in German and English.
 //
 // Builds the web app, serves it, fills it with six realistic months (salary,
 // rent, insurances, groceries …, generated relative to today so the current

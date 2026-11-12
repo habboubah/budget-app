@@ -13,9 +13,9 @@ describe('safeFileName', () => {
     expect(safeFileName('a:b*c?"<>|.pdf')).toBe('a-b-c-----.pdf');
   });
   it('falls back when nothing is left', () => {
-    expect(safeFileName('..')).toBe('Haushaltsbuch Einfach');
-    expect(safeFileName('.jpg')).toBe('Haushaltsbuch Einfach.jpg');
-    expect(safeFileName(' . .pdf')).toBe('Haushaltsbuch Einfach.pdf');
+    expect(safeFileName('..')).toBe('Spartopf');
+    expect(safeFileName('.jpg')).toBe('Spartopf.jpg');
+    expect(safeFileName(' . .pdf')).toBe('Spartopf.pdf');
     expect(safeFileName('/.pdf')).toBe('-.pdf');
   });
   it('drops control characters and caps the length', () => {

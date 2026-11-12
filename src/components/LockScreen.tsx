@@ -5,7 +5,7 @@ import { Strings } from '../translations';
 import { Button } from '../ui/Button';
 
 /**
- * What a locked Haushaltsbuch Einfach shows — instead of the app, not over it, so no
+ * What a locked Spartopf shows — instead of the app, not over it, so no
  * amount is on the page, in the DOM or under VoiceOver until it is unlocked.
  * Asks for Face ID by itself when it appears; the button is for a second try.
  */

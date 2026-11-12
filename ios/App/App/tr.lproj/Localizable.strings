@@ -2,7 +2,7 @@
    Machine-drafted (plan 25): a native speaker still has to read these. */
 
 "Add entry" = "Kalem ekle";
-"Books an expense or an income in Haushaltsbuch Einfach." = "Haushaltsbuch Einfach’a bir gider veya gelir kaydeder.";
+"Books an expense or an income in Spartopf." = "Spartopf’a bir gider veya gelir kaydeder.";
 "Amount" = "Tutar";
 "How much?" = "Ne kadar?";
 "Name" = "Ad";
@@ -14,20 +14,20 @@
 "Booked: %@ %@" = "Kaydedildi: %1$@ %2$@";
 "Booked as open: %@ %@" = "Bekliyor olarak kaydedildi: %1$@ %2$@";
 "What’s left at the end of the month?" = "Ay sonunda ne kalıyor?";
-"Says what Haushaltsbuch Einfach expects in your account at the end of the month." = "Haushaltsbuch Einfach’un ay sonunda hesabında beklediği tutarı söyler.";
-"Open Haushaltsbuch Einfach to see it." = "Görmek için Haushaltsbuch Einfach’u aç.";
+"Says what Spartopf expects in your account at the end of the month." = "Spartopf’un ay sonunda hesabında beklediği tutarı söyler.";
+"Open Spartopf to see it." = "Görmek için Spartopf’u aç.";
 "At the end of the month: %@. In your account now: %@." = "Ay sonunda: %1$@. Şu an hesapta: %2$@.";
 "Open bills" = "Ödenmemiş faturalar";
-"Says which of this month’s bills are still open in Haushaltsbuch Einfach." = "Bu ayın hangi faturalarının Haushaltsbuch Einfach’ta hâlâ ödenmemiş olduğunu söyler.";
+"Says which of this month’s bills are still open in Spartopf." = "Bu ayın hangi faturalarının Spartopf’ta hâlâ ödenmemiş olduğunu söyler.";
 "No bills are open this month." = "Bu ay ödenmemiş fatura yok.";
 "Open: %@. Next: %@." = "Bekleyen: %1$@. Sıradaki: %2$@.";
-"Haushaltsbuch Einfach can’t be reached right now." = "Haushaltsbuch Einfach’a şu anda ulaşılamıyor.";
+"Spartopf can’t be reached right now." = "Spartopf’a şu anda ulaşılamıyor.";
 "That amount can’t be booked." = "Bu tutar kaydedilemez.";
-"Log payment in Haushaltsbuch Einfach" = "Haushaltsbuch Einfach’a ödeme kaydet";
-"Books a card payment in Haushaltsbuch Einfach. For the Transaction automation in Shortcuts." = "Haushaltsbuch Einfach’a bir kart ödemesi kaydeder. Kestirmeler’deki “İşlem” otomasyonu için.";
+"Log payment in Spartopf" = "Spartopf’a ödeme kaydet";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Spartopf’a bir kart ödemesi kaydeder. Kestirmeler’deki “İşlem” otomasyonu için.";
 "Merchant" = "Satıcı";
 "Card" = "Kart";
-"Log notification in Haushaltsbuch Einfach" = "Haushaltsbuch Einfach’a bildirim kaydet";
+"Log notification in Spartopf" = "Spartopf’a bildirim kaydet";
 "Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Banka uygulamasının bildirimindeki ödemeyi kaydeder. Kestirmeler’deki “Bildirim” otomasyonu için.";
 "Title" = "Başlık";
 "Subtitle" = "Alt Başlık";

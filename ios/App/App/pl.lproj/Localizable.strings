@@ -2,7 +2,7 @@
    Machine-drafted (plan 25): a native speaker still has to read these. */
 
 "Add entry" = "Dodaj pozycję";
-"Books an expense or an income in Haushaltsbuch Einfach." = "Zapisuje wydatek lub przychód w Haushaltsbuch Einfach.";
+"Books an expense or an income in Spartopf." = "Zapisuje wydatek lub przychód w Spartopf.";
 "Amount" = "Kwota";
 "How much?" = "Ile?";
 "Name" = "Nazwa";
@@ -14,20 +14,20 @@
 "Booked: %@ %@" = "Zapisano: %1$@ %2$@";
 "Booked as open: %@ %@" = "Zapisano jako oczekujące: %1$@ %2$@";
 "What’s left at the end of the month?" = "Ile zostanie na koniec miesiąca?";
-"Says what Haushaltsbuch Einfach expects in your account at the end of the month." = "Mówi, ile Haushaltsbuch Einfach przewiduje na twoim koncie na koniec miesiąca.";
-"Open Haushaltsbuch Einfach to see it." = "Otwórz Haushaltsbuch Einfach, aby to zobaczyć.";
+"Says what Spartopf expects in your account at the end of the month." = "Mówi, ile Spartopf przewiduje na twoim koncie na koniec miesiąca.";
+"Open Spartopf to see it." = "Otwórz Spartopf, aby to zobaczyć.";
 "At the end of the month: %@. In your account now: %@." = "Na koniec miesiąca: %1$@. Teraz na koncie: %2$@.";
 "Open bills" = "Niezapłacone rachunki";
-"Says which of this month’s bills are still open in Haushaltsbuch Einfach." = "Mówi, które rachunki z tego miesiąca są jeszcze niezapłacone w Haushaltsbuch Einfach.";
+"Says which of this month’s bills are still open in Spartopf." = "Mówi, które rachunki z tego miesiąca są jeszcze niezapłacone w Spartopf.";
 "No bills are open this month." = "W tym miesiącu nie ma niezapłaconych rachunków.";
 "Open: %@. Next: %@." = "Oczekuje: %1$@. Najbliższe: %2$@.";
-"Haushaltsbuch Einfach can’t be reached right now." = "Haushaltsbuch Einfach jest teraz niedostępny.";
+"Spartopf can’t be reached right now." = "Spartopf jest teraz niedostępny.";
 "That amount can’t be booked." = "Tej kwoty nie można zapisać.";
-"Log payment in Haushaltsbuch Einfach" = "Zapisz płatność w Haushaltsbuch Einfach";
-"Books a card payment in Haushaltsbuch Einfach. For the Transaction automation in Shortcuts." = "Zapisuje płatność kartą w Haushaltsbuch Einfach. Dla automatyzacji „Transakcja” w Skrótach.";
+"Log payment in Spartopf" = "Zapisz płatność w Spartopf";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Zapisuje płatność kartą w Spartopf. Dla automatyzacji „Transakcja” w Skrótach.";
 "Merchant" = "Sprzedawca";
 "Card" = "Karta";
-"Log notification in Haushaltsbuch Einfach" = "Zapisz powiadomienie w Haushaltsbuch Einfach";
+"Log notification in Spartopf" = "Zapisz powiadomienie w Spartopf";
 "Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Zapisuje płatność, o której informuje powiadomienie z aplikacji banku. Dla automatyzacji „Powiadomienie” w Skrótach.";
 "Title" = "Tytuł";
 "Subtitle" = "Podtytuł";

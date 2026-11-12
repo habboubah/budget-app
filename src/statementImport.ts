@@ -256,7 +256,7 @@ export type MappableField = 'date' | 'amount' | 'debit' | 'credit' | 'payee' | '
 export type ColumnMapping = Partial<Record<MappableField, number>>;
 
 /**
- * For a CSV Haushaltsbuch Einfach can't place by its column titles (plan 20): the header
+ * For a CSV Spartopf can't place by its column titles (plan 20): the header
  * row's cells and a best-guess mapping, so the user can map the columns by
  * hand. `null` when the file isn't a table at all.
  */

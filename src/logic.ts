@@ -2269,7 +2269,7 @@ export interface ReviewState {
   moment: ReviewMoment | null;
 }
 
-/** The local rule's numbers: no analytics decide when Haushaltsbuch Einfach asks. */
+/** The local rule's numbers: no analytics decide when Spartopf asks. */
 export const REVIEW_RULE = { daysUsed: 14, entries: 30, daysBetween: 120, bigImport: 10 } as const;
 
 const daysFrom = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000);

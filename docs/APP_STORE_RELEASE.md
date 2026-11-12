@@ -1,6 +1,6 @@
-# Publishing Haushaltsbuch Einfach on the App Store – step by step
+# Publishing Spartopf on the App Store – step by step
 
-Haushaltsbuch Einfach ships exactly like Fahrtwerk (pizza-driver-log) and Korb
+Spartopf ships exactly like Fahrtwerk (pizza-driver-log) and Korb
 (shopping-list): **one command** builds the iOS app and uploads it straight to
 App Store Connect, where it lands in TestFlight. The parts Apple only allows in
 the browser – creating the app, texts, screenshots, "Submit for Review" – you
@@ -52,7 +52,7 @@ npm run lint && npm test      # must be green
 ## 2. Reuse the API key
 
 The App Store Connect API key belongs to your whole team, not to one app, so the
-key that uploads Fahrtwerk uploads Haushaltsbuch Einfach too.
+key that uploads Fahrtwerk uploads Spartopf too.
 
 ```bash
 cd ~/repos/budget-app
@@ -94,7 +94,7 @@ In Xcode:
 2. ✅ *Automatically manage signing*, Team: **Ahmad Habboubah (HZVBBHBAJN)**
    (already set). There must be no red error.
 3. Optional but recommended: plug in your iPhone, pick it as the destination at
-   the top, press **▶** – Haushaltsbuch Einfach runs on your phone.
+   the top, press **▶** – Spartopf runs on your phone.
 4. Quit Xcode.
 
 ## 4. Create the app in App Store Connect
@@ -104,7 +104,7 @@ https://appstoreconnect.apple.com → **Apps** → **+** → **New App** [Neue A
 | Field | Value |
 |---|---|
 | Platforms | ✅ iOS |
-| Name | `Haushaltsbuch Einfach` (if taken: `Haushaltsbuch Einfach – Budget`) |
+| Name | `Spartopf – Haushaltsbuch` (if taken: `Spartopf: Haushaltsbuch`) |
 | Primary language | German [Deutsch] |
 | Bundle ID | `com.habboubah.spartopf` (pick it from the menu; missing → redo step 3) |
 | SKU | `spartopf-001` |
@@ -126,20 +126,20 @@ cp -R ../budget-app/store/privacy/. spartopf/
 Add this line to `index.html`, under the Pizza Driver Log entry:
 
 ```html
-  <li><a href="spartopf/">Haushaltsbuch Einfach</a></li>
+  <li><a href="spartopf/">Spartopf – Haushaltsbuch</a></li>
 ```
 
 and this to `README.md`:
 
 ```markdown
-- Haushaltsbuch Einfach
+- Spartopf – Haushaltsbuch
   - English: https://habboubah.github.io/privacy-policy/spartopf/
   - Deutsch: https://habboubah.github.io/privacy-policy/spartopf/de/
 ```
 
 ```bash
 git add spartopf index.html README.md
-git commit -m "Add privacy policy for Haushaltsbuch Einfach"
+git commit -m "Add privacy policy for Spartopf"
 git push
 ```
 
@@ -160,17 +160,17 @@ npm run release:first    # builds and uploads 1.0.0 (build 2)
 4. archives with `xcodebuild` and uploads to App Store Connect,
 5. commits "Prepare release v1.0.0 (build 2)" and tags `v1.0.0`.
 
-It ends with `Done: Haushaltsbuch Einfach v1.0.0 (build 2) uploaded to App Store Connect.`
+It ends with `Done: Spartopf v1.0.0 (build 2) uploaded to App Store Connect.`
 Apple then needs 5–30 minutes to process it (you get an email).
 
 An error? → see [Troubleshooting](#troubleshooting) below.
 
 ## 7. Test on your iPhone with TestFlight
 
-1. App Store Connect → **Haushaltsbuch Einfach** → **TestFlight** tab.
+1. App Store Connect → **Spartopf** → **TestFlight** tab.
 2. Under *Internal Testing* [Interne Tests] → **+** → group "Me" → add yourself.
 3. On the iPhone, install the **TestFlight** app, open it with the same Apple ID
-   → **Haushaltsbuch Einfach** → *Install*.
+   → **Spartopf** → *Install*.
 4. Try everything once: enter the salary and a few fixed costs, tick one as
    paid, start the next month, look at the statistics, export a backup.
 
@@ -198,7 +198,7 @@ The raw captures (1290 × 2796) don't fit that slot.
 
 ### 8b. Version 1.0 (German)
 
-App Store Connect → Haushaltsbuch Einfach → left: **iOS App 1.0 – Prepare for Submission**
+App Store Connect → Spartopf → left: **iOS App 1.0 – Prepare for Submission**
 [Vorbereitung für Einreichung]:
 
 - [ ] **Screenshots** → *iPhone with Dynamic Island (medium display)* → drag in the 10 images from `screenshots/store/iphone-6.3/de/`.
@@ -234,7 +234,7 @@ without them the store shows the German ones.
 
 *Get Started* → "Do you or your third-party partners collect data from this app?"
 → **No, we do not collect data from this app** → *Publish*.
-(True: Haushaltsbuch Einfach has no server and no tracking; every entry stays on the device.)
+(True: Spartopf has no server and no tracking; every entry stays on the device.)
 
 ### 8e-2. Accessibility (left menu) [Barrierefreiheit]
 
@@ -265,7 +265,7 @@ Back on **iOS App 1.0** → top right **Add for Review** [Zur Prüfung hinzufüg
 → **Submit to App Review** [An App-Prüfung senden].
 
 Apple usually reviews within 24–48 hours and emails you the status. At
-*Ready for Distribution* [Bereit zum Verkauf], Haushaltsbuch Einfach is on the App Store. 🎉
+*Ready for Distribution* [Bereit zum Verkauf], Spartopf is on the App Store. 🎉
 
 If Apple rejects it: read the message in the *Resolution Center*, fix the code,
 run `npm run release:ios -- --keep-version` (same version, new build), pick the
@@ -292,7 +292,7 @@ Then in App Store Connect:
 
 Only redo screenshots/texts when something visible changed (`npm run screenshots`).
 
-You can also just tell Claude in this project "upload Haushaltsbuch Einfach to the App Store" –
+You can also just tell Claude in this project "upload Spartopf to the App Store" –
 the skill `.claude/skills/app-store-release` knows these steps.
 
 ---
@@ -309,7 +309,7 @@ the skill `.claude/skills/app-store-release` knows these steps.
 | `Missing package product 'CapApp-SPM'` or similar | Open the project once in Xcode (step 3), or `xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj`. |
 | `xcode-select: error: tool 'xcodebuild' requires Xcode` | Install Xcode in `/Applications`, or `sudo xcode-select -s /Applications/Xcode.app`. |
 | `npm run screenshots`: *Executable doesn't exist* | `npx playwright install chromium` |
-| Name "Haushaltsbuch Einfach" is taken | Pick another name in step 4 (ideas in `store/listing.md`). The home-screen name stays "Haushaltsbuch Einfach". |
+| Name "Spartopf – Haushaltsbuch" is taken | Pick another name in step 4 (ideas in `store/listing.md`). The home-screen name stays "Spartopf". |
 
 ## Where things live
 

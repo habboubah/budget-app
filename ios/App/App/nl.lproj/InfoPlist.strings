@@ -1,6 +1,6 @@
 /* Permission prompts. The English base text is in Info.plist; keep both in sync. */
 
-"NSCameraUsageDescription" = "Haushaltsbuch Einfach leest banktransacties uit een foto die je maakt. De foto wordt op deze iPhone gelezen en verlaat hem nooit.";
-"NSPhotoLibraryUsageDescription" = "Haushaltsbuch Einfach leest banktransacties uit een screenshot dat je kiest. Het wordt op deze iPhone gelezen en verlaat hem nooit.";
-"NSPhotoLibraryAddUsageDescription" = "Haushaltsbuch Einfach bewaart de afbeelding van je jaaroverzicht in Foto's als je Bewaar afbeelding kiest.";
-"NSFaceIDUsageDescription" = "Haushaltsbuch Einfach gebruikt Face ID om je huishoudboekje te ontgrendelen, zodat alleen jij het kunt openen.";
+"NSCameraUsageDescription" = "Spartopf leest banktransacties uit een foto die je maakt. De foto wordt op deze iPhone gelezen en verlaat hem nooit.";
+"NSPhotoLibraryUsageDescription" = "Spartopf leest banktransacties uit een screenshot dat je kiest. Het wordt op deze iPhone gelezen en verlaat hem nooit.";
+"NSPhotoLibraryAddUsageDescription" = "Spartopf bewaart de afbeelding van je jaaroverzicht in Foto's als je Bewaar afbeelding kiest.";
+"NSFaceIDUsageDescription" = "Spartopf gebruikt Face ID om je huishoudboekje te ontgrendelen, zodat alleen jij het kunt openen.";

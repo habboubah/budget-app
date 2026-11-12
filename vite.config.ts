@@ -77,8 +77,8 @@ export default defineConfig(() => {
           runtimeCaching: [{ urlPattern: /\/ocr\//, handler: 'CacheFirst', options: { cacheName: 'spartopf-ocr' } }],
         },
         manifest: {
-          name: 'Haushaltsbuch Einfach',
-          short_name: 'Haushaltsbuch Einfach',
+          name: 'Spartopf – Haushaltsbuch',
+          short_name: 'Spartopf',
           description: 'A simple, private budget book. No account, everything stays on your phone.',
           theme_color: '#F2F2F7',
           background_color: '#F2F2F7',

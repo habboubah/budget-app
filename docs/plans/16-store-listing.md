@@ -27,7 +27,7 @@ A store page that shows what the app does, in their language and with accessibil
    - Stay within Apple's limits: name 30, subtitle 30, promotional text 170 and keywords 100 characters.
 2. **Keywords.**
    - No bank or competitor brand names (App Review Guideline 2.3.7).
-   - Check the search results for "Haushaltsbuch Einfach" against the Sparkasse feature *Spartöpfe*.
+   - Check the search results for "Spartopf" against the Sparkasse feature *Spartöpfe*.
    - Keep "Haushaltsbuch" in the name.
 3. **App Review note.** Describe:
    - on-device OCR, no network use and no account;

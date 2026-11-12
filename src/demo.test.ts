@@ -154,7 +154,7 @@ describe('test data in a new book', () => {
     expect(en.goals?.map(g => g.name)).toEqual(['Holiday 2027', 'Emergency fund']);
     expect(en.favorites?.map(f => f.name)).toContain('Pharmacy');
     expect(en.entries.find(e => e.tags)?.tags).toEqual(['holiday']);
-    // Arabic (and any language Haushaltsbuch Einfach adds later) gets the English names.
+    // Arabic (and any language Spartopf adds later) gets the English names.
     expect(addDemoData(fresh(), { today, language: 'ar' })).toEqual(en);
     expect(addDemoData(fresh(), { today, language: 'tr' })).toEqual(en);
   });

@@ -2,7 +2,7 @@
    Machine-drafted (plan 25): a native speaker still has to read these. */
 
 "Add entry" = "Přidat položku";
-"Books an expense or an income in Haushaltsbuch Einfach." = "Zapíše výdaj nebo příjem do Haushaltsbuch Einfach.";
+"Books an expense or an income in Spartopf." = "Zapíše výdaj nebo příjem do Spartopf.";
 "Amount" = "Částka";
 "How much?" = "Kolik?";
 "Name" = "Název";
@@ -14,20 +14,20 @@
 "Booked: %@ %@" = "Zapsáno: %1$@ %2$@";
 "Booked as open: %@ %@" = "Zapsáno jako čekající: %1$@ %2$@";
 "What’s left at the end of the month?" = "Co zbyde na konci měsíce?";
-"Says what Haushaltsbuch Einfach expects in your account at the end of the month." = "Řekne, kolik Haushaltsbuch Einfach čeká na tvém účtu na konci měsíce.";
-"Open Haushaltsbuch Einfach to see it." = "Otevři Haushaltsbuch Einfach a podívej se.";
+"Says what Spartopf expects in your account at the end of the month." = "Řekne, kolik Spartopf čeká na tvém účtu na konci měsíce.";
+"Open Spartopf to see it." = "Otevři Spartopf a podívej se.";
 "At the end of the month: %@. In your account now: %@." = "Na konci měsíce: %1$@. Teď na účtu: %2$@.";
 "Open bills" = "Nezaplacené účty";
-"Says which of this month’s bills are still open in Haushaltsbuch Einfach." = "Řekne, které účty z tohoto měsíce jsou ve Haushaltsbuch Einfach ještě nezaplacené.";
+"Says which of this month’s bills are still open in Spartopf." = "Řekne, které účty z tohoto měsíce jsou ve Spartopf ještě nezaplacené.";
 "No bills are open this month." = "Tento měsíc nejsou žádné nezaplacené účty.";
 "Open: %@. Next: %@." = "Čeká: %1$@. Nejbližší: %2$@.";
-"Haushaltsbuch Einfach can’t be reached right now." = "Haushaltsbuch Einfach teď není dostupný.";
+"Spartopf can’t be reached right now." = "Spartopf teď není dostupný.";
 "That amount can’t be booked." = "Tuto částku nelze zapsat.";
-"Log payment in Haushaltsbuch Einfach" = "Zapsat platbu do Haushaltsbuch Einfach";
-"Books a card payment in Haushaltsbuch Einfach. For the Transaction automation in Shortcuts." = "Zapíše platbu kartou do Haushaltsbuch Einfach. Pro automatizaci „Transakce“ ve Zkratkách.";
+"Log payment in Spartopf" = "Zapsat platbu do Spartopf";
+"Books a card payment in Spartopf. For the Transaction automation in Shortcuts." = "Zapíše platbu kartou do Spartopf. Pro automatizaci „Transakce“ ve Zkratkách.";
 "Merchant" = "Obchodník";
 "Card" = "Karta";
-"Log notification in Haushaltsbuch Einfach" = "Zapsat oznámení do Haushaltsbuch Einfach";
+"Log notification in Spartopf" = "Zapsat oznámení do Spartopf";
 "Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts." = "Zapíše platbu, o které informuje oznámení bankovní aplikace. Pro automatizaci „Oznámení“ ve Zkratkách.";
 "Title" = "Název";
 "Subtitle" = "Podnázev";

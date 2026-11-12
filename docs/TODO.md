@@ -27,7 +27,7 @@ items off, or delete them once done. The details are in each plan's notes.
   recording". The recorder hasn't run on an iPhone yet — expect a round of
   fixes in `SceneRunner.swift` on the first dry run (`DRY_RUN=1 npm run
   record:app-review`); tell Claude where it stops.
-- [ ] **Once the app is live:** *Optionen › Haushaltsbuch Einfach bewerten* opens the
+- [ ] **Once the app is live:** *Optionen › Spartopf bewerten* opens the
   review page (plan 15, app id 6829541731).
 - [ ] **Accessibility Nutrition Labels:** check the app on a device and
   declare only what passes (plan 16).
@@ -70,7 +70,7 @@ for plan 15.
   Console and upload the first bundle to *Internal testing* by hand
   (`npm run release:android -- --no-upload` builds it). From then on
   `npm run release:android` uploads by itself — give the Play service account
-  *Release apps to testing tracks* for Haushaltsbuch Einfach first
+  *Release apps to testing tracks* for Spartopf first
   (`docs/ANDROID_RELEASE.md`). A new personal developer account needs a
   closed test with 12 testers for 14 days before production.
 - [ ] Publish the updated privacy policy: `store/privacy/index.html` and
@@ -97,7 +97,7 @@ for plan 15.
 - [ ] Collect a few real notification texts from your banking apps (names
   and amounts changed) and give them to Claude: the parser was written from
   made-up samples.
-- [ ] *Teilen an Haushaltsbuch Einfach* needs a share extension — a new target in Xcode
+- [ ] *Teilen an Spartopf* needs a share extension — a new target in Xcode
   (File › New › Target › Share Extension, App Group `group.…` as the app's).
   Add the empty target; Claude can then write its code.
 
@@ -122,10 +122,10 @@ for plan 15.
 
 **Plan 18 — Siri and Shortcuts** (Claude went with option (b): Siri's
 amounts in a file only readable while the phone is unlocked)
-- [ ] In German, English and Arabic: "Ausgabe in Haushaltsbuch Einfach" (Siri asks how
+- [ ] In German, English and Arabic: "Ausgabe in Spartopf" (Siri asks how
   much), with the app closed and open — the entry is there with an undo.
-- [ ] "Was bleibt am Monatsende in Haushaltsbuch Einfach" and "Offene Rechnungen in
-  Haushaltsbuch Einfach": they answer after unlocking; with the app lock on they say to
+- [ ] "Was bleibt am Monatsende in Spartopf" and "Offene Rechnungen in
+  Spartopf": they answer after unlocking; with the app lock on they say to
   open the app.
 - [ ] The three actions in the Shortcuts app and in Spotlight.
 - [ ] This also covers plan 14's open item: an inbox entry booked while the
@@ -157,7 +157,7 @@ amounts in a file only readable while the phone is unlocked)
 - [ ] The rating prompt appears when the rule allows it: 14 days, 30 entries
   of your own, then open last month's report (with money saved) or import
   10+ entries.
-- [ ] *Über Haushaltsbuch Einfach*: *Bewerten* opens the App Store, *Feedback senden* opens
+- [ ] *Über Spartopf*: *Bewerten* opens the App Store, *Feedback senden* opens
   Mail with the versions, *Datenschutz* opens Safari.
 
 **Plan 14 — native bridge**

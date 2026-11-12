@@ -13,7 +13,7 @@ const SHARE_DIR = 'share';
  * backup, so "Rechnung 11/2026" (or worse, "../../Library/…") must not
  * become a path.
  */
-export function safeFileName(name: string, fallback = 'Haushaltsbuch Einfach'): string {
+export function safeFileName(name: string, fallback = 'Spartopf'): string {
   const dot = name.lastIndexOf('.');
   const ext = dot >= 0 && /^\.[A-Za-z0-9]{1,8}$/.test(name.slice(dot)) ? name.slice(dot) : '';
   const base = (ext ? name.slice(0, dot) : name)

@@ -27,7 +27,7 @@ const files = [
 const missing = () => files.filter(([from]) => !existsSync(join(root, from)));
 
 if (missing().length) {
-  console.log('\nHaushaltsbuch Einfach: the photo reader (tesseract.js) is not installed yet — running npm install once …\n');
+  console.log('\nSpartopf: the photo reader (tesseract.js) is not installed yet — running npm install once …\n');
   try {
     execSync('npm install --no-audit --no-fund', { cwd: root, stdio: 'inherit' });
   } catch {
@@ -37,7 +37,7 @@ if (missing().length) {
 
 const still = missing();
 if (still.length) {
-  const msg = `Haushaltsbuch Einfach: ${still.map(([from]) => from).join(', ')} missing — run "npm install". Reading photos won't work until then.`;
+  const msg = `Spartopf: ${still.map(([from]) => from).join(', ')} missing — run "npm install". Reading photos won't work until then.`;
   if (strict) throw new Error(msg);
   console.warn(`\n⚠️  ${msg}\n`);
   process.exit(0);

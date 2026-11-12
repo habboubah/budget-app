@@ -80,7 +80,7 @@ enum SpartopfIntentError: Error, CustomLocalizedStringResourceConvertible {
 
     var localizedStringResource: LocalizedStringResource {
         switch self {
-        case .unavailable: return "Haushaltsbuch Einfach can’t be reached right now."
+        case .unavailable: return "Spartopf can’t be reached right now."
         case .badAmount: return "That amount can’t be booked."
         }
     }
@@ -123,11 +123,11 @@ struct CategoryQuery: EntityStringQuery {
     }
 }
 
-/// "Ausgabe in Haushaltsbuch Einfach": an amount, and if wanted a name, a category, a day, open instead of paid.
+/// "Ausgabe in Spartopf": an amount, and if wanted a name, a category, a day, open instead of paid.
 @available(iOS 16.0, *)
 struct AddEntryIntent: AppIntent {
     static var title: LocalizedStringResource = "Add entry"
-    static var description = IntentDescription("Books an expense or an income in Haushaltsbuch Einfach.")
+    static var description = IntentDescription("Books an expense or an income in Spartopf.")
     static var openAppWhenRun = false
 
     @Parameter(title: "Amount", requestValueDialog: IntentDialog("How much?"))
@@ -178,13 +178,13 @@ struct AddEntryIntent: AppIntent {
 @available(iOS 16.0, *)
 struct MonthEndIntent: AppIntent {
     static var title: LocalizedStringResource = "What’s left at the end of the month?"
-    static var description = IntentDescription("Says what Haushaltsbuch Einfach expects in your account at the end of the month.")
+    static var description = IntentDescription("Says what Spartopf expects in your account at the end of the month.")
     static var authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
     static var openAppWhenRun = false
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let a = SharedFiles.amounts, let end = SharedFiles.cents(a["end"]), let now = SharedFiles.cents(a["now"]) else {
-            return .result(dialog: "Open Haushaltsbuch Einfach to see it.")
+            return .result(dialog: "Open Spartopf to see it.")
         }
         let atEnd = SharedFiles.money(end, a)
         let inAccount = SharedFiles.money(now, a)
@@ -196,13 +196,13 @@ struct MonthEndIntent: AppIntent {
 @available(iOS 16.0, *)
 struct OpenBillsIntent: AppIntent {
     static var title: LocalizedStringResource = "Open bills"
-    static var description = IntentDescription("Says which of this month’s bills are still open in Haushaltsbuch Einfach.")
+    static var description = IntentDescription("Says which of this month’s bills are still open in Spartopf.")
     static var authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
     static var openAppWhenRun = false
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let a = SharedFiles.amounts else {
-            return .result(dialog: "Open Haushaltsbuch Einfach to see it.")
+            return .result(dialog: "Open Spartopf to see it.")
         }
         let bills = a["bills"] as? [[String: Any]] ?? []
         guard !bills.isEmpty else {
@@ -227,11 +227,11 @@ struct OpenBillsIntent: AppIntent {
 // in the background. They take plain text, so whatever the automation's
 // "Shortcut Input" gives fits.
 
-/// "Zahlung in Haushaltsbuch Einfach erfassen" — the merchant, the amount and the card of a Wallet transaction.
+/// "Zahlung in Spartopf erfassen" — the merchant, the amount and the card of a Wallet transaction.
 @available(iOS 16.0, *)
 struct LogPaymentIntent: AppIntent {
-    static var title: LocalizedStringResource = "Log payment in Haushaltsbuch Einfach"
-    static var description = IntentDescription("Books a card payment in Haushaltsbuch Einfach. For the Transaction automation in Shortcuts.")
+    static var title: LocalizedStringResource = "Log payment in Spartopf"
+    static var description = IntentDescription("Books a card payment in Spartopf. For the Transaction automation in Shortcuts.")
     static var openAppWhenRun = false
 
     @Parameter(title: "Merchant")
@@ -257,10 +257,10 @@ struct LogPaymentIntent: AppIntent {
     }
 }
 
-/// "Mitteilung in Haushaltsbuch Einfach erfassen" — a banking app's notification: its title, subtitle and text.
+/// "Mitteilung in Spartopf erfassen" — a banking app's notification: its title, subtitle and text.
 @available(iOS 16.0, *)
 struct LogNotificationIntent: AppIntent {
-    static var title: LocalizedStringResource = "Log notification in Haushaltsbuch Einfach"
+    static var title: LocalizedStringResource = "Log notification in Spartopf"
     static var description = IntentDescription("Books the payment a banking app’s notification tells of. For the Notification automation in Shortcuts.")
     static var openAppWhenRun = false
 

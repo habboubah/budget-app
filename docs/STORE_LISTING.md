@@ -1,4 +1,4 @@
-# Store listing — Haushaltsbuch Einfach
+# Store listing — Spartopf
 
 Everything the two stores ask for, in the order their forms ask for it:
 **Google Play** (Play Console) first, then the **App Store** (App Store
@@ -19,8 +19,8 @@ to change here too.
 
 | | |
 |---|---|
-| Name on the home screen | `Haushaltsbuch Einfach` |
-| Store name | `Haushaltsbuch Einfach` (DE) · `Haushaltsbuch Einfach` (EN) · `Haushaltsbuch Einfach` (AR) |
+| Name on the home screen | `Spartopf` |
+| Store name | `Spartopf – Haushaltsbuch` (DE) · `Spartopf – Budget Book` (EN) · `Spartopf – دفتر الميزانية` (AR) |
 | Package name / bundle ID | `com.habboubah.spartopf` |
 | Apple app ID | `6829541731` |
 | Version | 1.2.11 — iOS build 15; the Android version code follows from the version (1.2.11 → 1021100) |
@@ -37,8 +37,8 @@ to change here too.
 | Sign-in needed to use the app | No |
 | Data collected | None — nothing leaves the device |
 
-If the name "Haushaltsbuch Einfach" is taken, try `Haushaltsbuch Einfach – Budget`
-or `Einfach Haushaltsbuch`. The name on the home screen stays "Haushaltsbuch Einfach".
+If the name "Spartopf – Haushaltsbuch" is taken, try `Spartopf: Haushaltsbuch`
+or `Spartopf – Budget & Sparen`. The name on the home screen stays "Spartopf".
 
 ## 2. Google Play
 
@@ -54,7 +54,7 @@ Face ID, no Siri, no Apple Pay capture.
 
 | Field | Limit | Deutsch (default) | English (United Kingdom) | العربية (Arabic) |
 |---|---|---|---|---|
-| App name | 30 | `Haushaltsbuch Einfach` (21) | `Haushaltsbuch Einfach` (21) | `Haushaltsbuch Einfach` (21) |
+| App name | 30 | `Spartopf – Haushaltsbuch` (24) | `Spartopf – Budget Book` (22) | `Spartopf – دفتر الميزانية` (25) |
 | Short description | 80 | `Dein Haushaltsbuch für jeden Monat, ohne Konto. Alles bleibt auf deinem Handy.` (78) | `Your budget book for every month, no account. Everything stays on your phone.` (77) | `دفتر ميزانيتك لكل شهر، بلا حساب. كل شيء يبقى على هاتفك.` (55) |
 
 ### 2.2 Full description (4000)
@@ -62,7 +62,7 @@ Face ID, no Siri, no Apple Pay capture.
 **Deutsch** — 2682 of 4000 characters
 
 ```
-Haushaltsbuch Einfach ist dein Haushaltsbuch für jeden Monat – kostenlos, ohne Werbung, ohne Abo und ohne Anmeldung. Alles bleibt auf deinem Handy.
+Spartopf ist dein Haushaltsbuch für jeden Monat – kostenlos, ohne Werbung, ohne Abo und ohne Anmeldung. Alles bleibt auf deinem Handy.
 
 ZWEI ZAHLEN, DIE ZÄHLEN
 Oben steht, was jetzt auf deinem Konto ist – und was am Monatsende übrig bleibt, wenn alles Offene bezahlt ist.
@@ -74,7 +74,7 @@ UMSÄTZE ÜBERNEHMEN, OHNE BANK-LOGIN
 Importiere die CSV-Datei aus deinem Online-Banking, oder fotografiere die Umsatzliste deiner Banking-App – der Text wird auf dem Handy selbst gelesen. Du prüfst jeden Umsatz, bevor er übernommen wird, und offene Rechnungen, die er bezahlt, werden abgehakt. Dein bisheriges Haushaltsbuch aus Excel holst du mit einem Import herein.
 
 SCHNELL EINGETRAGEN
-Rechne direkt im Betragsfeld (12,50+4,80), merk dir Favoriten wie Bäcker oder Tanken, teil einen Kassenbon auf mehrere Kategorien auf, häng den Beleg als Foto an und versieh Einträge mit #Tags. Beim Tippen schlägt Haushaltsbuch Einfach Namen und Kategorie vor.
+Rechne direkt im Betragsfeld (12,50+4,80), merk dir Favoriten wie Bäcker oder Tanken, teil einen Kassenbon auf mehrere Kategorien auf, häng den Beleg als Foto an und versieh Einträge mit #Tags. Beim Tippen schlägt Spartopf Namen und Kategorie vor.
 
 PLANEN
 Monatsbudgets mit dem, was pro Tag übrig ist, ein Ausblick auf die nächsten zwölf Monate, Spartöpfe für Ziele wie den Urlaub, Schulden und Kredite mit Restbetrag und Enddatum, deine Abos und Verträge mit Kündigungsfristen und eine Rücklage für jährliche Kosten. Wer von Gehalt zu Gehalt plant, lässt den Monat am Gehaltstag beginnen.
@@ -86,18 +86,18 @@ WOHIN GEHT DEIN GELD?
 Die Statistik zeigt zuerst, was auffällt, dann Einnahmen, Ausgaben und Erspartes über die Monate – nach Kategorie oder Empfänger, mit einem Bericht für jeden Monat und dem Jahresrückblick, auch als PDF.
 
 PRIVAT UND SICHER
-Kein Konto, keine Anmeldung, keine Werbung, kein Tracking, keine Google-Dienste, kein Internet nötig. Auf Wunsch sperrt sich Haushaltsbuch Einfach mit Fingerabdruck oder Gesichtserkennung und erinnert dich an offene Rechnungen. Exportierte Sicherungen sind mit einem Passwort verschlüsselt, Haushaltsbuch Einfach sichert sich zusätzlich jeden Tag auf dem Gerät, und du entscheidest, ob deine Daten ins Gerätebackup dürfen.
+Kein Konto, keine Anmeldung, keine Werbung, kein Tracking, keine Google-Dienste, kein Internet nötig. Auf Wunsch sperrt sich Spartopf mit Fingerabdruck oder Gesichtserkennung und erinnert dich an offene Rechnungen. Exportierte Sicherungen sind mit einem Passwort verschlüsselt, Spartopf sichert sich zusätzlich jeden Tag auf dem Gerät, und du entscheidest, ob deine Daten ins Gerätebackup dürfen.
 
 IN DEINER SPRACHE
 Deutsch, Englisch, Arabisch (von rechts nach links), Französisch, Spanisch, Italienisch, Portugiesisch, Niederländisch, Polnisch, Tschechisch, Schwedisch, Norwegisch, Dänisch und Türkisch.
 
-Zum Ausprobieren füllen Testdaten Haushaltsbuch Einfach mit einem Jahr Haushalt – ein Tipp nimmt sie wieder heraus.
+Zum Ausprobieren füllen Testdaten Spartopf mit einem Jahr Haushalt – ein Tipp nimmt sie wieder heraus.
 ```
 
 **English (U.K.)** — 2442 of 4000 characters
 
 ```
-Haushaltsbuch Einfach is your budget book for every month – free, with no ads, no subscription and no sign-up. Everything stays on your phone.
+Spartopf is your budget book for every month – free, with no ads, no subscription and no sign-up. Everything stays on your phone.
 
 TWO NUMBERS THAT COUNT
 At the top: what is in your account now – and what will be left at the end of the month once everything open is paid.
@@ -109,7 +109,7 @@ BRING IN TRANSACTIONS, NO BANK LOGIN
 Import the CSV file from your online banking, or photograph the transaction list in your banking app – the text is read on the phone itself. You check every transaction before it is taken over, and open bills it pays are ticked off. Your old budget spreadsheet comes in with an Excel import.
 
 QUICK TO ENTER
-Do the maths in the amount field (12.50+4.80), pin favourites like the bakery or fuel, split one receipt across categories, attach the receipt as a photo and add #tags. Haushaltsbuch Einfach suggests the name and category as you type.
+Do the maths in the amount field (12.50+4.80), pin favourites like the bakery or fuel, split one receipt across categories, attach the receipt as a photo and add #tags. Spartopf suggests the name and category as you type.
 
 PLAN
 Monthly budgets with what is left per day, an outlook on the next twelve months, savings pots for goals like a holiday, debts and loans with what is left and when they end, your subscriptions and contracts with their notice periods, and a reserve for yearly costs. If you plan from payday to payday, let the month start on payday.
@@ -121,18 +121,18 @@ WHERE DOES YOUR MONEY GO?
 The statistics show what stands out first, then income, spending and savings over the months – by category or payee, with a report for every month and the year in review, as a PDF too.
 
 PRIVATE AND SECURE
-No account, no sign-up, no ads, no tracking, no Google services, no internet needed. If you like, Haushaltsbuch Einfach locks with your fingerprint or face unlock and reminds you of open bills. Exported backups are encrypted with a password, Haushaltsbuch Einfach also backs itself up on the device every day, and you decide whether your data may go into the device backup.
+No account, no sign-up, no ads, no tracking, no Google services, no internet needed. If you like, Spartopf locks with your fingerprint or face unlock and reminds you of open bills. Exported backups are encrypted with a password, Spartopf also backs itself up on the device every day, and you decide whether your data may go into the device backup.
 
 IN YOUR LANGUAGE
 German, English, Arabic (right to left), French, Spanish, Italian, Portuguese, Dutch, Polish, Czech, Swedish, Norwegian, Danish and Turkish.
 
-To try it out, test data fills Haushaltsbuch Einfach with a year of household money – one tap takes it out again.
+To try it out, test data fills Spartopf with a year of household money – one tap takes it out again.
 ```
 
 **العربية (Arabic)** — 2026 of 4000 characters
 
 ```
-Haushaltsbuch Einfach هو دفتر ميزانيتك لكل شهر – مجاني، بلا إعلانات ولا اشتراك ولا تسجيل. كل شيء يبقى على هاتفك.
+Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إعلانات ولا اشتراك ولا تسجيل. كل شيء يبقى على هاتفك.
 
 رقمان مهمّان
 في الأعلى: ما في حسابك الآن – وما سيتبقى في نهاية الشهر بعد دفع كل ما هو معلّق.
@@ -144,7 +144,7 @@ Haushaltsbuch Einfach هو دفتر ميزانيتك لكل شهر – مجان�
 استورد ملف CSV من خدمتك المصرفية، أو صوّر قائمة الحركات في تطبيق البنك – يُقرأ النص على الهاتف نفسه. تراجع كل حركة قبل اعتمادها، ويُؤشَّر على الفواتير المعلّقة التي تسدّدها. ودفترك القديم في Excel يدخل باستيراد واحد.
 
 إدخال سريع
-احسب مباشرة في خانة المبلغ (12.50+4.80)، واحفظ المفضّلات كالمخبز أو الوقود، وقسّم إيصالاً واحداً على عدة فئات، وأرفق الإيصال كصورة، وأضف #وسوماً. يقترح Haushaltsbuch Einfach الاسم والفئة أثناء الكتابة.
+احسب مباشرة في خانة المبلغ (12.50+4.80)، واحفظ المفضّلات كالمخبز أو الوقود، وقسّم إيصالاً واحداً على عدة فئات، وأرفق الإيصال كصورة، وأضف #وسوماً. يقترح Spartopf الاسم والفئة أثناء الكتابة.
 
 التخطيط
 ميزانيات شهرية مع المتبقي لكل يوم، ونظرة على الاثني عشر شهراً القادمة، وحصّالات لأهداف كالإجازة، وديون وقروض مع المتبقي منها وموعد انتهائها، واشتراكاتك وعقودك مع مهل الإلغاء، واحتياطي للتكاليف السنوية. وإن كنت تخطط من راتب إلى راتب فاجعل الشهر يبدأ يوم الراتب.
@@ -156,12 +156,12 @@ Haushaltsbuch Einfach هو دفتر ميزانيتك لكل شهر – مجان�
 تعرض الإحصاءات أولاً ما يلفت النظر، ثم الدخل والمصاريف والمدّخرات عبر الأشهر – حسب الفئة أو المستفيد، مع تقرير لكل شهر ومراجعة للسنة، وكذلك بصيغة PDF.
 
 خصوصية وأمان
-لا حساب، لا تسجيل، لا إعلانات، لا تتبّع، لا خدمات Google، ولا حاجة إلى الإنترنت. إن شئت يُقفل Haushaltsbuch Einfach ببصمة الإصبع أو التعرّف على الوجه ويذكّرك بالفواتير المعلّقة. النسخ الاحتياطية المصدَّرة مشفّرة بكلمة مرور، ويحفظ Haushaltsbuch Einfach نسخة على الجهاز كل يوم، وأنت تقرر إن كانت بياناتك تدخل في نسخة الجهاز الاحتياطية.
+لا حساب، لا تسجيل، لا إعلانات، لا تتبّع، لا خدمات Google، ولا حاجة إلى الإنترنت. إن شئت يُقفل Spartopf ببصمة الإصبع أو التعرّف على الوجه ويذكّرك بالفواتير المعلّقة. النسخ الاحتياطية المصدَّرة مشفّرة بكلمة مرور، ويحفظ Spartopf نسخة على الجهاز كل يوم، وأنت تقرر إن كانت بياناتك تدخل في نسخة الجهاز الاحتياطية.
 
 بلغتك
 الألمانية والإنجليزية والعربية (من اليمين إلى اليسار) والفرنسية والإسبانية والإيطالية والبرتغالية والهولندية والبولندية والتشيكية والسويدية والنرويجية والدنماركية والتركية.
 
-للتجربة، تملأ البيانات التجريبية Haushaltsbuch Einfach بسنة من مصاريف البيت – ونقرة واحدة تزيلها.
+للتجربة، تملأ البيانات التجريبية Spartopf بسنة من مصاريف البيت – ونقرة واحدة تزيلها.
 ```
 
 ### 2.3 Graphics
@@ -186,7 +186,7 @@ preview assets: the listing stays up, but Play promotes and recommends such
 assets less readily. The App Store set has neither the ribbon nor the points
 about the price (Apple rejects price words on screenshots, guideline 2.3.7);
 it keeps *Keine Werbung* and *Nichts verlässt dein Handy*. All of it is only
-true while Haushaltsbuch Einfach costs nothing: with a paid Plus the ribbon and the price
+true while Spartopf costs nothing: with a paid Plus the ribbon and the price
 points come off (`.claude/skills/store-screenshot-studio/reference/store-specs.md`).
 
 ### 2.4 Store settings
@@ -258,7 +258,7 @@ number.
 
 ## 3. App Store
 
-App Store Connect → **Haushaltsbuch Einfach**. German is the primary language; English
+App Store Connect → **Spartopf**. German is the primary language; English
 (U.K.) and Arabic are added from the language menu (Arabic also under **App
 Information → Localizable Information → +**).
 
@@ -266,7 +266,7 @@ Information → Localizable Information → +**).
 
 | Field | Limit | Deutsch (primary) | English (U.K.) | العربية (Arabic) |
 |---|---|---|---|---|
-| Name | 30 | `Haushaltsbuch Einfach` (21) | `Haushaltsbuch Einfach` (21) | `Haushaltsbuch Einfach` (21) |
+| Name | 30 | `Spartopf – Haushaltsbuch` (24) | `Spartopf – Budget Book` (22) | `Spartopf – دفتر الميزانية` (25) |
 | Subtitle | 30 | `Haushaltsbuch ohne Konto` (24) | `Private budget, no account` (26) | `ميزانية خاصة دون تسجيل` (22) |
 | Category | — | Primary **Finance** · Secondary **Productivity** | (same) | (same) |
 | Age rating | — | 4+ (answer "None" / "No" everywhere) | (same) | (same) |
@@ -298,7 +298,7 @@ subtitle count anyway, so they aren't repeated.
 **Deutsch** — 2310 of 4000 characters
 
 ```
-Haushaltsbuch Einfach ist dein Haushaltsbuch für jeden Monat – kostenlos, ohne Werbung, ohne Abo und ohne Anmeldung. Alles bleibt auf deinem iPhone.
+Spartopf ist dein Haushaltsbuch für jeden Monat – kostenlos, ohne Werbung, ohne Abo und ohne Anmeldung. Alles bleibt auf deinem iPhone.
 
 ZWEI ZAHLEN, DIE ZÄHLEN
 Oben steht, was jetzt auf deinem Konto ist – und was am Monatsende übrig bleibt, wenn alles Offene bezahlt ist.
@@ -310,7 +310,7 @@ UMSÄTZE ÜBERNEHMEN, OHNE BANK-LOGIN
 Importiere die CSV-Datei aus deinem Online-Banking, oder fotografiere die Umsatzliste deiner Banking-App – der Text wird auf dem iPhone selbst gelesen. Du prüfst jeden Umsatz, bevor er übernommen wird, und offene Rechnungen, die er bezahlt, werden abgehakt. Dein bisheriges Haushaltsbuch aus Excel holst du mit einem Import herein.
 
 SCHNELL EINGETRAGEN
-Rechne direkt im Betragsfeld (12,50+4,80), merk dir Favoriten wie Bäcker oder Tanken, teil einen Kassenbon auf mehrere Kategorien auf und versieh Einträge mit #Tags. Beim Tippen schlägt Haushaltsbuch Einfach Namen und Kategorie vor.
+Rechne direkt im Betragsfeld (12,50+4,80), merk dir Favoriten wie Bäcker oder Tanken, teil einen Kassenbon auf mehrere Kategorien auf und versieh Einträge mit #Tags. Beim Tippen schlägt Spartopf Namen und Kategorie vor.
 
 PLANEN
 Monatsbudgets mit dem, was pro Tag übrig ist, ein Ausblick auf die nächsten zwölf Monate, Spartöpfe für Ziele wie den Urlaub, deine Abos und Verträge mit Kündigungsfristen und eine Rücklage für jährliche Kosten.
@@ -319,18 +319,18 @@ WOHIN GEHT DEIN GELD?
 Die Statistik zeigt zuerst, was auffällt, dann Einnahmen, Ausgaben und Erspartes über die Monate – nach Kategorie oder Empfänger, mit einem Bericht für jeden Monat und dem Jahresrückblick.
 
 PRIVAT UND SICHER
-Kein Konto, keine Anmeldung, keine Werbung, kein Tracking, kein Internet nötig. Auf Wunsch sperrt sich Haushaltsbuch Einfach mit Face ID und erinnert dich an offene Rechnungen. Exportierte Sicherungen sind mit einem Passwort verschlüsselt, Haushaltsbuch Einfach sichert sich zusätzlich jeden Tag auf dem iPhone, und alles lässt sich als CSV für Excel exportieren.
+Kein Konto, keine Anmeldung, keine Werbung, kein Tracking, kein Internet nötig. Auf Wunsch sperrt sich Spartopf mit Face ID und erinnert dich an offene Rechnungen. Exportierte Sicherungen sind mit einem Passwort verschlüsselt, Spartopf sichert sich zusätzlich jeden Tag auf dem iPhone, und alles lässt sich als CSV für Excel exportieren.
 
 IN DEINER SPRACHE
 Deutsch, Englisch, Arabisch (von rechts nach links), Französisch, Spanisch, Italienisch, Portugiesisch, Niederländisch, Polnisch, Tschechisch, Schwedisch, Norwegisch, Dänisch und Türkisch.
 
-Zum Ausprobieren füllen Testdaten Haushaltsbuch Einfach mit einem Jahr Haushalt – ein Tipp nimmt sie wieder heraus.
+Zum Ausprobieren füllen Testdaten Spartopf mit einem Jahr Haushalt – ein Tipp nimmt sie wieder heraus.
 ```
 
 **English (U.K.)** — 2123 of 4000 characters
 
 ```
-Haushaltsbuch Einfach is your household budget book, month by month – free, with no ads, no subscription and no sign-up. Everything stays on your iPhone.
+Spartopf is your household budget book, month by month – free, with no ads, no subscription and no sign-up. Everything stays on your iPhone.
 
 THE TWO NUMBERS THAT MATTER
 At the top: what is in your account right now – and what will be left at the end of the month once everything open is paid.
@@ -342,7 +342,7 @@ TRANSACTIONS IN, WITHOUT A BANK LOGIN
 Import the CSV file from your online banking, or take a photo or screenshot of the transaction list in your banking app – the text is read on the iPhone itself. You check every transaction before it goes in, and open bills it pays are ticked off. Bring your old budget spreadsheet over from Excel in one import.
 
 QUICK TO ENTER
-Do the maths in the amount field (12.50+4.80), pin favourites like the bakery or fuel, split one receipt across categories and add #tags. Haushaltsbuch Einfach suggests the name and category as you type.
+Do the maths in the amount field (12.50+4.80), pin favourites like the bakery or fuel, split one receipt across categories and add #tags. Spartopf suggests the name and category as you type.
 
 PLAN AHEAD
 Monthly budgets with what's left per day, an outlook for the next twelve months, savings pots for goals like a holiday, your subscriptions and contracts with their notice deadlines, and a reserve for yearly bills.
@@ -351,18 +351,18 @@ WHERE DOES YOUR MONEY GO?
 Statistics open with what's worth a look, then income, spending and savings over the months – by category or by payee, with a report for every month and a year in review.
 
 PRIVATE AND SAFE
-No account, no sign-up, no ads, no tracking, no internet needed. If you like, Haushaltsbuch Einfach locks with Face ID and reminds you of open bills. Exported backups are encrypted with a password, Haushaltsbuch Einfach also backs itself up on your iPhone every day, and everything exports as CSV for Excel.
+No account, no sign-up, no ads, no tracking, no internet needed. If you like, Spartopf locks with Face ID and reminds you of open bills. Exported backups are encrypted with a password, Spartopf also backs itself up on your iPhone every day, and everything exports as CSV for Excel.
 
 IN YOUR LANGUAGE
 English, German, Arabic (right to left), French, Spanish, Italian, Portuguese, Dutch, Polish, Czech, Swedish, Norwegian, Danish and Turkish.
 
-To try it out, test data fills Haushaltsbuch Einfach with a year of household money – one tap takes it out again.
+To try it out, test data fills Spartopf with a year of household money – one tap takes it out again.
 ```
 
 **العربية (Arabic)** — 1833 of 4000 characters
 
 ```
-Haushaltsbuch Einfach هو دفتر ميزانيتك لكل شهر – مجاني، بلا إعلانات ولا اشتراك ولا تسجيل. وتبقى كل بياناتك على جهازك.
+Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إعلانات ولا اشتراك ولا تسجيل. وتبقى كل بياناتك على جهازك.
 
 رقمان يهمّانك
 في الأعلى ترى ما في حسابك الآن، وما سيتبقى في نهاية الشهر بعد دفع كل البنود المعلّقة.
@@ -374,7 +374,7 @@ Haushaltsbuch Einfach هو دفتر ميزانيتك لكل شهر – مجان�
 استورد ملف CSV من خدمتك المصرفية عبر الإنترنت، أو التقط صورة أو لقطة شاشة لقائمة الحركات في تطبيق البنك – ويُقرأ النص على جهازك نفسه. تراجع كل حركة قبل إضافتها، وتُحدَّد الفواتير المعلّقة التي تسدّدها كمدفوعة. ويمكنك نقل دفتر ميزانيتك القديم من Excel باستيراد واحد.
 
 إدخال سريع
-احسب مباشرةً في حقل المبلغ، مثل 12.50+4.80، واحفظ مفضّلاتك مثل المخبز أو الوقود، وقسّم فاتورة واحدة على عدة فئات، وأضِف وسومًا مثل ‎#إجازة. وأثناء الكتابة يقترح Haushaltsbuch Einfach الاسم والفئة.
+احسب مباشرةً في حقل المبلغ، مثل 12.50+4.80، واحفظ مفضّلاتك مثل المخبز أو الوقود، وقسّم فاتورة واحدة على عدة فئات، وأضِف وسومًا مثل ‎#إجازة. وأثناء الكتابة يقترح Spartopf الاسم والفئة.
 
 التخطيط
 ميزانيات شهرية مع ما يتبقى لك يوميًا، ونظرة إلى الأشهر الاثني عشر القادمة، وأوعية ادخار لأهداف مثل الإجازة، واشتراكاتك وعقودك مع مواعيد إلغائها، واحتياطي للتكاليف السنوية.
@@ -383,12 +383,12 @@ Haushaltsbuch Einfach هو دفتر ميزانيتك لكل شهر – مجان�
 تبدأ الإحصاءات بما يلفت النظر، ثم الدخل والمصاريف والادخار على مدى الأشهر – حسب الفئة أو المستفيد، مع تقرير لكل شهر ومراجعة للعام.
 
 خاص وآمن
-لا حساب ولا تسجيل ولا إعلانات ولا تتبّع، ولا حاجة إلى الإنترنت. وإن شئت، يُقفَل Haushaltsbuch Einfach بـ Face ID ويذكّرك بالفواتير المعلّقة. النسخ الاحتياطية المُصدَّرة مشفّرة بكلمة مرور، ويحفظ Haushaltsbuch Einfach نسخة احتياطية على جهازك كل يوم، ويمكنك تصدير كل شيء بصيغة CSV لـ Excel.
+لا حساب ولا تسجيل ولا إعلانات ولا تتبّع، ولا حاجة إلى الإنترنت. وإن شئت، يُقفَل Spartopf بـ Face ID ويذكّرك بالفواتير المعلّقة. النسخ الاحتياطية المُصدَّرة مشفّرة بكلمة مرور، ويحفظ Spartopf نسخة احتياطية على جهازك كل يوم، ويمكنك تصدير كل شيء بصيغة CSV لـ Excel.
 
 بلغتك
 العربية (من اليمين إلى اليسار)، والألمانية، والإنجليزية، والفرنسية، والإسبانية، والإيطالية، والبرتغالية، والهولندية، والبولندية، والتشيكية، والسويدية، والنرويجية، والدنماركية، والتركية.
 
-وللتجربة، تملأ البيانات التجريبية Haushaltsbuch Einfach بسنة كاملة من ميزانية المنزل – ولمسة واحدة تزيلها.
+وللتجربة، تملأ البيانات التجريبية Spartopf بسنة كاملة من ميزانية المنزل – ولمسة واحدة تزيلها.
 ```
 
 ### 3.5 The rest of the version page
@@ -433,7 +433,7 @@ happen on the iPhone, so the answer stays the same with them.
 Attached: a screen recording from an iPhone [model] on iOS [version]. It starts with launching the app and shows every feature: setting up the first month, adding, splitting and ticking off entries, the Excel import, the bank CSV import, reading transactions from a photo, statistics, planning, settings, backup and restore, reminders and the Face ID lock. All names and amounts in it are invented.
 
 2) Purpose and target audience
-Haushaltsbuch Einfach is a household budget book for private individuals and families who keep track of their monthly income and expenses, as a replacement for a monthly spreadsheet. Every entry is either paid or still open, and the app shows two balances: what is in the account now, and what will be left at the end of the month once everything open is paid.
+Spartopf is a household budget book for private individuals and families who keep track of their monthly income and expenses, as a replacement for a monthly spreadsheet. Every entry is either paid or still open, and the app shows two balances: what is in the account now, and what will be left at the end of the month once everything open is paid.
 
 3) How to use the app
 No login, account or sample files are needed. To see every screen filled in: Settings > Try it out > Add test data (a year of invented household data; Remove test data takes it out again).
@@ -456,7 +456,7 @@ None. The app makes no network requests: no server, no account or authentication
 None. The app works the same in all regions. The interface is available in 14 languages (German, English, Arabic, French, Spanish, Italian, Portuguese, Dutch, Polish, Czech, Swedish, Norwegian, Danish, Turkish) and follows the device language. The currency is suggested from the device region and only changes the symbol shown; nothing is converted.
 
 6) Regulated industry / third-party material
-Not applicable. Haushaltsbuch Einfach is a personal record-keeping tool. It does not connect to banks, move or hold money, offer financial products or give personal financial advice; the money check shows general rules of thumb and explains how each figure is worked out. It contains no protected third-party material.
+Not applicable. Spartopf is a personal record-keeping tool. It does not connect to banks, move or hold money, offer financial products or give personal financial advice; the money check shows general rules of thumb and explains how each figure is worked out. It contains no protected third-party material.
 
 Thank you for your time.
 ```

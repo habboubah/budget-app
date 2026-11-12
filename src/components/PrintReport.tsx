@@ -31,10 +31,10 @@ export interface PrintSpec {
   entries: boolean;
 }
 
-/** The file name the share sheet shows: "Haushaltsbuch Einfach Monatsbericht November 2026.pdf". */
+/** The file name the share sheet shows: "Spartopf Monatsbericht November 2026.pdf". */
 export function reportFileName(spec: PrintSpec, t: Strings): string {
   const what = spec.kind === 'month' ? `${t.reportTitle} ${monthLabel(spec.month, t.locale)}` : `${spec.kind === 'tax' ? t.taxTitle : t.yearTitle} ${spec.year}`;
-  return `Haushaltsbuch Einfach ${what}`.replace(/[\\/:*?"<>|]/g, '-');
+  return `Spartopf ${what}`.replace(/[\\/:*?"<>|]/g, '-');
 }
 
 export function PrintReport({ spec, book, data, language, accent, t, today = new Date() }: {
@@ -50,7 +50,7 @@ export function PrintReport({ spec, book, data, language, accent, t, today = new
   return createPortal(
     <div className="print-root text-fg" data-theme="light" data-accent={accent} dir={t.dir} lang={language}>
       <header className="print-head">
-        <p className="text-caption text-fg-mute">Haushaltsbuch Einfach</p>
+        <p className="text-caption text-fg-mute">Spartopf</p>
         <h1 className="display text-title2 font-bold text-fg wrap-compound">{title}</h1>
       </header>
       <div className="space-y-3">

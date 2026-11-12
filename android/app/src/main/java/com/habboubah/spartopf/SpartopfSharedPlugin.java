@@ -48,7 +48,7 @@ public class SpartopfSharedPlugin extends Plugin {
     static final String PREFS = "spartopf";
     static final String SECURE = "secure";
 
-    /** Hosts `open` may hand to Android (Optionen › Über Haushaltsbuch Einfach, src/links.ts). */
+    /** Hosts `open` may hand to Android (Optionen › Über Spartopf, src/links.ts). */
     private static final Set<String> OPEN_HOSTS = new HashSet<>(Arrays.asList("play.google.com", "habboubah.github.io"));
 
     /** FLAG_SECURE as last chosen — called by MainActivity before the web view shows anything. */
@@ -127,8 +127,8 @@ public class SpartopfSharedPlugin extends Plugin {
 
     @PluginMethod
     public void makePdf(PluginCall call) {
-        String asked = call.getString("name", "Haushaltsbuch Einfach");
-        String name = (asked == null ? "Haushaltsbuch Einfach" : asked).replaceAll("[/\\\\:*?\"<>|]", "-");
+        String asked = call.getString("name", "Spartopf");
+        String name = (asked == null ? "Spartopf" : asked).replaceAll("[/\\\\:*?\"<>|]", "-");
         getActivity().runOnUiThread(() -> {
             try {
                 PrintManager manager = (PrintManager) getActivity().getSystemService(Context.PRINT_SERVICE);
@@ -171,7 +171,7 @@ public class SpartopfSharedPlugin extends Plugin {
     @PluginMethod
     public void removeAmounts(PluginCall call) { call.resolve(); }
 
-    /** Google's in-app review needs Play Services' library; the app has none. *Haushaltsbuch Einfach bewerten* opens the Play page instead. */
+    /** Google's in-app review needs Play Services' library; the app has none. *Spartopf bewerten* opens the Play page instead. */
     @PluginMethod
     public void requestReview(PluginCall call) { call.resolve(); }
 }

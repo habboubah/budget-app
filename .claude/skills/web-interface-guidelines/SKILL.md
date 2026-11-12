@@ -1,10 +1,10 @@
 ---
 name: web-interface-guidelines
-description: Review UI code against Vercel's Web Interface Guidelines (accessibility, focus, forms, touch, safe areas, animation, typography, i18n), pinned locally and adjusted to Haushaltsbuch Einfach's native-iOS rules. Use when asked to review UI code, check accessibility or touch behaviour, audit a component or screen, or before calling a UI change done.
+description: Review UI code against Vercel's Web Interface Guidelines (accessibility, focus, forms, touch, safe areas, animation, typography, i18n), pinned locally and adjusted to Spartopf's native-iOS rules. Use when asked to review UI code, check accessibility or touch behaviour, audit a component or screen, or before calling a UI change done.
 argument-hint: <file-or-pattern>
 ---
 
-# Web Interface Guidelines (pinned, Haushaltsbuch Einfach edition)
+# Web Interface Guidelines (pinned, Spartopf edition)
 
 The rules are in [reference/command.md](reference/command.md): Vercel's
 guidelines, copied unchanged at a pinned commit (see SOURCE.md). Never fetch
@@ -23,7 +23,7 @@ Precedence: **CLAUDE.md, then the overrides below, then `command.md`.**
 
 ## Overrides for this app
 
-Haushaltsbuch Einfach is a client-only React app inside an iOS web view (Capacitor), with
+Spartopf is a client-only React app inside an iOS web view (Capacitor), with
 no router, no server and native-iOS styling rules. These rules from
 `command.md` change or don't apply:
 

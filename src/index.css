@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Haushaltsbuch Einfach design tokens — native iOS, vivid, with depth
+   Spartopf design tokens — native iOS, vivid, with depth
    ----------------------------------------------------------------------------
    Built like a finance app of today: a cool, light canvas lit by the accent
    at the top of every page, white cards that float on a soft shadow (ink-blue
@@ -880,12 +880,12 @@ input[type="search"]::-webkit-search-results-button {
    and the currency signs; only the Android app asks for it (main.tsx sets
    data-platform), so the iPhone and the web keep their own. */
 @font-face {
-  font-family: "Haushaltsbuch Einfach Rounded";
+  font-family: "Spartopf Rounded";
   font-style: normal;
   font-weight: 200 1000;
   font-display: swap;
   src: url("./assets/fonts/nunito-latin-wght-normal.woff2") format("woff2-variations");
 }
 html[data-platform="android"] {
-  --font-rounded: "Haushaltsbuch Einfach Rounded", system-ui, Roboto, sans-serif;
+  --font-rounded: "Spartopf Rounded", system-ui, Roboto, sans-serif;
 }

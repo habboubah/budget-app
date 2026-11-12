@@ -1,4 +1,4 @@
-// Release Haushaltsbuch Einfach to both stores on one version, the way pizza-driver-log
+// Release Spartopf to both stores on one version, the way pizza-driver-log
 // ships Fahrtwerk: gate -> one version for both -> web build -> Android (signed
 // AAB -> Play's internal test track) -> iOS (xcodebuild archive -> App Store
 // Connect, lands in TestFlight) -> commit + tag. Submitting for App Review and
@@ -289,7 +289,7 @@ try {
 } catch (error) {
   if (shipped.length) {
     record();
-    console.error(`\nHaushaltsbuch Einfach v${newVersion} is on ${shipped.map(t => storeName[t]).join(' and ')}, but the iPhone build did not go through.`);
+    console.error(`\nSpartopf v${newVersion} is on ${shipped.map(t => storeName[t]).join(' and ')}, but the iPhone build did not go through.`);
     console.error(`Fix the error below, then: npm run release:ios — it ships ${newVersion} there too.`);
   } else {
     console.error(`\nNothing was released. package.json and the Xcode project already say ${newVersion}; the next run ships that version.`);
@@ -306,7 +306,7 @@ const where = [
   shipped.includes('ios') && `App Store Connect (build ${newBuild})`,
   shipped.includes('android') && `Google Play (version code ${play.versionCode}, ${android.track} track${play.status === 'draft' ? ', as a draft' : ''})`,
 ].filter(Boolean).join(' + ');
-console.log(`\nDone: Haushaltsbuch Einfach v${newVersion} uploaded to ${where}.`);
+console.log(`\nDone: Spartopf v${newVersion} uploaded to ${where}.`);
 if (shipped.includes('ios')) {
   console.log('iPhone: it shows up in TestFlight after Apple finishes processing (usually 5–30 min).');
   console.log('        Then submit it for review in App Store Connect — see docs/APP_STORE_RELEASE.md, step 9.');

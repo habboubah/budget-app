@@ -30,7 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 try? fm.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
                 #if DEBUG
                 let protection = (try? fm.attributesOfItem(atPath: url.path))?[.protectionKey] as? FileProtectionType
-                print("[Haushaltsbuch Einfach] \(url.path.replacingOccurrences(of: library.path, with: "Library")): \(protection?.rawValue ?? "unknown")")
+                print("[Spartopf] \(url.path.replacingOccurrences(of: library.path, with: "Library")): \(protection?.rawValue ?? "unknown")")
                 #endif
             }
         }
