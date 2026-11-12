@@ -12,6 +12,12 @@ items off, or delete them once done. The details are in each plan's notes.
   plan 28's `makePdf` and plan 18's Siri code.
 - [ ] **Push** when you're ready: `main` is ahead of GitHub (`git status`
   shows how far).
+- [ ] **The new app icon** (the household book with the euro coin, 12 Nov):
+  both stores take it from the next build (`npm run release`). Google Play's
+  listing has its own copy: Play Console → *Store listing* → *App icon* →
+  `screenshots/store/play-icon-512.png`. Then look at it on a phone: the home
+  screen (on Android round and squircle), the splash in light and dark,
+  *Optionen* and the lock screen.
 
 ## App Store
 

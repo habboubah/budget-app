@@ -10,7 +10,7 @@
     "build:ios": "vite build && npx cap sync ios && npx cap open ios",
     "build:android": "vite build && npx cap sync android && npx cap open android",
     "android:debug": "vite build && npx cap sync android && cd android && ./gradlew assembleDebug",
-    "assets:generate": "npx @capacitor/assets generate --ios --iconBackgroundColor '#10313A' --splashBackgroundColor '#F2F2F7' --splashBackgroundColorDark '#000000'",
+    "assets:generate": "npx @capacitor/assets generate --ios --iconBackgroundColor '#076070' --splashBackgroundColor '#F2F2F7' --splashBackgroundColorDark '#000000'",
     "screenshots": "node scripts/screenshots.mjs",
     "guide-shots": "node scripts/guide-shots.mjs",
     "rehearse:app-review": "node scripts/rehearse-app-review.mjs",

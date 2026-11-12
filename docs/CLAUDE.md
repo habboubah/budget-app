@@ -1182,7 +1182,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | Web build | `npm run build:web` |
 | Build + open Xcode | `npm run build:ios` |
 | Build + open Android Studio / a debug APK | `npm run build:android` / `npm run android:debug` |
-| Regenerate icons/splash | `npm run assets:generate` |
+| Regenerate the iOS icon and splash from `assets/` | `npm run assets:generate` (the drawing is `public/icon.svg`; `assets/icon-only.png` is its 1024 px render and `assets/splash*.png` carry it as a tile; the Android launcher icons and splashes in `android/app/src/main/res/`, the PWA icons in `public/` and `screenshots/store/play-icon-512.png` are rendered from the same drawing, not by this command) |
 | Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` (`stats-rhythm` and `insights-runway` show a picked day and a chart in hand; `guide*`, `tour-*`, `point-*`, `guide-back` and `hint-guide` the guide and its topics, the tours, what Zeigen lights up, the way back, and its tip) |
 | App Store screenshots: raw captures (DE + EN) / the framed 6.3-inch set | `npm run screenshots` / `npm run store-screenshots` |
 | Rewrite `docs/plans/glossary.md` from the app's strings | `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts` |
