@@ -4,8 +4,12 @@ Drafts for App Store Connect and the Play Console in the languages the app
 speaks beyond German, English and Arabic (those three are in `listing.md` and
 `play-listing.md`). **Machine-drafted: each needs a native speaker
 before it goes live** — the glossary in `docs/plans/glossary.md` has the app's own
-terms to check against. Until a language is reviewed, leave its store listing
-on English.
+terms to check against.
+
+Google Play uses fuller texts: `play-listing-languages.md` has the name, short
+description and full Android description in all eleven, and is in the Play
+Console since 12 Nov 2026. The short descriptions below are the earlier
+drafts; on Play they say "no ads", which Play flags as a promotion keyword.
 
 One description serves both stores: it names no platform, no Face ID and no
 Google. Limits: name 30, subtitle 30 (App Store), short description 80

@@ -27,7 +27,7 @@ to change here too.
 | Runs on | iOS 15.0 and later · Android 7.0 (API 24) and later, target API 36 |
 | Developer | Ahmad Habboubah |
 | Contact email | ahmad.habboubah@gmail.com |
-| Default language | German (de-DE); also English (U.K.) and Arabic |
+| Default language | German (de-DE); also English (U.K.) and Arabic. Google Play also has the eleven other languages of the app (section 4) |
 | Category | Finance |
 | Price | Free — no ads, no in-app purchases, no subscription |
 | Privacy policy (DE) | https://habboubah.github.io/privacy-policy/spartopf/de/ |
@@ -43,7 +43,9 @@ or `Spartopf – Budget & Sparen`. The name on the home screen stays "Spartopf".
 ## 2. Google Play
 
 Play Console → **Grow › Store presence › Main store listing**. German is the
-default; add English (United Kingdom) and Arabic under **Manage translations**.
+default; English (United Kingdom) and Arabic are added under **Manage
+translations**, the eleven other languages by importing
+`store/play-listing-languages.md` (section 4).
 
 The texts describe the Android app: fingerprint or face unlock instead of
 Face ID, no Siri, no Apple Pay capture.
@@ -450,10 +452,23 @@ Thank you for your time.
 ## 4. The eleven other languages
 
 French, Spanish, Italian, Portuguese, Dutch, Swedish, Norwegian, Danish,
-Polish, Czech and Turkish: name, subtitle, short description, keywords,
-promotional text and description for each are in
-`store/listing-languages.md`. They are machine-drafted. Until a native speaker
-has read a language, leave its store listing on English.
+Polish, Czech and Turkish.
+
+**Google Play** has all eleven (saved as a draft on 12 Nov 2026). The texts are
+in `store/play-listing-languages.md`: name, short description and the full
+Android description, translated from the English one above, with the app's
+own terms from `docs/plans/glossary.md`. That file is also what Play's
+*Import translations with AI* takes (default store listing → **Import a
+file**): it finds the languages and fills each one. Change a text there and
+import it again, or edit the language in the Console — and keep the file in
+step.
+
+**App Store**: name, subtitle, keywords, promotional text and a short
+description for each are in `store/listing-languages.md`, not entered yet.
+
+All eleven are machine-translated and nobody fluent has read them yet. Have a
+native speaker read a language when one is at hand, starting with the
+biggest markets.
 
 ## 5. Still open before publishing
 
