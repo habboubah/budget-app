@@ -100,7 +100,7 @@ describe('the guide’s pages (src/i18n/guide/), in every language', () => {
     expect(guideText(de, 'guideSplitSteps')).toContain(de.splitPayAction);
     expect(guideText(de, 'guideSplitSteps')).toContain(de.refund);
     expect(guideText(de, 'guideAddSteps')).toMatch(/^Tippe unten rechts auf \+\./);
-    expect(guideText(words('en'), 'tourTabs')).toBe('“Statistics” looks back, “Plan” looks ahead. Under “Settings” you’ll find the whole guide.');
+    expect(guideText(words('en'), 'tourTabs')).toBe('“Statistics” looks back, “Plan” looks ahead. Under “More” you’ll find the whole guide.');
     expect(Object.values(guideLabels(translations.ar)).every(Boolean)).toBe(true);
   });
 

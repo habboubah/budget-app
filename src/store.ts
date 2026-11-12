@@ -230,7 +230,7 @@ export function useAppStore() {
   /** Plan 19: captured payments wait under *Neu* instead of being booked at once. */
   const [captureReview, setCaptureReview] = useState(() => readString(K.captureReview) === '1');
   useEffect(() => { persist(K.captureReview, captureReview ? '1' : '0'); }, [captureReview]);
-  /** The entry sheet offers the tax mark (schema 29) — off until switched on under Optionen › Steuerliste. A view preference. */
+  /** The entry sheet offers the tax mark (schema 29) — off until switched on under Mehr › Steuerliste. A view preference. */
   const [taxMarks, setTaxMarks] = useState(() => readString(K.taxMarks) === '1');
   useEffect(() => { persist(K.taxMarks, taxMarks ? '1' : '0'); }, [taxMarks]);
   useEffect(() => { persist(K.account, accountView); }, [accountView]);
@@ -286,7 +286,7 @@ export function useAppStore() {
     }),
     [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts, monthStart, projects],
   );
-  /** Whether the book holds test data: Optionen offers to remove it instead of adding it. */
+  /** Whether the book holds test data: Einstellungen offers to remove it instead of adding it. */
   const hasDemo = useMemo(() => hasDemoData(data), [data]);
   // Every change to the book goes to storage (debounced, written atomically; storage.ts).
   useEffect(() => { saver.save(data); }, [data]);
@@ -725,7 +725,7 @@ export function useAppStore() {
   };
 
   /**
-   * Optionen → Testdaten: a year of test data beside the user's own (src/demo.ts),
+   * Mehr › Einstellungen › Testdaten: a year of test data beside the user's own (src/demo.ts),
    * named in German when the app is in German, else in English. Returns the book as it was, for undo.
    */
   const addDemo = (): AppData => restoreData(addDemoData(data, { today: new Date(), language }));
@@ -734,7 +734,7 @@ export function useAppStore() {
   const removeDemo = (): AppData => restoreData(removeDemoData(data));
 
   /**
-   * Optionen › Monat beginnt am (plan 32): every dated entry moves to the
+   * Mehr › Einstellungen › Monat beginnt am (plan 32): every dated entry moves to the
    * month it now belongs to. Returns the book as it was, for undo.
    */
   const changeStart = (day: number): AppData => restoreData(changeMonthStart(data, day).data);

@@ -8,7 +8,7 @@ import { Empty, Group, IconTile, Row, Screen } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
 
 /**
- * Optionen → Sichern und übertragen → Automatische Sicherungen (pushed, plan
+ * Mehr › Sichern und übertragen › Automatische Sicherungen (pushed, plan
  * 03): the versions Spartopf keeps on the device, newest first, each
  * restorable with a preview and an undo. A torn snapshot shows as "beschädigt"
  * but never breaks the list. Everything stays on the device.

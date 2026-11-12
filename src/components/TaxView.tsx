@@ -45,7 +45,7 @@ export function TaxListBody({ list, t }: { list: TaxYear; t: Strings }) {
 }
 
 /**
- * Optionen → Haushaltsbuch → Steuerliste (pushed, schema 29): the switch that
+ * Mehr › Werkzeuge › Steuerliste (pushed, schema 29): the switch that
  * puts the tax mark into the entry sheet, and the year's marked expenses by
  * kind, to share as a PDF.
  */

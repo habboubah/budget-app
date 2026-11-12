@@ -73,7 +73,7 @@ export const knowGestures = (state: TipState): TipState =>
   (GESTURE_TIPS.every(id => state.done.includes(id)) ? state : { ...state, done: [...new Set([...state.done, ...GESTURE_TIPS])] });
 
 /**
- * The guide has been met another way — opened from Optionen, the tour taken,
+ * The guide has been met another way — opened from Mehr, the tour taken,
  * the gestures card with its link put away: its tip is done, without a pause.
  */
 export const knowGuide = (state: TipState): TipState =>

@@ -12,7 +12,7 @@ export interface Tab<T extends string> {
 
 /**
  * The tab bar as iOS 26 draws it: a floating Liquid Glass capsule above the
- * home indicator — Monat · Statistik · Planen · Optionen, the current one on a
+ * home indicator — Monat · Statistik · Planen · Mehr, the current one on a
  * soft pill in the accent's tint — and, beside it, the round add button on the
  * accent's gradient, in thumb reach on every tab. The page shows through the
  * glass; a short fade keeps the home indicator's strip calm.

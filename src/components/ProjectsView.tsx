@@ -36,7 +36,7 @@ function rows(list: ProjectStatus[], t: Strings, onEdit: (id: string) => void) {
 }
 
 /**
- * Optionen → Haushaltsbuch → Reisen und Projekte (pushed, schema 28): a
+ * Mehr › Werkzeuge › Reisen und Projekte (pushed, schema 28): a
  * holiday, a move, the baby's room — each a tag with a budget and dates. The
  * way in for the first one; Planen's card appears once there is one.
  */

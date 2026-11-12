@@ -3,7 +3,7 @@ import type { GuidePages } from './i18n/guide/de';
 import type { MarkId, TourId } from './guideKit';
 
 /*
- * The guide (Optionen › Anleitung), the tours, and what *Zeigen* points at.
+ * The guide (Mehr › Anleitung), the tours, and what *Zeigen* points at.
  *
  * How other apps teach, and what was taken from it: Apple's guidelines ask
  * for onboarding that is fast, optional and found again later in a help or
@@ -34,7 +34,7 @@ export type GuideChapter = (typeof GUIDE_CHAPTERS)[number];
 /** Where *Zeigen* leads: a tab, a pushed screen, the entry sheet or the month start's sheet. */
 export type GuideAction =
   | 'month' | 'stats' | 'insights' | 'settings'
-  | 'entry' | 'monthStart' | 'report'
+  | 'entry' | 'monthStart' | 'report' | 'preferences'
   | 'categories' | 'dueSoon' | 'favorites' | 'capture' | 'goals' | 'contracts' | 'debts'
   | 'transfer' | 'accounts' | 'projects' | 'tax' | 'reminders';
 
@@ -91,9 +91,9 @@ export const GUIDE_TOPICS = [
 
   { id: 'private', chapter: 'safe', title: 'guidePrivate' },
   { id: 'backup', chapter: 'safe', title: 'transferTitle', action: 'transfer', tour: 'settings' },
-  { id: 'lock', chapter: 'safe', title: 'guideLock', action: 'settings', point: 'setSecurity', tour: 'settings' },
+  { id: 'lock', chapter: 'safe', title: 'guideLock', action: 'preferences', point: 'setSecurity' },
   { id: 'reminders', chapter: 'safe', title: 'remindersTitle', action: 'reminders', only: 'app' },
-  { id: 'look', chapter: 'safe', title: 'displaySection', action: 'settings', point: 'setDisplay', tour: 'settings' },
+  { id: 'look', chapter: 'safe', title: 'displaySection', action: 'preferences', point: 'setDisplay' },
 ] as const satisfies readonly GuideTopic[];
 
 export type GuideTopicId = (typeof GUIDE_TOPICS)[number]['id'];

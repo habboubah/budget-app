@@ -6,7 +6,7 @@ import { Screen, Empty, Group, Row, Dock } from '../ui/Screen';
 import { Button } from '../ui/Button';
 
 /**
- * Optionen → Haushaltsbuch → Regeln (pushed, plan 20): the import rules, to
+ * Mehr › Werkzeuge › Regeln (pushed, plan 20): the import rules, to
  * edit or delete. Most rules come from the user's own corrections during an
  * import, so this screen is just for tidying up.
  */

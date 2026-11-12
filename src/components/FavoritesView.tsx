@@ -6,7 +6,7 @@ import { ActionRow, Empty, Group, Screen } from '../ui/Screen';
 import { IconButton } from '../ui/Button';
 
 /**
- * Optionen → Haushaltsbuch → Favoriten (pushed, plan 09): the pinned entries,
+ * Mehr › Haushaltsbuch › Favoriten (pushed, plan 09): the pinned entries,
  * to reorder (up / down) and remove (with an undo toast). Pinning happens in
  * the entry sheet; this screen only manages what is there.
  */

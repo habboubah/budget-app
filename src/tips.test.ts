@@ -121,7 +121,7 @@ describe('tips (plan 37)', () => {
     // Not where the app doesn't offer it, and not within a week of another tip.
     expect(nextTip(book(typed), none, phone)).toEqual({ id: 'capture' });
     expect(nextTip(book(typed), { done: ['reserve'], last: '2026-11-18' }, asked)).toBeNull();
-    // Met another way — Optionen, the tour, the gestures card: done, and no pause for the next tip.
+    // Met another way — Mehr, the tour, the gestures card: done, and no pause for the next tip.
     const known = knowGuide(none);
     expect(known).toEqual({ done: ['guide'] });
     expect(knowGuide(known)).toBe(known);

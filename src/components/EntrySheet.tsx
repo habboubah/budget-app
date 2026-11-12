@@ -59,7 +59,7 @@ interface Props {
   debts?: { id: string; name: string }[];
   /** The trips and projects running today (schema 28): a pill each puts the entry under one — and, for a trip abroad, takes the amount in its currency. */
   projects?: Project[];
-  /** Offer the tax mark (schema 29): switched on under Optionen › Steuerliste, or the book already has marked entries. */
+  /** Offer the tax mark (schema 29): switched on under Mehr › Steuerliste, or the book already has marked entries. */
   taxMarks?: boolean;
   /** Says why a receipt couldn't be attached or read (plan 27). */
   onNotice?: (text: string) => void;

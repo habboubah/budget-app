@@ -33,8 +33,8 @@ export function guideLabels(t: Strings): Record<string, string> {
     // Statistik and Planen.
     where: t.whereMoneyGoes, share: t.reportShare, budgets: t.budgetsTitle, budgetSet: t.budgetsAdd, goals: t.goalsTitle,
     goalNew: t.goalNew, runway: t.runwayTitle, outlook: t.outlookTitle, whatIf: t.whatIfTitle, contracts: t.contractsTitle,
-    // Optionen.
-    security: t.securitySection, hide: t.hideAmounts, reminders: t.remindersRow, nudge: t.nudgeRow, capture: t.captureRow,
+    // Mehr, and its Einstellungen.
+    prefs: t.prefsTitle, security: t.securitySection, hide: t.hideAmounts, reminders: t.remindersRow, nudge: t.nudgeRow, capture: t.captureRow,
     review: t.captureReview, display: t.displaySection, language: t.language, appearance: t.appearance, currency: t.currency,
     categories: t.categoriesTitle, favorites: t.favorites, accounts: t.accountsTitle, accountAdd: t.accountAddOther,
     debts: t.debtsTitle, debtAdd: t.debtAdd, projects: t.projectsTitle, projectAdd: t.projectAdd, taxList: t.taxTitle,
@@ -128,12 +128,15 @@ export const MARKS = {
   planRunway: at('plan-runway', 24, 'center'),
   planOutlook: at('plan-outlook', 24, 'center'),
   planGoals: at('plan-goals', 24, 'center'),
-  // Optionen.
-  setSecurity: at('set-security', 24, 'center'),
-  setDisplay: at('set-display', 24, 'center'),
+  // Mehr.
+  setSearch: at('set-search', 999, 'top'),
+  setTransfer: at('set-transfer', 24, 'center'),
   setBook: at('set-book', 24, 'center'),
   setMore: at('set-more', 24, 'center'),
-  setTransfer: at('set-transfer', 24, 'center'),
+  setPrefs: at('set-prefs', 24, 'center'),
+  // Mehr › Einstellungen: what *Zeigen* lights up there (no tour runs through it).
+  setSecurity: at('set-security', 24, 'center'),
+  setDisplay: at('set-display', 24, 'center'),
 } as const satisfies Record<string, TourMark>;
 export type MarkId = keyof typeof MARKS;
 
@@ -143,7 +146,7 @@ export const TOUR_STEPS: Record<TourId, readonly MarkId[]> = {
   entry: ['entryAmount', 'entryName', 'entryCategory', 'entryDetails', 'save'],
   stats: ['statsRange', 'statsHero', 'statsChart', 'statsWhere', 'statsRhythm'],
   plan: ['planPace', 'planBudgets', 'planRunway', 'planOutlook', 'planGoals'],
-  settings: ['setTransfer', 'setBook', 'setMore', 'setDisplay', 'setSecurity'],
+  settings: ['setSearch', 'setTransfer', 'setBook', 'setMore', 'setPrefs'],
 };
 
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);

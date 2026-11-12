@@ -23,7 +23,7 @@ export function interestLine(p: DebtPlan, t: Strings): string | undefined {
 }
 
 /**
- * Optionen → Haushaltsbuch → Schulden und Kredite (pushed, plan 31): loans
+ * Mehr › Werkzeuge › Schulden und Kredite (pushed, plan 31): loans
  * and debts, then money lent — each with what is left and when it ends.
  * The way in for the first one; Planen's card appears once there is one.
  */

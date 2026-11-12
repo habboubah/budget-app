@@ -1,5 +1,5 @@
 /*
- * The guide's pages (Optionen › Anleitung) and the tours' sentences, in German
+ * The guide's pages (Mehr › Anleitung) and the tours' sentences, in German
  * — the language the `GuidePages` type is derived from, as `Strings` is from
  * the German block of translations.ts. One file per language in this folder,
  * each a chunk of its own, loaded when the guide is opened or a tour begins
@@ -119,7 +119,7 @@ const de = {
   guideTaxSteps: 'Öffne {settings} › {taxList} und schalte {taxSwitch} ein.\nTippe in einer Ausgabe auf {more} › {tax} und wähle die Art: Handwerker, Kinderbetreuung, Spende …\nUnter {taxList} stehen alle markierten Ausgaben mit Summen. {share} macht daraus ein PDF.',
   guideTaxTip: 'Gezählt wird, was bezahlt ist – im Jahr der Zahlung. Spartopf sammelt nur, es ist keine Steuerberatung.',
   guideMonthStartSum: 'Dein Monat kann am Gehaltstag beginnen statt am 1. – dann planst du von Gehalt zu Gehalt.',
-  guideMonthStartSteps: 'Öffne {settings} › {monthStart}.\nWähle den Tag, an dem dein Gehalt kommt (bis zum 28.).\nVorher siehst du, wie viele Einträge in einen anderen Monat wandern.',
+  guideMonthStartSteps: 'Öffne {settings} › {prefs} › {monthStart}.\nWähle den Tag, an dem dein Gehalt kommt (bis zum 28.).\nVorher siehst du, wie viele Einträge in einen anderen Monat wandern.',
   guideMonthStartTip: 'Das lässt sich jederzeit wieder ändern.',
   guidePrivateSum: 'Kein Konto, kein Server, keine Werbung: Deine Daten bleiben auf diesem Gerät.',
   guidePrivateSteps: 'Spartopf braucht keine Anmeldung.\nKontoauszüge, Belege und QR-Codes werden auf dem Gerät selbst gelesen.\nDeine Daten verlassen das Gerät nur, wenn du selbst etwas exportierst.',
@@ -128,13 +128,13 @@ const de = {
   guideBackupSteps: 'Öffne {settings} › {transfer}.\nTippe auf {exportData}, vergib ein Passwort und leg die Datei an einem sicheren Ort ab.\nAuf dem neuen Gerät: {importData}, die Datei wählen und das Passwort eingeben.',
   guideBackupTip: 'Für die Tabellenkalkulation gibt es dort auch {exportCsv}.',
   guideLockSum: 'Verbirg alle Beträge, wenn jemand mitliest – und sperr die App, damit nur du sie öffnest.',
-  guideLockSteps: 'Öffne {settings}.\nSchalte {hide} ein: Jeder Betrag erscheint dann als ••••.\nIn der App auf dem Handy schaltest du unter {security} auch die Sperre ein.',
+  guideLockSteps: 'Öffne {settings} › {prefs}.\nSchalte {hide} ein: Jeder Betrag erscheint dann als ••••.\nIn der App auf dem Handy schaltest du unter {security} auch die Sperre ein.',
   guideLockTip: 'Das Auge neben {now} zeigt die Beträge kurz wieder an.',
   guideRemindersSum: 'Lass dich an offene Rechnungen erinnern, bevor sie fällig sind – und abends ans Eintragen.',
-  guideRemindersSteps: 'Öffne {settings} › {reminders}.\nSchalte die Erinnerung ein – und auf Wunsch {nudge} zu einer Uhrzeit, die du wählst.\nErlaube Mitteilungen, wenn das Gerät danach fragt.',
+  guideRemindersSteps: 'Öffne {settings} › {prefs} › {reminders}.\nSchalte die Erinnerung ein – und auf Wunsch {nudge} zu einer Uhrzeit, die du wählst.\nErlaube Mitteilungen, wenn das Gerät danach fragt.',
   guideRemindersTip: 'In den Mitteilungen stehen keine Beträge, solange du sie nicht einschaltest.',
   guideLookSum: 'Sprache, hell oder dunkel, die Farbe der App und deine Währung – alles an einem Ort.',
-  guideLookSteps: 'Öffne {settings} und scroll zu {display}.\nWähle {language} und {appearance}: hell, dunkel oder automatisch.\nTippe auf eine der acht Farben und wähle deine {currency}.',
+  guideLookSteps: 'Öffne {settings} › {prefs} › {display}.\nWähle {language} und {appearance}: hell, dunkel oder automatisch.\nTippe auf eine der acht Farben und wähle deine {currency}.',
   guideLookTip: 'Die Währung ändert nur das Zeichen – umgerechnet wird nichts.',
 
   // The tours: the guide’s list, and one sentence a mark.
@@ -154,7 +154,7 @@ const de = {
   tourNamePlan: '{plan}',
   tourAboutPlan: 'Budgets, die nächsten 30 Tage, Ausblick',
   tourNameSettings: '{settings}',
-  tourAboutSettings: 'Sicherheit, Darstellung, Sicherung',
+  tourAboutSettings: 'Suche, Sicherung, Werkzeuge, Einstellungen',
   tourEntryAmount: 'Zuerst der Betrag. Über der Tastatur stehen + − × ÷ – so rechnest du einen Kassenzettel gleich hier zusammen.',
   tourEntryName: 'Dann wofür. Spartopf schlägt Namen vor, die du schon benutzt hast, und ergänzt beim Tippen.',
   tourEntryCategory: 'Die Kategorie wählt Spartopf passend zum Namen (✦). Stimmt sie nicht, tippe eine andere an.',
@@ -170,11 +170,11 @@ const de = {
   tourPlanRunway: 'Die nächsten 30 Tage, Tag für Tag – mit dem tiefsten Stand, bevor wieder Geld kommt.',
   tourPlanOutlook: 'Die nächsten zwölf Monate. „{whatIf}“ prüft hier eine Anschaffung, bevor du sie machst.',
   tourPlanGoals: 'Deine Spartöpfe: wofür du sparst und wie weit du schon bist.',
-  tourSetSecurity: 'Beträge verbergen, die App sperren, Erinnerungen – alles, was deine Daten schützt.',
-  tourSetDisplay: 'Sprache, hell oder dunkel, die Farbe der App und deine Währung.',
-  tourSetBook: 'Dein Haushaltsbuch: Kategorien und Budgets, Konten, Favoriten und wann dein Monat beginnt.',
-  tourSetMore: 'Was du nicht jeden Tag brauchst: {debts}, {projects}, {taxList} und {rules}.',
+  tourSetBook: 'Dein Haushaltsbuch: Kategorien und Budgets, Konten und Favoriten.',
+  tourSetMore: 'Was du nicht jeden Tag brauchst: {importMenu}, {debts}, {projects}, {taxList} und {rules}.',
   tourSetTransfer: 'Hier sicherst du alles in eine Datei – für ein neues Gerät oder einfach für alle Fälle.',
+  tourSetSearch: 'Was möchtest du tun? Die Suche findet jede Funktion – und die passende Stelle in der Anleitung.',
+  tourSetPrefs: 'Sprache, Farbe und Währung, die Sperre und Erinnerungen – alles, was du einmal einstellst.',
 };
 
 export type GuidePages = { [K in keyof typeof de]: string };

@@ -38,7 +38,7 @@ function ControlRow({ label, labelId, children }: { label: string; labelId?: str
 }
 
 /**
- * Optionen → An offene Posten erinnern (pushed): on or off, at what time and
+ * Mehr › Einstellungen › An offene Posten erinnern (pushed): on or off, at what time and
  * how many days ahead, with or without amounts (off: notifications show on
  * the lock screen), and the next few reminders as they will go off.
  */

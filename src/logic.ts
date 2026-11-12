@@ -384,7 +384,7 @@ export const MAX_MONTH_START = 28;
 
 /**
  * The day the book's months start on — 1 unless the user set another
- * (*Optionen › Monat beginnt am*). A module-level switch like the currency:
+ * (*Mehr › Einstellungen › Monat beginnt am*). A module-level switch like the currency:
  * the store sets it from the book, every month rule reads it, tests set it.
  */
 let monthStart = 1;

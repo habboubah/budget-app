@@ -221,7 +221,7 @@ export interface AppData {
   goals?: Goal[];
   /** Import rules, applied to bank/other-app imports (schema 15, plan 20). Unset = none. */
   rules?: Rule[];
-  /** What the test data (Optionen → Testdaten) added, so removing it leaves the rest as it was (schema 17). Unset = none. */
+  /** What the test data (Mehr › Einstellungen › Testdaten) added, so removing it leaves the rest as it was (schema 17). Unset = none. */
   demo?: DemoInfo;
   /** The accounts, the main one first, once there is more than one (schema 20, plan 30). Unset = only the main account. */
   accounts?: Account[];

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { motion, useTransform } from 'motion/react';
-import { AlertTriangle, ArrowLeftRight, BarChart3, CalendarDays, Circle, Hand, PiggyBank, Settings } from 'lucide-react';
+import { AlertTriangle, ArrowLeftRight, BarChart3, CalendarDays, Circle, CircleEllipsis, Hand, PiggyBank } from 'lucide-react';
 import { useAppStore } from './store';
 import { fmt, plural, stringsFor } from './translations';
 import { AccountKind, Category, Contract, Entry, EntryDraft, MonthKey } from './types';
@@ -54,7 +54,8 @@ import { ProjectsCard, ProjectsView } from './components/ProjectsView';
 import { ProjectSheet, ProjectSheetMode } from './components/ProjectSheet';
 import { TaxView } from './components/TaxView';
 import { GuideBackPill } from './components/GuideBackPill';
-import { SettingsView } from './components/SettingsView';
+import { GuideHit, MoreView, PrefsSection } from './components/MoreView';
+import { PreferencesView } from './components/PreferencesView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
@@ -78,7 +79,7 @@ import { inboxReview, inboxToEntries } from './native/inbox';
 import { CaptureView } from './components/CaptureView';
 import { HintCard } from './components/HintCard';
 import { isGestureTip, nextTip } from './tips';
-import { GuideTopic, GuideTopicId, GuideWords, topicText } from './guide';
+import { GuideTopic, GuideTopicId, GuideWords, guideTopics, topicText } from './guide';
 import type { MarkId, TourId } from './guideKit';
 import { guidePages, loadGuidePages } from './guidePages';
 import { DeepLink, parseDeepLink } from './native/deepLink';
@@ -138,7 +139,7 @@ type TourState = {
   guide?: boolean;
 } | null;
 
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'preferences';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -146,7 +147,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings', preferences: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -198,6 +199,10 @@ export default function App() {
   const [tab, setTab] = useState<TabId>('month');
   /** A screen the guide's *Zeigen* opened is shown: back leads to the guide again (see `under` below). */
   const [guideReturn, setGuideReturn] = useState(false);
+  /** A screen pushed from *Einstellungen* is shown (the reminders): back leads there again, not to *Mehr*. */
+  const [prefsReturn, setPrefsReturn] = useState(false);
+  /** The group of *Einstellungen* a search in *Mehr* led to. */
+  const [prefsSection, setPrefsSection] = useState<PrefsSection | undefined>(undefined);
   /** *Zeigen* or a tour led away from the guide to where no back button leads to it: the capsule above the tab bar does. */
   const [guideAway, setGuideAway] = useState(false);
   /** Per tab, the screen pushed over its root — each tab keeps its place, as on iOS. */
@@ -208,6 +213,7 @@ export default function App() {
     setStack(s => ({ ...s, [onTab]: to }));
     // Whatever is pushed, it isn't the guide's doing — unless guideGo says so right after.
     setGuideReturn(false);
+    setPrefsReturn(false);
   };
   const popTo = (onTab: TabId) => setStack(s => ({ ...s, [onTab]: undefined }));
   /** Every entry read once per change: what Statistik, Planen and the reports compute from. */
@@ -434,13 +440,15 @@ export default function App() {
   /**
    * The guide's *Zeigen* (src/guide.ts) opens a screen in the guide's place —
    * a tab holds one pushed screen. From there, back leads to the guide again
-   * rather than to Optionen: `under` is what lies beneath the screen shown.
+   * rather than to Mehr: `under` is what lies beneath the screen shown.
    */
-  const under: ScreenId = guideReturn && tab === 'settings' && pushed && pushed !== 'guide' ? 'guide' : tab;
+  const under: ScreenId = guideReturn && tab === 'settings' && pushed && pushed !== 'guide' ? 'guide'
+    : prefsReturn && tab === 'settings' && pushed === 'reminders' ? 'preferences' : tab;
   /** Set for the one change that should slide though the depth stays the same (guide ⇄ what it showed). */
   const slide = useRef<0 | 1 | -1>(0);
   const back = () => {
     if (under === 'guide') { slide.current = -1; setGuideReturn(false); setStack(s => ({ ...s, settings: 'guide' })); }
+    else if (under === 'preferences') { slide.current = -1; setPrefsReturn(false); setStack(s => ({ ...s, settings: 'preferences' })); }
     else popTo(tab);
   };
   // The iOS back gesture on a pushed screen (touch, from the leading edge).
@@ -624,7 +632,7 @@ export default function App() {
     if (n) show(fmt(t.monthStartedCarried, { month: monthLabel(month, t.locale), n }));
   }, [month, balance.started]);
 
-  /** Optionen → Testdaten: a year of test data beside the user's own, shown on the running month. Undoable. */
+  /** Mehr › Einstellungen › Testdaten: a year of test data beside the user's own, shown on the running month. Undoable. */
   const addDemo = () => {
     const before = store.addDemo();
     notifySuccess();
@@ -634,7 +642,7 @@ export default function App() {
     show(t.demoAdded, { label: t.undo, run: () => store.restoreData(before) });
   };
 
-  /** Take the test data out again (confirmed in Optionen); the user's own data stays. Undoable. */
+  /** Take the test data out again (confirmed in Einstellungen); the user's own data stays. Undoable. */
   const removeDemo = () => {
     const before = store.removeDemo();
     notifyWarning();
@@ -642,7 +650,7 @@ export default function App() {
     show(t.demoRemoved, { label: t.undo, run: () => store.restoreData(before) });
   };
 
-  /** Optionen › Monat beginnt am (plan 32): every dated entry to its new month, shown on the running one. Undoable. */
+  /** Mehr › Einstellungen › Monat beginnt am (plan 32): every dated entry to its new month, shown on the running one. Undoable. */
   const [monthStartOpen, setMonthStartOpen] = useState(false);
   const changeStart = (day: number) => {
     const before = store.changeStart(day);
@@ -1010,7 +1018,7 @@ export default function App() {
     }
     setPrinting(null);
   };
-  /** Optionen › Über Spartopf. */
+  /** Mehr › Einstellungen › Über Spartopf. */
   const sendFeedback = async () => { void openExternal(feedbackMail(t, __APP_VERSION__, await systemVersion())); };
 
   // ---- Statistik and Planen: hints, reports, the drill-down (STATISTICS_AND_INSIGHTS.md).
@@ -1238,7 +1246,7 @@ export default function App() {
   const guideGo = (topic: GuideTopic) => {
     const a = topic.action;
     if (!a) return;
-    // Only a screen of Optionen takes the guide's place (its back leads there),
+    // Only a screen of Mehr takes the guide's place (its back leads there),
     // and the month start is a sheet over the guide: everything else gets the capsule.
     if (HOME[a as PushedId] !== 'settings' && a !== 'monthStart' && !(a === 'report' && book.months.some(k => k < now))) setGuideAway(true);
     if (a === 'month') openMonthPage(monthKeyOf());
@@ -1256,7 +1264,7 @@ export default function App() {
       push('monthReport');
       setGuideReturn(tab === 'settings');
     } else {
-      // A screen of Optionen takes the guide's place: back returns to the guide.
+      // A screen of Mehr takes the guide's place: back returns to the guide.
       if (HOME[a] === 'settings') slide.current = 1;
       push(a);
       if (HOME[a] === 'settings') setGuideReturn(true);
@@ -1274,6 +1282,32 @@ export default function App() {
     if (screen !== 'guide' || (GuideScreen && pages)) return;
     void Promise.all([loadGuide(), loadGuidePages(language)]).then(() => guideReady(n => n + 1), () => popTo('settings'));
   }, [screen, language]);
+  // ---- Mehr's search: its own rows, what Einstellungen holds, and the guide's topics.
+  /** What *Einstellungen* holds on this device: a label, and the group it is in. */
+  const prefsIndex: { label: string; sub?: string; section: PrefsSection }[] = [
+    { label: t.language, section: 'display' }, { label: t.appearance, section: 'display' },
+    { label: t.accent, section: 'display' }, { label: t.currency, section: 'display' },
+    { label: t.hideAmounts, sub: t.hideAmountsSub, section: 'security' },
+    ...(lockKind ? [{ label: lockKind === 'faceId' ? t.lockFaceId : lockKind === 'touchId' ? t.lockTouchId : t.lockCode, sub: t.lockSub, section: 'security' as const }] : []),
+    ...(remindersAvailable() ? [{ label: t.remindersRow, section: 'security' as const }] : []),
+    ...(deviceBackup !== null ? [{ label: t.deviceBackup, section: 'security' as const }] : []),
+    { label: t.monthStartRow, sub: t.monthStartRowSub, section: 'book' },
+    store.hasDemo ? { label: t.demoRemove, sub: t.demoRemoveSub, section: 'demo' } : { label: t.demoAdd, sub: t.demoAddSub, section: 'demo' },
+    ...(native || devNative() ? [{ label: t.rateApp, section: 'about' as const }] : []),
+    { label: t.sendFeedback, sub: t.sendFeedbackSub, section: 'about' }, { label: t.privacyPolicy, section: 'about' },
+    { label: t.deleteAll, section: 'reset' },
+  ];
+  /** The guide's words are a chunk of their own: they come when the search begins. */
+  const loadFind = () => { void Promise.all([loadTour(), loadGuidePages(language)]).then(() => guideReady(n => n + 1), () => undefined); };
+  const findGuide = (query: string): GuideHit[] | null => {
+    const kit = guideKit;
+    if (!kit || !pages) return null;
+    const words = { ...t, ...pages };
+    return kit.searchGuide(guideTopics({ ios: isIos() || devNative(), app: remindersAvailable() }), words, query)
+      .map(topic => ({ id: topic.id, title: kit.guideText(words, topic.title), sum: kit.guideText(words, topicText(topic).sum) }));
+  };
+  /** A topic the search found: the guide, open at it. */
+  const openGuideAt = (id: string) => { setGuideTopic(id as GuideTopicId); store.seeGuideTopic(id as GuideTopicId); openGuide(); };
   const gestureTip = tip && isGestureTip(tip) ? tip : null;
   const featureTip = tip && !isGestureTip(tip) ? tip : null;
   const setup = !balance.started || month !== runningMonth ? null : !store.stepsDone && stepsLeft ? (
@@ -1458,7 +1492,33 @@ export default function App() {
             onBack={back}
           />
         ) : id === 'settings' ? (
-          <SettingsView
+          <MoreView
+            t={t}
+            categoryCount={categories.length}
+            onCategories={() => push('categories')}
+            accountCount={accounts.length}
+            onAccounts={() => push('accounts')}
+            favoriteCount={store.favorites.length}
+            onFavorites={() => push('favorites')}
+            onImport={() => setImportOpen(true)}
+            debtCount={store.debts.length}
+            onDebts={() => push('debts')}
+            projectCount={store.projects.length}
+            onProjects={() => push('projects')}
+            onTax={() => push('tax')}
+            ruleCount={store.rules.length}
+            onRules={() => push('rules')}
+            onCapture={isIos() || devNative() ? () => push('capture') : undefined}
+            onTransfer={() => push('transfer')}
+            onGuide={openGuide}
+            onPrefs={section => { setPrefsSection(section); push('preferences'); }}
+            prefs={prefsIndex}
+            onSearch={loadFind}
+            findGuide={findGuide}
+            onGuideTopic={openGuideAt}
+          />
+        ) : id === 'preferences' ? (
+          <PreferencesView
             language={language}
             themeMode={themeMode}
             accent={store.accent}
@@ -1466,26 +1526,14 @@ export default function App() {
             currency={store.currency}
             onCurrency={store.setCurrency}
             t={t}
+            onBack={back}
+            section={prefsSection}
             monthCount={data.months.length}
             entryCount={allView.entries.length}
-            categoryCount={categories.length}
             onLanguage={store.setLanguage}
             onTheme={store.setThemeMode}
-            onCategories={() => push('categories')}
-            favoriteCount={store.favorites.length}
-            onFavorites={() => push('favorites')}
-            ruleCount={store.rules.length}
-            onRules={() => push('rules')}
-            accountCount={accounts.length}
-            onAccounts={() => push('accounts')}
-            debtCount={store.debts.length}
-            onProjects={() => push('projects')}
-            projectCount={store.projects.length}
-            onTax={() => push('tax')}
-            onDebts={() => push('debts')}
             monthStart={store.monthStart}
             onMonthStart={() => setMonthStartOpen(true)}
-            onTransfer={() => push('transfer')}
             hasDemo={store.hasDemo}
             onAddDemo={addDemo}
             onRemoveDemo={removeDemo}
@@ -1499,12 +1547,11 @@ export default function App() {
             onDeviceBackup={on => void switchDeviceBackup(on)}
             deviceBackupBusy={backupMoving}
             reminders={remindersAvailable() ? store.reminders : null}
-            onReminders={() => push('reminders')}
-            onCapture={isIos() || devNative() ? () => push('capture') : undefined}
+            // Back from the reminders leads here again, not to Mehr.
+            onReminders={() => { push('reminders'); setPrefsReturn(true); }}
             onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
             onFeedback={() => void sendFeedback()}
             onPrivacy={() => void openExternal(privacyUrl(language))}
-            onGuide={openGuide}
           />
         ) : id === 'stats' ? (
           <StatsView
@@ -1686,12 +1733,12 @@ export default function App() {
         label={t.appName}
         active={tab}
         // Tapping the active tab again pops back to its root, as on iOS.
-        onChange={id => { if (id === tab) { popTo(id); if (id === 'settings') setGuideReturn(false); } setTab(id); }}
+        onChange={id => { if (id === tab) { popTo(id); if (id === 'settings') { setGuideReturn(false); setPrefsReturn(false); } } setTab(id); }}
         tabs={[
           { id: 'month', label: t.tabMonth, icon: CalendarDays },
           { id: 'stats', label: t.tabStats, icon: BarChart3 },
           { id: 'insights', label: t.tabInsights, icon: PiggyBank },
-          { id: 'settings', label: t.tabSettings, icon: Settings },
+          { id: 'settings', label: t.tabSettings, icon: CircleEllipsis },
         ]}
         // On every tab: a receipt can be noted down from anywhere, into the month shown.
         add={quickAddCategory && balance.started
