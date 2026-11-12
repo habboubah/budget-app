@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react';
 import { Bug, FolderClock, ShieldAlert } from 'lucide-react';
-import { isNative } from '../platform';
+import { devNative, isNative } from '../platform';
 import { Group, IconTile, Row, Screen } from '../ui/Screen';
 import { debugTools, debugWipeWebData } from '../storage';
 import { BackupGroup } from './BackupGroup';
@@ -61,7 +61,7 @@ export function TransferView({ onBack, onOpenBackups, lastExport, inDeviceBackup
         </Group>
       )}
       <BackupGroup {...backup} />
-      {isNative() && (
+      {(isNative() || devNative()) && (
         <Group>
           <Row
             label={t.autoBackups}
