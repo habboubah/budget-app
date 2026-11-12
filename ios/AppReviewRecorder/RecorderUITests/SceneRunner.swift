@@ -780,7 +780,9 @@ final class SceneRunner {
         }
         search.tap()
         _ = waitForKeyboard()
-        search.typeText(stem)
+        // Search, which also puts the picker's keyboard away: the recorder can't see
+        // that keyboard, and a tap meant for the file once typed a "v" on it.
+        search.typeText(stem + "\n")
         rest(2.5 * pace)
         // A file among the results: an element named after it that is on screen,
         // below the search field – not the search suggestion "Name Contains “…”"
@@ -796,7 +798,8 @@ final class SceneRunner {
                     let f = el.frame
                     return !f.isEmpty && f.minY > below && window.contains(CGPoint(x: f.midX, y: f.midY))
                 }
-            file = shown.first { $0.elementType == .cell } ?? shown.first
+            // The smallest match: the file's own name or tile, not a cell spanning the list.
+            file = shown.min { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
             if file == nil { rest(0.4) }
         } while file == nil && Date() < fileDeadline
         if file == nil {
