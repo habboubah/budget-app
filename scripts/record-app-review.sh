@@ -85,6 +85,7 @@ xcodebuild test \
   -allowProvisioningUpdates \
   -allowProvisioningDeviceRegistration \
   -resultBundlePath "$RESULT" \
+  -collect-test-diagnostics never \
   | grep --line-buffered -E '\[recorder\]|error:|Test Case|\*\* TEST|Testing failed|Signing|provision'
 status=${PIPESTATUS[0]}
 set -e

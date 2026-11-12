@@ -15,6 +15,7 @@
     "guide-shots": "node scripts/guide-shots.mjs",
     "rehearse:app-review": "node scripts/rehearse-app-review.mjs",
     "record:app-review": "bash scripts/record-app-review.sh",
+    "record:watch": "bash scripts/record-watch.sh",
     "store-screenshots": "node .claude/skills/store-screenshot-studio/scripts/export.mjs && node .claude/skills/store-screenshot-studio/scripts/feature_graphic.mjs && node .claude/skills/store-screenshot-studio/scripts/preview.mjs && python3 .claude/skills/store-screenshot-studio/scripts/validate.py",
     "release": "node scripts/release.js",
     "release:ios": "node scripts/release.js --ios",
