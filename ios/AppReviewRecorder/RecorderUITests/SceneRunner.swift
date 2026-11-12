@@ -311,6 +311,20 @@ final class SceneRunner {
         return out
     }
 
+    /// Of several elements with the same label, the one a finger can reach. A
+    /// confirmation's button is often named like the row that opened it ("Reset
+    /// app"): the row stays in the tree behind the dialog, comes first, and a tap
+    /// on it hits the dimmed background, which closes the dialog. So when the
+    /// first is on screen but covered, the first that can be tapped wins. (One
+    /// that is merely scrolled away is still scrolled to, as in the rehearsal.)
+    private func uncovered(_ found: [XCUIElement], nth: Int) -> XCUIElement {
+        let first = found[nth]
+        guard nth == 0, found.count > 1 else { return first }
+        let f = first.frame
+        guard !f.isEmpty, window.contains(CGPoint(x: f.midX, y: f.midY)), !first.isHittable else { return first }
+        return found.dropFirst().first(where: { $0.exists && $0.isHittable }) ?? first
+    }
+
     /// The nth element with this label (exact, then starts with, then contains),
     /// of the most likely type. Waits up to `timeout` seconds for it to appear.
     func element(_ labels: [String], nth: Int, role: String?, timeout: Double,
@@ -328,7 +342,7 @@ final class SceneRunner {
                     let typed = found.map { ($0, $0.elementType) }
                     for type in allowed {
                         let ofType = typed.filter { $0.1 == type }.map { $0.0 }
-                        if ofType.count > nth, ofType[nth].exists { return ofType[nth] }
+                        if ofType.count > nth, ofType[nth].exists { return uncovered(ofType, nth: nth) }
                     }
                 }
             }
@@ -551,7 +565,7 @@ final class SceneRunner {
             if onScreen && el.isHittable && coveringElement(el, at: middle) == nil { return }
             before = f
             let distance = abs(f.midY - v.midY) / max(v.height, 1)
-            if distance > 1.6 { fling(down: f.midY > v.midY) } else { scroll(down: f.midY > v.midY, by: distance) }
+            if distance > 1.3 { fling(down: f.midY > v.midY) } else { scroll(down: f.midY > v.midY, by: distance) }
             tries += 1
         }
     }
@@ -568,7 +582,9 @@ final class SceneRunner {
         let y = { (part: CGFloat) in (v.minY + v.height * part - w.minY) / w.height }
         let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(start)))
         let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(end)))
-        from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .default, thenHoldForDuration: 0.1)
+        // Fast, with a hold before letting go so the page stops where the finger does
+        // (at the default speed one drag took ~1.8 s).
+        from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 0.15)
         rest(0.35)
     }
 
@@ -577,8 +593,8 @@ final class SceneRunner {
     func fling(down: Bool) {
         let v = visible, w = window
         let y = { (part: CGFloat) in (v.minY + v.height * part - w.minY) / w.height }
-        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(down ? 0.75 : 0.3)))
-        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(down ? 0.3 : 0.75)))
+        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(down ? 0.8 : 0.25)))
+        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(down ? 0.1 : 0.95)))
         from.press(forDuration: 0.02, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 0)
         rest(0.8) // let it coast to a stop
     }
