@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { CURRENCIES, currencyForLocale, hasTwoMinorDigits, isSupportedCurrency } from './currency';
+import { CURRENCIES, currencyForRegion, hasTwoMinorDigits, isSupportedCurrency } from './currency';
 import { formatMoney, getActiveCurrency, parseAmount, setActiveCurrency } from './logic';
 
 afterEach(() => setActiveCurrency('EUR'));
@@ -20,12 +20,15 @@ describe('currency list', () => {
 });
 
 describe('regional default', () => {
-  it('maps a region to a supported currency, else EUR', () => {
-    expect(currencyForLocale('de-CH')).toBe('CHF');
-    expect(currencyForLocale('en-GB')).toBe('GBP');
-    expect(currencyForLocale('ar-SA')).toBe('SAR');
-    expect(currencyForLocale('de-DE')).toBe('EUR');
-    expect(currencyForLocale('ja-JP')).toBe('EUR'); // JPY unsupported → EUR
+  it('maps a region to a currency we offer — euros in the euro area', () => {
+    expect(currencyForRegion('ch')).toBe('CHF');
+    expect(currencyForRegion('GB')).toBe('GBP');
+    expect(currencyForRegion('SA')).toBe('SAR');
+    expect(currencyForRegion('DE')).toBe('EUR');
+    expect(currencyForRegion('BG')).toBe('EUR'); // euro area since 2026
+    expect(currencyForRegion('ME')).toBe('EUR'); // uses it on its own
+    expect(currencyForRegion('JP')).toBeUndefined(); // JPY unsupported
+    expect(currencyForRegion('HU')).toBeUndefined(); // HUF not offered
   });
 });
 

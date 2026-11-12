@@ -89,7 +89,7 @@ export function useAppStore() {
   /**
    * The book's currency — data, so part of a backup (plan 07). A loaded book
    * keeps its currency (unset = euros); a fresh install starts in the phone's
-   * region's currency, euros when there is none we offer.
+   * region's currency, US dollars when there is none we offer.
    * `setActiveCurrency` keeps the formatters in sync.
    */
   const [currency, setCurrency] = useState<Currency>(() => {
@@ -732,7 +732,7 @@ export function useAppStore() {
     setDebts([]);
     setProjects([]);
     // Back to the defaults of a fresh install: the phone's currency, language
-    // and appearance (euros, German and light when it gives none).
+    // and appearance (US dollars, German and light when it gives none).
     setCurrency(systemCurrency());
     chooseLanguage(systemLanguage());
     setThemeMode('system');

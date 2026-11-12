@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.print.PrintAttributes;
 import android.print.PrintManager;
+import android.telephony.TelephonyManager;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -19,6 +20,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -28,6 +30,8 @@ import java.util.Set;
  * - open: a link outside the app — Google Play, the browser or the mail app.
  *   Only https links to the hosts below and mailto: links.
  * - system: "Android 15" for the feedback mail.
+ * - region: the country the phone is at home in ("DE"), for the currency a
+ *   new book starts in — the SIM's, else the network's, else the language's.
  * - makePdf: the page as printed (only the report, index.css .print-root)
  *   through Android's print dialog, which saves a PDF or prints.
  * - setSecure: FLAG_SECURE on the window while the app lock is on — no
@@ -91,6 +95,34 @@ public class SpartopfSharedPlugin extends Plugin {
         result.put("name", "Android");
         result.put("version", Build.VERSION.RELEASE);
         call.resolve(result);
+    }
+
+    @PluginMethod
+    public void region(PluginCall call) {
+        JSObject result = new JSObject();
+        result.put("region", phoneRegion(getContext()));
+        call.resolve(result);
+    }
+
+    /**
+     * Where the phone is at home: its SIM's country, else the network's (no permission
+     * needed for either). Only without both — a Wi-Fi-only tablet — the language's
+     * region, since Android has no region setting of its own. Empty when none.
+     */
+    static String phoneRegion(Context context) {
+        try {
+            TelephonyManager phone = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (phone != null) {
+                String sim = phone.getSimCountryIso();
+                if (sim != null && sim.length() == 2) return sim.toUpperCase(Locale.ROOT);
+                String network = phone.getNetworkCountryIso();
+                if (network != null && network.length() == 2) return network.toUpperCase(Locale.ROOT);
+            }
+        } catch (RuntimeException ignored) {
+            // No telephony on this device: the language's region below.
+        }
+        String country = Locale.getDefault().getCountry();
+        return country != null && country.length() == 2 ? country.toUpperCase(Locale.ROOT) : "";
     }
 
     @PluginMethod

@@ -8,7 +8,8 @@ import { attachmentIds, isoDay } from './logic.ts';
 import { KEY_PREFIX, hydrate, installFlushTriggers, rawFiles, restoreLatestToData, setHydrated, sweepFiles } from './storage.ts';
 import { isAndroid, isNative } from './platform.ts';
 import { isLanguage, loadLanguage, setPlatformStrings, stringsFor } from './translations.ts';
-import { systemLanguage } from './systemLocale.ts';
+import { setSystemRegion, systemLanguage } from './systemLocale.ts';
+import { systemRegion } from './native/bridge.ts';
 import { initialLanguage } from './store.ts';
 import './index.css';
 
@@ -95,12 +96,13 @@ const render = (child: ReactNode) => root.render(
 // read the page shows its plain background, as it always did while loading.
 // The language's strings alongside: those not bundled come in a file of their
 // own (a failed fetch falls back to English rather than holding the launch).
+// And the phone's region, for the currency a new or reset book starts in.
 // In the Android app: its rounded face for amounts (index.css), and its own wording (plan 23).
 if (isAndroid()) document.documentElement.dataset.platform = 'android';
 const platformWording = isAndroid()
   ? import('./i18n/android.ts').then(m => setPlatformStrings(m.default)).catch(() => undefined)
   : Promise.resolve();
-Promise.all([hydrate(), loadLanguage(initialLanguage()).catch(() => undefined), platformWording])
+Promise.all([hydrate(), loadLanguage(initialLanguage()).catch(() => undefined), platformWording, systemRegion().then(setSystemRegion)])
   .then(([{ data }]) => {
     setHydrated(data);
     installFlushTriggers();

@@ -16,6 +16,13 @@ export type Currency = (typeof CURRENCIES)[number];
 
 export const DEFAULT_CURRENCY: Currency = 'EUR';
 
+/**
+ * What a new book starts in when the phone's region gives no currency we
+ * offer, or there is no region at all. Not DEFAULT_CURRENCY: an unset
+ * currency in a stored book or a backup still means euros.
+ */
+export const FALLBACK_CURRENCY: Currency = 'USD';
+
 /** Whether a code is one we support (two minor digits and in the list). */
 export function isSupportedCurrency(code: unknown): code is Currency {
   return typeof code === 'string' && (CURRENCIES as readonly string[]).includes(code);
@@ -33,7 +40,7 @@ export function hasTwoMinorDigits(code: string): boolean {
   }
 }
 
-/** Region (ISO 3166) → a supported currency. Only where it isn't EUR and we support it. */
+/** Region (ISO 3166) → a currency we offer, other than the euro. */
 const REGION_CURRENCY: Record<string, Currency> = {
   CH: 'CHF', LI: 'CHF',
   GB: 'GBP',
@@ -46,20 +53,22 @@ const REGION_CURRENCY: Record<string, Currency> = {
   SA: 'SAR', AE: 'AED', QA: 'QAR', EG: 'EGP', MA: 'MAD',
 };
 
-/** A region's (ISO 3166) currency, when we offer it; EUR otherwise. */
-export function currencyForRegion(region: string): Currency {
-  return REGION_CURRENCY[region.toUpperCase()] ?? DEFAULT_CURRENCY;
-}
+/**
+ * Where the euro is the money: the euro area (Bulgaria since 2026), the
+ * states that use it by agreement or on their own, and the overseas parts
+ * that iOS and Android list as regions of their own.
+ */
+const EURO_REGIONS = new Set([
+  'AT', 'BE', 'BG', 'CY', 'DE', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'IE', 'IT',
+  'LT', 'LU', 'LV', 'MT', 'NL', 'PT', 'SI', 'SK',
+  'AD', 'MC', 'SM', 'VA', 'ME', 'XK',
+  'AX', 'BL', 'EA', 'GF', 'GP', 'IC', 'MF', 'MQ', 'PM', 'RE', 'TF', 'YT',
+]);
 
-/** The currency to start a new book with, from the phone's region; EUR otherwise. */
-export function currencyForLocale(locale: string): Currency {
-  try {
-    const region = new Intl.Locale(locale).maximize().region;
-    if (region && REGION_CURRENCY[region]) return REGION_CURRENCY[region];
-  } catch {
-    // Older engines without Locale.maximize(): fall through to EUR.
-  }
-  return DEFAULT_CURRENCY;
+/** A region's (ISO 3166) currency when we offer it — euros in the euro area; none otherwise. */
+export function currencyForRegion(region: string): Currency | undefined {
+  const code = region.toUpperCase();
+  return REGION_CURRENCY[code] ?? (EURO_REGIONS.has(code) ? 'EUR' : undefined);
 }
 
 /** The currency's own name in a language, for the picker ("Schweizer Franken"). */

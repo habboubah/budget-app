@@ -43,6 +43,7 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "requestReview", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "open", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "system", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "region", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "makePdf", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "writeAmounts", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "removeAmounts", returnType: CAPPluginReturnPromise)
@@ -172,6 +173,19 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
         Task { @MainActor in
             call.resolve(["name": UIDevice.current.systemName, "version": UIDevice.current.systemVersion])
         }
+    }
+
+    /// The phone's region ("DE") — Settings › General › Language & Region › Region —
+    /// for the currency a new book starts in (src/systemLocale.ts). Not the language's
+    /// region: English (UK) on a phone set to Germany is still "DE". Empty when unknown.
+    @objc func region(_ call: CAPPluginCall) {
+        let code: String?
+        if #available(iOS 16, *) {
+            code = Locale.current.region?.identifier
+        } else {
+            code = Locale.current.regionCode
+        }
+        call.resolve(["region": code ?? ""])
     }
 
     /// Plan 28: the page as printed — the print stylesheet shows only the report (index.css,

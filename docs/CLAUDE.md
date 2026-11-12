@@ -613,7 +613,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     (`setPlatformStrings`). **A new string that names an Apple thing needs
     its Android twin there** — `android.test.ts` fails otherwise.
   - *Native:* `SpartopfSharedPlugin.java` answers the same bridge as the
-    Swift plugin: `open`, `system`, `makePdf` (the print dialog), and
+    Swift plugin: `open`, `system`, `region`, `makePdf` (the print dialog), and
     `setSecure` (FLAG_SECURE while the lock is on, re-applied by
     `MainActivity` at a cold start); the snapshot, inbox and Siri calls are
     no-ops until plan 24.
@@ -766,8 +766,13 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   are offered (`CURRENCIES`). `logic.ts` holds a module-level active currency
   (`setActiveCurrency`, set by the store from the book); every money formatter
   reads it, so there's no call-site churn — tests set it explicitly. A new
-  install, and the app after *App zurücksetzen*, starts in English with EUR
-  (`currencyForLocale` is kept, tested, but no longer called); changing it in
+  install, and the app after *App zurücksetzen*, starts in the currency of
+  the phone's region (`systemLocale.ts`): iOS's Region setting, Android's SIM
+  or network country (`region` in the plugin, asked once in `main.tsx`) —
+  never the language's region, so English (UK) in Germany is EUR. Euro-area
+  regions give EUR (`EURO_REGIONS`); one we offer nothing for, or none, gives
+  USD (`FALLBACK_CURRENCY` — not `DEFAULT_CURRENCY`, which is what unset
+  means). On the web the locales' region stands in. Changing it in
   *Darstellung → Währung* only relabels, never converts. CSV export appends a
   `Währung` column; a bank CSV row in another currency shows "andere Währung"
   and starts unticked.

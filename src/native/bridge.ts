@@ -18,6 +18,7 @@ interface SharedPlugin {
   requestReview(): Promise<void>;
   open(options: { url: string }): Promise<void>;
   system(): Promise<{ name: string; version: string }>;
+  region(): Promise<{ region: string }>;
   makePdf(options: { name: string }): Promise<void>;
   writeAmounts(options: { json: string }): Promise<void>;
   removeAmounts(): Promise<void>;
@@ -100,6 +101,16 @@ export async function systemVersion(): Promise<string> {
     try { const { name, version } = await Shared.system(); return `${name} ${version}`; } catch { /* the user agent below */ }
   }
   return systemFromAgent(navigator.userAgent);
+}
+
+/**
+ * The phone's region, for the currency a new book starts in: iOS's Region
+ * setting, Android's SIM or network country ("DE"). Null on the web or when
+ * the phone can't tell; the locales decide then (systemLocale.ts).
+ */
+export async function systemRegion(): Promise<string | null> {
+  if (!isNative()) return null;
+  try { const { region } = await Shared.region(); return region || null; } catch { return null; }
 }
 
 /**
