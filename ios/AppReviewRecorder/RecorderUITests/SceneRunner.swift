@@ -149,10 +149,11 @@ final class SceneRunner {
             throw StepFailure("\(spec.bundleId) didn't start. Is it installed from TestFlight on this iPhone?")
         }
         rest(2)
-        if !spec.mustSeeFirst.isEmpty && (try? seen(spec.mustSeeFirst, timeout: reset ? 5 : 12)) == nil {
-            guard reset && !spec.resetSteps.isEmpty else {
-                throw StepFailure("The app isn't empty on this iPhone (no welcome card). Run it again and answer y to reset it, or delete the app and install it again from TestFlight. Nothing was recorded.")
-            }
+        // With reset on, every full run starts from a freshly reset app: what
+        // shows on screen doesn't prove it's empty (a run that stopped in scene 2
+        // left the balance and the salary behind the welcome card), and changed
+        // settings don't show at all.
+        if reset && !spec.resetSteps.isEmpty {
             log("Resetting the app (not recorded) …")
             for (n, step) in spec.resetSteps.enumerated() {
                 do { try perform(step) } catch {
@@ -165,10 +166,12 @@ final class SceneRunner {
             app.activate()
             _ = app.wait(for: .runningForeground, timeout: 20)
             rest(2)
-            guard (try? seen(spec.mustSeeFirst, timeout: 12)) != nil else {
-                throw StepFailure("The app was reset but its welcome card doesn't show. Nothing was recorded.")
+            guard spec.mustSeeFirst.isEmpty || (try? seen(spec.mustSeeFirst, timeout: 12)) != nil else {
+                throw StepFailure("The app was reset but the first setup question doesn't show. Nothing was recorded.")
             }
             log("App reset – it's empty now.")
+        } else if !spec.mustSeeFirst.isEmpty && (try? seen(spec.mustSeeFirst, timeout: 12)) == nil {
+            throw StepFailure("The app isn't empty on this iPhone (the first setup question doesn't show). Run it without RESET=0 to reset it, or delete the app and install it again from TestFlight. Nothing was recorded.")
         }
         app.terminate()
         XCUIDevice.shared.press(.home)

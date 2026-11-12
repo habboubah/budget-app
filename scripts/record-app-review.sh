@@ -13,8 +13,8 @@
 #   DEVICE=<udid> npm run record:app-review         if several iPhones are connected
 #   RESET=0 npm run record:app-review               don't reset: stop if the app isn't empty
 #
-# The app must start empty. If it isn't, the recorder resets it in the app
-# (Settings › Reset app) before the screen recording starts – without asking.
+# The app must start empty: a full run resets it in the app (Settings › Reset
+# app) before the screen recording starts – every time, without asking.
 #
 # Before: ios/AppReviewRecorder/README.md, "Once" and "Every recording".
 set -euo pipefail
@@ -62,12 +62,11 @@ fi
 
 echo "iPhone: $DEVICE"
 
-# A full run always starts from an empty app: if Spartopf isn't empty, it is
-# reset (only the full run checks the app; FROM=n starts from the state the
-# phone is in). RESET=0 stops instead.
+# A full run always starts from a freshly reset app (FROM=n starts from the
+# state the phone is in). RESET=0: no reset, stop if the app isn't empty.
 RESET="${RESET:-1}"
 if [ "${FROM:-1}" = "1" ] && [ "$RESET" = "1" ]; then
-  echo "Spartopf on the iPhone is reset if it isn't empty (entries, settings and automatic backups are erased)."
+  echo "Spartopf on the iPhone is reset first (entries, settings and automatic backups are erased)."
 fi
 [ "${DRY_RUN:-}" = "1" ] && echo "Dry run: nothing is recorded."
 echo "Keep the iPhone unlocked and facing you (Face ID is needed twice). Don't touch it until the test ends."

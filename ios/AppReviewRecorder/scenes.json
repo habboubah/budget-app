@@ -5,7 +5,7 @@
   "iconName": "Spartopf"
  },
  "preflight": {
-  "mustSee": ["Willkommen bei Spartopf", "Welcome to Spartopf", "مرحبًا بك في Spartopf", "Vítej ve Spartopfu", "Velkommen til Spartopf", "Te damos la bienvenida a Spartopf", "Bienvenue dans Spartopf", "Ti diamo il benvenuto in Spartopf", "Welkom bij Spartopf", "Witaj w Spartopf", "Damos-te as boas-vindas ao Spartopf", "Välkommen till Spartopf", "Spartopf’a hoş geldin"],
+  "mustSee": ["Wie viel ist gerade auf deinem Konto?", "How much is in your account right now?", "كم يوجد في حسابك الآن؟", "Kolik máš teď na účtu?", "Hvor mange penge har du på kontoen lige nu?", "¿Cuánto tienes ahora mismo en la cuenta?", "Combien avez-vous sur votre compte en ce moment", "Quanto hai sul conto in questo momento?", "Hvor mye har du på kontoen akkurat nå?", "Hoeveel staat er nu op je rekening?", "Ile masz teraz na koncie?", "Quanto tens agora na conta?", "Hur mycket har du på kontot just nu?", "Şu anda hesabında ne kadar var?"],
   "reset": [
    {"optional": [{"see": ["Mit Face ID entsperren", "Unlock with Face ID", "فتح القفل بـ Face ID", "Odemknout pomocí Face ID", "Lås op med Face ID", "Desbloquear con Face ID", "Déverrouiller avec Face ID", "Sblocca con Face ID", "Lås opp med Face ID", "Ontgrendelen met Face ID", "Odblokuj za pomocą Face ID", "Desbloquear com Face ID", "Lås upp med Face ID", "Face ID ile aç"], "timeout": 3}, {"faceID": true}, {"pause": 1}]},
    {"tap": ["Optionen", "Settings", "الإعدادات", "Nastavení", "Opsætning", "Ajustes", "Réglages", "Opzioni", "Valg", "Opties", "Ustawienia", "Definições", "Alternativ", "Ayarlar"], "timeout": 20},

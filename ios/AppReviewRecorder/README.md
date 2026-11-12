@@ -46,9 +46,9 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
    `spartopf-demo-banking-app.png`, `spartopf-demo-backup.spartopf`.
 4. Make sure the build you submit is the one installed from **TestFlight**
    (install it once when there is a new build). No need to delete it before
-   each run: when the app isn't empty, the recorder resets it in the app
-   (Settings › Reset app) before the screen recording starts, without
-   asking (`RESET=0` stops instead). Back up your own data before the run.
+   each run: every full run resets it in the app (Settings › Reset app)
+   before the screen recording starts, without asking (`RESET=0` skips the
+   reset and stops if the app isn't empty). Back up your own data first.
 5. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
 6. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
    screen recording. The real run resets what the dry run filled.
