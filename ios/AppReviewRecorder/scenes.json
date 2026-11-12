@@ -173,6 +173,8 @@
     {"pause": 1},
     {"tap": "November"},
     {"pause": 2},
+    {"scroll": "down"},
+    {"scroll": "down"},
     {"tap": "October in review"},
     {"pause": 2},
     {"scroll": "down"},
