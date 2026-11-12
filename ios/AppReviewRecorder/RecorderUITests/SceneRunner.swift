@@ -791,12 +791,17 @@ final class SceneRunner {
         var file: XCUIElement? = nil
         repeat {
             let below = search.frame.maxY
+            // The suggestion row "Name Contains “…”" – nothing on it is the file.
+            let suggestions = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label CONTAINS %@", "“")).allElementsBoundByIndex
+                .filter { $0.exists }.map { $0.frame }.filter { !$0.isEmpty }
             let shown = app.descendants(matching: .any)
                 .matching(NSPredicate(format: "label BEGINSWITH %@", stem)).allElementsBoundByIndex
                 .filter { el in
                     guard el.exists, el.elementType != .searchField, !el.label.contains("“"), !el.label.contains("\"") else { return false }
                     let f = el.frame
                     return !f.isEmpty && f.minY > below && window.contains(CGPoint(x: f.midX, y: f.midY))
+                        && !suggestions.contains { f.midY >= $0.minY && f.midY <= $0.maxY }
                 }
             // The smallest match: the file's own name or tile, not a cell spanning the list.
             file = shown.min { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
