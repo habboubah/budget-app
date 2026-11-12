@@ -33,9 +33,10 @@ Check, and stop with a clear message if one is missing:
 |---|---|
 | Preview the bump, change nothing | `npm run release:dry` |
 | **First ever upload** (keeps 1.0.0, build +1) | `npm run release:first` |
-| Bug-fix release (1.0.0 → 1.0.1) | `npm run release` |
-| Feature release (1.0.x → 1.1.0) | `node scripts/release.js minor` |
-| Re-upload same version (rejected build) | `node scripts/release.js --keep-version` |
+| Bug-fix release (1.0.0 → 1.0.1), **both stores** on one version | `npm run release` |
+| The App Store only / Google Play only | `npm run release:ios` / `npm run release:android` |
+| Feature release (1.0.x → 1.1.0) | `npm run release -- minor` |
+| Re-upload same version (rejected build) | `npm run release:ios -- --keep-version` |
 | App Store screenshots, DE + EN, 1290×2796 | `npm run screenshots` (once: `npx playwright install chromium`) |
 
 The script gates on `npm run lint` + `npm test`, bumps `package.json` and the

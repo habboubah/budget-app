@@ -37,7 +37,7 @@ The same app and the same flows, with Android conventions where users expect the
 - **Plugins:** check every plugin in use on Android: app, filesystem, haptics, share, status bar, local notifications, biometric. The `scripts/copy-ocr.mjs` assets must be in the APK.
 - **Fonts:** SF Pro and SF Rounded don't exist on Android. Bundle a rounded face for money locally (an OFL-licensed one). Never load it from the Google Fonts CDN; CI's bundle check would fail anyway.
 - **Edge to edge:** Android 15+ draws behind the system bars. Check `safe-top` and `safe-bottom` against the WebView's insets, and fix them where the WebView doesn't report them.
-- **Release:** `scripts/release-android.js`.
+- **Release:** `scripts/release-android.js`, driven by `scripts/release.js` (`npm run release`: both stores on one version; `npm run release:android`: Google Play alone).
   - It builds a signed AAB, with the version code from `package.json`.
   - It uploads to the internal track first.
   - Signing keys live in the gitignored `.env.release`.

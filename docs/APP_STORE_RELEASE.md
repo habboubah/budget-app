@@ -268,7 +268,7 @@ Apple usually reviews within 24–48 hours and emails you the status. At
 *Ready for Distribution* [Bereit zum Verkauf], Spartopf is on the App Store. 🎉
 
 If Apple rejects it: read the message in the *Resolution Center*, fix the code,
-run `node scripts/release.js --keep-version` (same version, new build), pick the
+run `npm run release:ios -- --keep-version` (same version, new build), pick the
 new build in the version and submit again.
 
 ## 10. Later updates
@@ -276,9 +276,14 @@ new build in the version and submit again.
 ```bash
 cd ~/repos/budget-app
 git status                       # everything committed?
-npm run release                  # bug fix:     1.0.0 -> 1.0.1
-node scripts/release.js minor    # new feature: 1.0.x -> 1.1.0
+npm run release                  # bug fix:     1.0.0 -> 1.0.1, App Store and Google Play
+npm run release -- minor         # new feature: 1.0.x -> 1.1.0
+npm run release:ios              # the App Store only
 ```
+
+`npm run release` ships **both stores on the same version** (Google Play:
+[ANDROID_RELEASE.md](ANDROID_RELEASE.md)). After `npm run release:ios` alone,
+`npm run release:android` puts that same version on Google Play.
 
 Then in App Store Connect:
 1. Left, **+** next to *iOS App* → **New Version**, e.g. `1.0.1` (same as the terminal showed).
@@ -310,7 +315,7 @@ the skill `.claude/skills/app-store-release` knows these steps.
 
 | File | Purpose |
 |---|---|
-| `scripts/release.js` | Bump version + build, build, upload, commit |
+| `scripts/release.js` | One version for both stores: bump, build, upload (`--ios`: the App Store only), commit |
 | `ios/App/ExportOptions.plist` | Tells `xcodebuild` to upload straight to App Store Connect |
 | `.env.release` (not in git) | `ASC_KEY_ID`, `ASC_ISSUER_ID` |
 | `scripts/screenshots.mjs` | Raw screenshots (DE + EN); `npm run store-screenshots` frames them |

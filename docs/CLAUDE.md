@@ -1152,8 +1152,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` (`stats-rhythm` and `insights-runway` show a picked day and a chart in hand; `guide*`, `tour-*` and `hint-guide` the guide, each step of the tour and its tip) |
 | App Store screenshots: raw captures (DE + EN) / the framed 6.3-inch set | `npm run screenshots` / `npm run store-screenshots` |
 | Rewrite `docs/plans/glossary.md` from the app's strings | `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts` |
-| Upload to App Store Connect / TestFlight | `npm run release` (first time: `npm run release:first`; preview: `npm run release:dry`) |
-| Build, sign and upload to Google Play's internal test track | `npm run release:android` (once: `npm run android:key`; only the bundle: `-- --no-upload`; preview: `-- --dry-run`) |
+| Release to both stores on one version (TestFlight + Play's internal test track) | `npm run release` (preview: `npm run release:dry`) |
+| One store only | `npm run release:ios` (first upload: `npm run release:first`) / `npm run release:android` (once: `npm run android:key`; only the bundle: `-- --no-upload`) |
 | App Review screen recording: check the scenes against the code / record on the connected iPhone | `npm run rehearse:app-review` / `npm run record:app-review` (`ios/AppReviewRecorder/README.md`) |
 
 A change to a screen, a label or a flow that the App Review recording passes
@@ -1161,19 +1161,27 @@ through means a change to `ios/AppReviewRecorder/scenes.json`; run
 `npm run rehearse:app-review` after it.
 
 ## Releasing (only when explicitly asked)
-Same pipeline as pizza-driver-log and shopping-list: `scripts/release.js`
-gates on `npm run check`, bumps `package.json` and the Xcode project's
-`MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` together, builds,
-`cap sync ios`, archives and uploads via `ios/App/ExportOptions.plist`, then
-commits and tags. Credentials live in the gitignored `.env.release` — never
-print or commit them. Submitting for review is manual. Full checklist:
-`docs/APP_STORE_RELEASE.md`; skill: `.claude/skills/app-store-release`.
-Android: `scripts/release-android.js` runs the same checks, builds and signs
-the bundle with the version from `package.json` and uploads it to Play's
-internal test track through the Play Developer API (the service account in
-`PLAY_SERVICE_ACCOUNT_JSON`, release notes from `release-notes/`), taking the
-next free version code when Play already has one. It never touches
-production. `--no-upload` only builds (`docs/ANDROID_RELEASE.md`).
+Same pipeline as pizza-driver-log: `scripts/release.js` ships **both stores
+on one version** (`--ios` / `--android` for one; no flag = both). It gates on
+`npm run check`, decides the version, bumps `package.json` and the Xcode
+project's `MARKETING_VERSION` together (and `CURRENT_PROJECT_VERSION` when the
+iPhone ships), builds the web app once, then Android
+(`scripts/release-android.js`: signed bundle → Play's internal test track
+through the Play Developer API, release notes from `release-notes/`) and iOS
+(`cap sync ios`, archive, upload via `ios/App/ExportOptions.plist`), then
+commits and tags.
+- **The version rule.** A run takes a new version unless none of the stores
+  it ships to has the current one yet — then it ships that one. So a store
+  that was left out, or a run that broke off, catches up instead of opening a
+  gap. `patch` / `minor` / `major` named on the command line always bump;
+  `--keep-version` re-ships (new iOS build number, next free Android version
+  code). What each store has is asked of the stores themselves (App Store
+  Connect, the Play Developer API), not read from the repository.
+- Credentials live in the gitignored `.env.release` — never print or commit
+  them. Submitting for App Review and promoting to production on Play are
+  manual; the script never touches production.
+- Full checklists: `docs/APP_STORE_RELEASE.md`, `docs/ANDROID_RELEASE.md`;
+  skill: `.claude/skills/app-store-release`.
 
 ## Before calling a change done
 1. `npm run check` — it runs, in order:

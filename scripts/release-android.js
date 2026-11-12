@@ -1,24 +1,24 @@
-// Release Spartopf on Google Play: gate -> web build -> cap sync android ->
-// a signed AAB (android/app/build/outputs/bundle/release/app-release.aab) ->
-// Play's internal test track through the Play Developer API, the way
+// The Android half of the release — scripts/release.js drives it: a signed AAB
+// (android/app/build/outputs/bundle/release/app-release.aab) -> Play's
+// internal test track through the Play Developer API, the way
 // pizza-driver-log's scripts/upload-play.mjs does it. Promoting the release to
 // production stays a manual step in the Play Console.
 //
-// Usage: node scripts/release-android.js [--build N] [--track T] [--no-upload] [--skip-check] [--dry-run]
-//        node scripts/release-android.js --make-key      once: creates the upload key
-//   --make-key    make the upload keystore with keytool (it asks for a password
-//                 and your name) and note its path and alias in .env.release
+//   npm run release            both stores, one version
+//   npm run release:android    Google Play only (node scripts/release.js --android)
+// Android's own flags, after `--`:
 //   --build N     force the build number: N (0–99) is added to the version code
 //                 (1.2.7 -> 1020700, with --build 1 -> 1020701). Left out, the
-//                 script asks Play which codes are used and takes the next free one.
+//                 first code Play has not seen is taken.
 //   --track T     the test track to release on: internal (default), alpha (the
 //                 closed test) or beta (the open test). PLAY_TRACK sets it too.
 //   --no-upload   only build and sign the AAB; nothing is sent to Google Play
-//   --skip-check  don't run `npm run check` first (it ran a moment ago)
-//   --dry-run     print what would happen; nothing built or uploaded
+// Run by itself, this file only makes the upload key:
+//   node scripts/release-android.js --make-key      (npm run android:key)
+//                 keytool asks for a password and your name; the key's path and
+//                 alias are noted in .env.release
 //
-// The version is package.json's — the iPhone release (scripts/release.js)
-// bumps it; Android ships the same number.
+// The version is package.json's — release.js decides it, for both stores.
 //
 // Credentials (never committed) come from the environment, optionally via the
 // gitignored .env.release file (see .env.release.example):
@@ -50,15 +50,6 @@ const androidDir = path.join(rootDir, 'android');
 const aab = path.join(androidDir, 'app/build/outputs/bundle/release/app-release.aab');
 const PACKAGE = 'com.habboubah.spartopf';
 
-const args = process.argv.slice(2);
-const dryRun = args.includes('--dry-run');
-// Uploading is the default; --upload is still accepted from before it was.
-const upload = !args.includes('--no-upload');
-const explicitBuild = args.includes('--build');
-const skipCheck = args.includes('--skip-check');
-const buildArg = args.includes('--build') ? Number(args[args.indexOf('--build') + 1]) : 0;
-if (!Number.isInteger(buildArg) || buildArg < 0 || buildArg > 99) throw new Error('--build takes a number from 0 to 99.');
-
 // Load .env.release (KEY=VALUE lines) without overriding the shell.
 const envFile = path.join(rootDir, '.env.release');
 if (fs.existsSync(envFile)) {
@@ -67,8 +58,6 @@ if (fs.existsSync(envFile)) {
     if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^(['"])(.*)\1$/, '$2');
   }
 }
-
-const track = (args.includes('--track') ? args[args.indexOf('--track') + 1] : process.env.PLAY_TRACK) || 'internal';
 
 /** Stops with a plain message — what is missing and what to do — instead of a stack trace. */
 function stop(...lines) {
@@ -87,7 +76,7 @@ const sdkGuess = path.join(os.homedir(), process.platform === 'darwin' ? 'Librar
 if (!process.env.ANDROID_HOME && !fs.existsSync(path.join(androidDir, 'local.properties')) && fs.existsSync(sdkGuess)) process.env.ANDROID_HOME = sdkGuess;
 
 // ---- Once: the upload key ----
-if (args.includes('--make-key')) {
+function makeKey() {
   const keystore = process.env.ANDROID_KEYSTORE_PATH || path.join(os.homedir(), '.android-keys', 'spartopf-upload.jks');
   const alias = process.env.ANDROID_KEY_ALIAS || 'spartopf';
   if (fs.existsSync(keystore)) stop(`There is already a keystore at ${keystore} — nothing made.`, 'Losing an upload key means asking Google to reset it, so this never overwrites one.');
@@ -105,7 +94,7 @@ if (args.includes('--make-key')) {
   if (lines.length) fs.appendFileSync(envFile, `${has && !has.endsWith('\n') ? '\n' : ''}# Android upload key (scripts/release-android.js --make-key)\n${lines.join('\n')}\n`, { mode: 0o600 });
   console.log(`\nDone. Its path and alias are in .env.release (gitignored).`);
   console.log('Keep a copy of the keystore file and the password somewhere safe outside this computer.');
-  console.log('Next: npm run release:android — it asks for the password once and then keeps it in .env.release.');
+  console.log('Next: npm run release (or release:android) — it asks for the password once and then keeps it in .env.release.');
   process.exit(0);
 }
 
@@ -137,43 +126,19 @@ function askHidden(question) {
   });
 }
 
-const { version } = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
-const [major, minor, patch] = version.split('.').map(Number);
-const codeFor = n => major * 1_000_000 + minor * 10_000 + patch * 100 + n;
-// The build number; without --build it moves up to the first code Play has not seen.
-let build = buildArg;
+// ---- What this release is: set by prepareAndroid() and shipAndroid() ----
+let account = null;      // the Play service account's key
+let track = 'internal';
+let version = '';
+let build = 0;           // added to the version code
+
+/** 1.2.7 -> 1020700; a second upload of the same version adds its build number (1–99). */
+export function versionCode(v, n = 0) {
+  const [major, minor, patch] = v.split('.').map(Number);
+  return major * 1_000_000 + minor * 10_000 + patch * 100 + n;
+}
+const codeFor = n => versionCode(version, n);
 const run = (cmd, cwd = rootDir) => execSync(cmd, { stdio: 'inherit', cwd, env: { ...process.env, ANDROID_BUILD: String(build) } });
-
-console.log(`Spartopf ${version} for Android, version code ${codeFor(build)}${dryRun ? ' (dry run)' : ''}`);
-if (upload && !['internal', 'alpha', 'beta'].includes(track)) {
-  stop(`Unknown track "${track}". This script releases to a test track: internal, alpha (closed test) or beta (open test).`, 'Production is promoted by hand in the Play Console.');
-}
-
-if (dryRun) {
-  console.log(`Would: ${skipCheck ? '' : 'npm run check, '}vite build, cap sync android, gradlew bundleRelease${upload ? `, upload to the ${track} track on Google Play` : ''}.`);
-  if (upload && !explicitBuild) console.log('(If Google Play already has that version code, the next free one is taken.)');
-  if (!process.env.ANDROID_KEYSTORE_PATH) console.log('(No upload key yet: npm run android:key.)');
-  process.exit(0);
-}
-if (!process.env.ANDROID_KEYSTORE_PATH || !process.env.ANDROID_KEY_ALIAS) {
-  stop(
-    'There is no upload key yet — Google Play only takes a signed bundle.',
-    '',
-    'Make it once:   npm run android:key',
-    '(keytool asks for a password and your name; the key goes to ~/.android-keys/, its path into .env.release.)',
-    '',
-    'Already have a keystore? Add to .env.release:',
-    '  ANDROID_KEYSTORE_PATH=/path/to/your.jks',
-    '  ANDROID_KEY_ALIAS=the-alias-in-it',
-    '',
-    'More: docs/ANDROID_RELEASE.md',
-  );
-}
-if (!fs.existsSync(process.env.ANDROID_KEYSTORE_PATH)) stop(`The keystore at ANDROID_KEYSTORE_PATH is not there: ${process.env.ANDROID_KEYSTORE_PATH}`);
-if (!process.env.JAVA_HOME && !javaWorks()) stop('No Java found. Install Android Studio (it brings a JDK), or set JAVA_HOME.');
-if (!process.env.ANDROID_HOME && !fs.existsSync(path.join(androidDir, 'local.properties'))) {
-  stop('The Android SDK was not found. Install Android Studio and open the android/ folder in it once, or set ANDROID_HOME.');
-}
 
 // ---- Google Play Developer API (no dependency: a JWT signed with node:crypto) ----
 const PLAY = 'https://androidpublisher.googleapis.com';
@@ -290,16 +255,92 @@ async function sendToPlay(languages) {
   }
 }
 
-// ---- Ask Play first: a missing permission or a used version code should not cost a whole build ----
-const account = upload ? serviceAccount() : null;
-let languages = [];
-if (upload) {
-  let state;
+/** The versions Play has seen, read back out of its version codes. */
+export function playVersions(ctx) {
+  return [...(ctx.taken ?? [])].filter(code => code >= 1_000_000)
+    .map(code => `${Math.floor(code / 1_000_000)}.${Math.floor(code / 10_000) % 100}.${Math.floor(code / 100) % 100}`);
+}
+
+/** Does Play have this version? null when it could not be asked; a bundle-only run has nothing to ask. */
+export function playHasVersion(ctx, v) {
+  if (!ctx.taken) return ctx.upload ? null : false;
+  for (let n = 0; n < 100; n += 1) if (ctx.taken.has(versionCode(v, n))) return true;
+  return false;
+}
+
+/**
+ * Everything that can be known before a version is bumped or anything is built:
+ * the flags, the upload key, Java and the SDK, and what Play already has.
+ * A dry run only looks (and only when the service account's key is on this machine).
+ */
+export async function prepareAndroid(args, { dryRun }) {
+  const ctx = {
+    // Uploading is the default; --upload is still accepted from before it was.
+    upload: !args.includes('--no-upload'),
+    explicitBuild: args.includes('--build'),
+    buildArg: args.includes('--build') ? Number(args[args.indexOf('--build') + 1]) : 0,
+    track: (args.includes('--track') ? args[args.indexOf('--track') + 1] : process.env.PLAY_TRACK) || 'internal',
+    taken: null,      // the version codes Play has seen; null = not asked
+    languages: [],    // the store listing's languages
+  };
+  if (!Number.isInteger(ctx.buildArg) || ctx.buildArg < 0 || ctx.buildArg > 99) stop('--build takes a number from 0 to 99.');
+  if (ctx.upload && !['internal', 'alpha', 'beta'].includes(ctx.track)) {
+    stop(`Unknown track "${ctx.track}". This script releases to a test track: internal, alpha (closed test) or beta (open test).`, 'Production is promoted by hand in the Play Console.');
+  }
+  track = ctx.track;
+  const seen = state => {
+    ctx.taken = state.taken;
+    ctx.languages = state.languages;
+    const highest = Math.max(0, ...state.taken);
+    console.log(`Google Play: highest version code so far ${highest || '(none)'}.`);
+  };
+
+  if (dryRun) {
+    if (!process.env.ANDROID_KEYSTORE_PATH) console.log('(No upload key yet: npm run android:key.)');
+    const file = process.env.PLAY_SERVICE_ACCOUNT_JSON;
+    if (!ctx.upload) return ctx;
+    if (!file || !fs.existsSync(file)) {
+      console.log('(No Play service account key on this machine — the dry run cannot see what Google Play has.)');
+      return ctx;
+    }
+    account = serviceAccount();
+    try {
+      seen(await playState());
+    } catch (error) {
+      console.warn(`Could not ask Google Play what it has (${error.message}).`);
+    }
+    return ctx;
+  }
+
+  if (!process.env.ANDROID_KEYSTORE_PATH || !process.env.ANDROID_KEY_ALIAS) {
+    stop(
+      'There is no upload key yet — Google Play only takes a signed bundle.',
+      '',
+      'Make it once:   npm run android:key',
+      '(keytool asks for a password and your name; the key goes to ~/.android-keys/, its path into .env.release.)',
+      '',
+      'Already have a keystore? Add to .env.release:',
+      '  ANDROID_KEYSTORE_PATH=/path/to/your.jks',
+      '  ANDROID_KEY_ALIAS=the-alias-in-it',
+      '',
+      'More: docs/ANDROID_RELEASE.md',
+    );
+  }
+  if (!fs.existsSync(process.env.ANDROID_KEYSTORE_PATH)) stop(`The keystore at ANDROID_KEYSTORE_PATH is not there: ${process.env.ANDROID_KEYSTORE_PATH}`);
+  if (!process.env.JAVA_HOME && !javaWorks()) stop('No Java found. Install Android Studio (it brings a JDK), or set JAVA_HOME.');
+  if (!process.env.ANDROID_HOME && !fs.existsSync(path.join(androidDir, 'local.properties'))) {
+    stop('The Android SDK was not found. Install Android Studio and open the android/ folder in it once, or set ANDROID_HOME.');
+  }
+
+
+  if (!ctx.upload) return ctx;
+  // Ask Play first: a missing permission should not cost a version or a whole build.
+  account = serviceAccount();
   try {
-    state = await playState();
+    seen(await playState());
   } catch (error) {
     stop(
-      'Google Play did not let the service account in — nothing was built.',
+      'Google Play did not let the service account in — nothing was changed or built.',
       `  ${error.message}`,
       '',
       `Check in the Play Console that the app ${PACKAGE} exists with a first release uploaded by hand, and that`,
@@ -307,87 +348,111 @@ if (upload) {
       'To only build the bundle: npm run release:android -- --no-upload',
     );
   }
-  languages = state.languages;
-  if (explicitBuild) {
-    if (state.taken.has(codeFor(build))) stop(`Google Play already has version code ${codeFor(build)} — pick another --build, or leave it out.`);
-  } else {
-    while (state.taken.has(codeFor(build)) && build < 99) build += 1;
-    if (state.taken.has(codeFor(build))) stop(`All hundred version codes of ${version} are used — raise the version (npm run release).`);
-    if (build > 0) console.log(`Google Play already has ${version} up to version code ${codeFor(build - 1)}: this upload is build ${build}, version code ${codeFor(build)}.`);
+  return ctx;
+}
+
+/** The build number for this version: --build's, else the first whose version code Play has not seen. */
+export function androidBuild(ctx, forVersion) {
+  let n = ctx.buildArg;
+  if (!ctx.taken) return n;
+  const used = () => ctx.taken.has(versionCode(forVersion, n));
+  if (ctx.explicitBuild) {
+    if (used()) stop(`Google Play already has version code ${versionCode(forVersion, n)} — pick another --build, or leave it out.`);
+    return n;
   }
+  while (used() && n < 99) n += 1;
+  if (used()) stop(`All hundred version codes of ${forVersion} are used — take a new version (npm run release).`);
+  return n;
 }
 
 // The keystore password is asked for once, checked against the keystore and then
 // kept in .env.release (gitignored, readable by you only) — as pizza-driver-log
 // keeps its own in android/keystore.properties — so no later release asks.
-if (!process.env.ANDROID_KEYSTORE_PASSWORD) {
-  const keytool = process.env.JAVA_HOME ? path.join(process.env.JAVA_HOME, 'bin', 'keytool') : 'keytool';
-  const opens = password => {
-    const tried = spawnSync(
-      keytool,
-      ['-list', '-keystore', process.env.ANDROID_KEYSTORE_PATH, '-alias', process.env.ANDROID_KEY_ALIAS, '-storepass:env', 'SPARTOPF_STOREPASS'],
-      { stdio: 'ignore', env: { ...process.env, SPARTOPF_STOREPASS: password } },
-    );
-    return tried.error ? true : tried.status === 0; // no keytool to ask: the signing step will tell
-  };
-  let password = '';
-  for (let tries = 1; ; tries += 1) {
-    password = await askHidden('Keystore password (asked this once, then remembered in .env.release): ');
-    if (!password) stop('No password given.');
-    if (opens(password)) break;
-    if (tries === 3) stop('That password does not open the keystore — nothing was saved.');
-    console.log(`That does not open ${path.basename(process.env.ANDROID_KEYSTORE_PATH)} (alias "${process.env.ANDROID_KEY_ALIAS}"). Once more:`);
-  }
-  process.env.ANDROID_KEYSTORE_PASSWORD = password;
-  const has = fs.existsSync(envFile) ? fs.readFileSync(envFile, 'utf8') : '';
-  fs.appendFileSync(envFile, `${has && !has.endsWith('\n') ? '\n' : ''}ANDROID_KEYSTORE_PASSWORD='${password}'\n`, { mode: 0o600 });
-  fs.chmodSync(envFile, 0o600);
-  console.log('Saved in .env.release — the next release does not ask.');
-}
-
-// The same gate as the iPhone release: lint, tests, privacy, performance, contrast.
-if (!skipCheck) run('npm run check');
-run('npx vite build');
-run('npx cap sync android');
-const bundle = () => {
-  run(process.platform === 'win32' ? 'gradlew.bat bundleRelease' : './gradlew bundleRelease', androidDir);
-  if (!fs.existsSync(aab)) throw new Error(`No bundle at ${aab}.`);
-  console.log(`\nSigned bundle: ${path.relative(rootDir, aab)} (${(fs.statSync(aab).size / 1e6).toFixed(1)} MB, version code ${codeFor(build)})`);
-};
-bundle();
-
-if (!upload) {
-  console.log('Not uploaded (--no-upload). Upload it in the Play Console (Testing › Internal testing › Create new release), or run again without the flag.');
-  process.exit(0);
-}
-
-let sent;
-for (let attempt = 1; !sent; attempt += 1) {
-  try {
-    sent = await sendToPlay(languages);
-  } catch (error) {
-    // Play remembers codes the lists above no longer show; the next one needs a new bundle.
-    if (/already been used/i.test(error.message) && !explicitBuild && build < 99 && attempt < 5) {
-      build += 1;
-      console.log(`\nGoogle Play has seen that version code before — building again as build ${build}, version code ${codeFor(build)}.`);
-      bundle();
-      continue;
+export async function keystorePassword() {
+  if (!process.env.ANDROID_KEYSTORE_PASSWORD) {
+    const keytool = process.env.JAVA_HOME ? path.join(process.env.JAVA_HOME, 'bin', 'keytool') : 'keytool';
+    const opens = password => {
+      const tried = spawnSync(
+        keytool,
+        ['-list', '-keystore', process.env.ANDROID_KEYSTORE_PATH, '-alias', process.env.ANDROID_KEY_ALIAS, '-storepass:env', 'SPARTOPF_STOREPASS'],
+        { stdio: 'ignore', env: { ...process.env, SPARTOPF_STOREPASS: password } },
+      );
+      return tried.error ? true : tried.status === 0; // no keytool to ask: the signing step will tell
+    };
+    let password = '';
+    for (let tries = 1; ; tries += 1) {
+      password = await askHidden('Keystore password (asked this once, then remembered in .env.release): ');
+      if (!password) stop('No password given.');
+      if (opens(password)) break;
+      if (tries === 3) stop('That password does not open the keystore — nothing was saved.');
+      console.log(`That does not open ${path.basename(process.env.ANDROID_KEYSTORE_PATH)} (alias "${process.env.ANDROID_KEY_ALIAS}"). Once more:`);
     }
-    stop(
-      'The bundle is built and signed, but Google Play did not take it:',
-      `  ${error.message}`,
-      '',
-      `It is at ${path.relative(rootDir, aab)}. Fix the above and run again with --skip-check, or upload it in the Play Console.`,
-    );
+    process.env.ANDROID_KEYSTORE_PASSWORD = password;
+    const has = fs.existsSync(envFile) ? fs.readFileSync(envFile, 'utf8') : '';
+    fs.appendFileSync(envFile, `${has && !has.endsWith('\n') ? '\n' : ''}ANDROID_KEYSTORE_PASSWORD='${password}'\n`, { mode: 0o600 });
+    fs.chmodSync(envFile, 0o600);
+    console.log('Saved in .env.release — the next release does not ask.');
   }
+
 }
 
-const withNotes = sent.notes.length ? `, release notes in ${sent.notes.join(', ')}` : '';
-if (sent.status === 'draft') {
-  console.log(`\nSpartopf ${version} (version code ${sent.versionCode}) is uploaded to the ${track} track as a draft${withNotes}.`);
-  console.log('Google Play only takes drafts from the API while the app has never been published:');
-  console.log('open the Play Console, go to the track and roll the release out. Once the app is live, this command does that too.');
-} else {
-  console.log(`\nDone: Spartopf ${version} (version code ${sent.versionCode}) is released on Google Play's ${track} track${withNotes}.`);
-  console.log('Promoting it to production stays a manual step in the Play Console.');
+/**
+ * Builds and signs the bundle for `forVersion` (package.json already says it, the
+ * web build is in dist/) and, unless --no-upload, releases it on the test track.
+ */
+export async function shipAndroid(ctx, forVersion, buildNumber) {
+  version = forVersion;
+  build = buildNumber;
+  run('npx cap sync android');
+  const bundle = () => {
+    run(process.platform === 'win32' ? 'gradlew.bat bundleRelease' : './gradlew bundleRelease', androidDir);
+    if (!fs.existsSync(aab)) throw new Error(`No bundle at ${aab}.`);
+    console.log(`\nSigned bundle: ${path.relative(rootDir, aab)} (${(fs.statSync(aab).size / 1e6).toFixed(1)} MB, version code ${codeFor(build)})`);
+  };
+  bundle();
+
+  if (!ctx.upload) {
+    console.log('Not uploaded (--no-upload). Upload it in the Play Console (Testing › Internal testing › Create new release), or run again without the flag.');
+    return { uploaded: false, versionCode: codeFor(build) };
+  }
+
+  let sent;
+  for (let attempt = 1; !sent; attempt += 1) {
+    try {
+      sent = await sendToPlay(ctx.languages);
+    } catch (error) {
+      // Play remembers codes the lists no longer show; the next one needs a new bundle.
+      if (/already been used/i.test(error.message) && !ctx.explicitBuild && build < 99 && attempt < 5) {
+        build += 1;
+        console.log(`\nGoogle Play has seen that version code before — building again as build ${build}, version code ${codeFor(build)}.`);
+        bundle();
+        continue;
+      }
+      stop(
+        'The bundle is built and signed, but Google Play did not take it:',
+        `  ${error.message}`,
+        '',
+        `It is at ${path.relative(rootDir, aab)}. Fix the above and run npm run release:android -- --skip-check`,
+        `(it ships ${version} again), or upload the bundle in the Play Console.`,
+      );
+    }
+  }
+
+  const withNotes = sent.notes.length ? `, release notes in ${sent.notes.join(', ')}` : '';
+  if (sent.status === 'draft') {
+    console.log(`\nGoogle Play: Spartopf ${version} (version code ${sent.versionCode}) is uploaded to the ${track} track as a draft${withNotes}.`);
+    console.log('Google Play only takes drafts from the API while the app has never been published:');
+    console.log('open the Play Console, go to the track and roll the release out. Once the app is live, this command does that too.');
+  } else {
+    console.log(`\nGoogle Play: Spartopf ${version} (version code ${sent.versionCode}) is released on the ${track} track${withNotes}.`);
+  }
+  return { uploaded: true, ...sent };
+}
+
+// ---- Run by itself: only the upload key. The release is release.js's. ----
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url))) {
+  const args = process.argv.slice(2);
+  if (args.includes('--make-key')) makeKey();
+  const forwarded = spawnSync(process.execPath, [path.join(rootDir, 'scripts', 'release.js'), '--android', ...args], { stdio: 'inherit' });
+  process.exit(forwarded.status ?? 1);
 }

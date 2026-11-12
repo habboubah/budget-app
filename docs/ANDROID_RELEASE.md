@@ -75,21 +75,28 @@ too:
 ## Every release
 
 ```
-npm run release:android                   # check, build, sign, upload -> internal test track
+npm run release                           # both stores on one version (App Store + Google Play)
+npm run release:android                   # Google Play only: check, build, sign, upload -> internal test track
 npm run release:android -- --dry-run      # what would happen; nothing built or sent
 npm run release:android -- --no-upload    # only the signed app-release.aab
 npm run release:android -- --track alpha  # the closed test instead (beta: the open test)
 ```
+
+Both are `scripts/release.js` (`release:android` is `--android`);
+`scripts/release-android.js` is its Android half.
 
 One command, nothing to click: it asks Play what it already has, runs the
 checks, builds and signs the bundle, uploads it, puts it on the **internal
 test track** as a finished release and attaches the release notes. Testers get
 it as an update a few minutes later.
 
-- **Version.** `package.json`'s — the iPhone release bumps it. The version
-  code follows from it (1.2.7 → 1020700). When Play already has that code
-  (a second Android upload of the same version), the script takes the next
-  free one by itself (1020701, …); `--build N` forces a number.
+- **Version.** The same as the iPhone's, always. `npm run release` takes a
+  new version for both stores. `npm run release:android` ships the current
+  version when Google Play does not have it yet (the iPhone went first), and
+  takes a new one otherwise — `npm run release:ios` then brings the App Store
+  up to it. The version code follows from the version (1.2.7 → 1020700).
+  `--keep-version` ships the same version again under the next free code
+  (1020701, …); `--build N` forces the number.
 - **Release notes.** `release-notes/<version>/<language>.txt`, else
   `release-notes/default/`. The file name is Play's language code (`de-DE`,
   `en-GB`, `ar`); only the languages the store listing has are sent. 500

@@ -28,7 +28,7 @@
 5. **Accessibility labels**, checked again against the final app.
 6. **Release.**
    1. Run `npm run check`.
-   2. Ship with `scripts/release.js` (iOS) and `scripts/release-android.js`.
+   2. Ship with `npm run release` (`scripts/release.js`: both stores, one version).
    3. TestFlight and the Play internal track, with five testers for a week.
    4. Submit for review.
 

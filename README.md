@@ -96,11 +96,30 @@ Screen**. The web app and the iPhone app keep separate data; move it with
 
 ## Build a release
 
-### iPhone (App Store)
+**`npm run release` ships both stores on one version**: checks → the next
+version → web build → Android (signed bundle → Google Play's internal test
+track) → iPhone (`xcodebuild` archive → App Store Connect / TestFlight) →
+commit and tag `vX.Y.Z`. Commit everything first (`git status` must be clean).
 
-One command does the whole release: lint + tests → raise version and build
-number → web build → `cap sync` → `xcodebuild` archive → upload to App Store
-Connect (TestFlight) → commit and tag `vX.Y.Z`.
+| Command | What it does |
+|---|---|
+| `npm run release` | Both stores, the same new version: e.g. 1.2.2 → 1.2.3 |
+| `npm run release:ios` | The App Store only |
+| `npm run release:android` | Google Play only |
+| `npm run release:dry` | Shows the version, the iOS build number and the Android version code. Nothing is built or uploaded. |
+| `npm run release -- minor` | New feature: e.g. 1.2.x → 1.3.0 (`major`: 1.x → 2.0.0) |
+| `npm run release:ios -- --keep-version` | The same version again with a new build number — to re-upload after App Review rejected a build (`release:android -- --keep-version`: the next version code) |
+| `npm run release -- --skip-check` | Skips `npm run check` (when it just ran) |
+
+**The version is always the same in both stores.** A release takes a new
+version — unless the store it ships to does not have the current one yet. So
+`npm run release:ios` today and `npm run release:android` tomorrow put the
+*same* version on Google Play, and a release that broke off half-way is
+finished by running the command again. If the Android half goes through and
+the iPhone build fails, the script says so; `npm run release:ios` then ships
+that version there too.
+
+### iPhone (App Store)
 
 **Once per Mac — the API key.** It belongs to the team, so the Fahrtwerk key
 works here too:
@@ -113,28 +132,21 @@ ls ~/.appstoreconnect/private_keys/     # AuthKey_<ASC_KEY_ID>.p8 must be here
 No key yet? Step 2 in [APP_STORE_RELEASE.md](docs/APP_STORE_RELEASE.md#2-reuse-the-api-key).
 `.env.release` and the `.p8` file are git-ignored.
 
-**Every release** — commit everything first (`git status` must be clean), then:
+**Every release** — `npm run release` (both stores) or `npm run release:ios`,
+see the table above. The very first upload of the app: `npm run release:first`
+(keeps the version).
 
-| Command | What it does |
-|---|---|
-| `npm run release:dry` | Shows the next version and build number. Nothing is built or uploaded. |
-| `npm run release` | Bug fix: e.g. 1.2.2 → 1.2.3 |
-| `node scripts/release.js minor` | New feature: e.g. 1.2.x → 1.3.0 |
-| `node scripts/release.js major` | Big change: e.g. 1.x → 2.0.0 |
-| `node scripts/release.js --keep-version` | Same version, new build number — to re-upload after a rejection (`npm run release:first` does the same) |
-
-It ends with `Done: Spartopf vX.Y.Z (build N) uploaded to App Store Connect.`
+It ends with `Done: Spartopf vX.Y.Z uploaded to App Store Connect (build N) …`.
 Apple needs 5–30 minutes to process the build (you get an email); then it shows
 up in TestFlight.
 
 ### Android (Google Play)
 
-`npm run release:android` runs the checks, builds the web app, syncs it into
-`android/`, makes a **signed bundle**
-(`android/app/build/outputs/bundle/release/app-release.aab`) and **uploads it
-to Google Play's internal test track** — nothing to click in the Play Console.
-The version is `package.json`'s — the iPhone release raises it, Android ships
-the same number.
+The Android half of `npm run release` — or `npm run release:android` by
+itself — builds the web app, syncs it into `android/`, makes a **signed
+bundle** (`android/app/build/outputs/bundle/release/app-release.aab`) and
+**uploads it to Google Play's internal test track** — nothing to click in the
+Play Console. The version is the one the iPhone gets.
 
 **Once per Mac**
 
@@ -165,11 +177,10 @@ the same number.
 | Command | What it does |
 |---|---|
 | `npm run release:android -- --dry-run` | Shows the version and version code. Nothing is built. |
-| `npm run release:android` | Checks, builds, signs and uploads the bundle to the internal test track, with the release notes from `release-notes/`. Asks for the keystore password the first time only, then keeps it in `.env.release`. The same version a second time gets the next free version code by itself. |
+| `npm run release:android` | Checks, builds, signs and uploads the bundle to the internal test track, with the release notes from `release-notes/`. Asks for the keystore password the first time only, then keeps it in `.env.release`. Ships the iPhone's version when Google Play does not have it yet, otherwise a new one. |
 | `npm run release:android -- --no-upload` | Only builds and signs the bundle; nothing is sent to Google Play. |
 | `npm run release:android -- --track alpha` | Releases to the closed test instead (`beta`: the open test). |
 | `npm run release:android -- --build 1` | Forces the build number that is added to the version code. |
-| `npm run release:android -- --skip-check` | Skips `npm run check` (when it just ran). |
 | `npm run android:debug` | An unsigned debug APK for your own phone: `android/app/build/outputs/apk/debug/app-debug.apk`. |
 
 It ends with `Done: Spartopf X.Y.Z (version code N) is released on Google
@@ -205,7 +216,7 @@ version after that:
 6. **Pick the build** → **Add for Review** → **Submit to App Review**.
 
 Apple usually reviews within 24–48 hours. If it's rejected: read the
-*Resolution Center*, fix it, run `node scripts/release.js --keep-version`, pick
+*Resolution Center*, fix it, run `npm run release:ios -- --keep-version`, pick
 the new build and submit again.
 
 ## App Review screen recording
