@@ -88,27 +88,32 @@ server, no ads; everything stays on the device.
   using it ends that tip for good. After the setup, the card *Gut zu wissen*
   shows the three gestures — and offers the short tour and the guide (below).
 
-## Learning the app: the guide and the tour
+## Learning the app: the guide and the tours
 
 Nothing stands between a new user and the month page — the setup card is the
 first thing to do, not something to read. What there is to learn is there
 when it is wanted:
 
-- **Anleitung** — the first card of *Optionen*. Every feature in two or three
-  sentences, in seven chapters (*Die Grundlagen, Eintragen, Planen, Auswerten,
-  Importieren, Mehr im Haushaltsbuch, Sicherheit und Daten*), with a search
-  over all of it. A row opens to its text and **Zeigen**, which goes to the
-  real thing: the screen it is about, the entry sheet, the month picker or
-  the month's "⋯" menu — and *back* returns to the guide, the topic still
-  open. What was read gets a tick. Topics a device can't use are left out
-  (automatic capture off the iPhone, reminders in the browser). In all
-  fourteen languages, naming every button as the app names it.
-- **Kurze Tour** — from the guide or the *Gut zu wissen* card: the real month
-  page with one thing lit at a time and a sentence beside it — the two
-  balances, the circle that ticks an entry off, switching months, the tabs,
-  the add button — "2 von 5", *Weiter*, and *Tour beenden* on every step. It
-  ends on *Eintrag hinzufügen*. A page that has no balance or no entry yet
-  gets a shorter tour. It never starts by itself.
+- **Anleitung** — the first card of *Optionen*. Every feature in seven
+  chapters (*Die Grundlagen, Eintragen, Planen, Auswerten, Importieren, Mehr
+  im Haushaltsbuch, Sicherheit und Daten*), with a search over all of it. A
+  topic opens to a small picture of its screen, one sentence of what it is,
+  *So geht's* with numbered steps and a tip. The buttons a step names are
+  drawn as they look — the round +, the "⋯", the tick that saves, *Aufteilen*
+  on a capsule with its icon — in every language, as the app names them.
+  What was read gets a tick. Topics a device can't use are left out
+  (automatic capture off the iPhone, reminders in the browser).
+- **Zeigen** goes to the real thing — the screen, the tab, the entry sheet —
+  and lights up what the topic is about: the add button, the month's "⋯",
+  the repeat pill, the budgets card. *Zurück zur Anleitung* is on that card;
+  after it, "‹ Anleitung" above the tab bar leads back, the topic still open
+  (on a screen of *Optionen*, its back button does).
+- **Touren** — at the top of the guide: the month page, adding an entry,
+  Statistik, Planen and Optionen, each at most five things lit one at a time
+  on the real screen with a sentence beside it, "2 von 5", *Weiter*, and
+  *Tour beenden* on every step. A topic offers its tour too, and the *Gut zu
+  wissen* card the month page's, which ends on *Eintrag hinzufügen*. A screen
+  that doesn't have something yet gets a shorter tour; none starts by itself.
 - **Ausprobieren.** The guide also offers *Testdaten hinzufügen* (below): a
   year of a household to try everything on without touching your own entries.
 - Whoever had the app before the guide came sees one tip about it, once.

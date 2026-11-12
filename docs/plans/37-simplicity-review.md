@@ -100,7 +100,8 @@ Ahmad asked for a tutorial covering every feature, built the way the best apps d
 
 - **Nothing new on the first screens.** No welcome slides, no tour that starts by itself. The setup card stays the first action.
 - **The guide** (*Optionen*, first row — the one change to item 4's groups: a row of its own above *Sicherheit und Mitteilungen*, because help is looked for at the top): every feature of the table above in two or three sentences, each with *Zeigen*. It is where the answer to "nowhere until …" can be read ahead.
-- **The tour**: five marks on the real month page, only when asked for — from the guide, or from the gestures card, whose two new buttons are the only addition to the month page (and go with the card).
+- **The tours**: five marks at most on a real screen, only when asked for — the month page (from the guide, or from the gestures card, whose two new buttons are the only addition to the month page and go with the card), and from the guide the entry sheet, Statistik, Planen and Optionen.
+- **Help pages people can follow** (second pass, after Ahmad's review): one sentence, numbered steps with the buttons drawn as they look, a tip, and a picture of the screen drawn from the app's own parts. *Zeigen* lights up the control rather than doing the step for the user, and every *Zeigen* leads back.
 - **One more tip**, first in the order of item 5: "Neu: eine Anleitung zu allen Funktionen" — once, for whoever had the app before; a new user who put the gestures card away never sees it.
 - **First viewport counts** (item 3) are unchanged on the month page; *Optionen* gains one row.
 

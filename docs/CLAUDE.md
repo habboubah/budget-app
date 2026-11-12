@@ -70,7 +70,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `src/receipts.ts` | Receipts and documents on an entry |
 | `src/keywords.ts` | Name completion and the category guessed from the name |
 | `src/tips.ts` | The one tip card on the month page |
-| `src/guide.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Optionen › Anleitung*) and the short tour: its topics, search and steps (pure, tested); its pages per language, loaded on demand |
+| `src/guide.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Optionen › Anleitung*), the tours and what *Zeigen* points at: topics, labels, search, marks (pure, tested); its pages per language, loaded on demand |
 | `src/crypto.ts`, `src/export.ts`, `src/limits.ts` | Encrypted backups (WebCrypto), sharing files, the size limits of every import |
 | `src/currency.ts`, `src/links.ts`, `src/platform.ts` | Currencies; the links *Über Spartopf* opens; which app we run in |
 | `src/demo.ts` | The test data year |
@@ -642,44 +642,62 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   first action), tips at the moment they help (above), and — new — a place to
   look things up that is always in the same spot, plus a tour that only runs
   when asked for.
-  - **The guide** is the first card of *Optionen* (a `QuickTile`) (`GuideView`, pushed as
-    `guide`): the tour's card, then `GUIDE_TOPICS` by chapter — a row opens
-    to two or three sentences and *Zeigen* (`GuideAction`, run by
-    `guideGo` in App: a tab, a pushed screen, or something on the month page
-    opened — the entry sheet, the month picker, the "⋯" menu via
-    `data-tour="actions"`). A search over titles and texts (`searchGuide`,
-    folded like the month's search). `only: 'ios' | 'app'` hides what a device
-    can't do. Opened topics are ticked (`spartopf-guide-seen`, a view
-    preference). **A new feature gets a topic** — title = the feature's own
-    label in `Strings` where it has one (`title: 'favorites'`), so the guide
-    says what the screen says; `guide.test.ts` holds the list together.
+  - **The guide** is the first card of *Optionen* (a `QuickTile`; `GuideView`, pushed as
+    `guide`): the tours on top, then `GUIDE_TOPICS` by chapter. A row opens
+    to a small picture of its screen (`GuideScenes.tsx`: drawn from the app's
+    own parts and tokens — bars for content, the topic's control in the
+    accent with its real label; never a screenshot, so it follows language,
+    theme, accent and RTL), one sentence (`guide…Sum`), "So geht's" with two
+    to five numbered steps (`guide…Steps`, one a line) and a tip
+    (`guide…Tip`) — `topicText(topic)` names the three keys. Then *Zeigen*
+    and, where the topic has one, *Tour starten*. A search over all of it
+    (`searchGuide`, folded like the month's search). `only: 'ios' | 'app'`
+    hides what a device can't do. Opened topics are ticked
+    (`spartopf-guide-seen`, a view preference). **A new feature gets a
+    topic** — title = the feature's own label in `Strings` where it has one,
+    so the guide says what the screen says; three texts, a `LOOK` and a
+    scene; `guide.test.ts` holds it together.
   - **Its words** are not in `translations.ts`: `src/i18n/guide/<lang>.ts`
-    (type `GuidePages`, derived from `de.ts`) holds the pages and the tour's
+    (type `GuidePages`, derived from `de.ts`) holds the pages and the tours'
     sentences, one chunk a language, loaded by `src/guidePages.ts` when the
     guide opens or a tour begins — so not even de / en / ar weigh on the main
-    bundle (the performance budget). `GuideView` and `Tour` are lazy chunks
-    too (`loadGuide` / `loadTour` in App; rendered only once loaded). Only
-    what shows outside the guide stays in `Strings`: the row, the gestures
-    card's two buttons, the tip, *Weiter* / *Tour beenden* / "{n} von {total}".
-    A text names a label through a placeholder — `{split}`, `{settings}`, …
-    (`guideLabels`) — never by typing it out, and names nothing of Apple's
-    (Android shows the same pages; the test checks).
-  - **Back from *Zeigen*.** A tab holds one pushed screen, so a screen of
-    Optionen takes the guide's place; `guideReturn` makes `under` the guide,
-    and `back` (the bar, the edge swipe, Android's back) returns there with
-    the topic still open (`guideTopic` lives in App). `slide` gives that
-    same-depth change its push / pop direction.
-  - **The tour** (`Tour`, a portal over everything, z-70): at most five marks
-    on the running month's page — balance, the first entry's row, the month's
-    name, the tab bar, the add button (`TOUR_ANCHORS`: `data-tour` attributes,
-    keep them) — a step whose mark isn't on the page is left out
-    (`tourSteps`; a first run has three). `tour-mark` (index.css) is the scrim
-    with a hole; it glides between marks (the one place a box is animated by
-    its geometry — one element, 280 ms, off under reduced motion). The card
-    goes under the mark, else above, else over its lower part
-    (`tourCardPlace`). A dialog: focus stays in the card, Escape and Android's
-    back end it; the last step offers *Eintrag hinzufügen*. Started only from
-    the guide or the gestures card (`TipsCard`), never by itself.
+    bundle (the performance budget). `GuideView` (with its scenes) and `Tour`
+    are lazy chunks too (`loadGuide` / `loadTour` in App; rendered only once
+    loaded). Only what shows outside the guide stays in `Strings`: the row,
+    the gestures card's two buttons, the tip, *Weiter* / *Tour beenden* /
+    "{n} von {total}", *Zurück zur Anleitung*. A text names a button through
+    a placeholder — `{split}`, `{settings}`, `{add}`, … (`guideLabels`) —
+    never by typing it out: `guideParts` hands GuideView the pieces and it
+    draws each as it looks (`Chip`: +, ⋯, ✓, ⓘ and ‹ › as their symbols,
+    every other label on a capsule with its icon); the tours and the search
+    read the label as text. Every language keeps the German placeholders,
+    line for line, and names nothing of Apple's (the test checks).
+  - **The way back from *Zeigen*.** *Zeigen* (`guideGo` in App, given the
+    topic) goes to its screen — a tab, a pushed screen, the entry sheet —
+    and lights up `topic.point`, the control it is about, with the topic's
+    sentence and *Zurück zur Anleitung* (a one-mark tour, `point: true`). It
+    no longer opens menus for the user: tapping the lit "⋯" themselves is
+    how it is learnt. A screen of Optionen takes the guide's place
+    (`guideReturn` makes `under` the guide, and `back` — the bar, the edge
+    swipe, Android's back — returns there, topic still open; `slide` gives
+    that same-depth change its direction). Anywhere else `guideAway` shows
+    `GuideBackPill` above the tab bar, "‹ Anleitung" with a ✕, under every
+    sheet and menu (z-35); `backToGuide` closes what Zeigen opened and shows
+    the guide.
+  - **The tours** (`Tour`, a portal over everything, z-70): `TOURS` — the
+    month page, the entry sheet, Statistik, Planen, Optionen — each at most
+    five `MARKS` (`TOUR_STEPS`; a mark is a selector, mostly a `data-tour`
+    attribute on the screen — keep them — with its ring's radius and how it
+    is scrolled into view). A mark that isn't there is left out
+    (`tourSteps`); the guide offers a tour only when the book can take it
+    (`guideTours`: the entry sheet's needs a started month, Statistik's and
+    Planen's entries). `tour-mark` (index.css) is the scrim with a hole; the
+    card goes under the mark, else above, else over its lower part
+    (`tourCardPlace`), and follows a sheet's own scroll and the keyboard. A
+    dialog: focus stays in the card, Escape and Android's back end it. The
+    month page's ends on *Eintrag hinzufügen*; one begun in the guide ends
+    with *Zurück zur Anleitung*. Started only by hand — the guide, a topic,
+    or the gestures card (`TipsCard`, the month page's).
 - **Automatic capture (plan 19, iPhone).** Two more App Intents in
   `SpartopfIntents.swift` for Shortcuts automations — `LogPaymentIntent`
   (the *Transaction* trigger: merchant, amount, card) and
@@ -1154,7 +1172,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | Build + open Xcode | `npm run build:ios` |
 | Build + open Android Studio / a debug APK | `npm run build:android` / `npm run android:debug` |
 | Regenerate icons/splash | `npm run assets:generate` |
-| Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` (`stats-rhythm` and `insights-runway` show a picked day and a chart in hand; `guide*`, `tour-*` and `hint-guide` the guide, each step of the tour and its tip) |
+| Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` (`stats-rhythm` and `insights-runway` show a picked day and a chart in hand; `guide*`, `tour-*`, `point-*`, `guide-back` and `hint-guide` the guide and its topics, the tours, what Zeigen lights up, the way back, and its tip) |
 | App Store screenshots: raw captures (DE + EN) / the framed 6.3-inch set | `npm run screenshots` / `npm run store-screenshots` |
 | Rewrite `docs/plans/glossary.md` from the app's strings | `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts` |
 | Release to both stores on one version (TestFlight + Play's internal test track) | `npm run release` (preview: `npm run release:dry`) |

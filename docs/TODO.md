@@ -255,28 +255,30 @@ before they go into a release:
 - [ ] Make the App Store screenshots again (`npm run screenshots`, `npm run
   store-screenshots`) — the current ones show the old look.
 
-## The guide and the tour (November 2026)
+## The guide and the tours (November 2026)
 
 Built and tried in Chromium at iPhone sizes (German and Arabic, light and
-dark; `node scripts/ui-review.mjs --only guide,guide-topic,guide-search,tour-balance,tour-tick,tour-month,tour-tabs,tour-add,tour-fresh,hint-guide,tips`).
+dark; `node scripts/ui-review.mjs --only guide,guide-topic,guide-topic-paid,guide-topic-bank,guide-search,tour-balance,tour-entry-amount,tour-stats-range,tour-plan-pace,tour-settings-security,point-add,point-bank,guide-back,hint-guide,tips`).
 Before it goes into a release:
 
-- [ ] **On the iPhone:** *Optionen › Anleitung › Tour starten* — the lit mark
-  sits on the balance card, the entry, the month's name, the tab bar and the
-  add button, also under the Dynamic Island and with large text; the card
-  never hides behind the home indicator.
-- [ ] **VoiceOver:** each step of the tour is read when it appears, *Weiter*
-  and *Tour beenden* are reachable, and the page behind is not.
-- [ ] **Zeigen:** try a few topics — the month's "⋯" menu opens (*Kontoumsätze
-  importieren*), *back* from *Kategorien und Budgets* returns to the guide.
-- [ ] **Android:** the system back ends the tour, and returns to the guide
+- [ ] **On the iPhone:** each tour from *Optionen › Anleitung* — the lit
+  mark sits where it should, also under the Dynamic Island and with large
+  text; the card never hides behind the home indicator. The entry sheet's
+  tour with the keyboard up: the marks follow when it goes away.
+- [ ] **Zeigen:** try a few topics — the mark lands on the "⋯" (*Kontoumsätze
+  importieren*), the repeat pill (*Wiederkehrende Einträge*), the budgets
+  card; *Zurück zur Anleitung* and "‹ Anleitung" return to the open topic.
+- [ ] **VoiceOver:** each step is read when it appears, *Weiter* and *Tour
+  beenden* are reachable, the page behind is not; in a topic, the drawn
+  buttons read as their names ("Eintrag hinzufügen", "Sichern").
+- [ ] **Android:** the system back ends a tour, and returns to the guide
   from a screen it opened.
 - [ ] **Languages:** the guide's pages (`src/i18n/guide/`) are written by
   Claude in all fourteen; German, English and Arabic are yours to read, the
   eleven others want the same native-speaker pass as the rest.
 - [ ] **App Review recording:** `npm run rehearse:app-review` still passes;
-  *Optionen* now starts with the *Anleitung* row and the *Gut zu wissen* card
-  has two buttons more. Say if the recording should show the tour.
+  *Optionen* starts with the *Anleitung* row and the *Gut zu wissen* card
+  has two buttons more. Say if the recording should show a tour.
 
 ## Decide
 

@@ -160,11 +160,11 @@ Write 1–3 short lines per release, e.g.
 
 **AR:** إعادة ترتيب الإعدادات: الدليل و«النسخ الاحتياطي والنقل» في الأعلى، ثم دفتر ميزانيتك، فالميزات الإضافية والعرض والأمان.
 
-**DE:** Neu: die Anleitung. Unter Optionen findest du jede Funktion kurz erklärt – mit „Zeigen“ bist du gleich an der richtigen Stelle. Dazu eine kurze Tour über die Monatsseite, wenn du sie möchtest.
+**DE:** Neu: die Anleitung. Unter Optionen findest du jede Funktion Schritt für Schritt erklärt – mit „Zeigen“ bist du gleich an der richtigen Stelle. Dazu kurze Touren über die Monatsseite, das Eintragen, Statistik, Planen und Optionen, wenn du sie möchtest.
 
-**EN:** New: the guide. Under Settings you'll find every feature explained in brief – "Show me" takes you straight to the right place. Plus a short tour of the month page, whenever you want it.
+**EN:** New: the guide. Under Settings you'll find every feature explained step by step – "Show me" takes you straight to the right place. Plus short tours of the month page, adding an entry, Statistics, Plan and Settings, whenever you want them.
 
-**AR:** جديد: الدليل. تجد في الإعدادات شرحًا موجزًا لكل ميزة – و«أرِني» ينقلك مباشرة إلى المكان الصحيح. ومعه جولة قصيرة في صفحة الشهر متى أردت.
+**AR:** جديد: الدليل. تجد في الإعدادات شرحًا لكل ميزة خطوة بخطوة – و«أرِني» ينقلك مباشرة إلى المكان الصحيح. ومعه جولات قصيرة في صفحة الشهر والإدخال والإحصاءات والتخطيط والإعدادات متى أردت.
 
 **DE:** Statistik und Planen neu gestaltet: Oben siehst du auf einen Blick, wie viel du sparst – mit Sparquote, Durchschnitten und Trend. Neu: „Wann du Geld ausgibst“ mit Wochentagen und einem Kalender, und „Nächste 30 Tage“ – dein Kontostand Tag für Tag, mit dem tiefsten Stand vor dem nächsten Gehalt. Alle Diagramme lassen sich jetzt mit dem Finger abfahren. Und die Kontostand-Karte zeigt den Monat als Linie – von Monatsanfang über heute bis zum Monatsende.
 
