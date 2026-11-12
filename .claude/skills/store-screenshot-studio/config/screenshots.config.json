@@ -90,6 +90,29 @@
       "height": 2622,
       "scale": 3,
       "format": "png"
+    },
+    {
+      "//": "Google Play phone screenshots. `device` overrides each slide's frame (no iPhone on Play); `slides` picks and orders the eight Play allows.",
+      "id": "play-phone",
+      "store": "play",
+      "width": 1080,
+      "height": 1920,
+      "scale": 3,
+      "format": "jpeg",
+      "quality": 92,
+      "device": "pixel",
+      "slides": ["month", "entry", "budgets", "next-month", "stats", "report", "plan", "backup"]
     }
-  ]
+  ],
+  "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. Its copy is the featureGraphic block of every copy file.",
+  "featureGraphic": {
+    "slide": "month",
+    "background": "petrol",
+    "device": "pixel",
+    "width": 1024,
+    "height": 500,
+    "scale": 2,
+    "format": "jpeg",
+    "quality": 92
+  }
 }

@@ -53,7 +53,7 @@ Face ID, no Siri, no Apple Pay capture.
 | Field | Limit | Deutsch (default) | English (United Kingdom) | العربية (Arabic) |
 |---|---|---|---|---|
 | App name | 30 | `Spartopf – Haushaltsbuch` (24) | `Spartopf – Budget Book` (22) | `Spartopf – دفتر الميزانية` (25) |
-| Short description | 80 | `Haushaltsbuch ohne Konto und ohne Werbung. Alles bleibt auf deinem Handy.` (73) | `A budget book with no account and no ads. Everything stays on your phone.` (73) | `دفتر ميزانية بلا حساب ولا إعلانات. كل شيء يبقى على هاتفك.` (57) |
+| Short description | 80 | `Dein Haushaltsbuch für jeden Monat, ohne Konto. Alles bleibt auf deinem Handy.` (78) | `Your budget book for every month, no account. Everything stays on your phone.` (77) | `دفتر ميزانيتك لكل شهر، بلا حساب. كل شيء يبقى على هاتفك.` (55) |
 
 ### 2.2 Full description (4000)
 
@@ -166,14 +166,14 @@ Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إ
 
 | Asset | What Google wants | Where it is |
 |---|---|---|
-| App icon | 512 × 512, 32-bit PNG, at most 1024 KB | Not exported yet. The source is `assets/icon-only.png` (1024 × 1024): `sips -z 512 512 assets/icon-only.png --out ~/Desktop/spartopf-icon-512.png` |
-| Feature graphic | 1024 × 500, JPEG or 24-bit PNG without alpha | Not made yet. `npm run store-screenshots` writes `screenshots/store/play-feature/<language>/feature-graphic.jpg` once the config has a `featureGraphic` block |
-| Phone screenshots | 2 to 8; JPEG or 24-bit PNG without alpha; each side 320–3840 px; the long side at most twice the short one (1080 × 1920 is the usual size) | Not made yet. The App Store set in `screenshots/store/iphone-6.3/` does **not** fit: 1206 × 2622 is more than twice as tall as wide, and it shows an iPhone. Add the `play-phone` target (1080 × 1920, `device: pixel`) to `.claude/skills/store-screenshot-studio/config/screenshots.config.json`, then `npm run store-screenshots` |
+| App icon | 512 × 512, 32-bit PNG, at most 1024 KB | `screenshots/store/play-icon-512.png` (from `assets/icon-only.png`) |
+| Feature graphic | 1024 × 500, JPEG or 24-bit PNG without alpha | `screenshots/store/play-feature/<language>/feature-graphic.jpg` (`npm run store-screenshots`) |
+| Phone screenshots | 2 to 8; JPEG or 24-bit PNG without alpha; each side 320–3840 px; the long side at most twice the short one (1080 × 1920 is the usual size) | `screenshots/store/play-phone/<language>/` — eight slides, 1080 × 1920 JPEG, Android frame (`npm run store-screenshots`; the `play-phone` target in the studio's config) |
 | Tablet screenshots, video | Optional | Leave empty |
 
 The ten screens, in store order: month · new entry · backup · budgets · next
 month · statistics · history · category · month report · Planen. Play takes
-eight, so two drop out.
+eight: history and category drop out, and backup goes last.
 
 ### 2.4 Store settings
 

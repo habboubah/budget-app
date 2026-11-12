@@ -27,14 +27,19 @@ try {
       const dir = path.join(outDir, target.id, locale);
       mkdirSync(dir, { recursive: true });
 
-      for (const [i, slide] of cfg.slides.entries()) {
+      // A target may pick its own slides (Play takes eight) and its own frame.
+      const slides = target.slides
+        ? target.slides.map(id => cfg.slides.find(s => s.id === id) || die(`target "${target.id}" lists slide "${id}", which is not in slides.`))
+        : cfg.slides;
+      for (const [i, base] of slides.entries()) {
+        const slide = target.device ? { ...base, device: target.device } : base;
         const buf = await shoot(browser, slideData(slide, locale), target);
         const ext = target.format === 'jpeg' ? 'jpg' : 'png';
         const file = path.join(dir, `${String(i + 1).padStart(2, '0')}-${slide.id}.${ext}`);
         writeFileSync(file, buf);
         written.push(file);
       }
-      console.log(`✓ ${target.id} / ${locale} — ${cfg.slides.length} slides`);
+      console.log(`✓ ${target.id} / ${locale} — ${slides.length} slides`);
     }
   }
 } finally {

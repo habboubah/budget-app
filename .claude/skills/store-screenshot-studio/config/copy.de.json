@@ -43,5 +43,9 @@
       "headline": "Bist du im Plan?",
       "subline": "Ausgaben bis heute gegen einen üblichen Monat"
     }
+  },
+  "featureGraphic": {
+    "headline": "Sieh, was am Monatsende bleibt",
+    "subline": "Dein Haushaltsbuch ohne Konto. Alles bleibt auf deinem Handy."
   }
 }

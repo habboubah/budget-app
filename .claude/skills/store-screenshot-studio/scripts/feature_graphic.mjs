@@ -20,7 +20,7 @@ try {
     const copy = copyFor(locale);
     if (!copy.featureGraphic) die(`config/copy.${locale}.json has no "featureGraphic" block.`);
 
-    const data = slideData({ ...slide, background: fg.background }, locale, {
+    const data = slideData({ ...slide, background: fg.background, device: fg.device || slide.device }, locale, {
       layout: 'feature',
       headline: copy.featureGraphic.headline,
       subline: copy.featureGraphic.subline,

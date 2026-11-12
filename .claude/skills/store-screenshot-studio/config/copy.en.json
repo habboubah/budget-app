@@ -43,5 +43,9 @@
       "headline": "Are you on track?",
       "subline": "Spending so far against a usual month"
     }
+  },
+  "featureGraphic": {
+    "headline": "Know what's left this month",
+    "subline": "Your budget book with no account. Everything stays on your phone."
   }
 }

@@ -11,7 +11,7 @@ Face ID.
 | Field | Limit | Deutsch (default) | English (United Kingdom) | العربية (Arabic) |
 |---|---|---|---|---|
 | App name | 30 | `Spartopf – Haushaltsbuch` | `Spartopf – Budget Book` | `Spartopf – دفتر الميزانية` |
-| Short description | 80 | `Haushaltsbuch ohne Konto und ohne Werbung. Alles bleibt auf deinem Handy.` | `A budget book with no account and no ads. Everything stays on your phone.` | `دفتر ميزانية بلا حساب ولا إعلانات. كل شيء يبقى على هاتفك.` |
+| Short description | 80 | `Dein Haushaltsbuch für jeden Monat, ohne Konto. Alles bleibt auf deinem Handy.` | `Your budget book for every month, no account. Everything stays on your phone.` | `دفتر ميزانيتك لكل شهر، بلا حساب. كل شيء يبقى على هاتفك.` |
 | App category | — | **Finance** | (same) | (same) |
 | Tags | — | Budgeting, Personal finance | (same) | (same) |
 | Contact email | — | ahmad.habboubah@gmail.com | (same) | (same) |

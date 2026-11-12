@@ -116,11 +116,12 @@ for target in CFG["targets"]:
     ext = "jpg" if target["format"] == "jpeg" else "png"
     for locale in CFG["locales"]:
         folder = os.path.join(OUT, target["id"], locale)
-        for i, slide in enumerate(CFG["slides"], start=1):
-            check(os.path.join(folder, f"{i:02d}-{slide['id']}.{ext}"),
+        ids = target.get("slides") or [s["id"] for s in CFG["slides"]]
+        for i, sid in enumerate(ids, start=1):
+            check(os.path.join(folder, f"{i:02d}-{sid}.{ext}"),
                   target["store"], target["width"], target["height"], target["format"], "screenshot")
 
-        count = len(CFG["slides"])
+        count = len(ids)
         if target["store"] == "play" and not 2 <= count <= 8:
             errors.append(f"{target['id']}/{locale}: {count} screenshots, Play allows 2-8")
         if target["store"] == "apple" and not 1 <= count <= 10:
