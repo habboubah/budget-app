@@ -4,7 +4,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync, rmSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { cfg, root, theme, launchArgs, slideData, shoot, die } from './render.mjs';
+import { cfg, root, theme, launchArgs, slideData, ribbonFor, shoot, die } from './render.mjs';
 
 const outDir = path.join(root, cfg.outDir);
 
@@ -39,13 +39,17 @@ try {
         const strip = target.slides && theme.backgrounds[slide.background]?.panoramic
           ? { panoramaCount: slides.length, panoramaIndex: i }
           : {};
-        const buf = await shoot(browser, slideData(slide, locale, strip), target);
+        const ribbon = ribbonFor(target, locale, i);
+        // The ribbon's targets are the ones that may speak about the price at all.
+        const data = slideData(slide, locale, { ...strip, ribbon, priceWords: Boolean(target.ribbon) });
+        const buf = await shoot(browser, data, target);
         const ext = target.format === 'jpeg' ? 'jpg' : 'png';
         const file = path.join(dir, `${String(i + 1).padStart(2, '0')}-${slide.id}.${ext}`);
         writeFileSync(file, buf);
         written.push(file);
       }
-      console.log(`✓ ${target.id} / ${locale} — ${slides.length} slides`);
+      const marked = target.ribbon === 'first' ? ', ribbon on the first' : target.ribbon ? ', with ribbon' : '';
+      console.log(`✓ ${target.id} / ${locale} — ${slides.length} slides${marked}`);
     }
   }
 } finally {

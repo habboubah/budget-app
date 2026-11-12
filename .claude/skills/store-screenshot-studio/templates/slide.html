@@ -12,6 +12,7 @@
   <section class="copy">
     <h1 class="headline"></h1>
     <p class="subline"></p>
+    <ul class="points"></ul>
   </section>
   <div class="stage">
     <div class="device">
@@ -21,6 +22,8 @@
       </div>
     </div>
   </div>
+  <!-- The corner ribbon ("Kostenlos"). Hidden unless the target asks for it. -->
+  <div class="ribbon" hidden><span></span></div>
 
 <script>
 // window.__DATA__ is injected by scripts/render.mjs before this page loads.
@@ -64,8 +67,23 @@
     set('--focus-scale', d.focus.scale);
   }
 
+  if (d.ribbon) {
+    set('--ribbon-bg', d.ribbon.bg);
+    set('--ribbon-fg', d.ribbon.fg);
+    const ribbon = document.querySelector('.ribbon');
+    ribbon.firstElementChild.textContent = d.ribbon.text;
+    ribbon.hidden = false;
+    // The headline keeps clear of the corner (slide.css).
+    document.body.dataset.ribbon = 'on';
+  }
+
   document.querySelector('.headline').textContent = d.headline;
   document.querySelector('.subline').textContent = d.subline || '';
+  for (const text of d.points || []) {
+    const li = document.createElement('li');
+    li.textContent = text;
+    document.querySelector('.points').append(li);
+  }
   const img = document.querySelector('.screen img');
   img.src = d.rawUrl;
   img.alt = d.headline;

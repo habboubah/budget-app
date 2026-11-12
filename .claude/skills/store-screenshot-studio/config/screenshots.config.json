@@ -82,6 +82,7 @@
     }
   ],
   "//targets": "Exact export pixels. App Store Connect requires the \"iPhone with Dynamic Island (medium display)\" slot (iPhone 6.1\"/6.3\"), which accepts only 1206x2622 or 1179x2556 portrait; the large 6.9\"/6.5\" slots are optional and scaled from it. So one target, one folder: screenshots/store/iphone-6.3/<locale>/. For Google Play add { \"id\": \"play-phone\", \"store\": \"play\", \"width\": 1080, \"height\": 1920, \"scale\": 3, \"format\": \"jpeg\", \"quality\": 92 } and a featureGraphic block (1024x500 JPEG, plus featureGraphic copy in every copy file).",
+  "//ribbon": "The corner ribbon with the copy file's `ribbon` word (\"Kostenlos\" / \"Free\"), per target and on the feature graphic: true = every slide, \"first\" = the first slide only, false or absent = none. The same switch lets a target show the price points of the copy files (`{ \"text\": \"Kein Abo\", \"price\": true }`); without it only the plain points appear. Google Play only. Apple treats \"free\" on a screenshot as a price reference and rejects the version for it (guideline 2.3.7), so the iPhone target stays false. The price words are only true while the app costs nothing at all: they come off the day a paid Plus is sold. See reference/store-specs.md.",
   "targets": [
     {
       "id": "iphone-6.3",
@@ -89,10 +90,11 @@
       "width": 1206,
       "height": 2622,
       "scale": 3,
-      "format": "png"
+      "format": "png",
+      "ribbon": false
     },
     {
-      "//": "Google Play phone screenshots. `device` overrides each slide's frame (no iPhone on Play); `slides` picks and orders the eight Play allows.",
+      "//": "Google Play phone screenshots. `device` overrides each slide's frame (no iPhone on Play); `slides` picks and orders the eight Play allows. The promise (the backup slide: your data stays with you, no ads, no subscription) is second, so it shows on the listing without swiping.",
       "id": "play-phone",
       "store": "play",
       "width": 1080,
@@ -101,7 +103,8 @@
       "format": "jpeg",
       "quality": 92,
       "device": "pixel",
-      "slides": ["month", "entry", "budgets", "next-month", "stats", "report", "plan", "backup"]
+      "slides": ["month", "backup", "entry", "budgets", "next-month", "stats", "report", "plan"],
+      "ribbon": true
     }
   ],
   "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. Its copy is the featureGraphic block of every copy file.",
@@ -113,6 +116,7 @@
     "height": 500,
     "scale": 2,
     "format": "jpeg",
-    "quality": 92
+    "quality": 92,
+    "ribbon": true
   }
 }

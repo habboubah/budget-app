@@ -3,7 +3,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { cfg, root, launchArgs, slideData, shoot, copyFor, die } from './render.mjs';
+import { cfg, root, launchArgs, slideData, ribbonFor, pointsFor, shoot, copyFor, die } from './render.mjs';
 
 const fg = cfg.featureGraphic;
 // Google Play only: without a featureGraphic block there is nothing to make.
@@ -24,9 +24,12 @@ try {
       layout: 'feature',
       headline: copy.featureGraphic.headline,
       subline: copy.featureGraphic.subline,
+      // Its own points, never the slide's it borrows the screen from.
+      points: pointsFor(copy.featureGraphic.points, Boolean(fg.ribbon), `config/copy.${locale}.json[featureGraphic]`),
       // The feature graphic stands alone, so it never takes a panorama offset.
       panoramaCount: 1,
       panoramaIndex: 0,
+      ribbon: ribbonFor(fg, locale),
     });
 
     const buf = await shoot(browser, data, fg);
@@ -34,7 +37,7 @@ try {
     mkdirSync(dir, { recursive: true });
     const file = path.join(dir, 'feature-graphic.jpg');
     writeFileSync(file, buf);
-    console.log(`✓ ${path.relative(root, file)} — ${fg.width}x${fg.height}`);
+    console.log(`✓ ${path.relative(root, file)} — ${fg.width}x${fg.height}${fg.ribbon ? ', with ribbon' : ''}`);
   }
 } finally {
   await browser.close();

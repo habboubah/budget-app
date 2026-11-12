@@ -2,6 +2,7 @@
   "locale": "en",
   "dir": "ltr",
   "appName": "Spartopf",
+  "ribbon": "Free",
   "slides": {
     "month": {
       "headline": "Know what's left this month",
@@ -12,8 +13,14 @@
       "subline": "Type the amount, tap a suggestion, done"
     },
     "backup": {
-      "headline": "Stays on your phone",
-      "subline": "No cloud: back up to a file, import Excel"
+      "headline": "Your data stays with you",
+      "subline": "No account, no cloud, shared with no one",
+      "points": [
+        "No ads",
+        { "text": "No in-app purchases", "price": true },
+        { "text": "No subscription", "price": true },
+        "Nothing leaves your phone"
+      ]
     },
     "budgets": {
       "headline": "A budget for each category",
@@ -46,6 +53,12 @@
   },
   "featureGraphic": {
     "headline": "Know what's left this month",
-    "subline": "Your budget book with no account. Everything stays on your phone."
+    "subline": "Your budget book with no account and no cloud.",
+    "points": [
+      "No ads",
+      { "text": "No in-app purchases", "price": true },
+      { "text": "No subscription", "price": true },
+      "Nothing leaves your phone"
+    ]
   }
 }

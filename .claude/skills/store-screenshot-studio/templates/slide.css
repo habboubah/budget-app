@@ -70,6 +70,47 @@ html, body {
   text-wrap: balance;
 }
 
+/* ---------- points ----------
+   The short promises under the subline ("Keine Werbung", "Kein Abo"): one pill
+   each, with a tick. An empty list takes no room. */
+
+.points {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.7vw;
+  margin-top: 2.6vh;
+}
+.points:empty { display: none; }
+
+.points li {
+  display: flex;
+  align-items: center;
+  gap: 1.3vw;
+  padding-block: 1.4vw;
+  padding-inline: 1.6vw 2.6vw;
+  border-radius: 99vw;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow:
+    0 0 0 0.14vw rgba(17, 17, 20, 0.07),
+    0 0.6vw 1.6vw rgba(20, 22, 26, 0.06);
+  font-size: 3.1vw;
+  line-height: 1.15;
+  font-weight: 600;
+  color: var(--fg);
+  white-space: nowrap;
+}
+
+.points li::before {
+  content: "";
+  flex: none;
+  width: 3.6vw;
+  height: 3.6vw;
+  border-radius: 50%;
+  background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 12.5l4.2 4.2L18.5 7.8'/%3E%3C/svg%3E") center / 64% no-repeat;
+}
+
 /* ---------- device ---------- */
 
 .stage {
@@ -141,6 +182,55 @@ html, body {
 [data-device="pixel"]  .device { border-radius: 5.2vw; }
 [data-device="pixel"]  .screen { border-radius: 4.4vw; }
 
+/* ---------- ribbon ----------
+   A band across the leading top corner, like the sash on a box: "Kostenlos".
+   --rc is how far the band's centre sits in from the top and the leading edge
+   (it crosses each edge at twice that), --rt its thickness. The band overshoots
+   both edges and the box clips it, so it never widens the document (see .bg
+   for what that does in RTL). In RTL it sits in the other corner and turns the
+   other way. */
+
+.ribbon {
+  --rc: 12vw;
+  --rt: 7.6vw;
+  --rl: calc(var(--rc) * 4);
+  position: absolute;
+  top: 0;
+  inset-inline-start: 0;
+  width: var(--rl);
+  height: var(--rl);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ribbon span {
+  position: absolute;
+  top: calc(var(--rc) - var(--rt) / 2);
+  inset-inline-start: calc(var(--rc) - var(--rl) / 2);
+  width: var(--rl);
+  height: var(--rt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-45deg);
+  background: var(--ribbon-bg);
+  color: var(--ribbon-fg);
+  font-size: 3.8vw;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 0.5vw 1.6vw rgba(20, 22, 26, 0.22);
+}
+[dir="rtl"] .ribbon span { transform: rotate(45deg); }
+
+/* With the ribbon in the corner the headline keeps clear of it: it starts no
+   higher than the band's lower end is wide (short canvases, full-bleed), and
+   no line of it reaches into the corner. */
+[data-ribbon] .copy { padding-top: max(9vh, 17vw); }
+[data-ribbon][data-layout="full-bleed"] .copy { padding-top: max(7vh, 17vw); }
+[data-ribbon] .headline { max-width: 72vw; margin-inline: auto; }
+
 /* ---------- layouts ---------- */
 
 [data-layout="full-bleed"] .copy    { padding-top: 7vh; }
@@ -192,6 +282,31 @@ html, body {
 [data-layout="feature"] .screen    { border-radius: 4vh; }
 [data-layout="feature"] .statusbar { height: 4.2vh; }
 [data-layout="feature"] .island    { width: 10vh; height: 2.4vh; border-radius: 2.4vh; top: 0.9vh; }
+
+/* The points sit under the subline, at the start edge, sized like the rest. */
+[data-layout="feature"] .points { justify-content: flex-start; gap: 1.6vh; margin-top: 3.6vh; }
+[data-layout="feature"] .points li {
+  gap: 1.4vh;
+  padding-block: 1.5vh;
+  padding-inline: 1.8vh 3vh;
+  border-radius: 99vh;
+  font-size: 3.8vh;
+  box-shadow:
+    0 0 0 0.2vh rgba(17, 17, 20, 0.07),
+    0 0.8vh 2vh rgba(20, 22, 26, 0.06);
+}
+[data-layout="feature"] .points li::before { width: 4.6vh; height: 4.6vh; }
+
+/* The ribbon, driven by the short side like the frame. */
+[data-layout="feature"] .ribbon { --rc: 17vh; --rt: 10.5vh; }
+[data-layout="feature"] .ribbon span {
+  font-size: 5.6vh;
+  box-shadow: 0 0.6vh 2vh rgba(20, 22, 26, 0.22);
+}
+/* The copy is centred on the height, so a tall block (three rows of points)
+   climbs towards the corner: it starts further in instead. */
+[data-layout="feature"][data-ribbon] .copy { padding-inline-start: 10%; }
+[data-layout="feature"][data-ribbon] .headline { max-width: none; }
 
 /* Landscape needs its own blob placement — the portrait ones sit off-canvas. */
 [data-layout="feature"] .blob { filter: blur(11vh); opacity: 0.3; }

@@ -169,13 +169,25 @@ Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إ
 | Asset | What Google wants | Where it is |
 |---|---|---|
 | App icon | 512 × 512, 32-bit PNG, at most 1024 KB | `screenshots/store/play-icon-512.png` (from `assets/icon-only.png`) |
-| Feature graphic | 1024 × 500, JPEG or 24-bit PNG without alpha | `screenshots/store/play-feature/<language>/feature-graphic.jpg` (`npm run store-screenshots`) |
-| Phone screenshots | 2 to 8; JPEG or 24-bit PNG without alpha; each side 320–3840 px; the long side at most twice the short one (1080 × 1920 is the usual size) | `screenshots/store/play-phone/<language>/` — eight slides, 1080 × 1920 JPEG, Android frame (`npm run store-screenshots`; the `play-phone` target in the studio's config) |
+| Feature graphic | 1024 × 500, JPEG or 24-bit PNG without alpha | `screenshots/store/play-feature/<language>/feature-graphic.jpg` (`npm run store-screenshots`), with the *Kostenlos* / *Free* ribbon and the four points |
+| Phone screenshots | 2 to 8; JPEG or 24-bit PNG without alpha; each side 320–3840 px; the long side at most twice the short one (1080 × 1920 is the usual size) | `screenshots/store/play-phone/<language>/` — eight slides, 1080 × 1920 JPEG, Android frame, the *Kostenlos* / *Free* ribbon on each (`npm run store-screenshots`; the `play-phone` target in the studio's config) |
 | Tablet screenshots, video | Optional | Leave empty |
 
 The ten screens, in store order: month · new entry · backup · budgets · next
 month · statistics · history · category · month report · Planen. Play takes
-eight: history and category drop out, and backup goes last.
+eight: history and category drop out, and backup comes second.
+
+The backup slide is the promise: *Deine Daten bleiben bei dir* — no account,
+no cloud, shared with no one — with the points *Keine Werbung · Keine
+In-App-Käufe · Kein Abo · Nichts verlässt dein Handy*. The feature graphic
+carries the same four points. On Play every slide also has the *Kostenlos* /
+*Free* ribbon in the corner. Google's guidelines ask to avoid "Free" on
+preview assets: the listing stays up, but Play promotes and recommends such
+assets less readily. The App Store set has neither the ribbon nor the points
+about the price (Apple rejects price words on screenshots, guideline 2.3.7);
+it keeps *Keine Werbung* and *Nichts verlässt dein Handy*. All of it is only
+true while Spartopf costs nothing: with a paid Plus the ribbon and the price
+points come off (`.claude/skills/store-screenshot-studio/reference/store-specs.md`).
 
 ### 2.4 Store settings
 
@@ -383,7 +395,7 @@ Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إ
 
 | Field | Value |
 |---|---|
-| Screenshots | *iPhone with Dynamic Island (medium display)*: the 10 images in `screenshots/store/iphone-6.3/de/` and `…/en/` (1206 × 2622). Arabic has none; the store then shows the German ones. Remake them with `npm run screenshots` and `npm run store-screenshots` |
+| Screenshots | *iPhone with Dynamic Island (medium display)*: the 10 images in `screenshots/store/iphone-6.3/de/` and `…/en/` (1206 × 2622). Arabic has none; the store then shows the German ones. No *Kostenlos* ribbon and no points about the price here: App Review rejects price words on screenshots (2.3.7). Remake them with `npm run screenshots` and `npm run store-screenshots` |
 | Support URL | https://habboubah.github.io/privacy-policy/spartopf/de/ (DE) · https://habboubah.github.io/privacy-policy/spartopf/ (EN, AR) |
 | Marketing URL | optional — leave empty |
 | Copyright | `2026 Ahmad Habboubah` |

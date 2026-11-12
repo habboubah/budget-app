@@ -2,6 +2,7 @@
   "locale": "de",
   "dir": "ltr",
   "appName": "Spartopf",
+  "ribbon": "Kostenlos",
   "slides": {
     "month": {
       "headline": "Sieh, was am Monatsende bleibt",
@@ -12,8 +13,14 @@
       "subline": "Betrag tippen, Vorschlag antippen, fertig"
     },
     "backup": {
-      "headline": "Bleibt auf deinem Handy",
-      "subline": "Keine Cloud: Sicherung als Datei, Excel-Import"
+      "headline": "Deine Daten bleiben bei dir",
+      "subline": "Kein Konto, keine Cloud, mit niemandem geteilt",
+      "points": [
+        "Keine Werbung",
+        { "text": "Keine In-App-Käufe", "price": true },
+        { "text": "Kein Abo", "price": true },
+        "Nichts verlässt dein Handy"
+      ]
     },
     "budgets": {
       "headline": "Ein Budget für jede Kategorie",
@@ -46,6 +53,12 @@
   },
   "featureGraphic": {
     "headline": "Sieh, was am Monatsende bleibt",
-    "subline": "Dein Haushaltsbuch ohne Konto. Alles bleibt auf deinem Handy."
+    "subline": "Dein Haushaltsbuch ohne Konto und ohne Cloud.",
+    "points": [
+      "Keine Werbung",
+      { "text": "Keine In-App-Käufe", "price": true },
+      { "text": "Kein Abo", "price": true },
+      "Nichts verlässt dein Handy"
+    ]
   }
 }

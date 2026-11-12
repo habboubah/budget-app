@@ -37,12 +37,21 @@ python3 .claude/skills/store-screenshot-studio/scripts/validate.py
 ```
 screenshots/store/
   iphone-6.3/{de,en}/01-month.png … 10-plan.png        1206×2622 PNG
-  contact-sheet.png
+  play-phone/{de,en}/01-month.jpg … 08-plan.jpg        1080×1920 JPEG, with the ribbon
+  play-feature/{de,en}/feature-graphic.jpg             1024×500 JPEG, with the ribbon
+  contact-sheet.png                                    the iPhone set
+  contact-sheet-play-phone.png                         the Play set
 ```
 
 `iphone-6.3` is the set for App Store Connect's required *iPhone with Dynamic
-Island (medium display)* slot. Each run deletes and rewrites only the folders
-this script makes, including ones from older configs (`apple-6.9`, `apple-6.5`).
+Island (medium display)* slot; `play-phone` and `play-feature` are Google
+Play's. Each run deletes and rewrites only the folders this script makes,
+including ones from older configs (`apple-6.9`, `apple-6.5`); files next to
+them (`play-icon-512.png`) are left alone.
+
+The Play set carries the *Kostenlos* / *Free* ribbon and the price points
+("Kein Abo"); the App Store set does not, because Apple rejects price words on
+screenshots. See *Ribbon and points* in `SKILL.md`.
 
 ## Layout of the skill
 
@@ -58,7 +67,7 @@ this script makes, including ones from older configs (`apple-6.9`, `apple-6.5`).
 | `scripts/render.mjs` | One slide; also the shared renderer |
 | `scripts/export.mjs` | Every slide × locale × target |
 | `scripts/feature_graphic.mjs` | 1024×500 Play feature graphic |
-| `scripts/preview.mjs` | Contact sheet |
+| `scripts/preview.mjs` | Contact sheets, one per target |
 | `scripts/validate.py` | Store compliance + headline rules |
 | `reference/` | Store size tables, copywriting rules |
 

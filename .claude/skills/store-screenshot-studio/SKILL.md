@@ -48,7 +48,8 @@ user to confirm or edit** before rendering anything. Write the agreed text to
 node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide month --locale de --out /tmp/proof.png --scale 1
 ```
 
-`--scale 1` renders at a third of export size, which is fast and enough to judge.
+Add `--target play-phone` to see the slide as that target exports it (Android
+frame, ribbon, price points). `--scale 1` renders at a third of export size, which is fast and enough to judge.
 **Show the user the image and wait for approval.** Iterate on
 `templates/slide.css` and `config/theme.json` here, not later.
 
@@ -89,6 +90,27 @@ files that did not pass.
 `zoom` crops horizontally at any scale above 1. Aim `focus` at a band whose content
 is centred, keep `scale` near 1.2, and check the result — full-width body text gets
 cut at the edges above roughly 1.3.
+
+## Ribbon and points
+
+Two things say what the app costs and promises, beside the headline:
+
+- **The ribbon** — the band across the top corner with the copy file's `ribbon`
+  word (*Kostenlos* / *Free*). Switched on per target and on the feature graphic
+  in `config/screenshots.config.json`: `"ribbon": true` (every slide), `"first"`
+  (the first slide only) or `false`. Its colours are `ribbon` in `theme.json`.
+- **Points** — the pills with a tick under a slide's subline, from `points` in
+  the copy file (a slide's, or the feature graphic's). A point is a string, or
+  `{ "text": "Kein Abo", "price": true }` for one that speaks about the price.
+  Price points appear only on targets that have the ribbon on.
+
+**Google Play only.** Apple reads "free" on a screenshot as a price reference
+and rejects the version for it, so the `iphone-6.3` target has the ribbon off
+and shows only the plain points. `validate.py` warns when an App Store target
+turns it on. On Play it is allowed, at the cost of being picked for Play's
+promotion surfaces less readily. And every one of these words has to be true:
+they come off the day a paid Plus is sold. The rules, with their sources, are
+in `reference/store-specs.md` › *The ribbon and the price words*.
 
 ## Adding things
 

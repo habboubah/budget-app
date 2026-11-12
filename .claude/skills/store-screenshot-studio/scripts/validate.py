@@ -24,9 +24,14 @@ PLAY_MAX_BYTES = 8 * 1024 * 1024
 BANNED = ["download now", "download today", "best app", "#1", "number one",
           "must have", "must-have", "amazing", "revolutionary", "click here"]
 MAX_HEADLINE_WORDS = 5
+# The ribbon's band shows about a dozen letters; a point is one pill on one line.
+MAX_RIBBON_CHARS = 12
+MAX_POINT_CHARS = 28
+MAX_POINTS = 5
 
 rows = []
 errors = []
+warnings = []
 
 
 def png_info(path):
@@ -147,11 +152,49 @@ for locale in CFG["locales"]:
         if words > MAX_HEADLINE_WORDS:
             errors.append(f"copy.{locale}.json[{slide_id}]: headline is {words} words, "
                           f"max {MAX_HEADLINE_WORDS} -- \"{head}\"")
-        low = f"{head} {text.get('subline', '')}".lower()
+
+        # Points: a string, or {"text": ..., "price": true} for a price word.
+        points = text.get("points", [])
+        texts = []
+        if not isinstance(points, list):
+            errors.append(f"copy.{locale}.json[{slide_id}]: \"points\" has to be a list")
+            points = []
+        for point in points:
+            label = point if isinstance(point, str) else (point or {}).get("text") if isinstance(point, dict) else None
+            if not isinstance(label, str) or not label.strip():
+                errors.append(f"copy.{locale}.json[{slide_id}]: a point needs a \"text\"")
+                continue
+            texts.append(label)
+            if len(label) > MAX_POINT_CHARS:
+                errors.append(f"copy.{locale}.json[{slide_id}]: point \"{label}\" is {len(label)} "
+                              f"characters, max {MAX_POINT_CHARS} -- it has to fit one pill")
+        if len(points) > MAX_POINTS:
+            errors.append(f"copy.{locale}.json[{slide_id}]: {len(points)} points, max {MAX_POINTS}")
+
+        low = " ".join([head, text.get("subline", "")] + texts).lower()
         for phrase in BANNED:
             if phrase in low:
                 errors.append(f"copy.{locale}.json[{slide_id}]: contains \"{phrase}\" -- "
                               f"see reference/copywriting.md")
+
+    # The ribbon's word, wherever a target or the feature graphic asks for it.
+    if any(t.get("ribbon") for t in CFG["targets"]) or (fg or {}).get("ribbon"):
+        word = copy.get("ribbon", "")
+        if not isinstance(word, str) or not word.strip():
+            errors.append(f"copy.{locale}.json: no \"ribbon\" word, but a target has the ribbon on")
+        elif len(word) > MAX_RIBBON_CHARS:
+            errors.append(f"copy.{locale}.json: ribbon \"{word}\" is {len(word)} characters, "
+                          f"max {MAX_RIBBON_CHARS} -- the band is cut off at the edges")
+
+# ---- the ribbon and the stores ---------------------------------------------------
+
+for target in CFG["targets"]:
+    if target.get("ribbon") not in (None, False, True, "first"):
+        errors.append(f"{target['id']}: \"ribbon\" is {target['ribbon']!r}; use true, \"first\" or false")
+    if target["store"] == "apple" and target.get("ribbon"):
+        warnings.append(f"{target['id']}: the ribbon and the price points are on for an App Store set. "
+                        f"App Review reads \"free\" on a screenshot as a price reference and rejects "
+                        f"the version for it (guideline 2.3.7) -- see reference/store-specs.md")
 
 # ---- summary -----------------------------------------------------------------
 
@@ -162,6 +205,9 @@ print(line(head))
 print("  ".join("-" * w for w in widths))
 for r in rows:
     print(line(r))
+
+for w in warnings:
+    print(f"\n⚠ {w}")
 
 if errors:
     print(f"\n✗ {len(errors)} problem(s):", file=sys.stderr)

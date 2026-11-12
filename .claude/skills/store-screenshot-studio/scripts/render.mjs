@@ -4,6 +4,7 @@
 //
 // CLI (the approval proof in step 2 of SKILL.md):
 //   node scripts/render.mjs --slide month --locale de --out /tmp/proof.png --scale 1
+//   … --target play-phone   the slide as that target exports it (frame, ribbon)
 import { chromium } from 'playwright';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -39,7 +40,42 @@ export function pngSize(file) {
 // another Mac produces the same pixels.
 export const launchArgs = ['--force-color-profile=srgb', '--font-render-hinting=none', '--disable-lcd-text'];
 
-export function slideData(slide, locale, extra = {}) {
+// The corner ribbon ("Kostenlos" / "Free"). `owner` is a target or the
+// featureGraphic block: `"ribbon": true` puts it on every slide, `"first"` on
+// the first one only, absent or false on none. The word is the copy file's
+// `ribbon`, the colours are theme.json's. Where the stores allow it:
+// reference/store-specs.md › The ribbon.
+export function ribbonFor(owner, locale, index = 0) {
+  const name = owner.id || 'featureGraphic';
+  if (!owner.ribbon) return null;
+  if (owner.ribbon !== true && owner.ribbon !== 'first') {
+    die(`"${name}" has "ribbon": ${JSON.stringify(owner.ribbon)}. Use true (every slide), "first" or false.`);
+  }
+  if (owner.ribbon === 'first' && index !== 0) return null;
+  const text = copyFor(locale).ribbon;
+  if (!text) die(`"${name}" asks for the ribbon, but config/copy.${locale}.json has no "ribbon" text.`);
+  if (!theme.ribbon) die(`"${name}" asks for the ribbon, but theme.json has no "ribbon" colours.`);
+  return { text, bg: theme.ribbon.bg, fg: theme.ribbon.fg };
+}
+
+// The pills under the subline: a slide's (or the feature graphic's) `points` in
+// the copy file. A point is a string, or { "text": …, "price": true } for one
+// that speaks about what the app costs ("Kein Abo", "Keine In-App-Käufe"). Those
+// are shown only where `priceWords` is true — the targets that carry the
+// ribbon — and left out everywhere else, for the same reason as the ribbon.
+export function pointsFor(points, priceWords, where) {
+  if (points == null) return [];
+  if (!Array.isArray(points)) die(`${where}: "points" has to be a list.`);
+  return points
+    .map(p => (typeof p === 'string' ? { text: p } : p))
+    .map(p => (p && typeof p.text === 'string' && p.text.trim() ? p : die(`${where}: a point needs a "text".`)))
+    .filter(p => priceWords || !p.price)
+    .map(p => p.text);
+}
+
+// `priceWords` (in the third argument, with the overrides): may this render
+// say what the app costs? It decides which of the slide's points are shown.
+export function slideData(slide, locale, { priceWords = false, ...extra } = {}) {
   const copy = copyFor(locale);
   const text = copy.slides[slide.id];
   if (!text) die(`slide "${slide.id}" has no copy in config/copy.${locale}.json.`);
@@ -64,12 +100,15 @@ export function slideData(slide, locale, extra = {}) {
     device: slide.device,
     headline: text.headline,
     subline: text.subline,
+    points: pointsFor(text.points, priceWords, `config/copy.${locale}.json[${slide.id}]`),
     colors: theme.colors,
     background: bg,
     rawUrl: pathToFileURL(rawFile).href,
     rawAspect: `${size.width} / ${size.height}`,
     rawRows: size.height,
     focus: slide.focus || null,
+    // Off unless the caller passes ribbonFor(…) in `extra`.
+    ribbon: null,
     // Panoramic offset; 1/0 makes the background a plain single-slide gradient.
     // Looked up by id: a target that swaps the frame hands in a copy of the
     // slide, which indexOf would not find (and the strip slid off the canvas).
@@ -116,13 +155,30 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const scale = Number(arg('scale') || 1);
   const out = arg('out') || path.join(root, 'screenshots/store/_proof.png');
 
-  const slide = cfg.slides.find(s => s.id === id);
-  if (!slide) die(`no slide "${id}" in screenshots.config.json. Have: ${cfg.slides.map(s => s.id).join(', ')}.`);
+  const base = cfg.slides.find(s => s.id === id);
+  if (!base) die(`no slide "${id}" in screenshots.config.json. Have: ${cfg.slides.map(s => s.id).join(', ')}.`);
 
-  const target = cfg.targets[0];
+  // --target play-phone proofs a slide the way that target exports it: its
+  // frame and its ribbon. Without it, the first target.
+  const target = arg('target') ? cfg.targets.find(t => t.id === arg('target')) : cfg.targets[0];
+  if (!target) die(`no target "${arg('target')}" in screenshots.config.json. Have: ${cfg.targets.map(t => t.id).join(', ')}.`);
+  const slide = target.device ? { ...base, device: target.device } : base;
+  const ids = target.slides || cfg.slides.map(s => s.id);
+  const index = ids.indexOf(id);
+  if (index === -1) die(`target "${target.id}" does not export slide "${id}". It has: ${ids.join(', ')}.`);
+  // The same strip and ribbon export.mjs gives this slide in this target.
+  const strip = target.slides && theme.backgrounds[slide.background]?.panoramic
+    ? { panoramaCount: ids.length, panoramaIndex: index }
+    : {};
+
   const browser = await chromium.launch({ args: launchArgs });
   try {
-    const buf = await shoot(browser, slideData(slide, locale), {
+    const data = slideData(slide, locale, {
+      ...strip,
+      ribbon: ribbonFor(target, locale, index),
+      priceWords: Boolean(target.ribbon),
+    });
+    const buf = await shoot(browser, data, {
       width: Math.round(target.width / target.scale * scale),
       height: Math.round(target.height / target.scale * scale),
       scale,

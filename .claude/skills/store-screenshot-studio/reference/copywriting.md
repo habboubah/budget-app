@@ -24,6 +24,18 @@ they may only half-read. Every rule below exists for that reader.
    long — a headline that fits in English can wrap to three lines in German. Check
    the contact sheet, not the JSON.
 
+## Ribbon and points
+
+- **The ribbon is one word**, at most 12 letters: *Kostenlos*, *Free*.
+- **A point is a fact in two to four words** that fits one pill (28 characters):
+  "Keine Werbung", "Nichts verlässt dein Handy". At most five on a slide.
+- **Facts, not reassurance.** "Nichts verlässt dein Handy" can be checked;
+  "100 % sicher" cannot. The same rule 3 applies: the slide that carries the
+  promise shows the screen that says so (*Sichern und übertragen*: "Alles
+  bleibt auf diesem Gerät, es gibt keine Cloud").
+- **Mark a point about the price** — `{ "text": "Kein Abo", "price": true }` —
+  so it stays off the App Store set (`reference/store-specs.md`).
+
 ## Good / bad
 
 | ✅ | ❌ | why |
