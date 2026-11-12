@@ -4,7 +4,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync, rmSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { cfg, root, launchArgs, slideData, shoot, die } from './render.mjs';
+import { cfg, root, theme, launchArgs, slideData, shoot, die } from './render.mjs';
 
 const outDir = path.join(root, cfg.outDir);
 
@@ -33,7 +33,12 @@ try {
         : cfg.slides;
       for (const [i, base] of slides.entries()) {
         const slide = target.device ? { ...base, device: target.device } : base;
-        const buf = await shoot(browser, slideData(slide, locale), target);
+        // A target with its own slide list is its own strip: the panorama runs
+        // across those slides in that order, not across the ten of the full set.
+        const strip = target.slides && theme.backgrounds[slide.background]?.panoramic
+          ? { panoramaCount: slides.length, panoramaIndex: i }
+          : {};
+        const buf = await shoot(browser, slideData(slide, locale, strip), target);
         const ext = target.format === 'jpeg' ? 'jpg' : 'png';
         const file = path.join(dir, `${String(i + 1).padStart(2, '0')}-${slide.id}.${ext}`);
         writeFileSync(file, buf);

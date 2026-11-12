@@ -71,8 +71,11 @@ export function slideData(slide, locale, extra = {}) {
     rawRows: size.height,
     focus: slide.focus || null,
     // Panoramic offset; 1/0 makes the background a plain single-slide gradient.
+    // Looked up by id: a target that swaps the frame hands in a copy of the
+    // slide, which indexOf would not find (and the strip slid off the canvas).
+    // A target with its own slide list passes its own count and position.
     panoramaCount: bg.panoramic ? cfg.slides.length : 1,
-    panoramaIndex: bg.panoramic ? cfg.slides.indexOf(slide) : 0,
+    panoramaIndex: bg.panoramic ? cfg.slides.findIndex(s => s.id === slide.id) : 0,
     ...extra,
   };
 }
