@@ -811,8 +811,11 @@ final class SceneRunner {
                     return !f.isEmpty && f.minY > below && window.contains(CGPoint(x: f.midX, y: f.midY))
                         && !suggestions.contains { f.midY >= $0.minY && f.midY <= $0.maxY }
                 }
-            // The smallest match: the file's own name or tile, not a cell spanning the list.
-            file = shown.min { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
+            // The file's tile (a cell) – tapping only its name text doesn't open it;
+            // else the smallest match.
+            file = shown.filter { $0.elementType == .cell }
+                .min { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
+                ?? shown.min { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
             if file == nil { rest(0.4) }
         } while file == nil && Date() < fileDeadline
         if file == nil {
