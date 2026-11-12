@@ -782,16 +782,21 @@ final class SceneRunner {
         _ = waitForKeyboard()
         search.typeText(stem)
         rest(2.5 * pace)
-        // A file among the results (a cell named after it) – not the search
-        // suggestion "Name Contains “…”", whose bold word reads the same.
+        // A file among the results: an element named after it that is on screen,
+        // below the search field – not the search suggestion "Name Contains “…”"
+        // nor a hidden sidebar header that also contains the name.
         let fileDeadline = Date().addingTimeInterval(10)
         var file: XCUIElement? = nil
         repeat {
-            file = app.cells.allElementsBoundByIndex.first { cell in
-                guard cell.exists, !cell.label.contains("“"), !cell.label.contains("\"") else { return false }
-                return cell.label.hasPrefix(stem)
-                    || cell.staticTexts.matching(NSPredicate(format: "label == %@", stem)).firstMatch.exists
-            }
+            let below = search.frame.maxY
+            let shown = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label BEGINSWITH %@", stem)).allElementsBoundByIndex
+                .filter { el in
+                    guard el.exists, el.elementType != .searchField, !el.label.contains("“"), !el.label.contains("\"") else { return false }
+                    let f = el.frame
+                    return !f.isEmpty && f.minY > below && window.contains(CGPoint(x: f.midX, y: f.midY))
+                }
+            file = shown.first { $0.elementType == .cell } ?? shown.first
             if file == nil { rest(0.4) }
         } while file == nil && Date() < fileDeadline
         if file == nil {
