@@ -41,9 +41,10 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
 2. `npm run rehearse:app-review` — checks every step against the current
    code in 5 minutes. It also writes `demo-files/spartopf-demo-backup.spartopf`
    fresh.
-3. **AirDrop the four demo files** to the iPhone (they land in Files ›
-   Downloads): `spartopf-demo-history.xlsx`, `spartopf-demo-bank.csv`,
-   `spartopf-demo-banking-app.png`, `spartopf-demo-backup.spartopf`.
+3. **AirDrop the three demo files** to the iPhone (they land in Files ›
+   Downloads): `spartopf-demo-bank.csv` (in US dollars, like the recording),
+   `spartopf-demo-banking-app.png`, `spartopf-demo-backup.spartopf`. The
+   earlier months come from Settings › Add test data, not from Excel.
 4. Make sure the build you submit is the one installed from **TestFlight**
    (install it once when there is a new build). No need to delete it before
    each run: every full run resets it in the app (Settings › Reset app)

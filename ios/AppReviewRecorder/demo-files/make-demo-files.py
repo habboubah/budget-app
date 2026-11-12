@@ -136,7 +136,7 @@ ROWS = [
 lines = [";".join(f'"{h}"' for h in HEADER)]
 for day, kind, purpose, payee, amount in ROWS:
     cells = ["DE00000000000000000000", day, day, kind, purpose, "", "", "", "", "", "",
-             payee, "", "", amount, "EUR", "Umsatz gebucht"]
+             payee, "", "", amount, "USD", "Umsatz gebucht"]  # the recording runs in US dollars (scene 1)
     lines.append(";".join(f'"{c}"' for c in cells))
 (out / "spartopf-demo-bank.csv").write_text("\r\n".join(lines) + "\r\n", encoding="utf-8")
 
