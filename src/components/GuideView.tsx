@@ -16,6 +16,7 @@ import { SearchField } from '../ui/SearchField';
 import { Button } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
 import { GuideScene } from './GuideScenes';
+import { GUIDE_SHOTS, GUIDE_SHOT_LANGS } from '../guideShots';
 
 type Icon = ComponentType<{ className?: string; strokeWidth?: number }>;
 
@@ -285,7 +286,7 @@ function TopicRow({ topic, words, open, foldable, seen, tour, onToggle, onShow, 
           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="px-[16px] pb-4 -mt-1"
         >
-          <GuideScene id={topic.id as GuideTopicId} t={words} />
+          <GuidePicture id={topic.id as GuideTopicId} t={words} />
           <p className="text-body text-fg wrap-prose"><Rich parts={guideParts(words, text.sum)} t={words} /></p>
 
           <h4 id={stepsId} className="mt-3 mb-1.5 eyebrow text-fg-mute">{words.guideHowTo}</h4>
@@ -327,6 +328,48 @@ function TopicRow({ topic, words, open, foldable, seen, tour, onToggle, onShow, 
         </motion.div>
       )}
     </div>
+  );
+}
+
+/** The theme the app shows right now (index.html / App set `data-theme` on <html>), followed as it changes. */
+function useShownTheme(): 'light' | 'dark' {
+  const read = (): 'light' | 'dark' => (document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+  const [theme, setTheme] = useState(read);
+  useEffect(() => {
+    const mo = new MutationObserver(() => setTheme(read()));
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => mo.disconnect();
+  }, []);
+  return theme;
+}
+
+/**
+ * A topic's picture: a real screenshot of its screen with the app's test
+ * data (scripts/guide-shots.mjs), in the language — German, English, Arabic,
+ * else English — and the theme shown. Its size is known, so nothing jumps as
+ * it loads; it is read from the app itself, never from the network. A topic
+ * without one shows its drawing. Hidden from VoiceOver: the steps say it all.
+ */
+function GuidePicture({ id, t }: { id: GuideTopicId; t: Strings }) {
+  const theme = useShownTheme();
+  const [failed, setFailed] = useState(false);
+  const code = t.locale.slice(0, 2);
+  const set = `${(GUIDE_SHOT_LANGS as readonly string[]).includes(code) ? code : 'en'}-${theme}`;
+  const size = GUIDE_SHOTS[set]?.[id];
+  if (!size || failed) return <GuideScene id={id} t={t} />;
+  return (
+    <img
+      src={`${import.meta.env.BASE_URL}guide/${set}/${id}.webp`}
+      width={size[0]}
+      height={size[1]}
+      alt=""
+      aria-hidden="true"
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      onError={() => setFailed(true)}
+      className="mb-3 block w-full h-auto rounded-[16px] card-edge bg-bg select-none"
+    />
   );
 }
 

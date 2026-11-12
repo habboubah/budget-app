@@ -645,10 +645,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   when asked for.
   - **The guide** is the first card of *Optionen* (a `QuickTile`; `GuideView`, pushed as
     `guide`): the tours on top, then `GUIDE_TOPICS` by chapter. A row opens
-    to a small picture of its screen (`GuideScenes.tsx`: drawn from the app's
-    own parts and tokens — bars for content, the topic's control in the
-    accent with its real label; never a screenshot, so it follows language,
-    theme, accent and RTL), one sentence (`guide…Sum`), "So geht's" with two
+    to a real screenshot of its screen with the app's test data
+    (`public/guide/<lang>-<theme>/<topic>.webp`, sizes in `src/guideShots.ts`;
+    German, English and Arabic, light and dark — every other language shows
+    the English set; read from the app itself, never the network; a topic
+    without one falls back to its drawing in `GuideScenes.tsx`), one sentence (`guide…Sum`), "So geht's" with two
     to five numbered steps (`guide…Steps`, one a line) and a tip
     (`guide…Tip`) — `topicText(topic)` names the three keys. Then *Zeigen*
     and, where the topic has one, *Tour starten*. A search over all of it
@@ -656,8 +657,14 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     hides what a device can't do. Opened topics are ticked
     (`spartopf-guide-seen`, a view preference). **A new feature gets a
     topic** — title = the feature's own label in `Strings` where it has one,
-    so the guide says what the screen says; three texts, a `LOOK` and a
-    scene; `guide.test.ts` holds it together.
+    so the guide says what the screen says; three texts, a `LOOK`, a scene,
+    and an entry in `SHOTS` (scripts/guide-shots.mjs); `guide.test.ts` holds
+    it together. **After a change to a screen the guide shows, run
+    `npm run guide-shots`** (`-- --only <topic>` for one, `-- --sets de-light`
+    for a set): it fills a fresh app with *Testdaten hinzufügen*, goes to each
+    topic's screen, outlines the control and writes the pictures and the
+    sizes. Run it on the Mac for Apple's emoji and fonts; elsewhere it needs a
+    colour emoji font (Noto Color Emoji).
   - **Its words** are not in `translations.ts`: `src/i18n/guide/<lang>.ts`
     (type `GuidePages`, derived from `de.ts`) holds the pages and the tours'
     sentences, one chunk a language, loaded by `src/guidePages.ts` when the

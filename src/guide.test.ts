@@ -5,6 +5,8 @@ import {
   MARKS, MarkId, TOURS, TOUR_STEPS, guideLabels, guideParts, guideText, markText, searchGuide, tourAbout, tourCardPlace, tourName, tourSteps,
 } from './guideKit';
 import { GuidePages, guidePages, loadGuidePages } from './guidePages';
+import { GUIDE_SHOTS, GUIDE_SHOT_LANGS } from './guideShots';
+import { existsSync, statSync } from 'fs';
 
 await loadAllLanguages();
 const pages = Object.fromEntries(await Promise.all(languages.map(async l => [l, await loadGuidePages(l)]))) as Record<Language, GuidePages>;
@@ -106,6 +108,22 @@ describe('the guide’s pages (src/i18n/guide/), in every language', () => {
     // Right to left: paid is a swipe to the left (tipSwipe says the same).
     expect(pages.ar.guidePaidSteps).toMatch(/اليسار[\s\S]*اليمين/);
     expect(translations.ar.tipSwipe).toMatch(/اليسار.*اليمين/);
+  });
+});
+
+describe('the guide’s pictures (scripts/guide-shots.mjs)', () => {
+  const sets = GUIDE_SHOT_LANGS.flatMap(l => [`${l}-light`, `${l}-dark`]);
+  it.each(sets)('%s: a screenshot for every topic, its file there and its size known', set => {
+    for (const t of GUIDE_TOPICS) {
+      const size = GUIDE_SHOTS[set]?.[t.id];
+      expect(size, `${set}/${t.id}`).toBeTruthy();
+      expect(size![0], `${set}/${t.id}`).toBeGreaterThan(300);
+      expect(size![1], `${set}/${t.id}`).toBeGreaterThan(80);
+      const file = `public/guide/${set}/${t.id}.webp`;
+      expect(existsSync(file), file).toBe(true);
+      // Kept small: the app carries all of them.
+      expect(statSync(file).size, file).toBeLessThan(60_000);
+    }
   });
 });
 

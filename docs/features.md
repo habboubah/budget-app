@@ -97,7 +97,9 @@ when it is wanted:
 - **Anleitung** — the first card of *Optionen*. Every feature in seven
   chapters (*Die Grundlagen, Eintragen, Planen, Auswerten, Importieren, Mehr
   im Haushaltsbuch, Sicherheit und Daten*), with a search over all of it. A
-  topic opens to a small picture of its screen, one sentence of what it is,
+  topic opens to a screenshot of its screen filled with the test data (the
+  control it is about outlined; German, English and Arabic in light and dark,
+  the English ones for the other languages), one sentence of what it is,
   *So geht's* with numbered steps and a tip. The buttons a step names are
   drawn as they look — the round +, the "⋯", the tick that saves, *Aufteilen*
   on a capsule with its icon — in every language, as the app names them.

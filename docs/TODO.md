@@ -273,6 +273,11 @@ Before it goes into a release:
   buttons read as their names ("Eintrag hinzufügen", "Sichern").
 - [ ] **Android:** the system back ends a tour, and returns to the guide
   from a screen it opened.
+- [ ] **The guide's screenshots** were taken in Chromium on Linux (Noto
+  emoji, not Apple's; the system's sans for SF Pro). Before a release, take
+  them again on the Mac — `npm run guide-shots` — and look through
+  `public/guide/` (192 pictures, 4.5 MB). Again after any change to a screen
+  they show.
 - [ ] **Languages:** the guide's pages (`src/i18n/guide/`) are written by
   Claude in all fourteen; German, English and Arabic are yours to read, the
   eleven others want the same native-speaker pass as the rest.

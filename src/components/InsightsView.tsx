@@ -95,8 +95,10 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
 
       {ahead && <div data-tour="plan-outlook"><OutlookCard outlook={ahead} categories={data.categories} t={t} onExplain={onExplain} onWhatIf={onWhatIf} /></div>}
 
-      <ContractsCard items={contracts} categories={data.categories} averageIncome={averageIncome}
-        fresh={hints.fresh} missing={hints.missing} t={t} onOpen={onContract} onAll={onContractsAll} onAdd={onAdd} />
+      <div data-tour="plan-contracts">
+        <ContractsCard items={contracts} categories={data.categories} averageIncome={averageIncome}
+          fresh={hints.fresh} missing={hints.missing} t={t} onOpen={onContract} onAll={onContractsAll} onAdd={onAdd} />
+      </div>
 
       {reserve && (
         <ReserveCard
