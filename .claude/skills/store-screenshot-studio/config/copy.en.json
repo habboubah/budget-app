@@ -5,8 +5,17 @@
   "ribbon": "Free",
   "slides": {
     "month": {
-      "headline": "Know what's left this month",
-      "subline": "Your balance now and at month end, at a glance"
+      "headline": "Budget book & finance manager",
+      "subline": "Track spending, plan budgets, see what's left",
+      "points": [
+        "No ads",
+        {
+          "text": "No subscription",
+          "price": true
+        },
+        "Secure, privacy first",
+        "Data stays on your device"
+      ]
     },
     "entry": {
       "headline": "Note a purchase in seconds",
@@ -14,13 +23,7 @@
     },
     "backup": {
       "headline": "Your data stays with you",
-      "subline": "No account, no cloud, shared with no one",
-      "points": [
-        "No ads",
-        { "text": "No in-app purchases", "price": true },
-        { "text": "No subscription", "price": true },
-        "Nothing leaves your phone"
-      ]
+      "subline": "No account, no cloud, shared with no one"
     },
     "budgets": {
       "headline": "A budget for each category",
@@ -52,13 +55,16 @@
     }
   },
   "featureGraphic": {
-    "headline": "Know what's left this month",
-    "subline": "Your budget book with no account and no cloud.",
+    "headline": "Budget book & finance manager",
+    "subline": "Track spending, plan budgets and see what's left at month end.",
     "points": [
       "No ads",
-      { "text": "No in-app purchases", "price": true },
-      { "text": "No subscription", "price": true },
-      "Nothing leaves your phone"
+      {
+        "text": "No subscription",
+        "price": true
+      },
+      "Secure, privacy first",
+      "Data stays on your device"
     ]
   }
 }

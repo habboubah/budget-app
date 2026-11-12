@@ -5,8 +5,17 @@
   "ribbon": "Kostenlos",
   "slides": {
     "month": {
-      "headline": "Sieh, was am Monatsende bleibt",
-      "subline": "Kontostand jetzt und am Monatsende, auf einen Blick"
+      "headline": "Haushaltsbuch & Finanzplaner",
+      "subline": "Ausgaben notieren, Budgets planen, sehen, was bleibt",
+      "points": [
+        "Keine Werbung",
+        {
+          "text": "Kein Abo",
+          "price": true
+        },
+        "Sicher, Privatsphäre zuerst",
+        "Daten bleiben auf dem Gerät"
+      ]
     },
     "entry": {
       "headline": "Ausgabe in Sekunden notiert",
@@ -14,13 +23,7 @@
     },
     "backup": {
       "headline": "Deine Daten bleiben bei dir",
-      "subline": "Kein Konto, keine Cloud, mit niemandem geteilt",
-      "points": [
-        "Keine Werbung",
-        { "text": "Keine In-App-Käufe", "price": true },
-        { "text": "Kein Abo", "price": true },
-        "Nichts verlässt dein Handy"
-      ]
+      "subline": "Kein Konto, keine Cloud, mit niemandem geteilt"
     },
     "budgets": {
       "headline": "Ein Budget für jede Kategorie",
@@ -52,13 +55,16 @@
     }
   },
   "featureGraphic": {
-    "headline": "Sieh, was am Monatsende bleibt",
-    "subline": "Dein Haushaltsbuch ohne Konto und ohne Cloud.",
+    "headline": "Haushaltsbuch & Finanzplaner",
+    "subline": "Ausgaben notieren, Budgets planen und sehen, was am Monatsende bleibt.",
     "points": [
       "Keine Werbung",
-      { "text": "Keine In-App-Käufe", "price": true },
-      { "text": "Kein Abo", "price": true },
-      "Nichts verlässt dein Handy"
+      {
+        "text": "Kein Abo",
+        "price": true
+      },
+      "Sicher, Privatsphäre zuerst",
+      "Daten bleiben auf dem Gerät"
     ]
   }
 }

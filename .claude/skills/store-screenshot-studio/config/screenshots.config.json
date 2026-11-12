@@ -94,7 +94,7 @@
       "ribbon": false
     },
     {
-      "//": "Google Play phone screenshots. `device` overrides each slide's frame (no iPhone on Play); `slides` picks and orders the eight Play allows. The promise (the backup slide: your data stays with you, no ads, no subscription) is second, so it shows on the listing without swiping.",
+      "//": "Google Play phone screenshots. `device` overrides each slide's frame (no iPhone on Play); `slides` picks and orders the eight Play allows. The first slide says what the app is and carries the promise (no ads, no subscription, data stays on the device), so the ribbon is on it only.",
       "id": "play-phone",
       "store": "play",
       "width": 1080,
@@ -103,8 +103,8 @@
       "format": "jpeg",
       "quality": 92,
       "device": "pixel",
-      "slides": ["month", "backup", "entry", "budgets", "next-month", "stats", "report", "plan"],
-      "ribbon": true
+      "slides": ["month", "entry", "backup", "budgets", "next-month", "stats", "report", "plan"],
+      "ribbon": "first"
     }
   ],
   "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. Its copy is the featureGraphic block of every copy file.",

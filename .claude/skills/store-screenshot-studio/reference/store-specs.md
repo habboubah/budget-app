@@ -50,7 +50,7 @@ differently, which is why they are switched per target (`"ribbon"` in
 | Store | Rule | What this project does |
 |---|---|---|
 | App Store | Guideline 2.3.7: app names, subtitles, screenshots and previews may not include prices or terms. App Review counts "free" as a price reference and rejects the version until it is gone | `iphone-6.3` has `"ribbon": false`: no ribbon, no price points. `validate.py` warns if that changes |
-| Google Play | The preview-asset guidelines ask to avoid price and promotional words on the feature graphic and screenshots and name "Free" among the examples. Not following them does not take the listing down; it can change how the assets are shown and limits promotion and recommendation by Play | `play-phone` and the feature graphic have `"ribbon": true`. A choice: the listing says "free" loudly, and is picked for Play's own promotion surfaces less readily |
+| Google Play | The preview-asset guidelines ask to avoid price and promotional words on the feature graphic and screenshots and name "Free" among the examples. Not following them does not take the listing down; it can change how the assets are shown and limits promotion and recommendation by Play | `play-phone` has `"ribbon": "first"` (the ribbon on the first slide only) and the feature graphic `"ribbon": true`. A choice: the listing says "free" loudly, and is picked for Play's own promotion surfaces less readily |
 
 Whatever the store, the words have to be true. Today the app is free, has no
 ads, no in-app products and no subscription (`store/play-listing.md`). The day
