@@ -782,9 +782,24 @@ final class SceneRunner {
         _ = waitForKeyboard()
         search.typeText(stem)
         rest(2.5 * pace)
-        let file = try element([stem], nth: 0, role: nil, timeout: 10)
-        guard file.elementType != .searchField else { throw StepFailure("\(name) not found in Files – AirDrop it to the iPhone first") }
-        try tap(file)
+        // A file among the results (a cell named after it) – not the search
+        // suggestion "Name Contains “…”", whose bold word reads the same.
+        let fileDeadline = Date().addingTimeInterval(10)
+        var file: XCUIElement? = nil
+        repeat {
+            file = app.cells.allElementsBoundByIndex.first { cell in
+                guard cell.exists, !cell.label.contains("“"), !cell.label.contains("\"") else { return false }
+                return cell.label.hasPrefix(stem)
+                    || cell.staticTexts.matching(NSPredicate(format: "label == %@", stem)).firstMatch.exists
+            }
+            if file == nil { rest(0.4) }
+        } while file == nil && Date() < fileDeadline
+        if file == nil {
+            let found = try element([stem], nth: 0, role: nil, timeout: 2)
+            guard found.elementType != .searchField else { throw StepFailure("\(name) not found in Files – AirDrop it to the iPhone first") }
+            file = found
+        }
+        try tap(file!)
         rest(1)
     }
 
