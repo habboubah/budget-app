@@ -77,6 +77,12 @@ The recording is stopped, so what was filmed so far is in Photos.
   (`pickFile`: the file must be in Files, findable by search), the select
   menus (`select`), the share sheet's Close (`systemTap`), an element under
   the keyboard. Fix it in `SceneRunner.swift`, then `FROM=n DRY_RUN=1`.
+- **"… is greyed out"** — an earlier step didn't do what it should (an amount
+  that isn't a number keeps Save disabled). Look at the screenshot for what
+  went in.
+- The keyboard is put away (its ✓) before a tap that it, or the + − × ÷ row
+  above it, would cover — that row once took a tap meant for the date and
+  typed "+" into the amount.
 - **Signing errors** — open `AppReviewRecorder.xcodeproj` in Xcode once,
   pick your team for both targets, run the test from there (⌘U).
 

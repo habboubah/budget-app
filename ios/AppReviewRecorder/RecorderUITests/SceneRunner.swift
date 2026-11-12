@@ -424,8 +424,98 @@ final class SceneRunner {
 
     private var visible: CGRect { visibleArea().rect }
 
-    func tap(_ el: XCUIElement) throws {
+    /// What takes a tap in the screen reader's tree.
+    private static let pressable: Set<XCUIElement.ElementType> = [
+        .button, .key, .switch, .toggle, .link, .textField, .secureTextField, .searchField, .textView,
+        .checkBox, .radioButton, .popUpButton, .comboBox, .slider, .menuItem,
+    ]
+
+    /// Scrolls the element into view and makes sure the finger lands on it. With
+    /// the keyboard up, the element can be behind it, or behind something the
+    /// page keeps just above it: Spartopf's + − × ÷ row covers the Date and Paid
+    /// buttons, and a tap meant for the date once typed "+" into the amount.
+    /// Then the keyboard goes away first, the way a person would put it away.
+    private func reach(_ el: XCUIElement, dx: CGFloat = 0.5) throws {
         try scrollIntoView(el)
+        let area = visibleArea()
+        let f = el.frame
+        guard area.keyboard, !f.isEmpty else { return }
+        let point = CGPoint(x: f.minX + f.width * dx, y: f.midY)
+        let blocker: String
+        if point.y > area.rect.maxY {
+            blocker = "the keyboard"
+        } else if let over = coveringElement(el, at: point) {
+            blocker = "“\(over)”"
+        } else {
+            return
+        }
+        log("  \(blocker) covers “\(el.label)” – putting the keyboard away")
+        try hideKeyboard()
+        try scrollIntoView(el)
+    }
+
+    /// What else is under `point`: a button or field that is neither `el` nor
+    /// around or inside it – a row the page keeps above the keyboard, say.
+    private func coveringElement(_ el: XCUIElement, at point: CGPoint) -> String? {
+        guard let snap = try? app.snapshot() else { return nil }
+        let type = el.elementType, label = el.label, frame = el.frame
+        func isTarget(_ s: XCUIElementSnapshot) -> Bool {
+            s.elementType == type && s.label == label
+                && abs(s.frame.minX - frame.minX) < 3 && abs(s.frame.minY - frame.minY) < 3
+                && abs(s.frame.width - frame.width) < 3 && abs(s.frame.height - frame.height) < 3
+        }
+        var over: String?
+        // Whether `el` is in this branch: what holds it doesn't cover it.
+        func walk(_ s: XCUIElementSnapshot) -> Bool {
+            if isTarget(s) { return true }
+            var holds = false
+            for child in s.children {
+                if walk(child) { holds = true }
+            }
+            if over == nil && !holds && Self.pressable.contains(s.elementType)
+                && !s.frame.isEmpty && s.frame.contains(point) {
+                over = s.label.isEmpty ? "an element without a label" : s.label
+            }
+            return holds
+        }
+        _ = walk(snap)
+        return over
+    }
+
+    /// Puts the keyboard away the way a person does: ✓ (Done) on the bar above it.
+    func hideKeyboard() throws {
+        let keyboard = app.keyboards.firstMatch
+        guard keyboard.exists else { return }
+        let done = app.toolbars.buttons.matching(NSPredicate(format: "label IN %@", system("done", ["Done", "Fertig"]) as NSArray)).firstMatch
+        guard done.exists, done.isHittable else {
+            throw StepFailure("the keyboard is in the way and has no ✓ (Done) bar to put it away")
+        }
+        done.tap()
+        keyboardTopCache = nil
+        let deadline = Date().addingTimeInterval(3)
+        while keyboard.exists {
+            guard Date() < deadline else { throw StepFailure("the keyboard didn't go away") }
+            rest(0.2)
+        }
+        rest(0.5) // the sheet grows back to full height
+    }
+
+    /// A greyed-out button takes the tap and does nothing, and the run only
+    /// fails steps later on something that should have appeared. Say it here.
+    private func waitUntilEnabled(_ el: XCUIElement, _ seconds: Double = 2) throws {
+        guard el.elementType == .button else { return }
+        let deadline = Date().addingTimeInterval(seconds)
+        while !el.isEnabled {
+            guard Date() < deadline else {
+                throw StepFailure("“\(el.label)” is greyed out – an earlier step didn't do what it should (see the screenshot)")
+            }
+            rest(0.2)
+        }
+    }
+
+    func tap(_ el: XCUIElement) throws {
+        try reach(el)
+        try waitUntilEnabled(el)
         let f = el.frame, area = visibleArea()
         let middle = CGPoint(x: f.midX, y: f.midY)
         // WebKit calls an element behind the keyboard hittable; the tap would land on a key.
@@ -498,7 +588,7 @@ final class SceneRunner {
     /// Focuses the field with the caret at its end, deletes what is there, types the text
     /// key by key. `check`: for words – if autocorrection changed them, type them again.
     func replaceText(in el: XCUIElement, with text: String, check: Bool = false) throws {
-        try scrollIntoView(el)
+        try reach(el, dx: 0.96)
         el.coordinate(withNormalizedOffset: CGVector(dx: 0.96, dy: 0.5)).tap()
         if !waitForKeyboard(2) { el.tap() }
         guard waitForKeyboard() else { throw StepFailure("the field “\(el.label)” didn't take focus") }
