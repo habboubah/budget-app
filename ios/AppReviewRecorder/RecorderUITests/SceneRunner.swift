@@ -209,6 +209,14 @@ final class SceneRunner {
         if let labels = step.strings("systemTap") { try tapSystemButton(labels); return }
         if let note = step.string("note") { log(note); return }
 
+        // Something pulled Spartopf into the background (a notification banner that
+        // took a tap opened Gmail): back to it before the next step.
+        if app.state != .runningForeground && app.state != .notRunning {
+            log("  Spartopf went to the background (a notification?) – back to it")
+            app.activate()
+            _ = app.wait(for: .runningForeground, timeout: 10)
+            rest(1)
+        }
         let nth = step.int("nth") ?? 0
         let timeout = step.number("timeout") ?? 8
 
