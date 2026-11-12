@@ -241,3 +241,10 @@ Control Center, and the Spartopf icon on the first home screen page.
    the phone facing you (Face ID).
 7. The video is in Photos: upload it under *App Review Information ›
    Attachment*, then import your backup again.
+
+
+# Playstor Closed testing 
+https://play.google.com/store/apps/details?id=com.habboubah.spartopf
+
+# Playstor Internal testing
+https://play.google.com/apps/internaltest/4700086830731001200
