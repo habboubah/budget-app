@@ -1,18 +1,23 @@
-import { CSSProperties, ComponentType, useEffect, useId, useMemo, useState } from 'react';
+import { CSSProperties, ComponentType, Fragment, useEffect, useId, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  ArrowRight, BarChart3, PenLine, Settings, Bell, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, CircleCheck, Compass, Download, EyeOff,
-  FileSpreadsheet, FileText, FlaskConical, HandCoins, Landmark, Luggage, Palette, Paperclip, PiggyBank, Play, Plus, QrCode, Repeat,
-  Scale, ScrollText, Search, ShieldCheck, Split, Star, Tags, Target, TrendingUp, Wallet, WalletCards, Zap,
+  ArrowRight, BarChart3, Bell, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck,
+  Compass, Download, EyeOff, FileSpreadsheet, FileText, FlaskConical, HandCoins, Hash, Info, Landmark, Lightbulb, Luggage,
+  MoreHorizontal, Palette, Paperclip, PenLine, PiggyBank, Play, Plus, QrCode, Repeat, Scale, ScrollText, Search, Settings, Share,
+  ShieldCheck, Split, Star, Tags, Target, TrendingUp, Undo2, Wallet, WalletCards, Zap,
 } from 'lucide-react';
 import { Hue } from '../types';
 import { Strings, fmt } from '../translations';
-import { CHAPTER_TITLES, GuideTopic, GuideTopicId, GuideWords, TourId, byChapter, guideText, guideTopics, searchGuide, tourAbout, tourName } from '../guide';
+import {
+  CHAPTER_TITLES, GuidePart, GuideTopic, GuideTopicId, GuideWords, TourId, byChapter, guideParts, guideText, guideTopics, searchGuide,
+  topicText, tourAbout, tourName,
+} from '../guide';
 import type { GuidePages } from '../guidePages';
 import { Empty, Group, IconTile, Screen } from '../ui/Screen';
 import { SearchField } from '../ui/SearchField';
 import { Button } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
+import { GuideScene } from './GuideScenes';
 
 type Icon = ComponentType<{ className?: string; strokeWidth?: number }>;
 
@@ -61,6 +66,51 @@ const TOUR_LOOK: Record<TourId, [Icon, Hue]> = {
   settings: [Settings, 'stone'],
 };
 
+/** The symbol a named button wears on screen, drawn beside its label in the text. */
+const CHIP_ICON: Partial<Record<string, Icon>> = {
+  month: CalendarDays, stats: BarChart3, plan: PiggyBank, settings: Settings,
+  repeat: Repeat, split: Split, refund: Undo2, receipt: Paperclip, tag: Hash, favorite: Star, tax: Landmark, share: Share,
+};
+
+/**
+ * A button the text names, drawn as it looks: +, ⋯, the tick that saves, ⓘ
+ * and ‹ › as their symbols (read out by their names), every other one as its
+ * label on a soft capsule, with its symbol where it has one. It wraps with the
+ * line, so a long label never runs off a small screen.
+ */
+function Chip({ part, t }: { part: { label: string; key: string }; t: Strings }) {
+  const round = 'inline-flex items-center justify-center rounded-full align-[-0.3em] mx-[0.1em]';
+  switch (part.key) {
+    case 'add':
+      return <span role="img" aria-label={t.addEntry} className={`${round} w-[1.45em] h-[1.45em] hero text-on-hero`}><Plus className="w-[1em] h-[1em]" strokeWidth={2.6} /></span>;
+    case 'save':
+      return <span role="img" aria-label={t.save} className={`${round} w-[1.45em] h-[1.45em] bg-accent-fill text-accent-fill-ink`}><Check className="w-[0.9em] h-[0.9em]" strokeWidth={3} /></span>;
+    case 'actions':
+      return <span role="img" aria-label={t.monthActions} className={`${round} w-[1.45em] h-[1.45em] glass-chrome text-fg`}><MoreHorizontal className="w-[1em] h-[1em]" strokeWidth={2.4} /></span>;
+    case 'info':
+      return <span role="img" aria-label={t.explainTitle} className={`${round} w-[1.3em] h-[1.3em] text-accent`}><Info className="w-[1.05em] h-[1.05em]" strokeWidth={2.4} /></span>;
+    case 'arrows':
+      return (
+        <span role="img" aria-label={`${t.prevMonth}, ${t.nextMonth}`} className={`${round} h-[1.45em] px-[0.2em] glass-chrome text-fg`}>
+          <ChevronLeft className="w-[1em] h-[1em] rtl:rotate-180" strokeWidth={2.4} />
+          <ChevronRight className="w-[1em] h-[1em] rtl:rotate-180" strokeWidth={2.4} />
+        </span>
+      );
+  }
+  const I = CHIP_ICON[part.key];
+  return (
+    <span className="rounded-[7px] bg-surface-2 shadow-[inset_0_0_0_1px_var(--t-hairline)] px-[0.35em] py-[0.05em] font-semibold text-fg box-decoration-clone">
+      {I && <I className="inline w-[0.95em] h-[0.95em] me-[0.25em] align-[-0.12em] text-fg-mute" strokeWidth={2.4} />}
+      {part.label}
+    </span>
+  );
+}
+
+/** A guide sentence with the buttons it names drawn in. */
+function Rich({ parts, t }: { parts: GuidePart[]; t: Strings }) {
+  return <>{parts.map((p, i) => (typeof p === 'string' ? <Fragment key={i}>{p}</Fragment> : <Chip key={i} part={p} t={t} />))}</>;
+}
+
 interface Props {
   t: Strings;
   /** The guide's own words in the app's language (src/i18n/guide/). */
@@ -83,10 +133,12 @@ interface Props {
 }
 
 /**
- * Optionen › Anleitung: the place to look things up. The short tour on top,
- * then every feature by chapter — a row opens to two or three sentences and
- * *Zeigen*, which goes to the real screen. A search over it all, since a
- * list this long is only read by those who are not looking for something.
+ * Optionen › Anleitung: the place to look things up. The tours on top, then
+ * every feature by chapter — a row opens to a picture of its screen, one
+ * sentence of what it is, numbered steps with the buttons drawn in, a tip,
+ * *Zeigen* (which goes there and lights up the thing to tap) and its tour. A
+ * search over it all, since a list this long is only read by those who are
+ * not looking for something.
  */
 export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, tours, onTour, onDemo, onShow }: Props) {
   const tourId = useId();
@@ -100,7 +152,7 @@ export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, tour
   // later than App's own scroll-to-top for a new screen.)
   useEffect(() => {
     if (!open) return;
-    const id = requestAnimationFrame(() => document.querySelector(`[data-guide-topic="${open}"]`)?.scrollIntoView({ block: 'center' }));
+    const id = requestAnimationFrame(() => document.querySelector(`[data-guide-topic="${open}"]`)?.scrollIntoView({ block: 'start' }));
     return () => cancelAnimationFrame(id);
   }, []);
 
@@ -126,7 +178,6 @@ export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, tour
           <ul className="divide-hairline-inset">
             {tours.map(id => {
               const [icon, hue] = TOUR_LOOK[id];
-              const name = guideText(words, tourName(id));
               return (
                 <li key={id} style={{ '--sep': '60px' } as CSSProperties}>
                   <button
@@ -137,7 +188,7 @@ export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, tour
                   >
                     <IconTile icon={icon} hue={hue} />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-body text-fg wrap-compound">{name}</span>
+                      <span className="block text-body text-fg wrap-compound">{guideText(words, tourName(id))}</span>
                       <span className="block text-caption text-fg-mute mt-0.5 wrap-compound">{guideText(words, tourAbout(id))}</span>
                     </span>
                     <span className="w-8 h-8 rounded-full bg-accent-dim text-accent inline-flex items-center justify-center shrink-0" aria-hidden="true">
@@ -167,8 +218,8 @@ export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, tour
               open={searching || open === topic.id}
               foldable={!searching}
               seen={seen.includes(topic.id as GuideTopicId)}
-              onToggle={() => onOpen(open === topic.id ? null : topic.id as GuideTopicId)}
               tour={topic.tour && tours.includes(topic.tour) ? topic.tour : undefined}
+              onToggle={() => onOpen(open === topic.id ? null : topic.id as GuideTopicId)}
               onShow={onShow}
               onTour={onTour}
             />
@@ -195,9 +246,11 @@ function TopicRow({ topic, words, open, foldable, seen, tour, onToggle, onShow, 
   onTour: (id: TourId) => void;
 }) {
   const panelId = useId();
+  const stepsId = useId();
   const [icon, hue] = LOOK[topic.id as GuideTopicId];
   const title = guideText(words, topic.title);
-  const action = topic.action;
+  const text = topicText(topic);
+  const steps = words[text.steps].split('\n');
   const head = (
     <>
       <IconTile icon={icon} hue={hue} />
@@ -210,6 +263,7 @@ function TopicRow({ topic, words, open, foldable, seen, tour, onToggle, onShow, 
     </>
   );
   const shell = 'relative w-full min-h-[56px] px-[16px] py-3 flex items-center gap-[12px] text-start';
+  const link = 'px-1 min-h-tap inline-flex items-center gap-1.5 text-body font-semibold text-accent rounded-sm active:opacity-60 focus-visible:ring-focus wrap-compound text-start';
   return (
     <div data-guide-topic={topic.id} style={{ '--sep': '60px' } as CSSProperties}>
       {foldable ? (
@@ -231,28 +285,41 @@ function TopicRow({ topic, words, open, foldable, seen, tour, onToggle, onShow, 
           initial={foldable ? { opacity: 0, y: -4 } : false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="ps-[60px] pe-[16px] pb-3 -mt-1.5"
+          className="px-[16px] pb-4 -mt-1"
         >
-          <p className="text-label text-fg wrap-prose">{guideText(words, topic.body)}</p>
-          {(action || tour) && (
-            <div className="mt-1 -mx-1 flex flex-wrap items-center gap-x-4">
-              {action && (
-                <button
-                  type="button"
-                  onClick={() => { tapLight(); onShow(topic); }}
-                  aria-label={`${words.guideShow} — ${title}`}
-                  className="px-1 min-h-tap inline-flex items-center gap-1.5 text-body font-semibold text-accent rounded-sm active:opacity-60 focus-visible:ring-focus"
-                >
+          <GuideScene id={topic.id as GuideTopicId} t={words} />
+          <p className="text-body text-fg wrap-prose"><Rich parts={guideParts(words, text.sum)} t={words} /></p>
+
+          <h4 id={stepsId} className="mt-3 mb-1.5 eyebrow text-fg-mute">{words.guideHowTo}</h4>
+          <ol aria-labelledby={stepsId} className="space-y-2">
+            {steps.map((_, i) => (
+              <li key={i} className="flex gap-2.5">
+                <span className="w-[1.6em] h-[1.6em] mt-[-0.05em] rounded-full bg-accent-dim text-accent text-caption font-bold tabular-nums inline-flex items-center justify-center shrink-0" aria-hidden="true">{i + 1}</span>
+                <span className="min-w-0 flex-1 text-label text-fg wrap-prose leading-relaxed">
+                  <Rich parts={guidePartsOfLine(words, text.steps, i)} t={words} />
+                </span>
+              </li>
+            ))}
+          </ol>
+
+          <p className="mt-3 rounded-[14px] bg-accent-dim/60 px-3 py-2.5 flex gap-2 text-label text-fg wrap-prose">
+            <Lightbulb className="w-[18px] h-[18px] shrink-0 mt-[0.1em] text-accent" strokeWidth={2.2} aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="sr-only">{words.guideTipLabel}: </span>
+              <Rich parts={guideParts(words, text.tip)} t={words} />
+            </span>
+          </p>
+
+          {(topic.action || tour) && (
+            <div className="mt-2 -mx-1 flex flex-wrap items-center gap-x-4">
+              {topic.action && (
+                <button type="button" onClick={() => { tapLight(); onShow(topic); }} aria-label={`${words.guideShow} — ${title}`} className={link}>
                   {words.guideShow}
-                  <ArrowRight className="w-[18px] h-[18px] rtl:rotate-180" strokeWidth={2.4} aria-hidden="true" />
+                  <ArrowRight className="w-[18px] h-[18px] shrink-0 rtl:rotate-180" strokeWidth={2.4} aria-hidden="true" />
                 </button>
               )}
               {tour && (
-                <button
-                  type="button"
-                  onClick={() => { tapLight(); onTour(tour); }}
-                  className="px-1 min-h-tap inline-flex items-center gap-1.5 text-body font-semibold text-accent rounded-sm active:opacity-60 focus-visible:ring-focus wrap-compound text-start"
-                >
+                <button type="button" onClick={() => { tapLight(); onTour(tour); }} className={link}>
                   <Play className="w-4 h-4 shrink-0 rtl:-scale-x-100" strokeWidth={2.4} fill="currentColor" aria-hidden="true" />
                   {words.guideTourStart}
                 </button>
@@ -263,4 +330,10 @@ function TopicRow({ topic, words, open, foldable, seen, tour, onToggle, onShow, 
       )}
     </div>
   );
+}
+
+/** One line of a topic's steps, in pieces. */
+function guidePartsOfLine(words: GuideWords, key: keyof GuideWords, line: number): GuidePart[] {
+  const one = { ...words, [key]: words[key].split('\n')[line] } as GuideWords;
+  return guideParts(one, key);
 }

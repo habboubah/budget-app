@@ -73,7 +73,7 @@ import { inboxReview, inboxToEntries } from './native/inbox';
 import { CaptureView } from './components/CaptureView';
 import { HintCard } from './components/HintCard';
 import { nextTip } from './tips';
-import { GuideTopic, GuideTopicId, GuideWords, MarkId, TourId, guideText, markText, tourAnchor, tourName, tourSteps } from './guide';
+import { GuideTopic, GuideTopicId, GuideWords, MarkId, TourId, guideText, markText, topicText, tourAnchor, tourName, tourSteps } from './guide';
 import { guidePages, loadGuidePages } from './guidePages';
 import { DeepLink, parseDeepLink } from './native/deepLink';
 import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, setSecure, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
@@ -1160,7 +1160,7 @@ export default function App() {
     const mark = topic.point;
     if (mark) {
       beginMarks(a === 'entry' ? 650 : 450, words => (tourAnchor(mark)
-        ? { marks: [mark], texts: [guideText(words, topic.body)], index: 0, label: guideText(words, topic.title), point: true, guide: true }
+        ? { marks: [mark], texts: [guideText(words, topicText(topic).sum)], index: 0, label: guideText(words, topic.title), point: true, guide: true }
         : null));
     }
   };

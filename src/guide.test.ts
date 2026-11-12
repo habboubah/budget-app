@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import translations, { Language, languages, loadAllLanguages } from './translations';
 import {
   CHAPTER_TITLES, GUIDE_CHAPTERS, GUIDE_TOPICS, GuideWords, MARKS, MarkId, TOURS, TOUR_STEPS, byChapter, guideLabels, guideText, guideTopics,
-  markText, readGuideSeen, searchGuide, tourAbout, tourCardPlace, tourName, tourSteps,
+  guideParts, markText, readGuideSeen, searchGuide, topicText, tourAbout, tourCardPlace, tourName, tourSteps,
 } from './guide';
 import { GuidePages, guidePages, loadGuidePages } from './guidePages';
 
@@ -17,14 +17,20 @@ const everywhere = { ios: true, app: true };
 const web = { ios: false, app: false };
 
 describe('the guide’s topics', () => {
-  it('have an id of their own, a chapter, and words in the app’s strings', () => {
+  it('have an id of their own, a chapter, a title, and a summary, steps and a tip', () => {
     const ids = GUIDE_TOPICS.map(t => t.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const t of GUIDE_TOPICS) {
       expect(GUIDE_CHAPTERS, t.id).toContain(t.chapter);
       expect(de[t.title], `${t.id} title`).toBeTruthy();
-      expect(de[t.body], `${t.id} body`).toBeTruthy();
-      expect(t.title, t.id).not.toBe(t.body);
+      const { sum, steps, tip } = topicText(t);
+      expect(de[sum], `${t.id} sum`).toBeTruthy();
+      expect(de[tip], `${t.id} tip`).toBeTruthy();
+      // Two to five steps, one a line, none empty.
+      const lines = de[steps].split('\n');
+      expect(lines.length, `${t.id} steps`).toBeGreaterThanOrEqual(2);
+      expect(lines.length, `${t.id} steps`).toBeLessThanOrEqual(5);
+      for (const l of lines) expect(l.trim(), t.id).not.toBe('');
     }
   });
 
@@ -66,6 +72,16 @@ describe('the guide’s pages (src/i18n/guide/), in every language', () => {
     }
   });
 
+  it.each([...languages])('%s: as many steps as the German, each line with its placeholders', lang => {
+    for (const t of GUIDE_TOPICS) {
+      const { steps } = topicText(t);
+      const mine = pages[lang][steps].split('\n');
+      const german = pages.de[steps].split('\n');
+      expect(mine.length, `${lang}.${steps}`).toBe(german.length);
+      mine.forEach((l, i) => expect(placeholders(l), `${lang}.${steps}[${i}]`).toEqual(placeholders(german[i])));
+    }
+  });
+
   it.each([...languages])('%s: no placeholder is left unfilled, and no key doubles one of the app’s', lang => {
     const w = words(lang);
     for (const k of pageKeys) {
@@ -79,15 +95,16 @@ describe('the guide’s pages (src/i18n/guide/), in every language', () => {
   });
 
   it('name the app’s own labels', () => {
-    expect(guideText(de, 'guideSplitBody')).toContain(`„${de.splitPayAction}“`);
-    expect(guideText(de, 'guideSplitBody')).toContain(`„${de.refund}“`);
+    expect(guideText(de, 'guideSplitSteps')).toContain(de.splitPayAction);
+    expect(guideText(de, 'guideSplitSteps')).toContain(de.refund);
+    expect(guideText(de, 'guideAddSteps')).toMatch(/^Tippe unten rechts auf \+\./);
     expect(guideText(words('en'), 'tourTabs')).toBe('“Statistics” looks back, “Plan” looks ahead. Under “Settings” you’ll find the whole guide.');
     expect(Object.values(guideLabels(translations.ar)).every(Boolean)).toBe(true);
   });
 
   it('the Arabic swipe goes the other way, as its gestures card says', () => {
     // Right to left: paid is a swipe to the left (tipSwipe says the same).
-    expect(pages.ar.guidePaidBody).toMatch(/اليسار.*اليمين/);
+    expect(pages.ar.guidePaidSteps).toMatch(/اليسار[\s\S]*اليمين/);
     expect(translations.ar.tipSwipe).toMatch(/اليسار.*اليمين/);
   });
 });
@@ -104,7 +121,7 @@ describe('searching the guide', () => {
     expect(find('favorit')).toContain('favorites');
     expect(find('QR-CODE')).toContain('invoice');
     expect(find('ruckgangig')).toContain('paid');
-    expect(find('excel')).toEqual(['excel']);
+    expect(find('excel')[0]).toBe('excel');
   });
   it('wants every word', () => {
     expect(find('budget jahr')).toContain('budgets');
@@ -117,6 +134,22 @@ describe('searching the guide', () => {
   it('searches in the language shown', () => {
     expect(find('الميزانيات', words('ar'))).toContain('budgets');
     expect(find('kumbara', words('tr'))).toContain('goals');
+  });
+});
+
+describe('the buttons a text names', () => {
+  it('come in pieces, to be drawn as they look', () => {
+    expect(guideParts(de, 'guideSplitSteps')).toEqual([
+      'Aufteilen: Öffne den Eintrag und tippe unten auf ', { label: de.splitPayAction, key: 'split' }, '.\n'
+        + 'Verteile den Betrag auf die Kategorien – die Teile müssen genau aufgehen.\n'
+        + 'Erstattung: Trag das Geld in der Kategorie ein, in der du gekauft hast, und tippe auf ', { label: de.refund, key: 'refund' }, '.',
+    ]);
+    // A symbol on screen: its character in plain text, its key for the drawing.
+    expect(guideParts(de, 'guideAddSteps')[1]).toEqual({ label: '+', key: 'add' });
+  });
+
+  it('a text that names none is one piece', () => {
+    expect(guideParts(de, 'guidePrivateSum')).toEqual([de.guidePrivateSum]);
   });
 });
 

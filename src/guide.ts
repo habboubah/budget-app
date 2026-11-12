@@ -3,17 +3,20 @@ import type { GuidePages } from './i18n/guide/de';
 import { searchTerms, foldForSearch } from './logic';
 
 /*
- * The guide (Optionen › Anleitung) and the short tour of the month page.
+ * The guide (Optionen › Anleitung), the tours, and what *Zeigen* points at.
  *
  * How other apps teach, and what was taken from it: Apple's guidelines ask
  * for onboarding that is fast, optional and found again later in a help or
  * settings area, for tips next to the thing they are about, and for learning
  * by doing; the apps people cite as the best let the first action be the
- * product itself and reveal the rest step by step. So nothing here stands
- * before the first screen. The setup card and the tips (plan 37) stay as they
- * are; this adds the place to look things up — every feature in two or three
- * sentences, each with *Zeigen*, which opens the real screen — and a tour of
- * five marks on the real month page, which only runs when it is asked for.
+ * product itself and reveal the rest step by step, and help pages that work
+ * show the real button inside the sentence and a picture of the screen. So
+ * nothing here stands before the first screen. The setup card and the tips
+ * (plan 37) stay as they are; this adds the place to look things up — every
+ * feature as one sentence, numbered steps and a tip, the buttons drawn as
+ * they look, a small picture of the screen — with *Zeigen*, which goes there
+ * and lights up the thing to tap, and five short tours of the real screens,
+ * which only run when they are asked for.
  *
  * Pure and tested: what the guide lists, what a search finds, which steps a
  * tour has. Its pages are in src/i18n/guide/ (src/guidePages.ts loads a
@@ -40,9 +43,8 @@ export interface GuideTopic {
   chapter: GuideChapter;
   /** The feature's own label wherever it has one, so the guide says what the screen says. */
   title: keyof GuideWords;
-  body: keyof GuideWords;
   action?: GuideAction;
-  /** What *Zeigen* lights up once there — the button to tap, the card to read — with the topic's words beside it. */
+  /** What *Zeigen* lights up once there — the button to tap, the card to read — with the topic's summary beside it. */
   point?: MarkId;
   /** The tour that shows this part of the app, offered under the topic. */
   tour?: TourId;
@@ -51,47 +53,59 @@ export interface GuideTopic {
 }
 
 export const GUIDE_TOPICS = [
-  { id: 'balances', chapter: 'basics', title: 'guideBalances', body: 'guideBalancesBody', action: 'month', point: 'balance', tour: 'month' },
-  { id: 'paid', chapter: 'basics', title: 'guidePaid', body: 'guidePaidBody', action: 'month', point: 'tick', tour: 'month' },
-  { id: 'months', chapter: 'basics', title: 'guideMonths', body: 'guideMonthsBody', action: 'month', point: 'month', tour: 'month' },
-  { id: 'categories', chapter: 'basics', title: 'categories', body: 'guideCategoriesBody', action: 'categories' },
-  { id: 'search', chapter: 'basics', title: 'searchMonth', body: 'guideSearchBody', action: 'month', point: 'search' },
-  { id: 'due', chapter: 'basics', title: 'dueTitle', body: 'guideDueBody', action: 'dueSoon' },
+  { id: 'balances', chapter: 'basics', title: 'guideBalances', action: 'month', point: 'balance', tour: 'month' },
+  { id: 'paid', chapter: 'basics', title: 'guidePaid', action: 'month', point: 'tick', tour: 'month' },
+  { id: 'months', chapter: 'basics', title: 'guideMonths', action: 'month', point: 'month', tour: 'month' },
+  { id: 'categories', chapter: 'basics', title: 'categories', action: 'categories' },
+  { id: 'search', chapter: 'basics', title: 'searchMonth', action: 'month', point: 'search' },
+  { id: 'due', chapter: 'basics', title: 'dueTitle', action: 'dueSoon' },
 
-  { id: 'add', chapter: 'entering', title: 'addEntry', body: 'guideAddBody', action: 'month', point: 'add', tour: 'entry' },
-  { id: 'repeats', chapter: 'entering', title: 'guideRepeats', body: 'guideRepeatsBody', action: 'entry', point: 'entryRepeat' },
-  { id: 'favorites', chapter: 'entering', title: 'favorites', body: 'guideFavoritesBody', action: 'favorites' },
-  { id: 'split', chapter: 'entering', title: 'guideSplit', body: 'guideSplitBody', action: 'month', point: 'tick' },
-  { id: 'receipts', chapter: 'entering', title: 'guideReceipts', body: 'guideReceiptsBody', action: 'entry', point: 'entryReceipt' },
-  { id: 'capture', chapter: 'entering', title: 'captureRow', body: 'guideCaptureBody', action: 'capture', only: 'ios' },
+  { id: 'add', chapter: 'entering', title: 'addEntry', action: 'month', point: 'add', tour: 'entry' },
+  { id: 'repeats', chapter: 'entering', title: 'guideRepeats', action: 'entry', point: 'entryRepeat' },
+  { id: 'favorites', chapter: 'entering', title: 'favorites', action: 'favorites' },
+  { id: 'split', chapter: 'entering', title: 'guideSplit', action: 'month', point: 'tick' },
+  { id: 'receipts', chapter: 'entering', title: 'guideReceipts', action: 'entry', point: 'entryReceipt' },
+  { id: 'capture', chapter: 'entering', title: 'captureRow', action: 'capture', only: 'ios' },
 
-  { id: 'budgets', chapter: 'planning', title: 'budgetsTitle', body: 'guideBudgetsBody', action: 'insights', point: 'planBudgets', tour: 'plan' },
-  { id: 'goals', chapter: 'planning', title: 'goalsTitle', body: 'guideGoalsBody', action: 'goals' },
-  { id: 'outlook', chapter: 'planning', title: 'outlookTitle', body: 'guideOutlookBody', action: 'insights', point: 'planOutlook', tour: 'plan' },
-  { id: 'contracts', chapter: 'planning', title: 'contractsTitle', body: 'guideContractsBody', action: 'contracts' },
-  { id: 'debts', chapter: 'planning', title: 'debtsTitle', body: 'guideDebtsBody', action: 'debts' },
+  { id: 'budgets', chapter: 'planning', title: 'budgetsTitle', action: 'insights', point: 'planBudgets', tour: 'plan' },
+  { id: 'goals', chapter: 'planning', title: 'goalsTitle', action: 'goals' },
+  { id: 'outlook', chapter: 'planning', title: 'outlookTitle', action: 'insights', point: 'planOutlook', tour: 'plan' },
+  { id: 'contracts', chapter: 'planning', title: 'contractsTitle', action: 'contracts' },
+  { id: 'debts', chapter: 'planning', title: 'debtsTitle', action: 'debts' },
 
-  { id: 'stats', chapter: 'looking', title: 'statsTitle', body: 'guideStatsBody', action: 'stats', point: 'statsHero', tour: 'stats' },
-  { id: 'reports', chapter: 'looking', title: 'reportTitle', body: 'guideReportsBody', action: 'report' },
+  { id: 'stats', chapter: 'looking', title: 'statsTitle', action: 'stats', point: 'statsHero', tour: 'stats' },
+  { id: 'reports', chapter: 'looking', title: 'reportTitle', action: 'report' },
 
-  { id: 'bank', chapter: 'importing', title: 'guideBank', body: 'guideBankBody', action: 'month', point: 'actions' },
-  { id: 'invoice', chapter: 'importing', title: 'scanInvoice', body: 'guideInvoiceBody', action: 'month', point: 'actions' },
-  { id: 'excel', chapter: 'importing', title: 'importExcel', body: 'guideExcelBody', action: 'transfer' },
-  { id: 'reconcile', chapter: 'importing', title: 'reconcileTitle', body: 'guideReconcileBody', action: 'month', point: 'actions' },
+  { id: 'bank', chapter: 'importing', title: 'guideBank', action: 'month', point: 'actions' },
+  { id: 'invoice', chapter: 'importing', title: 'scanInvoice', action: 'month', point: 'actions' },
+  { id: 'excel', chapter: 'importing', title: 'importExcel', action: 'transfer' },
+  { id: 'reconcile', chapter: 'importing', title: 'reconcileTitle', action: 'month', point: 'actions' },
 
-  { id: 'accounts', chapter: 'more', title: 'accountsTitle', body: 'guideAccountsBody', action: 'accounts' },
-  { id: 'projects', chapter: 'more', title: 'projectsTitle', body: 'guideProjectsBody', action: 'projects' },
-  { id: 'tax', chapter: 'more', title: 'taxTitle', body: 'taxRowSub', action: 'tax' },
-  { id: 'monthStart', chapter: 'more', title: 'monthStartRow', body: 'guideMonthStartBody', action: 'monthStart' },
+  { id: 'accounts', chapter: 'more', title: 'accountsTitle', action: 'accounts' },
+  { id: 'projects', chapter: 'more', title: 'projectsTitle', action: 'projects' },
+  { id: 'tax', chapter: 'more', title: 'taxTitle', action: 'tax' },
+  { id: 'monthStart', chapter: 'more', title: 'monthStartRow', action: 'monthStart' },
 
-  { id: 'private', chapter: 'safe', title: 'guidePrivate', body: 'guidePrivateBody' },
-  { id: 'backup', chapter: 'safe', title: 'transferTitle', body: 'guideBackupBody', action: 'transfer', tour: 'settings' },
-  { id: 'lock', chapter: 'safe', title: 'guideLock', body: 'guideLockBody', action: 'settings', point: 'setSecurity', tour: 'settings' },
-  { id: 'reminders', chapter: 'safe', title: 'remindersTitle', body: 'guideRemindersBody', action: 'reminders', only: 'app' },
-  { id: 'look', chapter: 'safe', title: 'displaySection', body: 'guideLookBody', action: 'settings', point: 'setDisplay', tour: 'settings' },
+  { id: 'private', chapter: 'safe', title: 'guidePrivate' },
+  { id: 'backup', chapter: 'safe', title: 'transferTitle', action: 'transfer', tour: 'settings' },
+  { id: 'lock', chapter: 'safe', title: 'guideLock', action: 'settings', point: 'setSecurity', tour: 'settings' },
+  { id: 'reminders', chapter: 'safe', title: 'remindersTitle', action: 'reminders', only: 'app' },
+  { id: 'look', chapter: 'safe', title: 'displaySection', action: 'settings', point: 'setDisplay', tour: 'settings' },
 ] as const satisfies readonly GuideTopic[];
 
 export type GuideTopicId = (typeof GUIDE_TOPICS)[number]['id'];
+
+const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+
+/**
+ * A topic's words, in the guide's pages: one sentence of what it is
+ * (`guideAddSum`), the steps — one a line — (`guideAddSteps`) and a tip
+ * (`guideAddTip`). *Zeigen*'s mark shows the sentence.
+ */
+export function topicText(topic: GuideTopic): { sum: keyof GuidePages; steps: keyof GuidePages; tip: keyof GuidePages } {
+  const id = cap(topic.id);
+  return { sum: `guide${id}Sum` as keyof GuidePages, steps: `guide${id}Steps` as keyof GuidePages, tip: `guide${id}Tip` as keyof GuidePages };
+}
 
 /** The chapters' headings. *Planen* is the tab's own name. */
 export const CHAPTER_TITLES: Record<GuideChapter, keyof GuideWords> = {
@@ -112,22 +126,56 @@ export function guideTopics(on: GuidePlatform): GuideTopic[] {
 }
 
 /**
- * The labels a guide text names, filled in from the app's own strings — so
- * "tap *Aufteilen*" can never name a button that is called something else,
- * in any language.
+ * The buttons a guide text names, drawn where they stand in the sentence
+ * (GuideView) and read from the app's own strings — so "tap *Aufteilen*" can
+ * never name a button that is called something else, in any language. A few
+ * are symbols on screen (+, ⋯, the tick that saves, ⓘ, ‹ ›): their character
+ * here, for the search and the tours' plain sentences.
  */
 export function guideLabels(t: Strings): Record<string, string> {
   return {
-    now: t.balanceNow, end: t.balanceEnd, stats: t.tabStats, plan: t.tabInsights, settings: t.tabSettings,
-    repeat: t.repeat, split: t.splitPayAction, refund: t.refund, receipt: t.receipt, tag: t.tag,
-    whatIf: t.whatIfTitle, accounts: t.accountsTitle, display: t.displaySection,
+    // The tabs, and the two balances.
+    month: t.tabMonth, stats: t.tabStats, plan: t.tabInsights, settings: t.tabSettings, now: t.balanceNow, end: t.balanceEnd,
+    // On screen as symbols.
+    add: '+', actions: '⋯', save: '✓', info: 'ⓘ', arrows: '‹ ›',
+    // The entry sheet.
+    repeat: t.repeat, split: t.splitPayAction, refund: t.refund, receipt: t.receipt, tag: t.tag, note: t.note,
+    favorite: t.pinFavorite, tax: t.taxPill, undo: t.undo,
+    // The month page and its "⋯".
+    today: t.toThisMonth, due: t.dueTitle, report: t.reportTitle, csv: t.importCsv, pdf: t.importPdf, photo: t.importPhoto,
+    invoice: t.scanInvoice, reconcile: t.reconcileMenuItem, transferNew: t.transferNew, budgetMenu: t.budgetMenu,
+    // Statistik and Planen.
+    where: t.whereMoneyGoes, share: t.reportShare, budgets: t.budgetsTitle, budgetSet: t.budgetsAdd, goals: t.goalsTitle,
+    goalNew: t.goalNew, runway: t.runwayTitle, outlook: t.outlookTitle, whatIf: t.whatIfTitle, contracts: t.contractsTitle,
+    // Optionen.
+    security: t.securitySection, hide: t.hideAmounts, reminders: t.remindersRow, nudge: t.nudgeRow, capture: t.captureRow,
+    review: t.captureReview, display: t.displaySection, language: t.language, appearance: t.appearance, currency: t.currency,
+    categories: t.categoriesTitle, favorites: t.favorites, accounts: t.accountsTitle, accountAdd: t.accountAddOther,
+    debts: t.debtsTitle, debtAdd: t.debtAdd, projects: t.projectsTitle, projectAdd: t.projectAdd, taxList: t.taxTitle,
+    taxSwitch: t.taxSwitch, monthStart: t.monthStartRow, transfer: t.transferTitle, excel: t.importExcel,
+    exportData: t.exportData, importData: t.importData, exportCsv: t.exportCsv,
   };
 }
 
-/** A guide or tour string with its labels filled in. */
+/** A guide or tour string with its labels filled in, as plain text. */
 export function guideText(words: GuideWords, key: keyof GuideWords): string {
   const labels = guideLabels(words);
   return words[key].replace(/\{(\w+)\}/g, (m, k: string) => labels[k] ?? m);
+}
+
+/** A guide string in pieces: text, and the labels it names — for GuideView to draw each as its button. */
+export type GuidePart = string | { label: string; key: string };
+export function guideParts(words: GuideWords, key: keyof GuideWords): GuidePart[] {
+  const labels = guideLabels(words);
+  const parts: GuidePart[] = [];
+  let last = 0;
+  for (const m of words[key].matchAll(/\{(\w+)\}/g)) {
+    if (m.index! > last) parts.push(words[key].slice(last, m.index));
+    parts.push(labels[m[1]] !== undefined ? { label: labels[m[1]], key: m[1] } : m[0]);
+    last = m.index! + m[0].length;
+  }
+  if (last < words[key].length) parts.push(words[key].slice(last));
+  return parts;
 }
 
 /** The topics whose title or text holds every word of the search (case-, accent- and letter-form-blind). */
@@ -135,7 +183,8 @@ export function searchGuide(topics: GuideTopic[], words: GuideWords, query: stri
   const terms = searchTerms(query);
   if (!terms.length) return topics;
   return topics.filter(topic => {
-    const text = foldForSearch(`${guideText(words, topic.title)} ${guideText(words, topic.body)}`);
+    const { sum, steps, tip } = topicText(topic);
+    const text = foldForSearch([topic.title, sum, steps, tip].map(k => guideText(words, k)).join(' '));
     return terms.every(w => text.includes(w));
   });
 }
@@ -222,7 +271,6 @@ export const TOUR_STEPS: Record<TourId, readonly MarkId[]> = {
   settings: ['setSecurity', 'setDisplay', 'setBook', 'setTransfer'],
 };
 
-const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 /** A mark's sentence in a tour: `tourBalance`, `tourEntryAmount` … */
 export const markText = (mark: MarkId) => `tour${cap(mark)}` as keyof GuidePages;
 /** A tour's name in the guide's list, and the line under it. */

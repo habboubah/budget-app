@@ -223,6 +223,19 @@ const openTour = (tour, steps) => async (page, l) => {
   }
   await page.waitForTimeout(500);
 };
+/** A topic of the guide, opened and brought to the top. */
+const openTopic = topic => async (page, l) => {
+  await openGuide(page, l);
+  const row = page.locator(`main [data-guide-topic="${topic}"] button`).first();
+  await row.scrollIntoViewIfNeeded();
+  await row.click();
+  await page.waitForTimeout(400);
+  await page.evaluate(t => {
+    const el = document.querySelector(`[data-guide-topic="${t}"]`);
+    if (el) window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 110);
+  }, topic);
+  await page.waitForTimeout(200);
+};
 /** A topic's *Zeigen*: the screen it leads to, and the mark on it. `ok`: the mark put away, the way back showing. */
 const openPoint = (topic, ok = false) => async (page, l) => {
   await openGuide(page, l);
@@ -444,14 +457,14 @@ const SCREENS = [
   // The guide: its screen, a topic opened, a search, the tour's marks, and the one tip that points to it.
   { name: 'guide', run: openGuide, audit: 'page' },
   { name: 'guide-full', run: openGuide, full: true },
-  { name: 'guide-topic', run: async (page, l) => {
-    await openGuide(page, l);
-    const row = page.locator('main [data-guide-topic="add"] button').first();
-    await row.scrollIntoViewIfNeeded();
-    await row.click();
-    await page.waitForTimeout(350);
-    await page.evaluate(() => document.querySelector('[data-guide-topic="add"]')?.scrollIntoView({ block: 'center' }));
-  }, audit: 'page' },
+  // A topic opened: its picture, its sentence, the steps with the buttons drawn in, the tip.
+  { name: 'guide-topic', run: openTopic('add'), audit: 'page' },
+  { name: 'guide-topic-balances', run: openTopic('balances'), audit: 'page' },
+  { name: 'guide-topic-paid', run: openTopic('paid'), audit: 'page' },
+  { name: 'guide-topic-budgets', run: openTopic('budgets'), audit: 'page' },
+  { name: 'guide-topic-bank', run: openTopic('bank'), audit: 'page' },
+  { name: 'guide-topic-stats', run: openTopic('stats'), audit: 'page' },
+  { name: 'guide-topic-look', run: openTopic('look'), audit: 'page' },
   { name: 'guide-search', run: async (page, l) => { await openGuide(page, l); await page.click('input[type="search"]'); await page.keyboard.type('pdf'); await page.waitForTimeout(300); }, audit: 'page' },
   { name: 'guide-native', storage: { 'spartopf-dev-native': '1' }, run: openGuide, full: true },
   { name: 'tour-balance', run: openTour('month', 0), audit: 'dialog' },
