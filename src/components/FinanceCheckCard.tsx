@@ -141,6 +141,13 @@ function RuleBlock({ data, months, language, t, onMonth }: { data: AppData; mont
   );
 }
 
+/** The check in one line (Planen as headlines, plan 39): its first indicator — the share kept, and in how many months. */
+export function checkHeadline(check: FinanceCheck, t: Strings): string {
+  const { plus } = check;
+  return plus.rate === null ? t.checkPlusNoIncome
+    : fmt(t.checkPlusLine, { p: formatPercent(Math.round(plus.rate * 100), t.locale), n: plus.plusMonths, total: plus.months.length });
+}
+
 /**
  * *Finanz-Check* (§9.6, D4): three plain indicators instead of a score — more
  * in than out, bills on time, the reserve in months of Grundbedarf (D5) —

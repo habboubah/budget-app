@@ -293,7 +293,7 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
               onClick={() => { tapLight(); onOpen(false); }}
               className="w-full min-h-[36px] -mt-2 ps-5 pe-4 pb-2 flex items-center justify-end gap-1 text-caption text-on-hero-mute active:opacity-60 transition-opacity focus-visible:ring-focus"
             >
-              {t.fewerCategories}
+              {t.less}
               <ChevronUp className="w-4 h-4 shrink-0" strokeWidth={2.5} aria-hidden="true" />
             </button>
           )}

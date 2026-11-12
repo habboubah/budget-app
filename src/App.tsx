@@ -8,7 +8,7 @@ import { fmt, plural, stringsFor } from './translations';
 import { AccountKind, Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import {
   ALL_ACCOUNTS, MAIN_ACCOUNT, REVIEW_RULE, ReviewMoment, accountName, accountTotals, accountView, accountsOf, addMonths, balanceFor, balanceGiven, canDeleteAccount, carryCandidates,
-  computeBalances, displayName, formatMoneyShort, formatPercent, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
+  computeBalances, displayName, formatMoney, formatMoneyShort, formatPercent, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
   shouldAskForReview, transferPair, uid,
   changeMonthStart,
 } from './logic';
@@ -1424,7 +1424,8 @@ export default function App() {
             language={language}
             t={t}
             onBack={back}
-            onImport={d => { store.importData(d); setMonth(monthKeyOf()); }}
+            // Into a new book (a new phone): whoever kept this book elsewhere sees the app as it was there.
+            onImport={d => { if (!data.entries.length && d.entries.length) store.unfoldAll(); store.importData(d); setMonth(monthKeyOf()); }}
             onImportExcel={() => excelInput.current?.click()}
             toast={label => show(label)}
             onExported={store.markExported}
@@ -1562,6 +1563,8 @@ export default function App() {
             language={language}
             t={t}
             highlights={hints}
+            open={store.statsOpen}
+            onOpen={store.setStatsOpen}
             yearCard={yearCard}
             onYear={openYear}
             onHideYear={hideReview}
@@ -1591,8 +1594,16 @@ export default function App() {
             onWhatIf={() => setWhatIfOpen(true)}
             onExplain={setExplain}
             wealth={multi ? { now: totals.now, count: accounts.length, onOpen: () => push('accounts') } : undefined}
-            debts={store.debts.length ? <DebtsCard overview={debts} t={t} onOpen={() => push('debts')} onEdit={editDebt} /> : null}
-            projects={store.projects.length ? <ProjectsCard overview={projects} t={t} onOpen={() => push('projects')} onEdit={editProject} /> : null}
+            debts={store.debts.length ? {
+              card: <DebtsCard overview={debts} t={t} onOpen={() => push('debts')} onEdit={editDebt} />,
+              headline: [debts.owe ? fmt(t.debtsOweTotal, { amount: formatMoney(debts.owe, t.locale) }) : '', debts.owed ? fmt(t.debtsOwedTotal, { amount: formatMoney(debts.owed, t.locale) }) : ''].filter(Boolean).join(' · ') || undefined,
+            } : undefined}
+            projects={store.projects.length ? {
+              card: <ProjectsCard overview={projects} t={t} onOpen={() => push('projects')} onEdit={editProject} />,
+              headline: projects.filter(s => !s.project.closed).map(s => s.project.name).join(', ') || undefined,
+            } : undefined}
+            open={store.planOpen}
+            onOpen={store.setPlanOpen}
           />
         ) : (
           <MonthView

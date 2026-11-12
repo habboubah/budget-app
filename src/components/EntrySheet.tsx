@@ -966,8 +966,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               data-tour="entry-more"
               onMouseDown={e => e.preventDefault()}
               onClick={() => { tapLight(); onMore(!more); }}
-              aria-label={more ? t.fewerCategories : t.more}
-              title={more ? t.fewerCategories : t.more}
+              aria-label={more ? t.less : t.more}
+              title={more ? t.less : t.more}
               // Round, a symbol only: beside three pills there is no room for a word in German.
               className="min-h-tap w-tap shrink-0 rounded-full inline-flex items-center justify-center bg-accent-dim text-accent transition-opacity active:opacity-60 focus-visible:ring-focus"
             >

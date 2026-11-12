@@ -8,7 +8,9 @@ import {
 } from '../logic';
 import { Book, Fraction, Insight, MonthPoint, TagTotal, WhereRow, balanceChange, bookYears, compareYears, firstWeekday, monthDays, nearFraction, periodChange, periodSeries, savings, tagTotals, upToNow, weekdayPattern, whereRows } from '../insights';
 import { Strings, capitalize, fmt } from '../translations';
+import { CardsOpen, cardOpen, toggleAllCards, toggleCard } from '../fold';
 import { Screen, Empty } from '../ui/Screen';
+import { Fold, FoldAllButton, FoldCard } from '../ui/FoldCard';
 import { Segmented } from '../ui/Field';
 import { Switch } from '../ui/Switch';
 import { Card, MenuPicker } from '../ui/Card';
@@ -34,6 +36,9 @@ interface Props {
   t: Strings;
   /** Das fällt auf: the top hints (already ranked and filtered). */
   highlights: Insight[];
+  /** The cards as headlines (plan 39, src/fold.ts): null shows every card whole, a list the headlines with these opened. */
+  open: CardsOpen;
+  onOpen: (open: CardsOpen) => void;
   /** The year whose review is in season and not seen yet, if any. */
   yearCard: string | null;
   onYear: (year: string) => void;
@@ -83,8 +88,16 @@ function balanceHeadline(points: MonthPoint[], t: Strings): string {
  * (the weekdays, and the picked month as a calendar) and every number in a
  * table (a month opens its report). It stops at the running month: a month
  * started ahead holds plans (I9).
+ *
+ * Two things from plan 39. A book with entries in one month only shows what
+ * that month can say — what stands out, where the money goes, when — and one
+ * line that the rest comes with the second month: no period to choose, no
+ * trend of one point. And the cards under the hero can show as headlines
+ * (src/fold.ts) — one row each with its finding, opening in place; a new
+ * book starts that way, a book in use shows them whole as it always did. The
+ * hero and *Das fällt auf* are the answer and never fold.
  */
-export function StatsView({ book, month, range, onRange, language, t, highlights, yearCard, onYear, onHideYear, onMonth, onHint, onHideHint, onHowHint, onExplain, onCategory, onPayee, onReport }: Props) {
+export function StatsView({ book, month, range, onRange, language, t, highlights, open, onOpen, yearCard, onYear, onHideYear, onMonth, onHint, onHideHint, onHowHint, onExplain, onCategory, onPayee, onReport }: Props) {
   const money = (c: number) => formatMoney(c, t.locale);
   const now = monthKeyOf();
   const all = useMemo(() => upToNow(book.points), [book]);
@@ -103,6 +116,20 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
   const doneKeys = useMemo(() => done.map(p => p.key), [done]);
   const anyInvested = points.some(p => p.invested > 0);
   const categories = book.data.categories;
+  // Fewer than two months with entries: nothing to compare yet.
+  const young = all.filter(p => p.income || p.expense).length < 2;
+  const averageOver = doneKeys.length ? doneKeys : keys;
+  const where = useMemo(() => whereRows(book, averageOver), [book, averageOver]);
+  const pattern = useMemo(() => weekdayPattern(book, keys), [book, keys]);
+  /** A card's fold, by its id; nothing folds while every card shows whole. */
+  const fold = (id: string): Fold | undefined => (open === null ? undefined : { open: cardOpen(open, id), toggle: () => onOpen(toggleCard(open, id)), less: t.less });
+  const foldAll = <FoldAllButton whole={open === null} foldLabel={t.foldCards} unfoldLabel={t.unfoldCards} onToggle={() => onOpen(toggleAllCards(open))} />;
+  const weekday = (wd: number) => new Intl.DateTimeFormat(t.locale, { weekday: 'long' }).format(new Date(2024, 0, 1 + wd));
+  const rhythm = pattern.total.some(v => v > 0) && (
+    <FoldCard tour="stats-rhythm" fold={fold('rhythm')} title={t.rhythmTitle} headline={pattern.top === null ? undefined : fmt(t.rhythmTop, { day: weekday(pattern.top) })}>
+      {() => <RhythmCard book={book} pattern={pattern} months={keys} month={month} t={t} onExplain={onExplain} />}
+    </FoldCard>
+  );
 
   if (!all.some(p => p.income || p.expense)) {
     return (
@@ -112,8 +139,24 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
     );
   }
 
+  if (young) {
+    return (
+      <Screen title={t.statsTitle} tabbed>
+        {yearCard && <YearCard year={yearCard} t={t} onOpen={() => onYear(yearCard)} onHide={() => onHideYear(yearCard)} />}
+        {done.length > 0 && <div data-tour="stats-hero"><PeriodHero all={all} done={done} running={keys.includes(now) ? now : null} t={t} onExplain={onExplain} /></div>}
+        <HighlightsCard items={highlights} categories={categories} language={language} t={t} onAction={onHint} onHide={onHideHint} onHow={onHowHint} />
+        {/* The one month there is: where its money goes is the answer, so it stays whole. */}
+        <div data-tour="stats-where">
+          <WhereCard book={book} where={where} averageOver={averageOver} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />
+        </div>
+        {rhythm}
+        <p className="px-2 text-label text-fg-mute wrap-prose">{t.needMoreMonths}</p>
+      </Screen>
+    );
+  }
+
   return (
-    <Screen title={t.statsTitle} tabbed>
+    <Screen title={t.statsTitle} tabbed actions={foldAll}>
       {yearCard && <YearCard year={yearCard} t={t} onOpen={() => onYear(yearCard)} onHide={() => onHideYear(yearCard)} />}
 
       <section className="space-y-5" aria-labelledby="history-title">
@@ -158,25 +201,32 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
           <h2 id="history-title" className="display text-title2 font-extrabold text-fg wrap-compound tracking-[-0.02em]">{t.historySection}</h2>
         </div>
 
-        <div data-tour="stats-chart">
-          <Card title={done.length ? t.incomeVsExpenses : savingsHeadline(done, t)} sub={t.chartIoSub}>
-            <IncomeExpenseChart points={points} selected={month} t={t} onPick={onMonth} />
-          </Card>
-        </div>
+        <FoldCard tour="stats-chart" fold={fold('io')} title={t.incomeVsExpenses}>
+          {() => (
+            <Card title={done.length ? t.incomeVsExpenses : savingsHeadline(done, t)} sub={t.chartIoSub}>
+              <IncomeExpenseChart points={points} selected={month} t={t} onPick={onMonth} />
+            </Card>
+          )}
+        </FoldCard>
 
         {points.length > 1 && (
-          <Card title={balanceHeadline(points, t)} sub={t.balanceOverTime}>
-            <BalanceChart points={points} selected={month} t={t} onPick={onMonth} />
-          </Card>
+          <FoldCard fold={fold('balance')} title={t.balanceOverTime} headline={balanceChange(points) ? balanceHeadline(points, t) : undefined}>
+            {() => (
+              <Card title={balanceHeadline(points, t)} sub={t.balanceOverTime}>
+                <BalanceChart points={points} selected={month} t={t} onPick={onMonth} />
+              </Card>
+            )}
+          </FoldCard>
         )}
 
-        <div data-tour="stats-where">
-          <WhereCard book={book} averageOver={doneKeys.length ? doneKeys : keys} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />
-        </div>
+        <FoldCard
+          tour="stats-where" fold={fold('where')} title={t.whereMoneyGoes}
+          headline={where.rows.slice(0, 2).map(r => `${displayName(r.category.names, language)} ${formatPercent(Math.round(r.share * 100), t.locale)}`).join(' · ') || undefined}
+        >
+          {() => <WhereCard book={book} where={where} averageOver={averageOver} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />}
+        </FoldCard>
 
-        <div data-tour="stats-rhythm">
-          <RhythmCard book={book} months={keys} month={month} t={t} onExplain={onExplain} />
-        </div>
+        {rhythm}
 
         {/* Every value of the charts, without hovering; a month opens its report. */}
         <details className="rounded-md bg-surface card-edge group">
@@ -356,8 +406,7 @@ function PeriodHero({ all, done, running, t, onExplain }: { all: MonthPoint[]; d
  * date, its amount and what it was; without one, the month's total and what
  * that comes to a day. Fixed costs stay out, as in the pace (D3).
  */
-function RhythmCard({ book, months, month, t, onExplain }: { book: Book; months: MonthKey[]; month: MonthKey; t: Strings; onExplain: (e: Explain) => void }) {
-  const pattern = useMemo(() => weekdayPattern(book, months), [book, months]);
+function RhythmCard({ book, pattern, months, month, t, onExplain }: { book: Book; /** `weekdayPattern` over `months` (the view computes it once, for the headline too). */ pattern: ReturnType<typeof weekdayPattern>; months: MonthKey[]; month: MonthKey; t: Strings; onExplain: (e: Explain) => void }) {
   const calendar = useMemo(() => monthDays(book, month), [book, month]);
   const [day, setDay] = useState<number | null>(null);
   useEffect(() => setDay(null), [month]);
@@ -407,8 +456,10 @@ const WHERE_ROWS = 8;
  * category's screen — or by payee ("Lidl" 6× · 12 %) over this month or the
  * last 2, 3, 6 or 12, a row opening that payee's sheet.
  */
-function WhereCard({ book, averageOver, language, t, onCategory, onPayee }: {
+function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee }: {
   book: Book;
+  /** `whereRows` over `averageOver` (the view computes it once, for the headline too). */
+  where: ReturnType<typeof whereRows>;
   /** The months the averages run over. */
   averageOver: MonthKey[];
   language: string;
@@ -421,7 +472,6 @@ function WhereCard({ book, averageOver, language, t, onCategory, onPayee }: {
   const [period, setPeriod] = useState(1);
   const [expanded, setExpanded] = useState(false);
   const [allRows, setAllRows] = useState(false);
-  const where = useMemo(() => whereRows(book, averageOver), [book, averageOver]);
   const periodMonths = useMemo(() => monthsEnding(monthKeyOf(), period), [period]);
   const payeeMonths = periodMonths;
   const payees = useMemo(() => topNames(entries, categories, payeeMonths), [entries, categories, payeeMonths]);
