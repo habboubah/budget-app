@@ -1,7 +1,7 @@
 import { CSSProperties, ComponentType, Fragment, useEffect, useId, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  ArrowRight, BarChart3, Bell, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck,
+  ArrowRight, BarChart3, Bell, Calculator, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck,
   Compass, Download, EyeOff, FileSpreadsheet, FileText, FlaskConical, HandCoins, Hash, Info, Landmark, Lightbulb, Luggage,
   MoreHorizontal, Palette, Paperclip, PenLine, PiggyBank, Play, Plus, QrCode, Repeat, Scale, ScrollText, Search, Settings, Share,
   ShieldCheck, Split, Star, Tags, Target, TrendingUp, Undo2, Wallet, WalletCards, Zap,
@@ -69,6 +69,7 @@ const TOUR_LOOK: Record<TourId, [Icon, Hue]> = {
 const CHIP_ICON: Partial<Record<string, Icon>> = {
   month: CalendarDays, stats: BarChart3, plan: PiggyBank, settings: Settings,
   repeat: Repeat, split: Split, refund: Undo2, receipt: Paperclip, tag: Hash, favorite: Star, tax: Landmark, share: Share,
+  calc: Calculator, importMenu: Download,
 };
 
 /**
@@ -86,6 +87,9 @@ function Chip({ part, t }: { part: { label: string; key: string }; t: Strings })
       return <span role="img" aria-label={t.save} className={`${round} w-[1.45em] h-[1.45em] bg-accent-fill text-accent-fill-ink`}><Check className="w-[0.9em] h-[0.9em]" strokeWidth={3} /></span>;
     case 'actions':
       return <span role="img" aria-label={t.monthActions} className={`${round} w-[1.45em] h-[1.45em] glass-chrome text-fg`}><MoreHorizontal className="w-[1em] h-[1em]" strokeWidth={2.4} /></span>;
+    case 'more':
+      // The entry sheet's round pill for its further details.
+      return <span role="img" aria-label={t.more} className={`${round} w-[1.45em] h-[1.45em] bg-accent-dim text-accent`}><MoreHorizontal className="w-[1em] h-[1em]" strokeWidth={2.4} /></span>;
     case 'info':
       return <span role="img" aria-label={t.explainTitle} className={`${round} w-[1.3em] h-[1.3em] text-accent`}><Info className="w-[1.05em] h-[1.05em]" strokeWidth={2.4} /></span>;
     case 'arrows':

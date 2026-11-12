@@ -160,7 +160,9 @@ describe('the buttons a text names', () => {
     expect(guideParts(de, 'guideSplitSteps')).toEqual([
       'Aufteilen: Öffne den Eintrag und tippe unten auf ', { label: de.splitPayAction, key: 'split' }, '.\n'
         + 'Verteile den Betrag auf die Kategorien – die Teile müssen genau aufgehen.\n'
-        + 'Erstattung: Trag das Geld in der Kategorie ein, in der du gekauft hast, und tippe auf ', { label: de.refund, key: 'refund' }, '.',
+        + 'Erstattung: Trag das Geld in der Kategorie ein, in der du gekauft hast, und tippe auf ',
+      // The pills past date, status and repeat wait behind the entry sheet's "⋯" (plan 39).
+      { label: '⋯', key: 'more' }, ' › ', { label: de.refund, key: 'refund' }, '.',
     ]);
     // A symbol on screen: its character in plain text, its key for the drawing.
     expect(guideParts(de, 'guideAddSteps')[1]).toEqual({ label: '+', key: 'add' });

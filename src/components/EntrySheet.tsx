@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Landmark, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, ShieldCheck, Star, Trash2, Undo2 } from 'lucide-react';
+import { Calculator, CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Landmark, MoreHorizontal, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, ShieldCheck, Star, Trash2, Undo2 } from 'lucide-react';
 import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, Interval, MonthKey, Project, Repeat, TAX_KINDS, TaxKind } from '../types';
 import { taxKindLabel } from './TaxView';
 import { fromProjectCurrency } from '../insights/projects';
@@ -17,7 +17,7 @@ import {
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
-import { Field } from '../ui/Field';
+import { Field, Segmented } from '../ui/Field';
 import { Button } from '../ui/Button';
 import { Menu } from '../ui/Menu';
 import { tapLight } from '../ui/haptics';
@@ -63,6 +63,19 @@ interface Props {
   taxMarks?: boolean;
   /** Says why a receipt couldn't be attached or read (plan 27). */
   onNotice?: (text: string) => void;
+  /**
+   * The pills past date, status and repeat — refund, receipt, note, tag and
+   * what a feature adds — and *Sichern & nächster* and *Als Favorit merken*
+   * show (plan 39). Off, they wait behind one pill, *Mehr*; a pill that holds
+   * a value shows either way. Kept by the store; unset = shown.
+   */
+  more?: boolean;
+  onMore?: (open: boolean) => void;
+  /** The + − × ÷ row is in use (plan 08). Off, one key at the amount brings it — for good (`onCalcKeys`). */
+  calcKeys?: boolean;
+  onCalcKeys?: () => void;
+  /** The book has never had an open entry: one line under the pills says what the status pill is for. */
+  hintPaid?: boolean;
 }
 
 /** A compact control in the entry sheet's last row (date, status, repeat, note). */
@@ -90,8 +103,12 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * short pop. A sure match is also chosen — for a new entry, until the user
  * taps a category, and only with `autoCategory`; emptying the name goes back
  * to the category the sheet opened with.
+ *
+ * A new entry starts with *Ausgabe | Einnahme* (plan 39): the switch picks a
+ * category of that kind — the kind is the category's, nothing new is saved —
+ * so income no longer has to be found among the categories.
  */
-export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts, projects = [], taxMarks = false, onNotice }: Props) {
+export function EntrySheet({ mode, categories, featured, entries, language, t, onClose, onCreate, onSave, onDelete, favorites = [], onPinFavorite, goals = [], onSplit, autoCategory = true, accounts, defaultAccount = MAIN_ACCOUNT, debts, projects = [], taxMarks = false, onNotice, more = true, onMore, calcKeys = true, onCalcKeys, hintPaid = false }: Props) {
   const editing = mode?.kind === 'edit' ? mode.entry : null;
   const month = mode?.kind === 'edit' ? mode.entry.month : mode?.month ?? monthKeyOf();
 
@@ -123,6 +140,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const [pinned, setPinned] = useState(false);
   /** The savings goal this entry fills, on a Sparen category (plan 12). */
   const [goalId, setGoalId] = useState<string | undefined>(undefined);
+  /** The name field was used in this visit: from then on the built-in name ideas show too (plan 39). */
+  const [nameUsed, setNameUsed] = useState(false);
   /** The name was typed in this sheet: only then are categories guessed (not for a preset or an entry being opened). */
   const [nameTyped, setNameTyped] = useState(false);
   /** A category (or a name suggestion) was tapped: no more automatic picking. */
@@ -154,6 +173,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const noteRef = useRef<HTMLInputElement>(null);
   const tagRef = useRef<HTMLInputElement>(null);
   const amountId = useId();
+  /** The category each side of *Ausgabe | Einnahme* had while this sheet is open. */
+  const kindCategory = useRef<{ income?: string; expense?: string }>({});
 
   const category = categories.find(c => c.id === categoryId);
   const income = category?.kind === 'income';
@@ -187,6 +208,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setCategoryId(c?.id ?? '');
     setBaseCategory(c?.id ?? '');
     setNameTyped(false);
+    setNameUsed(false);
     setCategoryChosen(false);
     setAmountText('');
     setName('');
@@ -218,6 +240,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   useEffect(() => {
     if (!mode) return;
     setPinned(false);
+    kindCategory.current = {};
     if (mode.kind === 'edit') {
       const e = mode.entry;
       setCategoryId(e.categoryId);
@@ -302,12 +325,17 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
   const suggestions = useMemo(() => {
     if ((editing && !nameTyped) || !categoryId) return [];
-    // Nothing typed: this category's names first, from every month (and its built-in ideas).
-    if (!cleanText(name)) return suggestNames({ entries, categoryId, categories, query: '', lang: language, limit: 60 });
+    // Nothing typed: this category's names first, from every month — and, once the
+    // name field is in use, its built-in ideas. Before that they would only be three
+    // more things to read on the way to the amount (plan 39).
+    if (!cleanText(name)) {
+      const all = suggestNames({ entries, categoryId, categories, query: '', lang: language, limit: 60 });
+      return nameUsed ? all : all.filter(x => x.count > 0);
+    }
     // Typed: what completes it — earlier names, then keywords, then what a typo probably meant.
     const all = completeNames(keywordIndex, name, { categoryId });
     return correction ? all.filter(s => s.name !== correction) : all;
-  }, [editing, nameTyped, entries, categoryId, categories, name, language, keywordIndex, correction]);
+  }, [editing, nameTyped, nameUsed, entries, categoryId, categories, name, language, keywordIndex, correction]);
   // Three at a glance; the rest behind "All".
   const shownSuggestions = allSuggestions ? suggestions : suggestions.slice(0, 3);
   // Tag suggestions: tags already in use, minus those already typed (plan 26).
@@ -340,6 +368,22 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const pickCategory = (c: Category) => {
     tapLight();
     setCategoryId(c.id);
+    setCategoryChosen(true);
+  };
+
+  // *Ausgabe | Einnahme*: each side remembers the category it had in this sheet.
+  if (category) kindCategory.current[category.kind] = category.id;
+  const bothKinds = categories.some(c => c.kind === 'income') && categories.some(c => c.kind === 'expense');
+  const switchKind = (kind: 'income' | 'expense') => {
+    if (kind === category?.kind) return;
+    const ofKind = categories.filter(c => c.kind === kind);
+    const next = ofKind.find(c => c.id === kindCategory.current[kind])
+      ?? topCategories({ categories: ofKind, entries, selectedId: '', featured })[0]
+      ?? ofKind[0];
+    if (!next) return;
+    setCategoryId(next.id);
+    setBaseCategory(next.id);
+    // Said by hand: the name typed next doesn't move it to the other side.
     setCategoryChosen(true);
   };
 
@@ -484,9 +528,20 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     <Sheet open={!!mode} title={title} closeLabel={t.cancel} onClose={onClose}
       action={{ label: t.save, onClick: () => save(), disabled: !valid }}>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-4">
+        {/* Expense or income — the first thing said about a new entry. The amount keeps the keyboard. */}
+        {!editing && bothKinds && (
+          <div className="-mt-1" onMouseDown={e => e.preventDefault()} data-tour="entry-kind">
+            <Segmented<'expense' | 'income'>
+              label={t.kind}
+              value={income ? 'income' : 'expense'}
+              onChange={switchKind}
+              options={[{ value: 'expense', label: t.kindExpense }, { value: 'income', label: t.kindIncome }]}
+            />
+          </div>
+        )}
         {/* Favourites (plan 09): a tap fills the sheet in, to check or change before saving. New entries only. */}
         {!editing && favorites.length > 0 && (
-          <div className="-mt-1 flex flex-wrap gap-2" role="group" aria-label={t.favorites}>
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t.favorites}>
             {favorites.map(f => {
               const c = categories.find(x => x.id === f.categoryId);
               return (
@@ -504,8 +559,21 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
         )}
         {/* Amount — the one thing every entry needs, so it comes first: on a
             panel in the chosen category's colour, which follows the category. */}
-        <div data-hue={category?.hue} data-tour="entry-amount" className="-mt-2 text-center rounded-md hue-tint px-3 pt-2 pb-2">
+        <div data-hue={category?.hue} data-tour="entry-amount" className="relative text-center rounded-md hue-tint px-3 pt-2 pb-2">
           <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
+          {/* One key for the calculator row, until it has been asked for once. */}
+          {!calcKeys && onCalcKeys && (
+            <button
+              type="button"
+              aria-label={t.calcOpen}
+              title={t.calcOpen}
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => { tapLight(); onCalcKeys(); amountRef.current?.focus({ preventScroll: true }); }}
+              className="absolute top-0 end-0 h-tap w-tap inline-flex items-center justify-center rounded-full text-fg-mute active:opacity-60 focus-visible:ring-focus"
+            >
+              <Calculator className="w-[18px] h-[18px]" strokeWidth={2} aria-hidden="true" />
+            </button>
+          )}
           {/* Written the way amounts are shown everywhere: "−45,12 €", left to right. */}
           <div dir="ltr" className="mt-0.5 flex items-baseline justify-center gap-1.5">
             <span className={`rounded-num text-[32px] font-semibold ${gain ? 'text-pos' : 'text-fg-mute'}`} aria-hidden="true">
@@ -517,7 +585,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               inputMode="decimal"
               autoComplete="off"
               enterKeyHint="next"
-              placeholder="0,00"
+              placeholder={amountToInput(0, t.locale)}
               value={amountText}
               onChange={e => { setAmountText(normalizeDigits(e.target.value)); setShowError(false); }}
               onFocus={() => setAmountFocused(true)}
@@ -583,6 +651,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             enterKeyHint="done"
             autoComplete="off"
             autoCapitalize="sentences"
+            onFocus={() => setNameUsed(true)}
             onKeyDown={e => {
               if (e.key !== 'Enter') return;
               e.preventDefault();
@@ -773,7 +842,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             </label>
           )}
           {/* Money back — a return, a reimbursement: it lowers this category's spending instead of counting as income. */}
-          {!income && (
+          {!income && (more || refund) && (
             <button
               type="button"
               aria-pressed={refund}
@@ -786,7 +855,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             </button>
           )}
           {/* For the tax return: which kind of cost this is. Only once the list is in use. */}
-          {!income && (taxMarks || !!tax) && (
+          {!income && (more ? taxMarks || !!tax : !!tax) && (
             <button
               type="button"
               aria-haspopup="menu"
@@ -802,6 +871,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
           {/* A trip or project running today: one tap files the entry under it (its tag). */}
           {projects.map(p => {
             const on = tagSet.has(p.tag);
+            if (!more && !on) return null;
             return (
               <button
                 key={p.id}
@@ -837,7 +907,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               </button>
             );
           })()}
-          {debts && (() => {
+          {debts && (more || !!debtId) && (() => {
             const chosenDebt = debts.find(x => x.id === debtId);
             return (
               <button
@@ -853,6 +923,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               </button>
             );
           })()}
+          {(more || files.length > 0) && (
           <button
             type="button"
             aria-haspopup="menu"
@@ -866,7 +937,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             <Paperclip className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" />
             <span aria-hidden="true">{fileBusy === 'adding' ? t.receiptAdding : t.receipt}</span>
           </button>
-          {!noteOpen && (
+          )}
+          {more && !noteOpen && (
             <button
               type="button"
               onClick={() => { tapLight(); setNoteOpen(true); requestAnimationFrame(() => noteRef.current?.focus({ preventScroll: true })); }}
@@ -876,7 +948,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               {t.note}
             </button>
           )}
-          {!tagsOpen && (
+          {more && !tagsOpen && (
             <button
               type="button"
               onClick={() => { tapLight(); setTagsOpen(true); requestAnimationFrame(() => tagRef.current?.focus({ preventScroll: true })); }}
@@ -886,7 +958,28 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               {t.tag}
             </button>
           )}
+          {/* The rest of the pills, and the two extra ways to save: one tap away, and it stays as left. */}
+          {onMore && (
+            <button
+              type="button"
+              aria-expanded={more}
+              data-tour="entry-more"
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => { tapLight(); onMore(!more); }}
+              aria-label={more ? t.fewerCategories : t.more}
+              title={more ? t.fewerCategories : t.more}
+              // Round, a symbol only: beside three pills there is no room for a word in German.
+              className="min-h-tap w-tap shrink-0 rounded-full inline-flex items-center justify-center bg-accent-dim text-accent transition-opacity active:opacity-60 focus-visible:ring-focus"
+            >
+              {more
+                ? <ChevronUp className="w-5 h-5" strokeWidth={2.5} aria-hidden="true" />
+                : <MoreHorizontal className="w-5 h-5" strokeWidth={2.5} aria-hidden="true" />}
+            </button>
+          )}
         </div>
+        {hintPaid && !editing && paid && !gain && (
+          <p className="text-caption text-fg-mute px-1 wrap-prose">{fmt(t.paidHint, { paid: t.statusPaid })}</p>
+        )}
         {!dateValid && <p role="alert" className="text-caption text-neg px-1">{t.dateHint}</p>}
         {isRefund && <p className="text-caption text-fg-mute px-1 wrap-prose">{t.refundHint}</p>}
         <Menu
@@ -1046,10 +1139,10 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
         <div className="grid gap-2 pt-2">
           <Button type="submit" full size="lg" disabled={!valid}>{t.save}</Button>
-          {!editing && (
+          {!editing && more && (
             <Button variant="secondary" full disabled={!valid} onClick={() => save(true)}>{t.saveAndNext}</Button>
           )}
-          {onPinFavorite && !isRefund && !!category && !!cleanText(name) && (
+          {more && onPinFavorite && !isRefund && !!category && !!cleanText(name) && (
             <Button variant="ghost" full icon={pinned ? Check : Star} disabled={pinned}
               onClick={() => {
                 const ok = onPinFavorite({
@@ -1073,7 +1166,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       </form>
       <ReceiptViewer file={viewing} t={t} onClose={() => setViewing(null)} />
       {/* The + − × ÷ row, only while the amount is being typed (plan 08). */}
-      <OperatorKeys show={amountFocused} t={t} onInsert={insertOp} />
+      <OperatorKeys show={amountFocused && calcKeys} t={t} onInsert={insertOp} />
     </Sheet>
   );
 }

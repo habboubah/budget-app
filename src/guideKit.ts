@@ -22,13 +22,14 @@ export function guideLabels(t: Strings): Record<string, string> {
     // The tabs, and the two balances.
     month: t.tabMonth, stats: t.tabStats, plan: t.tabInsights, settings: t.tabSettings, now: t.balanceNow, end: t.balanceEnd,
     // On screen as symbols.
-    add: '+', actions: '⋯', save: '✓', info: 'ⓘ', arrows: '‹ ›',
+    add: '+', actions: '⋯', more: '⋯', save: '✓', info: 'ⓘ', arrows: '‹ ›',
     // The entry sheet.
     repeat: t.repeat, split: t.splitPayAction, refund: t.refund, receipt: t.receipt, tag: t.tag, note: t.note,
-    favorite: t.pinFavorite, tax: t.taxPill, undo: t.undo,
+    favorite: t.pinFavorite, tax: t.taxPill, undo: t.undo, calc: t.calcOpen, kindIncome: t.kindIncome,
     // The month page and its "⋯".
     today: t.toThisMonth, due: t.dueTitle, report: t.reportTitle, csv: t.importCsv, pdf: t.importPdf, photo: t.importPhoto,
-    invoice: t.scanInvoice, reconcile: t.reconcileMenuItem, transferNew: t.transferNew, budgetMenu: t.budgetMenu,
+    invoice: t.scanInvoice, reconcile: t.balanceCheck, transferNew: t.transferNew, budgetMenu: t.budgetMenu,
+    importMenu: t.importMenu,
     // Statistik and Planen.
     where: t.whereMoneyGoes, share: t.reportShare, budgets: t.budgetsTitle, budgetSet: t.budgetsAdd, goals: t.goalsTitle,
     goalNew: t.goalNew, runway: t.runwayTitle, outlook: t.outlookTitle, whatIf: t.whatIfTitle, contracts: t.contractsTitle,

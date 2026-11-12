@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   setAmountsHidden, areAmountsHidden, withAmounts, spoken, MASK, setActiveCurrency, formatMoneyShort, shouldAskForReview, ReviewState,
-  addMonths, amountToInput, averageByCategory, balanceFor, canRemoveFromMonth, carryCandidates, carryOver, categoryBreakdown,
+  addMonths, amountToInput, averageByCategory, balanceFor, balanceGiven, canRemoveFromMonth, carryCandidates, carryOver, categoryBreakdown,
   computeBalances, daysInMonth, formatMoney, history, isOverdue, makeBackup, monthKeyOf, monthLabel, monthsBetween,
   monthCategories, monthTotals, moveEntry, normalizeName, normalizeState, openBefore, parseAmount, parseBackup, previousStarted,
   restoreDefaultCategories, sortEntries, standardCategoryIds, suggestNames, toCsv, topNames, monthsEnding, monthSpanLabel, formatPercent, upgradeCategories,
@@ -194,6 +194,26 @@ describe('balances', () => {
     expect(dec.now).toBe(2618393);
     expect(dec.end).toBe(2652331);
     expect(balanceFor([], '2026-11').now).toBe(0);
+  });
+
+  it('knows a balance only from the month its opening was set by hand (plan 39)', () => {
+    const none = computeBalances(data(
+      [e('2026-10', 'extra', 'Kaffee', 450, true)],
+      [{ key: '2026-10', startedAt: 0 }, { key: '2026-11', startedAt: 0 }],
+    ));
+    expect(balanceGiven(none, '2026-10')).toBe(false);
+    expect(balanceGiven(none, '2026-11')).toBe(false);
+    const from = computeBalances(data(
+      [e('2026-10', 'extra', 'Kaffee', 450, true)],
+      [{ key: '2026-10', startedAt: 0 }, { key: '2026-11', opening: 0, startedAt: 0 }, { key: '2026-12', startedAt: 0 }],
+    ));
+    // A zero typed in is a balance too; the month before it still has none.
+    expect(balanceGiven(from, '2026-10')).toBe(false);
+    expect(balanceGiven(from, '2026-11')).toBe(true);
+    expect(balanceGiven(from, '2026-12')).toBe(true);
+    // A month not started yet goes by the months before it.
+    expect(balanceGiven(from, '2027-03')).toBe(true);
+    expect(balanceGiven([], '2026-11')).toBe(false);
   });
 
   it('counts paid expenses for the progress bar', () => {

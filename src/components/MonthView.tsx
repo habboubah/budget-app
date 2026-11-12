@@ -98,6 +98,18 @@ interface Props {
   onDueAll: () => void;
   /** Every category, not just this month's — what is due may come from an earlier month. */
   allCategories: Category[];
+  /** The balance card folded or open (plan 39; kept by the store). */
+  balanceOpen?: boolean;
+  onBalanceOpen?: (open: boolean) => void;
+  /** The book knows what is on the account; without it the card says what the month spent and asks. */
+  balanceGiven?: boolean;
+  onBalanceNow?: () => void;
+  /**
+   * The book has grown past its first days (fifteen entries, or a second
+   * month): the search and the pending filter appear, and the empty
+   * categories stand in their row. Before that they wait (plan 39).
+   */
+  grown?: boolean;
 }
 
 /**
@@ -139,6 +151,9 @@ export function MonthView(p: Props) {
     : categories.filter(hasCard);
   const emptyCategories = allOpen ? [] : categories.filter(c => !hasCard(c));
 
+  const grown = p.grown !== false;
+  /** The empty categories' chip, opened in a book that is still new. */
+  const [chipsOpen, setChipsOpen] = useState(false);
   const [query, setQuery] = useState(p.searchSeed ?? '');
   // A payee's "Alle Einträge" opens the page on its search, once.
   useEffect(() => { if (p.searchSeed) p.onSearchSeedUsed?.(); }, []);
@@ -215,7 +230,7 @@ export function MonthView(p: Props) {
           </button>
         </h1>
       }
-      accessory={
+      accessory={(grown || searching) && (
         <div className="flex items-center gap-2">
           <div className="min-w-0 flex-1" data-tour="search">
             <SearchField
@@ -242,7 +257,7 @@ export function MonthView(p: Props) {
             </button>
           )}
         </div>
-      }
+      )}
       actions={
         <>
           {/* ‹ › as one floating capsule, the way iOS groups related bar buttons. */}
@@ -282,7 +297,10 @@ export function MonthView(p: Props) {
           onOpenMonth={m => { setQuery(''); p.onMonth(m); }}
         />
       ) : (<>
-      {!p.hideBalance && <BalanceCard balance={balance} track={p.track} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account} />}
+      {!p.hideBalance && (
+        <BalanceCard balance={balance} track={p.track} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account}
+          open={p.balanceOpen} onOpen={p.onBalanceOpen} given={p.balanceGiven} onBalanceNow={p.onBalanceNow} />
+      )}
 
       {/* Keyed by month: stepping to another one brings its cards in afresh
           (the balance card above stays, and its numbers run to the new values). */}
@@ -398,10 +416,13 @@ export function MonthView(p: Props) {
               onAdd={c => p.onAdd(c.id)}
               onRemove={p.onRemoveCategory}
               onBudget={p.onBudget}
+              folded={!grown && !chipsOpen}
+              onUnfold={() => setChipsOpen(true)}
             />
           )}
 
           {/* A category taken out of this month (or one that isn't standard) comes back here. */}
+          {(grown || chipsOpen || emptyCategories.length === 0) && (
           <motion.button
             variants={rise}
             type="button"
@@ -411,6 +432,7 @@ export function MonthView(p: Props) {
             <Plus className="w-5 h-5" aria-hidden="true" />
             {t.addCategoryToMonth}
           </motion.button>
+          )}
         </>
       )}
       </motion.div>

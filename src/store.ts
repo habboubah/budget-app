@@ -40,6 +40,9 @@ const K = {
   tipState: 'spartopf-tip-state',
   guideSeen: 'spartopf-guide-seen',
   account: 'spartopf-account',
+  balanceOpen: 'spartopf-balance-open',
+  entryMore: 'spartopf-entry-more',
+  calcKeys: 'spartopf-calc-keys',
 } as const;
 
 /** Dismissed hints and seen reviews are kept as their last 200 ids — no amounts in them. */
@@ -142,6 +145,18 @@ export function useAppStore() {
     document.documentElement.setAttribute('data-accent', value);
     return value;
   });
+  /**
+   * What a new book keeps folded and one that is already in use shows as it
+   * always did (plan 39): the balance card's line, ring and panels, the entry
+   * sheet's further pills, the calculator keys. Unset = decided here, once,
+   * by whether the book held anything when this version first opened it;
+   * from then on it is whatever the user left it at.
+   */
+  const [inUse] = useState(() => initial.entries.length > 0);
+  const startOpen = (key: string) => { const v = readString(key); return v === null ? inUse : v === '1'; };
+  const [balanceOpen, setBalanceOpen] = useState(() => startOpen(K.balanceOpen));
+  const [entryMore, setEntryMore] = useState(() => startOpen(K.entryMore));
+  const [calcKeys, setCalcKeys] = useState(() => startOpen(K.calcKeys));
   /** The setup card on the first month — gone for good once finished or put off. */
   const [introDone, setIntroDone] = useState(() => readString(K.intro) === '1');
   /**
@@ -184,6 +199,9 @@ export function useAppStore() {
     try { localStorage.setItem(key, value); } catch { /* a preference */ }
   };
 
+  useEffect(() => { persist(K.balanceOpen, balanceOpen ? '1' : '0'); }, [balanceOpen]);
+  useEffect(() => { persist(K.entryMore, entryMore ? '1' : '0'); }, [entryMore]);
+  useEffect(() => { persist(K.calcKeys, calcKeys ? '1' : '0'); }, [calcKeys]);
   useEffect(() => { persist(K.intro, introDone ? '1' : '0'); }, [introDone]);
   useEffect(() => { persist(K.tips, tipsDone ? '1' : '0'); }, [tipsDone]);
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
@@ -738,6 +756,10 @@ export function useAppStore() {
     setThemeMode('system');
     setIntroDone(false);
     setTipsDone(false);
+    // A new book starts folded again (plan 39).
+    setBalanceOpen(false);
+    setEntryMore(false);
+    setCalcKeys(false);
     setLastExport('');
     setCopyCardDismissed(false);
     // A fresh start shows the month reviews and hints again (opening a review
@@ -944,6 +966,7 @@ export function useAppStore() {
     language, setLanguage: chooseLanguage, themeMode, setThemeMode, accent, setAccent, storageError: saveFailed,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
     tipsDone, dismissTips: () => setTipsDone(true),
+    balanceOpen, setBalanceOpen, entryMore, setEntryMore, calcKeys, setCalcKeys,
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),
     lockOn, setLockOn,
     hideAmounts, setHideAmounts,

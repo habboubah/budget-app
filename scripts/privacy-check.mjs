@@ -217,7 +217,10 @@ try {
     await page.locator('nav button.hero').click();
     await page.waitForSelector('[role="dialog"]');
     await page.locator('[role="dialog"] input[inputmode="decimal"]').first().fill('7,77');
-    await page.locator('[role="dialog"] button[aria-label="Beleg anhängen"]').click();
+    // On a new book the receipt pill waits behind the sheet's "⋯" (plan 39).
+    const receipt = page.locator('[role="dialog"] button[aria-label="Beleg anhängen"]');
+    if (!(await receipt.count())) await page.locator('[role="dialog"] [data-tour="entry-more"]').click();
+    await receipt.click();
     const chooser = page.waitForEvent('filechooser', { timeout: 5000 });
     await page.locator('[role="menuitem"]', { hasText: 'Foto oder PDF wählen' }).click();
     await (await chooser).setFiles({ name: 'Kassenbon.jpg', mimeType: 'image/jpeg', buffer: photo });

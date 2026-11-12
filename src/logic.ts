@@ -955,6 +955,17 @@ export function balanceFor(balances: MonthBalance[], key: MonthKey): MonthBalanc
   };
 }
 
+/**
+ * Whether the book knows what is on the account in `key`: some month up to
+ * it had its opening set by hand — the first run's balance, a bank match, an
+ * Excel sheet's "Before". Until then *Kontostand jetzt* would only be what
+ * was entered, added up from nothing, so the balance card says what the
+ * month spent instead (plan 39).
+ */
+export function balanceGiven(balances: MonthBalance[], key: MonthKey): boolean {
+  return balances.some(b => b.key <= key && b.overridden);
+}
+
 /** The latest started month strictly before `key`. */
 export function previousStarted(months: MonthRecord[], key: MonthKey): MonthKey | undefined {
   let best: MonthKey | undefined;

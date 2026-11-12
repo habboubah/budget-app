@@ -7,7 +7,7 @@ import { useAppStore } from './store';
 import { fmt, plural, stringsFor } from './translations';
 import { AccountKind, Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import {
-  ALL_ACCOUNTS, MAIN_ACCOUNT, REVIEW_RULE, ReviewMoment, accountName, accountTotals, accountView, accountsOf, addMonths, balanceFor, canDeleteAccount, carryCandidates,
+  ALL_ACCOUNTS, MAIN_ACCOUNT, REVIEW_RULE, ReviewMoment, accountName, accountTotals, accountView, accountsOf, addMonths, balanceFor, balanceGiven, canDeleteAccount, carryCandidates,
   computeBalances, displayName, formatMoneyShort, formatPercent, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
   shouldAskForReview, transferPair, uid,
   changeMonthStart,
@@ -32,6 +32,7 @@ import { ContractItem, contractItems } from './contracts';
 import { MonthPickerSheet } from './components/MonthPickerSheet';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
+import { BalanceNowSheet } from './components/BalanceNowSheet';
 import { ReconcileSheet } from './components/ReconcileSheet';
 import { SplitSheet } from './components/SplitSheet';
 import { AccountsView } from './components/AccountsView';
@@ -42,6 +43,7 @@ import { TransfersCard } from './components/TransfersCard';
 import { DebtsCard, DebtsView } from './components/DebtsView';
 import { DebtSheet, DebtSheetMode } from './components/DebtSheet';
 import { MonthActionsMenu } from './components/MonthActionsMenu';
+import { ImportKind, ImportSheet } from './components/ImportSheet';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
 import { WhatIfSheet } from './components/WhatIfSheet';
@@ -233,6 +235,8 @@ export default function App() {
   const [month, setMonth] = useState<MonthKey>(monthKeyOf);
   const [entrySheet, setEntrySheet] = useState<EntrySheetMode>(null);
   const [openingOpen, setOpeningOpen] = useState(false);
+  /** "How much is on your account right now?" — for a book without a balance yet (plan 39). */
+  const [balanceNowOpen, setBalanceNowOpen] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const [splitEntry, setSplitEntry] = useState<Entry | null>(null);
   const [goalSheet, setGoalSheet] = useState<GoalSheetMode>(null);
@@ -248,6 +252,10 @@ export default function App() {
   const [contractFor, setContractFor] = useState<ContractItem | null>(null);
   /** The month's "⋯" menu is open from this button. */
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
+  /** Every way to import, on one sheet (plan 39). */
+  const [importOpen, setImportOpen] = useState(false);
+  /** The guide's *Zeigen* points at a pill behind the entry sheet's *Mehr*: shown while that sheet is open. */
+  const [showMore, setShowMore] = useState(false);
   /** The category the round add button opens with: the one used last. */
   const [lastCategory, setLastCategory] = useState<string | null>(null);
   /**
@@ -359,6 +367,31 @@ export default function App() {
   }, [native]);
 
   const balance = balanceFor(balances, month);
+  /**
+   * The book knows what is on the account (plan 39). A book with several
+   * accounts gave each one its balance when it was added.
+   */
+  const given = multi || balanceGiven(balances, month);
+  /**
+   * Past its first days: fifteen entries, or entries in a second month. Until
+   * then the month page keeps the search, the pending filter and the row of
+   * empty categories back (plan 39).
+   */
+  const grown = useMemo(() => entries.length >= 15 || new Set(entries.map(e => e.month)).size >= 2, [entries]);
+  /**
+   * The balance as the banking app shows it now, for a book that had none:
+   * it becomes the running month's opening — what is ticked there happened
+   * since the month began — or the shown month's when the running one isn't
+   * started.
+   */
+  const saveBalanceNow = (now: number) => {
+    const running = balances.find(b => b.key === monthKeyOf());
+    const b = running ?? balance;
+    setSetupNow(null);
+    store.setOpening(b.key, now - (b.incomePaid - b.expensePaid) - (b.transferPaid ?? 0), target);
+    notifySuccess();
+    show(t.openingSaved);
+  };
   // The balance card's line: the shown account's month, day by day.
   const track = useMemo(() => monthTrack(data, balance, account), [data, balance, account]);
   const prevBalance = balance.prevKey ? balances.find(b => b.key === balance.prevKey) : undefined;
@@ -519,7 +552,9 @@ export default function App() {
     // A new entry in a folded category unfolds it, so it can be seen landing.
     store.expand(d.categoryId);
     setLastCategory(d.categoryId);
-    show(budgetNote([...data.entries, entry], d.categoryId, m) ?? fmt(t.entryAdded, { name: d.name }));
+    // The confirmation offers the next one (plan 39: one *Sichern* in the sheet).
+    show(budgetNote([...data.entries, entry], d.categoryId, m) ?? fmt(t.entryAdded, { name: d.name }),
+      { label: t.addAnother, run: () => setEntrySheet({ kind: 'new', month: m, categoryId: d.categoryId }) });
   };
 
   /**
@@ -632,6 +667,12 @@ export default function App() {
     show(fmt(t.monthDeleted, { month: monthLabel(month, t.locale) }), {
       label: t.undo, run: () => store.restoreMonth(removed),
     });
+  };
+
+  /** A way to import, picked on the sheet: its file picker opens in the same tap. */
+  const pickImport = (kind: ImportKind) => {
+    setImportOpen(false);
+    (kind === 'photo' ? photoInput : kind === 'csv' ? statementInput : kind === 'pdf' ? pdfInput : kind === 'invoice' ? invoiceInput : excelInput).current?.click();
   };
 
   const onExcelFile = async (f: File | undefined) => {
@@ -1144,7 +1185,7 @@ export default function App() {
     else if (a === 'stats' || a === 'insights' || a === 'settings') root(a);
     else if (a === 'entry') {
       openMonthPage(month);
-      if (canAdd) setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory! });
+      if (canAdd) { setShowMore(topic.point === 'entryReceipt'); setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory! }); }
     } else if (a === 'monthStart') setMonthStartOpen(true);
     else if (a === 'report') {
       // The newest finished month's report; a book without one yet shows the statistics.
@@ -1494,6 +1535,11 @@ export default function App() {
             ) : null}
             reconciledAt={store.months.find(m => m.key === month)?.reconciledAt}
             peek={store.hideAmounts ? { shown: peek, onToggle: () => setPeek(v => !v) } : undefined}
+            balanceOpen={store.balanceOpen}
+            onBalanceOpen={store.setBalanceOpen}
+            balanceGiven={given}
+            onBalanceNow={account === ALL_ACCOUNTS ? undefined : () => setBalanceNowOpen(true)}
+            grown={grown}
             onCategories={() => push('categories')}
             collapsed={store.collapsed}
             onCollapse={store.toggleCollapsed}
@@ -1598,7 +1644,7 @@ export default function App() {
         entries={entries}
         language={language}
         t={t}
-        onClose={() => setEntrySheet(null)}
+        onClose={() => { setEntrySheet(null); setShowMore(false); }}
         onCreate={createEntry}
         onSave={(id, d) => {
           const was = data.entries.find(e => e.id === id);
@@ -1623,6 +1669,12 @@ export default function App() {
         projects={activeProjects}
         taxMarks={store.taxMarks || anyTaxMark}
         onNotice={text => show(text)}
+        // *Zeigen* on a pill behind *Mehr* opens it for that visit.
+        more={store.entryMore || showMore}
+        onMore={open => { setShowMore(false); store.setEntryMore(open); }}
+        calcKeys={store.calcKeys}
+        onCalcKeys={() => store.setCalcKeys(true)}
+        hintPaid={entries.length < 10 && entries.every(e => e.paid)}
       />
 
       <ProjectSheet
@@ -1727,6 +1779,8 @@ export default function App() {
         }}
       />
 
+      <BalanceNowSheet open={balanceNowOpen} t={t} onClose={() => setBalanceNowOpen(false)} onSave={saveBalanceNow} />
+
       <ReportPdfSheet open={pdfFor !== null} t={t} onClose={() => setPdfFor(null)} onMake={entries => { if (pdfFor) void makeReport({ ...pdfFor, entries }); }} />
       {printing && (
         // The PDF carries its amounts (an export the user asked for); the screen behind it keeps hiding them.
@@ -1766,6 +1820,7 @@ export default function App() {
           const prevRec = store.setReconciled(month, Date.now());
           show(t.reconcileDone, { label: t.undo, run: () => store.setReconciled(month, prevRec) });
         }}
+        onOpening={() => setOpeningOpen(true)}
       />
 
       <GoalSheet
@@ -1861,18 +1916,19 @@ export default function App() {
         allCollapsed={categories.length > 0 && categories.every(c => store.collapsed.includes(c.id))}
         t={t}
         onClose={() => setActionsAnchor(null)}
+        given={given}
         onOpening={account === ALL_ACCOUNTS ? undefined : () => setOpeningOpen(true)}
         onReconcile={account === ALL_ACCOUNTS ? undefined : () => setReconcileOpen(true)}
+        onBalanceNow={account === ALL_ACCOUNTS ? undefined : () => setBalanceNowOpen(true)}
         onTransfer={multi ? newTransfer : undefined}
         onPull={() => { const n = store.pullRecurring(month); show(fmt(t.pulled, { n })); }}
         onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
-        onImportCsv={() => statementInput.current?.click()}
-        onImportPhoto={() => photoInput.current?.click()}
-        onScanInvoice={() => invoiceInput.current?.click()}
-        onImportPdf={() => pdfInput.current?.click()}
+        onImport={() => setImportOpen(true)}
         onDelete={deleteMonth}
         onReport={() => openReport(month)}
       />
+
+      <ImportSheet open={importOpen} t={t} onClose={() => setImportOpen(false)} onPick={pickImport} />
 
       <CategorySheet
         mode={categorySheet}
