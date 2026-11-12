@@ -60,8 +60,8 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
    upload it in App Store Connect › App Review Information › Attachment.
    Then Settings › Back up and transfer › Import backup with your own file.
 
-Options: `PACE` scales every pause (0.8 unless set; `PACE=1` slower,
-`PACE=0.6` faster); `FROM=5 TO=8` only those
+Options: `PACE` scales every pause (0.65 unless set; `PACE=1` slower,
+`PACE=0.5` faster); `FROM=5 TO=8` only those
 scenes (no preflight, for trying a fix — the app must be in the state the
 scene before leaves it); `DEVICE=<udid>` with several iPhones.
 

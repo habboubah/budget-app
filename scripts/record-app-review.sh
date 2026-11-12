@@ -9,7 +9,7 @@
 #   npm run record:app-review                       the whole recording
 #   DRY_RUN=1 npm run record:app-review             the same, without recording (try it first)
 #   FROM=5 TO=8 DRY_RUN=1 npm run record:app-review only scenes 5–8, no preflight
-#   PACE=1 npm run record:app-review                slower (default 0.8; 0.6 = faster)
+#   PACE=1 npm run record:app-review                slower (default 0.65; 0.5 = faster)
 #   DEVICE=<udid> npm run record:app-review         if several iPhones are connected
 #   RESET=0 npm run record:app-review               don't reset: stop if the app isn't empty
 #
@@ -73,7 +73,7 @@ echo "Keep the iPhone unlocked and facing you (Face ID is needed twice). Don't t
 mkdir -p build
 
 set +e
-TEST_RUNNER_RECORDER_PACE="${PACE:-0.8}" \
+TEST_RUNNER_RECORDER_PACE="${PACE:-0.65}" \
 TEST_RUNNER_RECORDER_FROM="${FROM:-1}" \
 TEST_RUNNER_RECORDER_TO="${TO:-}" \
 TEST_RUNNER_RECORDER_NO_VIDEO="${DRY_RUN:-0}" \

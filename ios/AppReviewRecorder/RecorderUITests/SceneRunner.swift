@@ -794,7 +794,28 @@ final class SceneRunner {
                 el.tap(); rest(0.8); return
             }
         }
+        // iOS 26's share sheet has no Close button we can find: swipe it away.
+        if dismissShareSheet() { return }
         throw StepFailure("no \(labels.joined(separator: " | ")) to tap")
+    }
+
+    /// The share sheet (PDF, backup, CSV), recognised by its AirDrop button, the
+    /// same word in every language: pulled down from just above that row. True
+    /// when one was there and is gone.
+    func dismissShareSheet() -> Bool {
+        for root in [app, springboard] {
+            let airDrop = root.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "AirDrop")).firstMatch
+            guard airDrop.exists, !airDrop.frame.isEmpty else { continue }
+            let screen = root.frame
+            let startY = max(airDrop.frame.minY - 60, screen.minY + 80)
+            let origin = root.coordinate(withNormalizedOffset: .zero)
+            let from = origin.withOffset(CGVector(dx: screen.width / 2, dy: startY - screen.minY))
+            let to = origin.withOffset(CGVector(dx: screen.width / 2, dy: screen.height * 0.98))
+            from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 0)
+            rest(0.8)
+            if !airDrop.exists { log("  share sheet swiped away"); return true }
+        }
+        return false
     }
 
     func launchFromHomeScreen() {
