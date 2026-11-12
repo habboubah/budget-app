@@ -22,6 +22,33 @@ export function nextTrapFocus<T>(items: T[], active: T | null, shiftKey: boolean
 /** The dialogs open right now, oldest first: only the topmost answers Escape and Tab. */
 const openDialogs: symbol[] = [];
 
+/** body's own overflow from before the first dialog opened, put back when the last one closes. */
+let bodyOverflow = '';
+
+/**
+ * One scroll lock shared by every open dialog, held while any is open.
+ *
+ * Each dialog used to save body's overflow on open and put it back on close.
+ * That only works if dialogs close newest-first, and they don't: a Menu stays
+ * mounted through its exit animation, so picking "Budget hinzufügen › Food"
+ * opened the budget sheet (which saved the menu's `hidden`) before the menu
+ * finished closing (and put back `''`). Closing the sheet then put back
+ * `hidden`, and the page never scrolled again.
+ */
+export function lockScroll(me: symbol) {
+  if (openDialogs.length === 0) {
+    bodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+  }
+  openDialogs.push(me);
+}
+
+export function unlockScroll(me: symbol) {
+  const i = openDialogs.indexOf(me);
+  if (i !== -1) openDialogs.splice(i, 1);
+  if (openDialogs.length === 0) document.body.style.overflow = bodyOverflow;
+}
+
 /**
  * Shared dialog behaviour for Sheet, ConfirmationModal and Menu.
  *
@@ -48,10 +75,8 @@ export function useDialog(open: boolean, ref: RefObject<HTMLElement | null>, onC
     if (!open) return;
 
     const restoreTo = document.activeElement as HTMLElement | null;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     const me = Symbol('dialog');
-    openDialogs.push(me);
+    lockScroll(me);
 
     const onKey = (e: KeyboardEvent) => {
       if (openDialogs[openDialogs.length - 1] !== me) return;
@@ -68,8 +93,7 @@ export function useDialog(open: boolean, ref: RefObject<HTMLElement | null>, onC
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);
-      openDialogs.splice(openDialogs.indexOf(me), 1);
-      document.body.style.overflow = prevOverflow;
+      unlockScroll(me);
       // Only take focus back if the dialog still holds it — an action that
       // moves focus somewhere deliberate on close must not be overridden.
       if (restoreTo?.isConnected && ref.current?.contains(document.activeElement)) {
