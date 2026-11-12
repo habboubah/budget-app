@@ -148,7 +148,7 @@ final class SceneRunner {
         guard app.wait(for: .runningForeground, timeout: 20) else {
             throw StepFailure("\(spec.bundleId) didn't start. Is it installed from TestFlight on this iPhone?")
         }
-        rest(2)
+        rest(1.2)
         // With reset on, every full run starts from a freshly reset app: what
         // shows on screen doesn't prove it's empty (a run that stopped in scene 2
         // left the balance and the salary behind the welcome card), and changed
@@ -161,11 +161,8 @@ final class SceneRunner {
                     throw StepFailure("Resetting the app, step \(n + 1) (\(step.summary)): \(error). Nothing was recorded.")
                 }
             }
-            app.terminate()
-            rest(1)
-            app.activate()
-            _ = app.wait(for: .runningForeground, timeout: 20)
-            rest(2)
+            // Reset app lands on the month page with the setup card: check it there
+            // (a relaunch here cost ~6 s; the recording starts with one anyway).
             guard spec.mustSeeFirst.isEmpty || (try? seen(spec.mustSeeFirst, timeout: 12)) != nil else {
                 throw StepFailure("The app was reset but the first setup question doesn't show. Nothing was recorded.")
             }
@@ -175,7 +172,7 @@ final class SceneRunner {
         }
         app.terminate()
         XCUIDevice.shared.press(.home)
-        rest(1.5)
+        rest(0.5)
     }
 
     func run(scenes range: ClosedRange<Int>) throws {
@@ -546,20 +543,25 @@ final class SceneRunner {
             // (Above a keyboard the tab bar is covered, so only a small margin is needed there.)
             let below: CGFloat = area.keyboard ? 20 : 100
             if v.contains(middle) && f.midY > v.minY + 90 && f.midY < v.maxY - below { return }
-            scroll(down: f.midY > v.midY)
+            scroll(down: f.midY > v.midY, by: abs(f.midY - v.midY) / max(v.height, 1))
             tries += 1
         }
     }
 
-    /// Moves the page (or the open sheet) by about a third of what is visible.
-    func scroll(down: Bool) {
+    /// Moves the page (or the open sheet) by `share` of what is visible: almost
+    /// half by default, up to two thirds when the target is further away (Reset
+    /// app at the end of Settings took a dozen short drags).
+    func scroll(down: Bool, by share: CGFloat = 0.45) {
         let v = visible, w = window
-        let top = (v.minY + v.height * 0.3 - w.minY) / w.height
-        let bottom = (v.minY + v.height * 0.75 - w.minY) / w.height
-        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: down ? bottom : top))
-        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: down ? top : bottom))
+        let s = min(max(share, 0.45), 0.68)
+        // The finger starts clear of the header and the tab bar, where a drag doesn't move the page.
+        let start: CGFloat = down ? 0.75 : 0.3
+        let end: CGFloat = down ? start - s : start + s
+        let y = { (part: CGFloat) in (v.minY + v.height * part - w.minY) / w.height }
+        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(start)))
+        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(end)))
         from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .default, thenHoldForDuration: 0.1)
-        rest(0.5)
+        rest(0.35)
     }
 
     /// A swipe across the whole row, like a thumb (85 % → 10 % of the width).
@@ -571,16 +573,23 @@ final class SceneRunner {
         start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .fast, thenHoldForDuration: 0)
     }
 
-    private func waitForKeyboard(_ seconds: Double = 3) -> Bool {
-        app.keyboards.firstMatch.waitForExistence(timeout: seconds)
+    /// Whether the element is there or shows up within `seconds`. `exists` first:
+    /// waitForExistence takes about a second even for what is already on screen,
+    /// and the keyboard alone was waited for twice per text field.
+    private func appears(_ el: XCUIElement, within seconds: Double) -> Bool {
+        el.exists || el.waitForExistence(timeout: seconds)
     }
 
-    /// Types the way a person does: one key after another, not the whole text at once.
+    private func waitForKeyboard(_ seconds: Double = 3) -> Bool {
+        appears(app.keyboards.firstMatch, within: seconds)
+    }
+
+    /// Types the text in one go. Key by key (one typeText per character) XCTest
+    /// looked for the focused field before every letter, and on the iPhone the
+    /// keyboard went down and up between them – slow, and odd in the video.
     private func typeByHand(_ text: String) {
-        for character in text {
-            app.typeText(String(character))
-            rest(Double.random(in: 0.02...0.1) * pace)
-        }
+        guard !text.isEmpty else { return }
+        app.typeText(text)
     }
 
     func typeIntoFocused(_ text: String) throws {
@@ -589,7 +598,7 @@ final class SceneRunner {
     }
 
     /// Focuses the field with the caret at its end, deletes what is there, types the text
-    /// key by key. `check`: for words – if autocorrection changed them, type them again.
+    /// in one go. `check`: for words – if autocorrection changed them, type them again.
     func replaceText(in el: XCUIElement, with text: String, check: Bool = false) throws {
         try reach(el, dx: 0.96)
         el.coordinate(withNormalizedOffset: CGVector(dx: 0.96, dy: 0.5)).tap()
@@ -666,7 +675,7 @@ final class SceneRunner {
             rest(1.2)
         }
         let search = app.searchFields.firstMatch
-        guard search.waitForExistence(timeout: 10) else {
+        guard appears(search, within: 10) else {
             throw StepFailure("the Files picker didn't open (or has no search field)")
         }
         search.tap()
@@ -684,7 +693,7 @@ final class SceneRunner {
         let field = try element(opener, nth: 0, role: nil, timeout: 4)
         try tap(field)
         let picker = app.datePickers.firstMatch
-        guard picker.waitForExistence(timeout: 4) else { throw StepFailure("no date picker") }
+        guard appears(picker, within: 4) else { throw StepFailure("no date picker") }
         let days = picker.buttons.matching(NSPredicate(format: "label MATCHES %@", ".*(^|\\D)\(day)(\\D|$).*"))
         guard let button = days.allElementsBoundByIndex.first(where: { $0.isHittable }) else {
             throw StepFailure("day \(day) not in the calendar")
@@ -722,16 +731,16 @@ final class SceneRunner {
 
     func launchFromHomeScreen() {
         XCUIDevice.shared.press(.home)
-        rest(1.2)
+        rest(0.8)
         let icon = springboard.icons[spec.iconName]
-        if !spec.iconName.isEmpty && icon.waitForExistence(timeout: 3) && icon.isHittable {
+        if !spec.iconName.isEmpty && appears(icon, within: 3) && icon.isHittable {
             icon.tap()
         } else {
             log("  the \(spec.iconName) icon isn't on this home screen page – starting the app directly")
             app.activate()
         }
         _ = app.wait(for: .runningForeground, timeout: 20)
-        rest(2)
+        rest(1.2)
     }
 
     func openAppSwitcher() {
@@ -755,7 +764,7 @@ final class SceneRunner {
         let start = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.005))
         let end = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.3))
         start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.4)
-        rest(1.5)
+        rest(0.6) // tapRecordButton waits for the page to stand still
     }
 
     private var recordLabels: [String] { system("screenRecording", ["Screen Recording", "Bildschirmaufnahme"]) }
@@ -795,13 +804,14 @@ final class SceneRunner {
     func startScreenRecording() throws {
         guard !noVideo else { log("  (dry run – not recording)"); return }
         XCUIDevice.shared.press(.home)
-        rest(1)
+        rest(0.5)
         openControlCenter()
         try tapRecordButton()
         recording = true
-        rest(4.5) // the 3-2-1 countdown
+        // Out of Control Center at once: the 3-2-1 countdown goes on without it,
+        // and the video starts on the home screen instead of in Control Center.
         XCUIDevice.shared.press(.home)
-        rest(1.5)
+        rest(3.6)
     }
 
     func stopScreenRecording() throws {

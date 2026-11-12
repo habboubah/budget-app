@@ -7,14 +7,14 @@
  "preflight": {
   "mustSee": ["Wie viel ist gerade auf deinem Konto?", "How much is in your account right now?", "كم يوجد في حسابك الآن؟", "Kolik máš teď na účtu?", "Hvor mange penge har du på kontoen lige nu?", "¿Cuánto tienes ahora mismo en la cuenta?", "Combien avez-vous sur votre compte en ce moment", "Quanto hai sul conto in questo momento?", "Hvor mye har du på kontoen akkurat nå?", "Hoeveel staat er nu op je rekening?", "Ile masz teraz na koncie?", "Quanto tens agora na conta?", "Hur mycket har du på kontot just nu?", "Şu anda hesabında ne kadar var?"],
   "reset": [
-   {"optional": [{"see": ["Mit Face ID entsperren", "Unlock with Face ID", "فتح القفل بـ Face ID", "Odemknout pomocí Face ID", "Lås op med Face ID", "Desbloquear con Face ID", "Déverrouiller avec Face ID", "Sblocca con Face ID", "Lås opp med Face ID", "Ontgrendelen met Face ID", "Odblokuj za pomocą Face ID", "Desbloquear com Face ID", "Lås upp med Face ID", "Face ID ile aç"], "timeout": 3}, {"faceID": true}, {"pause": 1}]},
+   {"optional": [{"see": ["Mit Face ID entsperren", "Unlock with Face ID", "فتح القفل بـ Face ID", "Odemknout pomocí Face ID", "Lås op med Face ID", "Desbloquear con Face ID", "Déverrouiller avec Face ID", "Sblocca con Face ID", "Lås opp med Face ID", "Ontgrendelen met Face ID", "Odblokuj za pomocą Face ID", "Desbloquear com Face ID", "Lås upp med Face ID", "Face ID ile aç"], "timeout": 1.5}, {"faceID": true}, {"pause": 1}]},
    {"tap": ["Optionen", "Settings", "الإعدادات", "Nastavení", "Opsætning", "Ajustes", "Réglages", "Opzioni", "Valg", "Opties", "Ustawienia", "Definições", "Alternativ", "Ayarlar"], "timeout": 20},
-   {"pause": 1},
+   {"pause": 0.5},
    {"scrollTo": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla", "Delete all data", "Alle Daten löschen", "حذف كل البيانات", "Smazat všechna data", "Slet alle data", "Borrar todos los datos", "Effacer toutes les données", "Elimina tutti i dati", "Slett alle data", "Alle gegevens wissen", "Usuń wszystkie dane", "Apagar todos os dados", "Radera alla data", "Tüm verileri sil"]},
    {"tap": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla", "Delete all data", "Alle Daten löschen", "حذف كل البيانات", "Smazat všechna data", "Slet alle data", "Borrar todos los datos", "Effacer toutes les données", "Elimina tutti i dati", "Slett alle data", "Alle gegevens wissen", "Usuń wszystkie dane", "Apagar todos os dados", "Radera alla data", "Tüm verileri sil"]},
-   {"pause": 1.5},
+   {"pause": 1},
    {"tap": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla", "Delete all data", "Alle Daten löschen", "حذف كل البيانات", "Smazat všechna data", "Slet alle data", "Borrar todos los datos", "Effacer toutes les données", "Elimina tutti i dati", "Slett alle data", "Alle gegevens wissen", "Usuń wszystkie dane", "Apagar todos os dados", "Radera alla data", "Tüm verileri sil"]},
-   {"pause": 2.5}
+   {"pause": 0.5}
   ]
  },
  "system": {
@@ -34,6 +34,9 @@
     {"tap": ["Optionen", "Settings", "الإعدادات", "Nastavení", "Opsætning", "Ajustes", "Réglages", "Opzioni", "Valg", "Opties", "Ustawienia", "Definições", "Alternativ", "Ayarlar"]},
     {"pause": 1},
     {"select": "English", "in": ["Sprache", "Language", "اللغة", "Jazyk", "Sprog", "Idioma", "Langue", "Lingua", "Språk", "Taal", "Język", "Dil"]},
+    {"pause": 1},
+    {"select": "US Dollar (USD)", "in": "Currency"},
+    {"optional": [{"tap": "Change"}]},
     {"pause": 1},
     {"tap": "Month"}
   ]},

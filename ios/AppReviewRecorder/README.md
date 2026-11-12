@@ -27,9 +27,9 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
    taps (Screen Recording, Choose File, Allow …) are listed in those two in
    `scenes.json` › `system`; add your language there to use another.
 5. **Keyboard:** Settings › General › Keyboard › **Auto-Correction** and
-   **Predictive Text** off. The recorder types key by key, so a German
-   keyboard has time to "correct" the English demo words (and later steps
-   look for those words); without the suggestions bar the video is cleaner too.
+   **Predictive Text** off, so a German keyboard doesn't "correct" the
+   English demo words (later steps look for those words); without the
+   suggestions bar the video is cleaner too.
 6. **Mac:** Xcode signed in with the developer account (it already is, you
    archive from it). The first run creates the signing for the recorder's
    two bundle ids by itself.
@@ -59,7 +59,8 @@ records the screen. About 15–20 minutes; the video ends up in Photos.
    upload it in App Store Connect › App Review Information › Attachment.
    Then Settings › Back up and transfer › Import backup with your own file.
 
-Options: `PACE=1.4` slower, `PACE=0.7` faster; `FROM=5 TO=8` only those
+Options: `PACE` scales every pause (0.8 unless set; `PACE=1` slower,
+`PACE=0.6` faster); `FROM=5 TO=8` only those
 scenes (no preflight, for trying a fix — the app must be in the state the
 scene before leaves it); `DEVICE=<udid>` with several iPhones.
 
@@ -97,7 +98,7 @@ counts from 0 in screen order.
 |---|---|
 | `{"tap": "Save"}` | Taps it (scrolls to it first). `nth`, `role` (`button`, `switch`, `textbox`), `timeout` |
 | `{"tap": "Import from Excel", "pickFile": "x.xlsx"}` | Taps, then picks the file in the Files picker (searches its name) |
-| `{"fill": "What for?", "text": "Lidl"}` | Replaces a field's text, typed key by key like a person does |
+| `{"fill": "What for?", "text": "Lidl"}` | Replaces a field's text, typed in one go |
 | `{"amount": "12.50", "into": "Amount"}` | An amount, typed digit by digit with the iPhone's decimal separator |
 | `{"placeholderMinus": 20, "into": "…"}` | Types the field's placeholder minus 20 (the app's own figure) |
 | `{"select": "English", "in": "Language"}` | Opens a `<select>` and taps the option |
