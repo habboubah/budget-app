@@ -13,8 +13,9 @@ const outDir = path.join(root, cfg.outDir);
 // next to the set to upload, and a hand-made file in screenshots/store/ survives.
 const ours = name => cfg.targets.some(t => t.id === name) || /^(apple|iphone|play)-/.test(name);
 if (existsSync(outDir)) {
-  for (const name of readdirSync(outDir)) {
-    if (ours(name)) rmSync(path.join(outDir, name), { recursive: true });
+  // Folders only: play-icon-512.png lies here too and starts like one of ours.
+  for (const entry of readdirSync(outDir, { withFileTypes: true })) {
+    if (entry.isDirectory() && ours(entry.name)) rmSync(path.join(outDir, entry.name), { recursive: true });
   }
 }
 
