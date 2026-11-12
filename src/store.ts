@@ -6,7 +6,7 @@ import {
   computeBalances, laterCopies, laterTransferCopies, mainAccount, makeTransfer, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid, isIsoDay, isoDay, changeMonthStart, setMonthStart, validMonthStart,
 } from './logic';
-import { TipId, TipState, closeTip, knowGuide, readTipState } from './tips';
+import { TipId, TipState, closeTip, knowGestures, knowGuide, readTipState } from './tips';
 import { GuideTopicId, readGuideSeen } from './guide';
 import { Currency, DEFAULT_CURRENCY, isSupportedCurrency } from './currency';
 import { systemCurrency, systemLanguage } from './systemLocale';
@@ -43,6 +43,8 @@ const K = {
   balanceOpen: 'spartopf-balance-open',
   entryMore: 'spartopf-entry-more',
   calcKeys: 'spartopf-calc-keys',
+  steps: 'spartopf-steps-done',
+  demoTrial: 'spartopf-demo-trial',
 } as const;
 
 /** Dismissed hints and seen reviews are kept as their last 200 ids — no amounts in them. */
@@ -157,13 +159,18 @@ export function useAppStore() {
   const [balanceOpen, setBalanceOpen] = useState(() => startOpen(K.balanceOpen));
   const [entryMore, setEntryMore] = useState(() => startOpen(K.entryMore));
   const [calcKeys, setCalcKeys] = useState(() => startOpen(K.calcKeys));
-  /** The setup card on the first month — gone for good once finished or put off. */
+  /** The start (plan 39; before it, the setup card on the first month) — done for good once finished or put off. */
   const [introDone, setIntroDone] = useState(() => readString(K.intro) === '1');
   /**
-   * The gestures card shown after the setup — gone once dismissed. Whoever
-   * dismissed the old intro card has read these already (it carried them).
+   * Whoever put the old card with the three gestures away (`spartopf-tips-done`,
+   * or the intro card before it, which carried them) has read them: their tips
+   * are done, and the *Erste Schritte* row doesn't come up for them.
    */
-  const [tipsDone, setTipsDone] = useState(() => (readString(K.tips) ?? readString(K.intro)) === '1');
+  const [readGestures] = useState(() => (readString(K.tips) ?? readString(K.intro)) === '1');
+  /** The *Erste Schritte* row on the month page — gone once every step is done, or put away. */
+  const [stepsDone, setStepsDone] = useState(() => { const v = readString(K.steps); return v === null ? readGestures : v === '1'; });
+  /** The test data was started with from the welcome screen: a capsule says so until it is taken out again. */
+  const [demoTrial, setDemoTrial] = useState(() => readString(K.demoTrial) === '1');
   /** Reminders and the lock: settings of this device, not data — not in a backup, kept by "delete all". */
   const [reminders, setReminders] = useState<ReminderPrefs>(() => normalizeReminderPrefs(readJson(K.reminders)));
   const [lockOn, setLockOn] = useState(() => readString(K.lock) === '1');
@@ -203,7 +210,10 @@ export function useAppStore() {
   useEffect(() => { persist(K.entryMore, entryMore ? '1' : '0'); }, [entryMore]);
   useEffect(() => { persist(K.calcKeys, calcKeys ? '1' : '0'); }, [calcKeys]);
   useEffect(() => { persist(K.intro, introDone ? '1' : '0'); }, [introDone]);
-  useEffect(() => { persist(K.tips, tipsDone ? '1' : '0'); }, [tipsDone]);
+  // Written once more, so a later launch never falls back to the intro's flag for it.
+  useEffect(() => { persist(K.tips, readGestures ? '1' : '0'); }, [readGestures]);
+  useEffect(() => { persist(K.steps, stepsDone ? '1' : '0'); }, [stepsDone]);
+  useEffect(() => { persist(K.demoTrial, demoTrial ? '1' : '0'); }, [demoTrial]);
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
   useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
   useEffect(() => { persist(K.hideAmounts, hideAmounts ? '1' : '0'); }, [hideAmounts]);
@@ -212,7 +222,7 @@ export function useAppStore() {
   useEffect(() => { persist(K.autoCategory, autoCategory ? '1' : '0'); }, [autoCategory]);
   useEffect(() => { persist(K.budgetNotes, budgetNotes ? '1' : '0'); }, [budgetNotes]);
   /** Plan 37: which tips are done, and when the last one was put away. */
-  const [tipState, setTipState] = useState<TipState>(() => readTipState(readJson(K.tipState)));
+  const [tipState, setTipState] = useState<TipState>(() => { const read = readTipState(readJson(K.tipState)); return readGestures ? knowGestures(read) : read; });
   useEffect(() => { persist(K.tipState, JSON.stringify(tipState)); }, [tipState]);
   /** The guide's topics opened so far (src/guide.ts): a tick beside each. */
   const [guideSeen, setGuideSeen] = useState<GuideTopicId[]>(() => readGuideSeen(readJson(K.guideSeen)));
@@ -755,7 +765,8 @@ export function useAppStore() {
     chooseLanguage(systemLanguage());
     setThemeMode('system');
     setIntroDone(false);
-    setTipsDone(false);
+    setStepsDone(false);
+    setDemoTrial(false);
     // A new book starts folded again (plan 39).
     setBalanceOpen(false);
     setEntryMore(false);
@@ -965,7 +976,8 @@ export function useAppStore() {
   return {
     language, setLanguage: chooseLanguage, themeMode, setThemeMode, accent, setAccent, storageError: saveFailed,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
-    tipsDone, dismissTips: () => setTipsDone(true),
+    stepsDone, dismissSteps: () => setStepsDone(true),
+    demoTrial, setDemoTrial,
     balanceOpen, setBalanceOpen, entryMore, setEntryMore, calcKeys, setCalcKeys,
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),
     lockOn, setLockOn,

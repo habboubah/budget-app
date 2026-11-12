@@ -101,8 +101,15 @@ try {
   console.log('Requests while using the app');
   await step('first run', async () => {
     await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
-    await page.locator('main section input[inputmode="decimal"]').first().fill('1234,56');
-    await page.locator('main section form button[type="submit"]').first().click();
+    // The start (plan 39), a chunk of its own: the welcome, the balance, the two
+    // other questions put off, and what it comes to.
+    await page.locator('[data-start="go"]').click();
+    await page.locator('[data-start="balance"]').fill('1234,56');
+    await page.locator('[data-start="next"]').click();
+    await page.locator('[data-start="later"]').click();
+    await page.locator('[data-start="later"]').click();
+    await page.locator('[data-start="finish"]').click();
+    await page.waitForSelector('nav button.hero');
     await page.waitForTimeout(300);
   });
   await step('an entry added and ticked off', async () => {

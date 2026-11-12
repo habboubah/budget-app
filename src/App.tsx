@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { motion, useTransform } from 'motion/react';
-import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'lucide-react';
+import { AlertTriangle, ArrowLeftRight, BarChart3, CalendarDays, Circle, Hand, PiggyBank, Settings } from 'lucide-react';
 import { useAppStore } from './store';
 import { fmt, plural, stringsFor } from './translations';
 import { AccountKind, Category, Contract, Entry, EntryDraft, MonthKey } from './types';
@@ -23,7 +23,10 @@ import { Explain, ExplainSheet } from './components/ExplainSheet';
 import { hintExplain } from './components/HintRows';
 import { ShareImage, renderShareImage } from './shareImage';
 import { shareImage } from './export';
-import { SetupCard, TipsCard } from './components/SetupCard';
+import { FirstStep, FirstStepsRow, FirstStepsSheet } from './components/FirstSteps';
+import { DemoPill } from './components/DemoPill';
+import { StartAnswers, startPlan } from './start';
+import { NAME_SUGGESTIONS } from './data/defaults';
 import { BudgetHow, BudgetSheet } from './components/BudgetSheet';
 import { DueSoonView } from './components/DueSoonView';
 import { ContractsView } from './components/ContractsView';
@@ -74,7 +77,7 @@ import { buildAmounts, buildSnapshot } from './native/snapshot';
 import { inboxReview, inboxToEntries } from './native/inbox';
 import { CaptureView } from './components/CaptureView';
 import { HintCard } from './components/HintCard';
-import { nextTip } from './tips';
+import { isGestureTip, nextTip } from './tips';
 import { GuideTopic, GuideTopicId, GuideWords, topicText } from './guide';
 import type { MarkId, TourId } from './guideKit';
 import { guidePages, loadGuidePages } from './guidePages';
@@ -109,6 +112,11 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
  */
 let GuideScreen: typeof import('./components/GuideView').GuideView | null = null;
 let TourOverlay: typeof import('./components/Tour').Tour | null = null;
+/** The start (plan 39): only a new book ever shows it, so it is a chunk of its own too. */
+let StartScreen: typeof import('./components/StartFlow').StartFlow | null = null;
+const loadStart = () => import('./components/StartFlow').then(m => { StartScreen = m.StartFlow; });
+/** The fixed costs the start asks about, by their German names in `NAME_SUGGESTIONS.fixed`. */
+const START_FIXED = ['Miete', 'Strom', 'Internet', 'Handy', 'Versicherung'];
 const loadGuide = () => import('./components/GuideView').then(m => { GuideScreen = m.GuideView; });
 /** The tours' marks and the labels a text names (src/guideKit.ts): loaded with the tour. */
 let guideKit: typeof import('./guideKit') | null = null;
@@ -258,13 +266,6 @@ export default function App() {
   const [showMore, setShowMore] = useState(false);
   /** The category the round add button opens with: the one used last. */
   const [lastCategory, setLastCategory] = useState<string | null>(null);
-  /**
-   * The first run's "how much is on your account right now", while the setup
-   * runs: what is entered in it as already paid happened before that look at
-   * the bank, so it moves the month's opening instead of the balance now.
-   * Ends with the setup, a reload, or an opening set by hand.
-   */
-  const [setupNow, setSetupNow] = useState<{ month: MonthKey; now: number } | null>(null);
 
   // ---- The lock. Locked from the very first render of a cold start, so not
   // one frame of the book shows; while locked only the lock screen renders.
@@ -387,7 +388,6 @@ export default function App() {
   const saveBalanceNow = (now: number) => {
     const running = balances.find(b => b.key === monthKeyOf());
     const b = running ?? balance;
-    setSetupNow(null);
     store.setOpening(b.key, now - (b.incomePaid - b.expensePaid) - (b.transferPaid ?? 0), target);
     notifySuccess();
     show(t.openingSaved);
@@ -487,15 +487,6 @@ export default function App() {
     });
     return () => { void handle.then(h => h.remove()); };
   }, [pushed, tab, under]);
-
-  // While the setup runs: opening = the balance given − what the month has settled since.
-  useEffect(() => {
-    if (!setupNow || store.introDone) return;
-    const b = store.balances.find(x => x.key === setupNow.month);
-    if (!b || b.prevKey) return;
-    const want = setupNow.now - (b.incomePaid - b.expensePaid);
-    if (!b.overridden || b.openingNow !== want) store.setOpening(setupNow.month, want);
-  }, [setupNow, store.balances, store.introDone]);
 
   // Reminders: after a change settles, and on every return to the app, what is
   // pending on the device becomes the plan again (iPhone app only).
@@ -1091,21 +1082,90 @@ export default function App() {
     openMonthPage(now);
   };
 
-  // ---- First run: the setup card on the first month, then the tips.
-  const showSetup = !store.introDone && balance.started && !balance.prevKey;
-  const kindOf = new Map(categories.map(c => [c.id, c.kind]));
-  const monthEntries = entries.filter(e => e.month === month);
+  // ---- The start (plan 39): a new book opens on it — a welcome, three questions
+  // that can each be put off, and what they come to — instead of the month page.
   const salaryCategory = categories.find(c => c.id === 'income' && c.kind === 'income') ?? categories.find(c => c.kind === 'income');
   const fixedCategory = categories.find(c => c.id === 'fixed' && c.kind === 'expense')
     ?? categories.find(c => c.kind === 'expense' && c.repeat === 'monthly') ?? categories.find(c => c.kind === 'expense');
-  const finishSetup = () => { store.dismissIntro(); setSetupNow(null); };
-  /** Plan 37: at most one tip, on the running month, once the setup and the gestures card are gone. */
+  /** Nothing in the book yet: no entry, no balance, one month at most. */
+  const bookEmpty = entries.length === 0 && data.months.length <= 1 && !store.balances.some(b => b.overridden);
+  const [startOpen, setStartOpen] = useState(() => !store.introDone && bookEmpty);
+  const [, startReady] = useState(0);
+  useEffect(() => { if (startOpen && !StartScreen) void loadStart().then(() => startReady(n => n + 1), () => setStartOpen(false)); }, [startOpen]);
+  /** The answers as the running month's first entries, all monthly, and the opening that leads to the balance given. */
+  const applyStart = (answers: StartAnswers) => {
+    const m = monthKeyOf();
+    const plan = startPlan(answers, m, t.setupSalaryName);
+    const now = Date.now();
+    for (const e of plan.entries) {
+      const category = e.kind === 'income' ? salaryCategory : fixedCategory;
+      if (!category) continue;
+      const id = uid();
+      store.addEntry({
+        id, month: m, seriesId: id, createdAt: now, categoryId: category.id, name: e.name, amount: e.amount,
+        paid: e.paid, repeat: 'monthly', date: e.date, ...(e.paid ? { paidAt: now } : {}),
+      });
+      store.showCategory(m, category.id);
+    }
+    if (plan.opening !== undefined) store.setOpening(m, plan.opening);
+    store.dismissIntro();
+    // Whoever starts here needs no "new: a guide" (it is one tap from *Erste Schritte*).
+    store.knowGuide();
+    setMonth(m);
+    setTab('month');
+  };
+  /** *Ich habe schon Daten*: the screen with the backup and the Excel import. */
+  const startWithData = () => { store.dismissIntro(); store.knowGuide(); setStartOpen(false); push('transfer'); };
+  /** *Erst mit Testdaten ansehen*: a year of a household — and a capsule that says so until it is taken out again. */
+  const startWithDemo = () => {
+    store.dismissIntro();
+    store.knowGuide();
+    store.setDemoTrial(true);
+    store.addDemo();
+    notifySuccess();
+    setMonth(monthKeyOf());
+    setTab('month');
+    setStack({});
+    setStartOpen(false);
+  };
+  /** The capsule's ✕, confirmed: the test data goes — and a book that holds nothing else starts over. */
+  const [demoOut, setDemoOut] = useState(false);
+  const endDemoTrial = () => {
+    const own = entries.some(e => !isDemoEntry(e));
+    store.removeDemo();
+    store.setDemoTrial(false);
+    setMonth(monthKeyOf());
+    setTab('month');
+    setStack({});
+    if (!own) { store.restoreIntro(); setStartOpen(true); }
+  };
+
+  // ---- *Erste Schritte*: what is left of setting the book up, as one row on the running month.
+  const [stepsOpen, setStepsOpen] = useState(false);
+  const kindOf = new Map(categories.map(c => [c.id, c.kind]));
+  const runningMonth = monthKeyOf();
+  const firstSteps: FirstStep[] = [
+    { id: 'balance', label: t.noBalanceAsk, sub: t.noBalanceAskSub, done: multi || balanceGiven(balances, runningMonth),
+      run: () => setBalanceNowOpen(true) },
+    ...(salaryCategory ? [{ id: 'income' as const, label: t.setupSalary, sub: t.setupSalarySub, done: entries.some(e => kindOf.get(e.categoryId) === 'income'),
+      run: () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: salaryCategory.id, preset: { name: t.setupSalaryName, repeat: 'monthly' } }) }] : []),
+    ...(fixedCategory ? [{ id: 'fixed' as const, label: t.setupFixed, sub: t.setupFixedSub, done: entries.some(e => kindOf.get(e.categoryId) === 'expense' && e.repeat !== 'none'),
+      run: () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: fixedCategory.id, preset: { repeat: 'monthly' } }) }] : []),
+    ...(quickAddCategory ? [{ id: 'expense' as const, label: t.stepsFirstExpense, sub: t.stepsFirstExpenseSub, done: entries.some(e => kindOf.get(e.categoryId) === 'expense' && e.repeat === 'none'),
+      run: () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: quickAddCategory }) }] : []),
+  ];
+  const stepsLeft = firstSteps.some(s => !s.done);
+  // Every step done: the row has nothing more to say, on this device for good.
+  // (Not while the test data stands in for a book: its steps are nobody's.)
+  useEffect(() => { if (!stepsLeft && !store.stepsDone && entries.length > 0 && !store.hasDemo) store.dismissSteps(); }, [stepsLeft, store.stepsDone, entries.length, store.hasDemo]);
+  /** Plan 37: at most one tip, on the running month, once *Erste Schritte* is done or put away. */
   const tip = useMemo(() => nextTip(data, store.tipState, {
     native: native || devNative(),
     capture: isIos() || devNative(),
     inDeviceBackup: deviceBackup,
     daysSinceExport: store.lastExport ? Math.floor((Date.now() - new Date(`${store.lastExport}T00:00:00`).getTime()) / 86_400_000) : null,
     guide: true,
+    gestures: true,
   }), [data, store.tipState, deviceBackup, store.lastExport]);
 
   // ---- The guide and the tour (src/guide.ts): asked for, never in the way.
@@ -1214,40 +1274,35 @@ export default function App() {
     if (screen !== 'guide' || (GuideScreen && pages)) return;
     void Promise.all([loadGuide(), loadGuidePages(language)]).then(() => guideReady(n => n + 1), () => popTo('settings'));
   }, [screen, language]);
-  const setup = showSetup ? (
-    <SetupCard
-      t={t}
-      balance={balance.overridden ? balance.now : undefined}
-      salaryDone={monthEntries.some(e => kindOf.get(e.categoryId) === 'income')}
-      fixedCount={monthEntries.filter(e => kindOf.get(e.categoryId) === 'expense' && e.repeat === 'monthly').length}
-      canSalary={!!salaryCategory}
-      canFixed={!!fixedCategory}
-      // At once, in the same render as the anchor (the effect above keeps it so).
-      onBalance={now => { store.setOpening(month, now - (balance.incomePaid - balance.expensePaid)); setSetupNow({ month, now }); }}
-      onSalary={() => salaryCategory && setEntrySheet({ kind: 'new', month, categoryId: salaryCategory.id, preset: { name: t.setupSalaryName, repeat: 'monthly' } })}
-      onFixed={() => fixedCategory && setEntrySheet({ kind: 'new', month, categoryId: fixedCategory.id, preset: { repeat: 'monthly' } })}
-      onImportExcel={() => excelInput.current?.click()}
-      onFinish={finishSetup}
-    />
-  ) : store.introDone && !store.tipsDone && balance.started && monthEntries.length > 0 && month === monthKeyOf() ? (
-    <TipsCard t={t} onDismiss={() => { store.dismissTips(); store.knowGuide(); }} onTour={() => runTour('month')} onGuide={openGuide} />
-  ) : tip && store.introDone && store.tipsDone && balance.started && month === monthKeyOf() ? (
+  const gestureTip = tip && isGestureTip(tip) ? tip : null;
+  const featureTip = tip && !isGestureTip(tip) ? tip : null;
+  const setup = !balance.started || month !== runningMonth ? null : !store.stepsDone && stepsLeft ? (
+    <FirstStepsRow steps={firstSteps} t={t} onOpen={() => setStepsOpen(true)} onHide={store.dismissSteps} />
+  ) : gestureTip ? (
+    // A gesture, the first time the page has something to try it on: its sentence, nothing to open.
     <HintCard
-      text={tip.id === 'guide' ? t.hintGuide : tip.id === 'capture' ? t.hintCapture : tip.id === 'favorite' ? fmt(t.hintFavorite, { name: tip.name })
-        : tip.id === 'reserve' ? t.hintReserve : tip.id === 'backup' ? t.hintBackup
-        : fmt(t.hintBudget, { category: displayName(tip.category.names, language), month: monthLabel(tip.month, t.locale, 'name') })}
-      action={tip.id === 'guide' ? t.hintGuideAction : tip.id === 'capture' ? t.hintCaptureAction : tip.id === 'favorite' ? t.hintFavoriteAction
-        : tip.id === 'reserve' ? t.hintReserveAction : tip.id === 'backup' ? t.hintBackupAction : t.hintBudgetAction}
+      text={gestureTip.id === 'tick' ? t.tipTick : gestureTip.id === 'swipe' ? t.tipSwipe : t.tipHold}
+      icon={gestureTip.id === 'tick' ? Circle : gestureTip.id === 'swipe' ? ArrowLeftRight : Hand}
       hideLabel={t.hintClose}
-      onHide={() => store.closeTip(tip.id)}
+      onHide={() => store.closeTip(gestureTip.id)}
+    />
+  ) : featureTip ? (
+    <HintCard
+      text={featureTip.id === 'guide' ? t.hintGuide : featureTip.id === 'capture' ? t.hintCapture : featureTip.id === 'favorite' ? fmt(t.hintFavorite, { name: featureTip.name })
+        : featureTip.id === 'reserve' ? t.hintReserve : featureTip.id === 'backup' ? t.hintBackup
+        : fmt(t.hintBudget, { category: displayName(featureTip.category.names, language), month: monthLabel(featureTip.month, t.locale, 'name') })}
+      action={featureTip.id === 'guide' ? t.hintGuideAction : featureTip.id === 'capture' ? t.hintCaptureAction : featureTip.id === 'favorite' ? t.hintFavoriteAction
+        : featureTip.id === 'reserve' ? t.hintReserveAction : featureTip.id === 'backup' ? t.hintBackupAction : t.hintBudgetAction}
+      hideLabel={t.hintClose}
+      onHide={() => store.closeTip(featureTip.id)}
       onAction={() => {
-        store.closeTip(tip.id);
-        if (tip.id === 'guide') openGuide();
-        else if (tip.id === 'capture') push('capture');
-        else if (tip.id === 'favorite') { if (store.addFavorite({ name: tip.name, categoryId: tip.categoryId, ...(tip.amount ? { amount: tip.amount } : {}) })) show(t.favoriteSaved); }
-        else if (tip.id === 'reserve') setTab('insights');
-        else if (tip.id === 'backup') push('transfer');
-        else setBudgetFor(tip.category);
+        store.closeTip(featureTip.id);
+        if (featureTip.id === 'guide') openGuide();
+        else if (featureTip.id === 'capture') push('capture');
+        else if (featureTip.id === 'favorite') { if (store.addFavorite({ name: featureTip.name, categoryId: featureTip.categoryId, ...(featureTip.amount ? { amount: featureTip.amount } : {}) })) show(t.favoriteSaved); }
+        else if (featureTip.id === 'reserve') setTab('insights');
+        else if (featureTip.id === 'backup') push('transfer');
+        else setBudgetFor(featureTip.category);
       }}
     />
   ) : null;
@@ -1434,7 +1489,7 @@ export default function App() {
             hasDemo={store.hasDemo}
             onAddDemo={addDemo}
             onRemoveDemo={removeDemo}
-            onDeleteAll={() => { setSetupNow(null); store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); }}
+            onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); setStartOpen(true); }}
             lockKind={lockKind}
             lockOn={store.lockOn}
             onLock={on => void setLock(on)}
@@ -1502,13 +1557,11 @@ export default function App() {
             candidates={candidates}
             openEarlier={openEarlier}
             setup={setup}
-            review={review && month === now && balance.started && !showSetup ? (
+            review={review && month === now && balance.started ? (
               <ReviewCard review={review} t={t} onOpen={() => openReport(review.month)} onHide={() => hideReview(review.month)} />
             ) : null}
             searchSeed={searchSeed}
             onSearchSeedUsed={() => setSearchSeed(null)}
-            // Nothing to show yet: the setup asks for the balance first.
-            hideBalance={showSetup && !balance.overridden && monthEntries.length === 0}
             language={language}
             t={t}
             onMonth={setMonth}
@@ -1558,6 +1611,25 @@ export default function App() {
 
   // Locked: the lock screen instead of the app (after every hook, so their order holds).
   if (locked) return <LockScreen kind={lockKind} t={t} onUnlock={() => void unlock()} />;
+  // A new book: the start instead of the app, until it is finished or put off (plan 39).
+  if (startOpen) {
+    const names = START_FIXED.map(de => NAME_SUGGESTIONS.fixed?.find(n => n.de === de)).filter(n => !!n).map(n => displayName(n, language));
+    return StartScreen ? (
+      <StartScreen
+        t={t}
+        language={language}
+        month={monthKeyOf()}
+        fixedNames={names}
+        canIncome={!!salaryCategory}
+        canFixed={!!fixedCategory}
+        onLanguage={store.setLanguage}
+        onApply={applyStart}
+        onFinish={() => { store.dismissIntro(); setStartOpen(false); }}
+        onHaveData={startWithData}
+        onDemo={startWithDemo}
+      />
+    ) : <div className="min-h-screen bg-bg" />;
+  }
 
   return (
     <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
@@ -1770,8 +1842,6 @@ export default function App() {
         t={t}
         onClose={() => setOpeningOpen(false)}
         onSave={v => {
-          // Set by hand: the setup's balance doesn't steer the opening any more.
-          setSetupNow(null);
           store.setOpening(month, v, target);
           show(v === undefined && balance.prevKey
             ? fmt(t.openingReset, { month: monthLabel(balance.prevKey, t.locale) })
@@ -1812,7 +1882,6 @@ export default function App() {
           const record = store.months.find(m => m.key === month);
           const prevOpening = target === MAIN_ACCOUNT ? record?.opening : record?.openings?.[target];
           const prevRec = store.setReconciled(month, Date.now());
-          setSetupNow(null);
           store.setOpening(month, opening, target);
           show(t.reconcileDone, { label: t.undo, run: () => { store.setOpening(month, prevOpening, target); store.setReconciled(month, prevRec); } });
         }}
@@ -2043,6 +2112,20 @@ export default function App() {
           onGuide={tour.guide ? backToGuide : undefined}
         />
       )}
+
+      <FirstStepsSheet open={stepsOpen} steps={firstSteps} t={t} onClose={() => setStepsOpen(false)} onGuide={openGuide} />
+
+      {/* Looking around with the test data: a capsule says so, and takes it out again. */}
+      <DemoPill show={store.demoTrial && store.hasDemo && !guideAway && !tour} title={t.demoPill} label={t.demoPillAction} onRemove={() => setDemoOut(true)} />
+      <Confirm
+        open={demoOut}
+        title={t.demoRemoveTitle}
+        body={t.demoRemoveBody}
+        confirmLabel={t.demoPillAction}
+        cancelLabel={t.cancel}
+        onCancel={() => setDemoOut(false)}
+        onConfirm={() => { setDemoOut(false); endDemoTrial(); }}
+      />
 
       <GuideBackPill
         show={guideAway && screen !== 'guide' && !tour}

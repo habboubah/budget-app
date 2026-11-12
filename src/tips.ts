@@ -10,23 +10,37 @@ import { addMonths, isoDay, monthKeyOf, normalizeName } from './logic';
  * here only says once that it exists.
  */
 
-export const TIP_IDS = ['guide', 'capture', 'favorite', 'reserve', 'budget', 'backup'] as const;
+export const TIP_IDS = ['tick', 'swipe', 'drag', 'guide', 'capture', 'favorite', 'reserve', 'budget', 'backup'] as const;
 export type TipId = (typeof TIP_IDS)[number];
+/**
+ * The month page's three gestures (plan 39) — the circle that ticks an entry
+ * off, the swipe, hold and drag — each when the book first has something to
+ * try it on, instead of a card that lists all three after the first entry.
+ */
+export const GESTURE_TIPS = ['tick', 'swipe', 'drag'] as const satisfies readonly TipId[];
+export type GestureTip = (typeof GESTURE_TIPS)[number];
+const isGesture = (id: TipId): id is GestureTip => (GESTURE_TIPS as readonly TipId[]).includes(id);
 
 export interface TipState {
   /** Closed or used: never again. */
   done: TipId[];
   /** The day (YYYY-MM-DD) the last one was closed or used. */
   last?: string;
+  /** The day a gesture's tip was put away: the next one waits for another day. */
+  gesture?: string;
 }
 
 export type Tip =
+  | { id: GestureTip }
   | { id: 'guide' }
   | { id: 'capture' }
   | { id: 'favorite'; name: string; categoryId: string; amount?: number }
   | { id: 'reserve' }
   | { id: 'budget'; category: Category; month: MonthKey }
   | { id: 'backup' };
+
+/** A gesture's tip: a sentence under the gesture's symbol, nothing to open. */
+export const isGestureTip = (tip: Tip): tip is { id: GestureTip } => isGesture(tip.id);
 
 export interface TipContext {
   today?: Date;
@@ -40,6 +54,8 @@ export interface TipContext {
   inDeviceBackup: boolean | null;
   /** The guide (src/guide.ts) may be pointed out: it exists, and this device hasn't met it yet. */
   guide?: boolean;
+  /** The three gestures may be shown, each at its moment (the month page asks; a device that read the old card has them done). */
+  gestures?: boolean;
 }
 
 export const TIP_PAUSE_DAYS = 7;
@@ -48,8 +64,13 @@ const DAY = 86_400_000;
 export function readTipState(v: unknown): TipState {
   const o = v && typeof v === 'object' ? (v as Record<string, unknown>) : {};
   const done = Array.isArray(o.done) ? TIP_IDS.filter(id => (o.done as unknown[]).includes(id)) : [];
-  return { done, ...(typeof o.last === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.last) ? { last: o.last } : {}) };
+  const day = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  return { done, ...(day(o.last) ? { last: o.last as string } : {}), ...(day(o.gesture) ? { gesture: o.gesture as string } : {}) };
 }
+
+/** Whoever read the old card with all three gestures has them done. */
+export const knowGestures = (state: TipState): TipState =>
+  (GESTURE_TIPS.every(id => state.done.includes(id)) ? state : { ...state, done: [...new Set([...state.done, ...GESTURE_TIPS])] });
 
 /**
  * The guide has been met another way — opened from Optionen, the tour taken,
@@ -58,9 +79,15 @@ export function readTipState(v: unknown): TipState {
 export const knowGuide = (state: TipState): TipState =>
   (state.done.includes('guide') ? state : { ...state, done: [...state.done, 'guide'] });
 
-/** A tip put away — closed or used: it is done, and the week's pause starts. */
-export const closeTip = (state: TipState, id: TipId, today = new Date()): TipState =>
-  ({ done: state.done.includes(id) ? state.done : [...state.done, id], last: isoDay(today) });
+/**
+ * A tip put away — closed or used: it is done, and the week's pause starts.
+ * A gesture's tip starts none: the next gesture comes on another day, and the
+ * other tips keep their own rhythm.
+ */
+export const closeTip = (state: TipState, id: TipId, today = new Date()): TipState => {
+  const done = state.done.includes(id) ? state.done : [...state.done, id];
+  return isGesture(id) ? { ...state, done, gesture: isoDay(today) } : { ...state, done, last: isoDay(today) };
+};
 
 const when = (e: Entry) => (e.date ? new Date(`${e.date}T12:00:00`).getTime() : e.createdAt);
 const typed = (e: Entry, expense: (id: string) => boolean) =>
@@ -70,8 +97,26 @@ const typed = (e: Entry, expense: (id: string) => boolean) =>
 export function nextTip(data: AppData, state: TipState, ctx: TipContext): Tip | null {
   const today = ctx.today ?? new Date();
   const now = today.getTime();
-  if (state.last && now - new Date(`${state.last}T00:00:00`).getTime() < TIP_PAUSE_DAYS * DAY) return null;
   const open = (id: TipId) => !state.done.includes(id);
+
+  // The gestures first, one a day at most, whatever the week's pause says:
+  // they are how the page is used, not something more to discover.
+  if (ctx.gestures && state.gesture !== isoDay(today)) {
+    const month = monthKeyOf(today);
+    const mine = data.entries.filter(e => !e.transfer);
+    // Something still open this month: the circle ticks it off.
+    if (open('tick') && mine.some(e => e.month === month && !e.paid)) return { id: 'tick' };
+    // A handful of entries: the swipe.
+    if (open('swipe') && mine.length >= 5) return { id: 'swipe' };
+    // Two in one category this month: something to put in order.
+    if (open('drag')) {
+      const per = new Map<string, number>();
+      for (const e of mine) if (e.month === month) per.set(e.categoryId, (per.get(e.categoryId) ?? 0) + 1);
+      if ([...per.values()].some(n => n >= 2)) return { id: 'drag' };
+    }
+  }
+
+  if (state.last && now - new Date(`${state.last}T00:00:00`).getTime() < TIP_PAUSE_DAYS * DAY) return null;
   const kinds = new Map(data.categories.map(c => [c.id, c.kind]));
   const expense = (id: string) => kinds.get(id) === 'expense';
 

@@ -11,8 +11,10 @@ import type { MarkId, TourId } from './guideKit';
  * by doing; the apps people cite as the best let the first action be the
  * product itself and reveal the rest step by step, and help pages that work
  * show the real button inside the sentence and a picture of the screen. So
- * nothing here stands before the first screen. The setup card and the tips
- * (plan 37) stay as they are; this adds the place to look things up — every
+ * nothing here runs by itself. Before the first screen stands only the start
+ * (plan 39: three questions, each skippable, whose answer is the app's first
+ * screen), and the tips (plan 37) come one at a time; this is the place to
+ * look things up — every
  * feature as one sentence, numbered steps and a tip, the buttons drawn as
  * they look, a small picture of the screen — with *Zeigen*, which goes there
  * and lights up the thing to tap, and five short tours of the real screens,

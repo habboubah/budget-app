@@ -34,7 +34,7 @@ interface Props {
   candidates: Entry[];
   /** Open entries left in earlier months. */
   openEarlier: Entry[];
-  /** The first run's setup card (App builds it), or the tips card after it. */
+  /** *Erste Schritte* while any is left (App builds the row), or the one tip after it. */
   setup?: React.ReactNode;
   /** The month-review card about last month (App builds it; plan 13). */
   review?: React.ReactNode;
@@ -43,8 +43,6 @@ interface Props {
   onSearchSeedUsed?: () => void;
   /** The month's balance day by day, for the line on the balance card (App builds it). */
   track?: MonthTrack | null;
-  /** No balance card yet: the setup asks for the balance first, instead of a card full of zeros. */
-  hideBalance?: boolean;
   /** When this month was last matched against the bank (plan 10). */
   reconciledAt?: number;
   /** The balance card's eye, while amounts are hidden (plan 06). */
@@ -297,10 +295,8 @@ export function MonthView(p: Props) {
           onOpenMonth={m => { setQuery(''); p.onMonth(m); }}
         />
       ) : (<>
-      {!p.hideBalance && (
-        <BalanceCard balance={balance} track={p.track} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account}
-          open={p.balanceOpen} onOpen={p.onBalanceOpen} given={p.balanceGiven} onBalanceNow={p.onBalanceNow} />
-      )}
+      <BalanceCard balance={balance} track={p.track} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account}
+        open={p.balanceOpen} onOpen={p.onBalanceOpen} given={p.balanceGiven} onBalanceNow={p.onBalanceNow} />
 
       {/* Keyed by month: stepping to another one brings its cards in afresh
           (the balance card above stays, and its numbers run to the new values). */}
