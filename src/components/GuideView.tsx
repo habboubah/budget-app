@@ -8,10 +8,8 @@ import {
 } from 'lucide-react';
 import { Hue } from '../types';
 import { Strings, fmt } from '../translations';
-import {
-  CHAPTER_TITLES, GuidePart, GuideTopic, GuideTopicId, GuideWords, TourId, byChapter, guideParts, guideText, guideTopics, searchGuide,
-  topicText, tourAbout, tourName,
-} from '../guide';
+import { CHAPTER_TITLES, GuideTopic, GuideTopicId, GuideWords, byChapter, guideTopics, topicText } from '../guide';
+import { GuidePart, TourId, guideParts, guideText, searchGuide, tourAbout, tourName } from '../guideKit';
 import type { GuidePages } from '../guidePages';
 import { Empty, Group, IconTile, Screen } from '../ui/Screen';
 import { SearchField } from '../ui/SearchField';

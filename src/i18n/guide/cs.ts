@@ -158,7 +158,8 @@ const cs: GuidePages = {
   tourPlanGoals: 'Tvoje pokladničky: na co spoříš a jak daleko už jsi.',
   tourSetSecurity: 'Skrytí částek, zámek aplikace, připomínky – vše, co chrání tvá data.',
   tourSetDisplay: 'Jazyk, světlý nebo tmavý vzhled, barva aplikace a tvoje měna.',
-  tourSetBook: 'Tvoje domácí kniha: kategorie a rozpočty, oblíbené, účty, pravidla a další.',
+  tourSetBook: 'Tvoje domácí kniha: kategorie a rozpočty, účty, oblíbené a kdy začíná tvůj měsíc.',
+  tourSetMore: 'Co nepotřebuješ každý den: {debts}, {projects}, {taxList} a {rules}.',
   tourSetTransfer: 'Tady vše zálohuješ do jednoho souboru – pro nové zařízení nebo pro jistotu.',
 };
 

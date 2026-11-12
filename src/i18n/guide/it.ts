@@ -158,7 +158,8 @@ const it: GuidePages = {
   tourPlanGoals: 'I tuoi salvadanai: per cosa risparmi e a che punto sei.',
   tourSetSecurity: 'Nascondere gli importi, bloccare l’app, promemoria – tutto ciò che protegge i tuoi dati.',
   tourSetDisplay: 'Lingua, chiaro o scuro, il colore dell’app e la tua valuta.',
-  tourSetBook: 'Il tuo registro: categorie e budget, preferiti, conti, regole e altro.',
+  tourSetBook: 'Il tuo registro: categorie e budget, conti, preferiti e quando inizia il tuo mese.',
+  tourSetMore: 'Ciò che non ti serve ogni giorno: {debts}, {projects}, {taxList} e {rules}.',
   tourSetTransfer: 'Qui salvi tutto in un unico file – per un nuovo dispositivo o per sicurezza.',
 };
 

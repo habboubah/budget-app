@@ -70,7 +70,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `src/receipts.ts` | Receipts and documents on an entry |
 | `src/keywords.ts` | Name completion and the category guessed from the name |
 | `src/tips.ts` | The one tip card on the month page |
-| `src/guide.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Optionen › Anleitung*), the tours and what *Zeigen* points at: topics, labels, search, marks (pure, tested); its pages per language, loaded on demand |
+| `src/guide.ts`, `src/guideKit.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Optionen › Anleitung*), the tours and what *Zeigen* points at: topics and what is remembered (`guide.ts`, in the main bundle); labels, search and the tours' marks (`guideKit.ts`, a lazy chunk); its pages per language, loaded on demand (all pure, tested) |
 | `src/crypto.ts`, `src/export.ts`, `src/limits.ts` | Encrypted backups (WebCrypto), sharing files, the size limits of every import |
 | `src/currency.ts`, `src/links.ts`, `src/platform.ts` | Currencies; the links *Über Spartopf* opens; which app we run in |
 | `src/demo.ts` | The test data year |
@@ -663,7 +663,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     guide opens or a tour begins — so not even de / en / ar weigh on the main
     bundle (the performance budget). `GuideView` (with its scenes) and `Tour`
     are lazy chunks too (`loadGuide` / `loadTour` in App; rendered only once
-    loaded). Only what shows outside the guide stays in `Strings`: the row,
+    loaded), and so is `src/guideKit.ts` — the labels a text names, the
+    search, `MARKS` / `TOUR_STEPS`: App only ever imports its types, and
+    gets the functions from `loadTour` (`guideKit`, handed to `beginMarks`).
+    `src/guide.ts` keeps only what the store and App need from the start. Only what shows outside the guide stays in `Strings`: the row,
     the gestures card's two buttons, the tip, *Weiter* / *Tour beenden* /
     "{n} von {total}", *Zurück zur Anleitung*. A text names a button through
     a placeholder — `{split}`, `{settings}`, `{add}`, … (`guideLabels`) —

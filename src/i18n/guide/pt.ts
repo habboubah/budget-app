@@ -158,7 +158,8 @@ const pt: GuidePages = {
   tourPlanGoals: 'Os teus mealheiros: para que poupas e até onde já chegaste.',
   tourSetSecurity: 'Ocultar valores, bloquear a app, lembretes – tudo o que protege os teus dados.',
   tourSetDisplay: 'Idioma, claro ou escuro, a cor da app e a tua moeda.',
-  tourSetBook: 'O teu livro de contas: categorias e orçamentos, favoritos, contas, regras e mais.',
+  tourSetBook: 'O teu livro de contas: categorias e orçamentos, contas, favoritos e quando começa o teu mês.',
+  tourSetMore: 'O que não precisas todos os dias: {debts}, {projects}, {taxList} e {rules}.',
   tourSetTransfer: 'Aqui guardas tudo num só ficheiro – para um novo dispositivo ou por precaução.',
 };
 

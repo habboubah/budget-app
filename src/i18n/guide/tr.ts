@@ -158,7 +158,8 @@ const tr: GuidePages = {
   tourPlanGoals: 'Kumbaraların: ne için biriktirdiğin ve ne kadar yol aldığın.',
   tourSetSecurity: 'Tutarları gizle, uygulamayı kilitle, hatırlatmalar – verilerini koruyan her şey.',
   tourSetDisplay: 'Dil, açık ya da koyu, uygulamanın rengi ve para birimin.',
-  tourSetBook: 'Bütçe defterin: kategoriler ve bütçeler, favoriler, hesaplar, kurallar ve daha fazlası.',
+  tourSetBook: 'Bütçe defterin: kategoriler ve bütçeler, hesaplar, favoriler ve ayının ne zaman başladığı.',
+  tourSetMore: 'Her gün gerekmeyenler: {debts}, {projects}, {taxList} ve {rules}.',
   tourSetTransfer: 'Burada her şeyi tek bir dosyaya yedeklersin – yeni bir cihaz için ya da her ihtimale karşı.',
 };
 

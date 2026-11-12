@@ -158,7 +158,8 @@ const fr: GuidePages = {
   tourPlanGoals: 'Vos cagnottes : pour quoi vous épargnez et où vous en êtes.',
   tourSetSecurity: 'Masquer les montants, verrouiller l’app, les rappels – tout ce qui protège vos données.',
   tourSetDisplay: 'Langue, clair ou sombre, la couleur de l’app et votre devise.',
-  tourSetBook: 'Votre carnet de budget : catégories et budgets, favoris, comptes, règles et plus.',
+  tourSetBook: 'Votre carnet de budget : catégories et budgets, comptes, favoris et le jour où votre mois commence.',
+  tourSetMore: 'Ce dont vous n’avez pas besoin tous les jours : {debts}, {projects}, {taxList} et {rules}.',
   tourSetTransfer: 'Ici, vous sauvegardez tout dans un fichier – pour un nouvel appareil ou au cas où.',
 };
 

@@ -172,7 +172,8 @@ const de = {
   tourPlanGoals: 'Deine Spartöpfe: wofür du sparst und wie weit du schon bist.',
   tourSetSecurity: 'Beträge verbergen, die App sperren, Erinnerungen – alles, was deine Daten schützt.',
   tourSetDisplay: 'Sprache, hell oder dunkel, die Farbe der App und deine Währung.',
-  tourSetBook: 'Dein Haushaltsbuch: Kategorien und Budgets, Favoriten, Konten, Regeln und mehr.',
+  tourSetBook: 'Dein Haushaltsbuch: Kategorien und Budgets, Konten, Favoriten und wann dein Monat beginnt.',
+  tourSetMore: 'Was du nicht jeden Tag brauchst: {debts}, {projects}, {taxList} und {rules}.',
   tourSetTransfer: 'Hier sicherst du alles in eine Datei – für ein neues Gerät oder einfach für alle Fälle.',
 };
 

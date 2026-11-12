@@ -158,7 +158,8 @@ const en: GuidePages = {
   tourPlanGoals: 'Your savings pots: what you are saving for and how far you have come.',
   tourSetSecurity: 'Hide amounts, lock the app, reminders – everything that protects your data.',
   tourSetDisplay: 'Language, light or dark, the app’s colour and your currency.',
-  tourSetBook: 'Your budget book: categories and budgets, favourites, accounts, rules and more.',
+  tourSetBook: 'Your budget book: categories and budgets, accounts, favourites and when your month starts.',
+  tourSetMore: 'What you don’t need every day: {debts}, {projects}, {taxList} and {rules}.',
   tourSetTransfer: 'Back everything up to one file here – for a new device, or just in case.',
 };
 

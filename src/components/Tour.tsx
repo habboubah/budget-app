@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { Strings, fmt } from '../translations';
-import { MARKS, MarkId, tourAnchor, tourCardPlace } from '../guide';
+import { MARKS, MarkId, tourAnchor, tourCardPlace } from '../guideKit';
 import { Button } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
 import { useDialog } from '../ui/useDialog';

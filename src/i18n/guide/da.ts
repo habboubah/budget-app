@@ -158,7 +158,8 @@ const da: GuidePages = {
   tourPlanGoals: 'Dine sparebøsser: hvad du sparer op til, og hvor langt du er nået.',
   tourSetSecurity: 'Skjul beløb, lås appen, påmindelser – alt, der beskytter dine data.',
   tourSetDisplay: 'Sprog, lyst eller mørkt, appens farve og din valuta.',
-  tourSetBook: 'Dit budget: kategorier og budgetter, favoritter, konti, regler og mere.',
+  tourSetBook: 'Dit budget: kategorier og budgetter, konti, favoritter og hvornår din måned begynder.',
+  tourSetMore: 'Det, du ikke har brug for hver dag: {debts}, {projects}, {taxList} og {rules}.',
   tourSetTransfer: 'Her sikkerhedskopierer du alt til én fil – til en ny enhed eller for en sikkerheds skyld.',
 };
 

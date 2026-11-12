@@ -483,8 +483,9 @@ const SCREENS = [
   { name: 'tour-stats-rhythm', run: openTour('stats', 4), audit: 'dialog' },
   { name: 'tour-plan-pace', run: openTour('plan', 0), audit: 'dialog' },
   { name: 'tour-plan-outlook', run: openTour('plan', 3), audit: 'dialog' },
-  { name: 'tour-settings-security', run: openTour('settings', 0), audit: 'dialog' },
-  { name: 'tour-settings-transfer', run: openTour('settings', 3), audit: 'dialog' },
+  { name: 'tour-settings-transfer', run: openTour('settings', 0), audit: 'dialog' },
+  { name: 'tour-settings-more', run: openTour('settings', 2), audit: 'dialog' },
+  { name: 'tour-settings-security', run: openTour('settings', 4), audit: 'dialog' },
   // Zeigen: the mark on the screen a topic leads to, and the way back once it is put away.
   { name: 'point-add', run: openPoint('add'), audit: 'dialog' },
   { name: 'point-repeats', run: openPoint('repeats'), audit: 'dialog' },

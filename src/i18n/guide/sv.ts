@@ -158,7 +158,8 @@ const sv: GuidePages = {
   tourPlanGoals: 'Dina sparburkar: vad du sparar till och hur långt du har kommit.',
   tourSetSecurity: 'Dölja belopp, låsa appen, påminnelser – allt som skyddar dina data.',
   tourSetDisplay: 'Språk, ljust eller mörkt, appens färg och din valuta.',
-  tourSetBook: 'Din hushållsbok: kategorier och budgetar, favoriter, konton, regler och mer.',
+  tourSetBook: 'Din hushållsbok: kategorier och budgetar, konton, favoriter och när din månad börjar.',
+  tourSetMore: 'Det du inte behöver varje dag: {debts}, {projects}, {taxList} och {rules}.',
   tourSetTransfer: 'Här säkerhetskopierar du allt till en fil – för en ny enhet eller för säkerhets skull.',
 };
 

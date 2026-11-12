@@ -73,7 +73,8 @@ import { inboxReview, inboxToEntries } from './native/inbox';
 import { CaptureView } from './components/CaptureView';
 import { HintCard } from './components/HintCard';
 import { nextTip } from './tips';
-import { GuideTopic, GuideTopicId, GuideWords, MarkId, TourId, guideText, markText, topicText, tourAnchor, tourName, tourSteps } from './guide';
+import { GuideTopic, GuideTopicId, GuideWords, topicText } from './guide';
+import type { MarkId, TourId } from './guideKit';
 import { guidePages, loadGuidePages } from './guidePages';
 import { DeepLink, parseDeepLink } from './native/deepLink';
 import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, setSecure, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
@@ -107,7 +108,9 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
 let GuideScreen: typeof import('./components/GuideView').GuideView | null = null;
 let TourOverlay: typeof import('./components/Tour').Tour | null = null;
 const loadGuide = () => import('./components/GuideView').then(m => { GuideScreen = m.GuideView; });
-const loadTour = () => import('./components/Tour').then(m => { TourOverlay = m.Tour; });
+/** The tours' marks and the labels a text names (src/guideKit.ts): loaded with the tour. */
+let guideKit: typeof import('./guideKit') | null = null;
+const loadTour = () => Promise.all([import('./components/Tour'), import('./guideKit')]).then(([m, k]) => { TourOverlay = m.Tour; guideKit = k; });
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
@@ -1085,11 +1088,11 @@ export default function App() {
   /** A tab's root, whatever was pushed on it. */
   const root = (id: TabId) => { setTab(id); setStack(s => ({ ...s, [id]: undefined })); };
   /** Once the screen stands (it comes in over about 300 ms; a sheet a little longer), find the marks and begin. */
-  const beginMarks = (wait: number, make: (words: GuideWords) => TourState) => {
+  const beginMarks = (wait: number, make: (words: GuideWords, kit: typeof import('./guideKit')) => TourState) => {
     window.clearTimeout(tourTimer.current);
     const loaded = Promise.all([loadTour(), loadGuidePages(language)]);
     tourTimer.current = window.setTimeout(() => {
-      void loaded.then(([, p]) => setTour(make({ ...t, ...p })), () => undefined);
+      void loaded.then(([, p]) => { if (guideKit) setTour(make({ ...t, ...p }, guideKit)); }, () => undefined);
     }, wait);
   };
   /** A tour (src/guide.ts), from the guide's list, a topic, or the *Gut zu wissen* card. */
@@ -1102,7 +1105,7 @@ export default function App() {
       if (quickAddCategory && balance.started) setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory });
     } else root(id === 'plan' ? 'insights' : id);
     if (fromGuide) setGuideAway(true);
-    beginMarks(id === 'entry' ? 650 : 450, words => {
+    beginMarks(id === 'entry' ? 650 : 450, (words, { guideText, markText, tourAnchor, tourName, tourSteps }) => {
       const marks = tourSteps(id, m => !!tourAnchor(m));
       if (!marks.length) return null;
       return {
@@ -1159,7 +1162,7 @@ export default function App() {
     }
     const mark = topic.point;
     if (mark) {
-      beginMarks(a === 'entry' ? 650 : 450, words => (tourAnchor(mark)
+      beginMarks(a === 'entry' ? 650 : 450, (words, { guideText, tourAnchor }) => (tourAnchor(mark)
         ? { marks: [mark], texts: [guideText(words, topicText(topic).sum)], index: 0, label: guideText(words, topic.title), point: true, guide: true }
         : null));
     }

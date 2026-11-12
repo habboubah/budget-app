@@ -158,7 +158,8 @@ const pl: GuidePages = {
   tourPlanGoals: 'Twoje skarbonki: na co oszczędzasz i jak daleko już jesteś.',
   tourSetSecurity: 'Ukrywanie kwot, blokada aplikacji, przypomnienia – wszystko, co chroni twoje dane.',
   tourSetDisplay: 'Język, jasny lub ciemny wygląd, kolor aplikacji i twoja waluta.',
-  tourSetBook: 'Twój budżet domowy: kategorie i budżety, ulubione, konta, reguły i więcej.',
+  tourSetBook: 'Twój budżet domowy: kategorie i budżety, konta, ulubione i dzień, od którego zaczyna się miesiąc.',
+  tourSetMore: 'To, czego nie potrzebujesz codziennie: {debts}, {projects}, {taxList} i {rules}.',
   tourSetTransfer: 'Tutaj zapiszesz wszystko w jednym pliku – na nowe urządzenie albo na wszelki wypadek.',
 };
 

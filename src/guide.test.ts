@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import translations, { Language, languages, loadAllLanguages } from './translations';
+import { CHAPTER_TITLES, GUIDE_CHAPTERS, GUIDE_TOPICS, GuideWords, byChapter, guideTopics, readGuideSeen, topicText } from './guide';
 import {
-  CHAPTER_TITLES, GUIDE_CHAPTERS, GUIDE_TOPICS, GuideWords, MARKS, MarkId, TOURS, TOUR_STEPS, byChapter, guideLabels, guideText, guideTopics,
-  guideParts, markText, readGuideSeen, searchGuide, topicText, tourAbout, tourCardPlace, tourName, tourSteps,
-} from './guide';
+  MARKS, MarkId, TOURS, TOUR_STEPS, guideLabels, guideParts, guideText, markText, searchGuide, tourAbout, tourCardPlace, tourName, tourSteps,
+} from './guideKit';
 import { GuidePages, guidePages, loadGuidePages } from './guidePages';
 
 await loadAllLanguages();

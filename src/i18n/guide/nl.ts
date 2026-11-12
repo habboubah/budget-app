@@ -158,7 +158,8 @@ const nl: GuidePages = {
   tourPlanGoals: 'Je spaarpotten: waarvoor je spaart en hoe ver je al bent.',
   tourSetSecurity: 'Bedragen verbergen, de app vergrendelen, herinneringen – alles wat je gegevens beschermt.',
   tourSetDisplay: 'Taal, licht of donker, de kleur van de app en je valuta.',
-  tourSetBook: 'Je huishoudboekje: categorieën en budgetten, favorieten, rekeningen, regels en meer.',
+  tourSetBook: 'Je huishoudboekje: categorieën en budgetten, rekeningen, favorieten en wanneer je maand begint.',
+  tourSetMore: 'Wat je niet elke dag nodig hebt: {debts}, {projects}, {taxList} en {rules}.',
   tourSetTransfer: 'Hier maak je een back-up van alles in één bestand – voor een nieuw apparaat of voor de zekerheid.',
 };
 

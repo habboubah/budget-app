@@ -158,7 +158,8 @@ const es: GuidePages = {
   tourPlanGoals: 'Tus huchas: para qué ahorras y cuánto llevas.',
   tourSetSecurity: 'Ocultar importes, bloquear la app, recordatorios: todo lo que protege tus datos.',
   tourSetDisplay: 'Idioma, claro u oscuro, el color de la app y tu moneda.',
-  tourSetBook: 'Tu libro de cuentas: categorías y presupuestos, favoritos, cuentas, reglas y más.',
+  tourSetBook: 'Tu libro de cuentas: categorías y presupuestos, cuentas, favoritos y cuándo empieza tu mes.',
+  tourSetMore: 'Lo que no necesitas a diario: {debts}, {projects}, {taxList} y {rules}.',
   tourSetTransfer: 'Aquí guardas todo en un archivo, para un dispositivo nuevo o por si acaso.',
 };
 
