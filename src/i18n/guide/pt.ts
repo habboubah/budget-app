@@ -6,7 +6,6 @@ const pt: GuidePages = {
   guideSearch: 'Pesquisar no guia',
   guideShow: 'Mostrar',
   guideRead: 'lido',
-  guideTourBody: 'A página do mês em poucos passos – menos de um minuto.',
 
   // The chapters (Planen is the tab’s own name).
   guideChBasics: 'O essencial',
@@ -64,6 +63,39 @@ const pt: GuidePages = {
   tourMonth: 'É aqui que mudas de mês. Os registos recorrentes vêm sozinhos.',
   tourTabs: '«{stats}» olha para trás, «{plan}» olha em frente. O guia completo está em «{settings}».',
   tourAdd: 'E é aqui que registas algo – primeiro o valor.',
+
+  // The tours: the guide's list, and one sentence a mark.
+  guideToursTitle: 'Visitas guiadas',
+  guideToursBody: 'Passo a passo nos ecrãs verdadeiros – cada uma demora menos de um minuto.',
+  tourNameMonth: 'A página do mês',
+  tourAboutMonth: 'Saldo, marcar, mudar de mês',
+  tourNameEntry: 'Fazer um registo',
+  tourAboutEntry: 'Valor, nome, categoria e o resto',
+  tourNameStats: '{stats}',
+  tourAboutStats: 'Período, taxa de poupança, para onde vai o dinheiro',
+  tourNamePlan: '{plan}',
+  tourAboutPlan: 'Orçamentos, os próximos 30 dias, perspetiva',
+  tourNameSettings: '{settings}',
+  tourAboutSettings: 'Segurança, apresentação, cópia de segurança',
+  tourEntryAmount: 'Primeiro o valor. As teclas + − × ÷ por cima do teclado somam um talão aqui mesmo.',
+  tourEntryName: 'Depois para quê. O Spartopf sugere nomes que já usaste e completa-os enquanto escreves.',
+  tourEntryCategory: 'O Spartopf escolhe a categoria que combina com o nome (✦). Se não for a certa, toca noutra.',
+  tourEntryDetails: 'O resto está aqui: data, pago ou pendente, «{repeat}», «{receipt}», nota e «# {tag}».',
+  tourSave: 'Pronto? O visto guarda o registo.',
+  tourStatsRange: 'Escolhe o período: 3, 6, 9 ou 12 meses, um ano ou tudo. Tudo o que está por baixo segue-o.',
+  tourStatsHero: 'O essencial num relance: quanto do teu rendimento sobra – em média por mês.',
+  tourStatsChart: 'Receitas e despesas mês a mês. Passa o dedo por cima para ver cada valor.',
+  tourStatsWhere: 'Para onde vai o dinheiro – por categoria, beneficiário ou etiqueta. Um toque mostra os detalhes.',
+  tourStatsRhythm: 'Os dias da semana e do mês em que gastas mais.',
+  tourPlanPace: 'O mês em curso: estás a gastar mais depressa do que o habitual, e onde vais acabar o mês?',
+  tourPlanBudgets: 'Os teus orçamentos: o que sobra em cada categoria este mês.',
+  tourPlanRunway: 'Os próximos 30 dias, dia a dia – com o ponto mais baixo antes de voltar a entrar dinheiro.',
+  tourPlanOutlook: 'Os próximos doze meses. «{whatIf}» experimenta aqui uma compra antes de a fazeres.',
+  tourPlanGoals: 'Os teus mealheiros: para que poupas e até onde já chegaste.',
+  tourSetSecurity: 'Ocultar valores, bloquear a app, lembretes – tudo o que protege os teus dados.',
+  tourSetDisplay: 'Idioma, claro ou escuro, a cor da app e a tua moeda.',
+  tourSetBook: 'O teu livro de contas: categorias e orçamentos, favoritos, contas, regras e mais.',
+  tourSetTransfer: 'Aqui guardas tudo num só ficheiro – para um novo dispositivo ou por precaução.',
 };
 
 export default pt;

@@ -64,6 +64,7 @@ const LANGS = {
     locale: 'de-DE',
     categories: 'Kategorien',
     guide: 'Anleitung',
+    show: 'Zeigen',
     transfer: 'Sichern und übertragen',
     reminders: 'An offene Posten erinnern',
     capture: 'Automatisch erfassen',
@@ -81,6 +82,7 @@ const LANGS = {
     locale: 'ar',
     categories: 'الفئات',
     guide: 'الدليل',
+    show: 'أرِني',
     transfer: 'النسخ الاحتياطي والنقل',
     reminders: 'التذكير بالبنود المعلّقة',
     capture: 'التسجيل التلقائي',
@@ -209,10 +211,10 @@ const openGuide = async (page, l) => {
   await page.locator('main button', { hasText: l.guide }).first().click();
   await page.waitForTimeout(500);
 };
-/** The guide's short tour, started from its card, `steps` times *Weiter* on. */
-const openTour = steps => async (page, l) => {
+/** A tour from the guide's list (src/guide.ts), `steps` times *Weiter* on. */
+const openTour = (tour, steps) => async (page, l) => {
   await openGuide(page, l);
-  await page.locator('main section .hero.hero-glow').first().click();
+  await page.locator(`[data-guide-tour="${tour}"]`).click();
   await page.waitForSelector('[data-tour-open]', { timeout: 5000 });
   await page.waitForTimeout(700);
   for (let i = 0; i < steps; i++) {
@@ -220,6 +222,20 @@ const openTour = steps => async (page, l) => {
     await page.waitForTimeout(450);
   }
   await page.waitForTimeout(500);
+};
+/** A topic's *Zeigen*: the screen it leads to, and the mark on it. `ok`: the mark put away, the way back showing. */
+const openPoint = (topic, ok = false) => async (page, l) => {
+  await openGuide(page, l);
+  const row = page.locator(`main [data-guide-topic="${topic}"] button`).first();
+  await row.scrollIntoViewIfNeeded();
+  await row.click();
+  await page.waitForTimeout(350);
+  await page.locator(`main [data-guide-topic="${topic}"] button[aria-label^="${l.show}"]`).click();
+  await page.waitForTimeout(1300);
+  if (ok) {
+    await page.locator('[data-tour-open] [role="dialog"] button.hero').click();
+    await page.waitForTimeout(500);
+  }
 };
 /** Statistik → the first row of "Wofür das Geld geht": the category's own screen. */
 const openCategory1 = async page => {
@@ -438,13 +454,31 @@ const SCREENS = [
   }, audit: 'page' },
   { name: 'guide-search', run: async (page, l) => { await openGuide(page, l); await page.click('input[type="search"]'); await page.keyboard.type('pdf'); await page.waitForTimeout(300); }, audit: 'page' },
   { name: 'guide-native', storage: { 'spartopf-dev-native': '1' }, run: openGuide, full: true },
-  { name: 'tour-balance', run: openTour(0), audit: 'dialog' },
-  { name: 'tour-tick', run: openTour(1), audit: 'dialog' },
-  { name: 'tour-month', run: openTour(2), audit: 'dialog' },
-  { name: 'tour-tabs', run: openTour(3), audit: 'dialog' },
-  { name: 'tour-add', run: openTour(4), audit: 'dialog' },
+  { name: 'tour-balance', run: openTour('month', 0), audit: 'dialog' },
+  { name: 'tour-tick', run: openTour('month', 1), audit: 'dialog' },
+  { name: 'tour-month', run: openTour('month', 2), audit: 'dialog' },
+  { name: 'tour-tabs', run: openTour('month', 3), audit: 'dialog' },
+  { name: 'tour-add', run: openTour('month', 4), audit: 'dialog' },
   // A first run has no balance and nothing to tick: the tour is three steps.
-  { name: 'tour-fresh', fresh: true, run: openTour(0), audit: 'dialog' },
+  { name: 'tour-fresh', fresh: true, run: openTour('month', 0), audit: 'dialog' },
+  // The other tours: the entry sheet, Statistik, Planen, Optionen.
+  { name: 'tour-entry-amount', run: openTour('entry', 0), audit: 'dialog' },
+  { name: 'tour-entry-details', run: openTour('entry', 3), audit: 'dialog' },
+  { name: 'tour-entry-save', run: openTour('entry', 4), audit: 'dialog' },
+  { name: 'tour-stats-range', run: openTour('stats', 0), audit: 'dialog' },
+  { name: 'tour-stats-chart', run: openTour('stats', 2), audit: 'dialog' },
+  { name: 'tour-stats-rhythm', run: openTour('stats', 4), audit: 'dialog' },
+  { name: 'tour-plan-pace', run: openTour('plan', 0), audit: 'dialog' },
+  { name: 'tour-plan-outlook', run: openTour('plan', 3), audit: 'dialog' },
+  { name: 'tour-settings-security', run: openTour('settings', 0), audit: 'dialog' },
+  { name: 'tour-settings-transfer', run: openTour('settings', 3), audit: 'dialog' },
+  // Zeigen: the mark on the screen a topic leads to, and the way back once it is put away.
+  { name: 'point-add', run: openPoint('add'), audit: 'dialog' },
+  { name: 'point-repeats', run: openPoint('repeats'), audit: 'dialog' },
+  { name: 'point-bank', run: openPoint('bank'), audit: 'dialog' },
+  { name: 'point-budgets', run: openPoint('budgets'), audit: 'dialog' },
+  { name: 'point-lock', run: openPoint('lock'), audit: 'dialog' },
+  { name: 'guide-back', run: openPoint('bank', true), audit: 'page' },
   { name: 'hint-guide', storage: { 'spartopf-tip-state': '{"done":[]}' }, run: page => page.evaluate(() => document.querySelector('main section[aria-label]:not(.hero)')?.scrollIntoView({ block: 'center' })), audit: 'page' },
   { name: 'stats-empty', fresh: true, run: tab(1) },
   // Cash and savings accounts (plan 30): the switch on the balance card, the transfers card, Konten, the sheets.

@@ -6,7 +6,6 @@ const en: GuidePages = {
   guideSearch: 'Search the guide',
   guideShow: 'Show me',
   guideRead: 'read',
-  guideTourBody: 'The month page in a few steps – takes less than a minute.',
 
   // The chapters (Planen is the tab’s own name).
   guideChBasics: 'The basics',
@@ -64,6 +63,39 @@ const en: GuidePages = {
   tourMonth: 'This is where you switch months. Recurring entries come along on their own.',
   tourTabs: '“{stats}” looks back, “{plan}” looks ahead. Under “{settings}” you’ll find the whole guide.',
   tourAdd: 'And this is where you enter something – the amount first.',
+
+  // The tours: the guide's list, and one sentence a mark.
+  guideToursTitle: 'Tours',
+  guideToursBody: 'Step by step on the real screens – each takes less than a minute.',
+  tourNameMonth: 'The month page',
+  tourAboutMonth: 'Balance, ticking off, switching months',
+  tourNameEntry: 'Adding an entry',
+  tourAboutEntry: 'Amount, name, category and the rest',
+  tourNameStats: '{stats}',
+  tourAboutStats: 'Period, savings rate, where the money goes',
+  tourNamePlan: '{plan}',
+  tourAboutPlan: 'Budgets, the next 30 days, outlook',
+  tourNameSettings: '{settings}',
+  tourAboutSettings: 'Security, display, backup',
+  tourEntryAmount: 'The amount comes first. The + − × ÷ keys above the keyboard add up a receipt right here.',
+  tourEntryName: 'Then what for. Spartopf suggests names you have used before and completes them as you type.',
+  tourEntryCategory: 'Spartopf picks the category that fits the name (✦). If it’s wrong, tap another one.',
+  tourEntryDetails: 'The rest is here: date, paid or open, “{repeat}”, “{receipt}”, note and “# {tag}”.',
+  tourSave: 'Done? The tick saves the entry.',
+  tourStatsRange: 'Pick the period: 3, 6, 9 or 12 months, a year or everything. Everything below follows it.',
+  tourStatsHero: 'The main thing at a glance: how much of your income is left – on average per month.',
+  tourStatsChart: 'Income and spending month by month. Run your finger across it to see every value.',
+  tourStatsWhere: 'Where the money goes – by category, payee or tag. A tap shows the details.',
+  tourStatsRhythm: 'The weekdays and the days of the month you spend the most on.',
+  tourPlanPace: 'The running month: are you spending faster than usual, and where will you end up?',
+  tourPlanBudgets: 'Your budgets: what is left in each category this month.',
+  tourPlanRunway: 'The next 30 days, day by day – with the lowest point before money comes in again.',
+  tourPlanOutlook: 'The next twelve months. “{whatIf}” tries a purchase here before you make it.',
+  tourPlanGoals: 'Your savings pots: what you are saving for and how far you have come.',
+  tourSetSecurity: 'Hide amounts, lock the app, reminders – everything that protects your data.',
+  tourSetDisplay: 'Language, light or dark, the app’s colour and your currency.',
+  tourSetBook: 'Your budget book: categories and budgets, favourites, accounts, rules and more.',
+  tourSetTransfer: 'Back everything up to one file here – for a new device, or just in case.',
 };
 
 export default en;

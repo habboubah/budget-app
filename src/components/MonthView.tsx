@@ -217,7 +217,7 @@ export function MonthView(p: Props) {
       }
       accessory={
         <div className="flex items-center gap-2">
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1" data-tour="search">
             <SearchField
               value={query}
               onChange={setQuery}

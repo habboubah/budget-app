@@ -6,7 +6,6 @@ const cs: GuidePages = {
   guideSearch: 'Hledat v průvodci',
   guideShow: 'Ukázat',
   guideRead: 'přečteno',
-  guideTourBody: 'Stránka měsíce v několika krocích – zabere méně než minutu.',
 
   // The chapters (Planen is the tab’s own name).
   guideChBasics: 'Základy',
@@ -64,6 +63,39 @@ const cs: GuidePages = {
   tourMonth: 'Tady přepínáš měsíc. Opakované položky přejdou samy.',
   tourTabs: '„{stats}“ se dívá zpět, „{plan}“ dopředu. Celého průvodce najdeš v části „{settings}“.',
   tourAdd: 'A tady něco zadáš – nejdřív částku.',
+
+  // The tours: the guide's list, and one sentence a mark.
+  guideToursTitle: 'Prohlídky',
+  guideToursBody: 'Krok za krokem na skutečných obrazovkách – každá trvá méně než minutu.',
+  tourNameMonth: 'Stránka měsíce',
+  tourAboutMonth: 'Zůstatek, odškrtávání, přepínání měsíců',
+  tourNameEntry: 'Zadání položky',
+  tourAboutEntry: 'Částka, název, kategorie a zbytek',
+  tourNameStats: '{stats}',
+  tourAboutStats: 'Období, míra úspor, kam jdou peníze',
+  tourNamePlan: '{plan}',
+  tourAboutPlan: 'Rozpočty, příštích 30 dní, výhled',
+  tourNameSettings: '{settings}',
+  tourAboutSettings: 'Zabezpečení, zobrazení, záloha',
+  tourEntryAmount: 'Nejdřív částka. Klávesy + − × ÷ nad klávesnicí sečtou účtenku rovnou tady.',
+  tourEntryName: 'Potom za co. Spartopf navrhuje názvy, které už jsi použil, a doplňuje je při psaní.',
+  tourEntryCategory: 'Spartopf vybere kategorii, která k názvu sedí (✦). Pokud nesedí, klepni na jinou.',
+  tourEntryDetails: 'Zbytek je tady: datum, zaplaceno nebo čeká, „{repeat}“, „{receipt}“, poznámka a „# {tag}“.',
+  tourSave: 'Hotovo? Fajfka položku uloží.',
+  tourStatsRange: 'Vyber období: 3, 6, 9 nebo 12 měsíců, rok nebo vše. Všechno pod ním se podle něj řídí.',
+  tourStatsHero: 'To hlavní na první pohled: kolik z tvých příjmů zbývá – v průměru za měsíc.',
+  tourStatsChart: 'Příjmy a výdaje měsíc po měsíci. Přejeď po grafu prstem a uvidíš každou hodnotu.',
+  tourStatsWhere: 'Kam jdou peníze – podle kategorie, příjemce nebo štítku. Klepnutí ukáže podrobnosti.',
+  tourStatsRhythm: 'Dny v týdnu a dny v měsíci, kdy utrácíš nejvíc.',
+  tourPlanPace: 'Běžný měsíc: utrácíš rychleji než obvykle a kde skončíš na konci měsíce?',
+  tourPlanBudgets: 'Tvoje rozpočty: kolik v každé kategorii tento měsíc zbývá.',
+  tourPlanRunway: 'Příštích 30 dní, den po dni – s nejnižším stavem, než zase přijdou peníze.',
+  tourPlanOutlook: 'Příštích dvanáct měsíců. „{whatIf}“ tu vyzkouší nákup dřív, než ho uděláš.',
+  tourPlanGoals: 'Tvoje pokladničky: na co spoříš a jak daleko už jsi.',
+  tourSetSecurity: 'Skrytí částek, zámek aplikace, připomínky – vše, co chrání tvá data.',
+  tourSetDisplay: 'Jazyk, světlý nebo tmavý vzhled, barva aplikace a tvoje měna.',
+  tourSetBook: 'Tvoje domácí kniha: kategorie a rozpočty, oblíbené, účty, pravidla a další.',
+  tourSetTransfer: 'Tady vše zálohuješ do jednoho souboru – pro nové zařízení nebo pro jistotu.',
 };
 
 export default cs;

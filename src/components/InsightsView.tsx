@@ -86,14 +86,14 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
   return (
     <Screen title={t.insightsTitle} tabbed>
       {book.months.includes(current) && (p.spent > 0 || p.verdict === 'stale') && (
-        <PaceCard pace={p} categories={data.categories} language={language} t={t} onReport={() => onReport(current)} onExplain={onExplain} />
+        <div data-tour="plan-pace"><PaceCard pace={p} categories={data.categories} language={language} t={t} onReport={() => onReport(current)} onExplain={onExplain} /></div>
       )}
 
-      <BudgetsCard data={data} month={current} language={language} t={t} onBudget={onBudget} />
+      <div data-tour="plan-budgets"><BudgetsCard data={data} month={current} language={language} t={t} onBudget={onBudget} /></div>
 
-      {next && <RunwayCard runway={next} t={t} onDue={onDue} onExplain={onExplain} />}
+      {next && <div data-tour="plan-runway"><RunwayCard runway={next} t={t} onDue={onDue} onExplain={onExplain} /></div>}
 
-      {ahead && <OutlookCard outlook={ahead} categories={data.categories} t={t} onExplain={onExplain} onWhatIf={onWhatIf} />}
+      {ahead && <div data-tour="plan-outlook"><OutlookCard outlook={ahead} categories={data.categories} t={t} onExplain={onExplain} onWhatIf={onWhatIf} /></div>}
 
       <ContractsCard items={contracts} categories={data.categories} averageIncome={averageIncome}
         fresh={hints.fresh} missing={hints.missing} t={t} onOpen={onContract} onAll={onContractsAll} onAdd={onAdd} />
@@ -107,7 +107,7 @@ export function InsightsView({ book, language, t, hidden, onBudget, onContract, 
         />
       )}
 
-      <GoalsCard data={data} t={t} today={today} onOpen={onGoals} />
+      <div data-tour="plan-goals"><GoalsCard data={data} t={t} today={today} onOpen={onGoals} /></div>
 
       {wealth && (
         <button

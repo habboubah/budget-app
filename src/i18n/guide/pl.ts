@@ -6,7 +6,6 @@ const pl: GuidePages = {
   guideSearch: 'Szukaj w przewodniku',
   guideShow: 'Pokaż',
   guideRead: 'przeczytane',
-  guideTourBody: 'Widok miesiąca w kilku krokach – zajmie mniej niż minutę.',
 
   // The chapters (Planen is the tab’s own name).
   guideChBasics: 'Podstawy',
@@ -64,6 +63,39 @@ const pl: GuidePages = {
   tourMonth: 'Tutaj zmieniasz miesiąc. Pozycje cykliczne przechodzą same.',
   tourTabs: '„{stats}” patrzą wstecz, „{plan}” w przód. Cały przewodnik znajdziesz w „{settings}”.',
   tourAdd: 'A tutaj coś wpisujesz – najpierw kwota.',
+
+  // The tours: the guide's list, and one sentence a mark.
+  guideToursTitle: 'Wycieczki',
+  guideToursBody: 'Krok po kroku na prawdziwych ekranach – każda trwa krócej niż minutę.',
+  tourNameMonth: 'Strona miesiąca',
+  tourAboutMonth: 'Saldo, odhaczanie, zmiana miesiąca',
+  tourNameEntry: 'Dodawanie pozycji',
+  tourAboutEntry: 'Kwota, nazwa, kategoria i reszta',
+  tourNameStats: '{stats}',
+  tourAboutStats: 'Okres, stopa oszczędności, na co idą pieniądze',
+  tourNamePlan: '{plan}',
+  tourAboutPlan: 'Budżety, najbliższe 30 dni, prognoza',
+  tourNameSettings: '{settings}',
+  tourAboutSettings: 'Bezpieczeństwo, wygląd, kopia zapasowa',
+  tourEntryAmount: 'Najpierw kwota. Klawisze + − × ÷ nad klawiaturą zsumują paragon od razu tutaj.',
+  tourEntryName: 'Potem na co. Spartopf podpowiada nazwy, których już używałeś, i uzupełnia je podczas pisania.',
+  tourEntryCategory: 'Spartopf wybiera kategorię pasującą do nazwy (✦). Jeśli się nie zgadza, stuknij inną.',
+  tourEntryDetails: 'Reszta jest tutaj: data, zapłacone lub oczekujące, „{repeat}”, „{receipt}”, notatka i „# {tag}”.',
+  tourSave: 'Gotowe? Ptaszek zapisuje pozycję.',
+  tourStatsRange: 'Wybierz okres: 3, 6, 9 lub 12 miesięcy, rok albo wszystko. Wszystko poniżej się do niego dostosowuje.',
+  tourStatsHero: 'Najważniejsze w skrócie: ile z twoich dochodów zostaje – średnio na miesiąc.',
+  tourStatsChart: 'Dochody i wydatki miesiąc po miesiącu. Przesuń po nich palcem, aby zobaczyć każdą wartość.',
+  tourStatsWhere: 'Na co idą pieniądze – według kategorii, odbiorcy lub tagu. Stuknięcie pokazuje szczegóły.',
+  tourStatsRhythm: 'Dni tygodnia i dni miesiąca, w które wydajesz najwięcej.',
+  tourPlanPace: 'Bieżący miesiąc: czy wydajesz szybciej niż zwykle i gdzie skończysz na koniec miesiąca?',
+  tourPlanBudgets: 'Twoje budżety: ile zostało w każdej kategorii w tym miesiącu.',
+  tourPlanRunway: 'Najbliższe 30 dni, dzień po dniu – z najniższym stanem, zanim znów wpłyną pieniądze.',
+  tourPlanOutlook: 'Najbliższe dwanaście miesięcy. „{whatIf}” sprawdza tu zakup, zanim go zrobisz.',
+  tourPlanGoals: 'Twoje skarbonki: na co oszczędzasz i jak daleko już jesteś.',
+  tourSetSecurity: 'Ukrywanie kwot, blokada aplikacji, przypomnienia – wszystko, co chroni twoje dane.',
+  tourSetDisplay: 'Język, jasny lub ciemny wygląd, kolor aplikacji i twoja waluta.',
+  tourSetBook: 'Twój budżet domowy: kategorie i budżety, ulubione, konta, reguły i więcej.',
+  tourSetTransfer: 'Tutaj zapiszesz wszystko w jednym pliku – na nowe urządzenie albo na wszelki wypadek.',
 };
 
 export default pl;

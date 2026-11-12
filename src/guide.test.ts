@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import translations, { Language, languages, loadAllLanguages } from './translations';
 import {
-  CHAPTER_TITLES, GUIDE_CHAPTERS, GUIDE_TOPICS, GuideWords, TOUR_ANCHORS, TOUR_STEPS, TOUR_TEXT, byChapter, guideLabels, guideText, guideTopics,
-  readGuideSeen, searchGuide, tourCardPlace, tourSteps,
+  CHAPTER_TITLES, GUIDE_CHAPTERS, GUIDE_TOPICS, GuideWords, MARKS, MarkId, TOURS, TOUR_STEPS, byChapter, guideLabels, guideText, guideTopics,
+  markText, readGuideSeen, searchGuide, tourAbout, tourCardPlace, tourName, tourSteps,
 } from './guide';
 import { GuidePages, guidePages, loadGuidePages } from './guidePages';
 
@@ -128,21 +128,41 @@ describe('what the guide remembers', () => {
   });
 });
 
-describe('the tour', () => {
-  it('has at most five steps, each with a mark and a sentence, and ends on the add button', () => {
-    expect(TOUR_STEPS.length).toBeLessThanOrEqual(5);
-    for (const s of TOUR_STEPS) {
-      expect(TOUR_ANCHORS[s]).toBeTruthy();
-      expect(de[TOUR_TEXT[s]]).toBeTruthy();
+describe('the tours', () => {
+  it('each has a name, a line about it, and at most five marks — each with a ring and a sentence', () => {
+    for (const tour of TOURS) {
+      expect(de[tourName(tour)], tour).toBeTruthy();
+      expect(de[tourAbout(tour)], tour).toBeTruthy();
+      expect(TOUR_STEPS[tour].length, tour).toBeGreaterThanOrEqual(3);
+      expect(TOUR_STEPS[tour].length, tour).toBeLessThanOrEqual(5);
+      for (const m of TOUR_STEPS[tour]) {
+        expect(MARKS[m].anchor, m).toMatch(/^\[data-/);
+        expect(de[markText(m)], m).toBeTruthy();
+      }
     }
-    expect(TOUR_STEPS[TOUR_STEPS.length - 1]).toBe('add');
   });
 
-  it('skips a step whose mark isn’t on the page', () => {
-    expect(tourSteps(() => true)).toEqual([...TOUR_STEPS]);
+  it('the month page’s ends on the add button, the entry sheet’s on the tick that saves', () => {
+    expect(TOUR_STEPS.month.at(-1)).toBe('add');
+    expect(TOUR_STEPS.entry.at(-1)).toBe('save');
+  });
+
+  it('what a topic’s Zeigen lights up is a mark, and its tour is one of the tours', () => {
+    for (const t of GUIDE_TOPICS) {
+      if ('point' in t) expect(MARKS[t.point as MarkId], t.id).toBeTruthy();
+      if ('tour' in t) expect(TOURS, t.id).toContain(t.tour);
+      // Pointing needs somewhere to go first.
+      if ('point' in t) expect('action' in t, t.id).toBe(true);
+    }
+  });
+
+  it('skips a step whose mark isn’t on the screen', () => {
+    expect(tourSteps('month', () => true)).toEqual([...TOUR_STEPS.month]);
     // A first run: no balance yet, nothing to tick.
-    expect(tourSteps(s => s !== 'balance' && s !== 'tick')).toEqual(['month', 'tabs', 'add']);
-    expect(tourSteps(() => false)).toEqual([]);
+    expect(tourSteps('month', s => s !== 'balance' && s !== 'tick')).toEqual(['month', 'tabs', 'add']);
+    // Planen without a budget or a savings pot yet.
+    expect(tourSteps('plan', s => s !== 'planBudgets' && s !== 'planGoals')).toEqual(['planPace', 'planRunway', 'planOutlook']);
+    expect(tourSteps('stats', () => false)).toEqual([]);
   });
 
   it('puts its card under the mark, else above it, else over its lower part — never off the screen', () => {

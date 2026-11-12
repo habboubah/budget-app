@@ -117,7 +117,7 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
       {yearCard && <YearCard year={yearCard} t={t} onOpen={() => onYear(yearCard)} onHide={() => onHideYear(yearCard)} />}
 
       <section className="space-y-5" aria-labelledby="history-title">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-tour="stats-range">
           {/* Five segments beside the year: short labels ("3 M"), read out in full. */}
           <div className="flex-1 min-w-0">
             <Segmented<StatsRange> label={t.wherePeriod} value={/^\d{4}$/.test(range) ? 'all' : range} onChange={onRange} options={[
@@ -148,7 +148,7 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
           </p>
         )}
 
-        {done.length > 0 && <PeriodHero all={all} done={done} running={keys.includes(now) ? now : null} t={t} onExplain={onExplain} />}
+        {done.length > 0 && <div data-tour="stats-hero"><PeriodHero all={all} done={done} running={keys.includes(now) ? now : null} t={t} onExplain={onExplain} /></div>}
 
         <HighlightsCard items={highlights} categories={categories} language={language} t={t} onAction={onHint} onHide={onHideHint} onHow={onHowHint} />
 
@@ -158,9 +158,11 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
           <h2 id="history-title" className="display text-title2 font-extrabold text-fg wrap-compound tracking-[-0.02em]">{t.historySection}</h2>
         </div>
 
-        <Card title={done.length ? t.incomeVsExpenses : savingsHeadline(done, t)} sub={t.chartIoSub}>
-          <IncomeExpenseChart points={points} selected={month} t={t} onPick={onMonth} />
-        </Card>
+        <div data-tour="stats-chart">
+          <Card title={done.length ? t.incomeVsExpenses : savingsHeadline(done, t)} sub={t.chartIoSub}>
+            <IncomeExpenseChart points={points} selected={month} t={t} onPick={onMonth} />
+          </Card>
+        </div>
 
         {points.length > 1 && (
           <Card title={balanceHeadline(points, t)} sub={t.balanceOverTime}>
@@ -168,9 +170,13 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
           </Card>
         )}
 
-        <WhereCard book={book} averageOver={doneKeys.length ? doneKeys : keys} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />
+        <div data-tour="stats-where">
+          <WhereCard book={book} averageOver={doneKeys.length ? doneKeys : keys} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />
+        </div>
 
-        <RhythmCard book={book} months={keys} month={month} t={t} onExplain={onExplain} />
+        <div data-tour="stats-rhythm">
+          <RhythmCard book={book} months={keys} month={month} t={t} onExplain={onExplain} />
+        </div>
 
         {/* Every value of the charts, without hovering; a month opens its report. */}
         <details className="rounded-md bg-surface card-edge group">

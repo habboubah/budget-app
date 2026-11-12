@@ -17,7 +17,6 @@ const de = {
   guideSearch: 'Anleitung durchsuchen',
   guideShow: 'Zeigen',
   guideRead: 'gelesen',
-  guideTourBody: 'Die Monatsseite in wenigen Schritten – dauert keine Minute.',
 
   // The chapters (Planen is the tab’s own name).
   guideChBasics: 'Die Grundlagen',
@@ -75,6 +74,39 @@ const de = {
   tourMonth: 'Hier wechselst du den Monat. Wiederkehrende Einträge kommen von selbst mit.',
   tourTabs: '„{stats}“ schaut zurück, „{plan}“ nach vorn. Unter „{settings}“ findest du die ganze Anleitung.',
   tourAdd: 'Und hier trägst du etwas ein – der Betrag zuerst.',
+
+  // The tours: the guide's list, and one sentence a mark.
+  guideToursTitle: 'Touren',
+  guideToursBody: 'Schritt für Schritt auf den echten Seiten – jede dauert keine Minute.',
+  tourNameMonth: 'Die Monatsseite',
+  tourAboutMonth: 'Kontostand, abhaken, Monate wechseln',
+  tourNameEntry: 'Etwas eintragen',
+  tourAboutEntry: 'Betrag, Name, Kategorie und der Rest',
+  tourNameStats: '{stats}',
+  tourAboutStats: 'Zeitraum, Sparquote, wofür das Geld geht',
+  tourNamePlan: '{plan}',
+  tourAboutPlan: 'Budgets, die nächsten 30 Tage, Ausblick',
+  tourNameSettings: '{settings}',
+  tourAboutSettings: 'Sicherheit, Darstellung, Sicherung',
+  tourEntryAmount: 'Zuerst der Betrag. Über der Tastatur stehen + − × ÷ – so rechnest du einen Kassenzettel gleich hier zusammen.',
+  tourEntryName: 'Dann wofür. Spartopf schlägt Namen vor, die du schon benutzt hast, und ergänzt beim Tippen.',
+  tourEntryCategory: 'Die Kategorie wählt Spartopf passend zum Namen (✦). Stimmt sie nicht, tippe eine andere an.',
+  tourEntryDetails: 'Hier der Rest: Datum, bezahlt oder offen, „{repeat}“, „{receipt}“, Notiz und „# {tag}“.',
+  tourSave: 'Fertig? Der Haken sichert den Eintrag.',
+  tourStatsRange: 'Wähle den Zeitraum: 3, 6, 9 oder 12 Monate, ein Jahr oder alles. Alles darunter richtet sich danach.',
+  tourStatsHero: 'Das Wichtigste auf einen Blick: wie viel von deinen Einnahmen übrig bleibt – im Schnitt pro Monat.',
+  tourStatsChart: 'Einnahmen und Ausgaben Monat für Monat. Fahr mit dem Finger darüber, um jeden Wert zu sehen.',
+  tourStatsWhere: 'Wofür das Geld geht – nach Kategorie, Empfänger oder Tag. Ein Tipp zeigt die Einzelheiten.',
+  tourStatsRhythm: 'An welchen Wochentagen und an welchen Tagen des Monats du am meisten ausgibst.',
+  tourPlanPace: 'Der laufende Monat: Gibst du schneller aus als sonst, und wo landest du am Monatsende?',
+  tourPlanBudgets: 'Deine Budgets: was in jeder Kategorie diesen Monat noch übrig ist.',
+  tourPlanRunway: 'Die nächsten 30 Tage, Tag für Tag – mit dem tiefsten Stand, bevor wieder Geld kommt.',
+  tourPlanOutlook: 'Die nächsten zwölf Monate. „{whatIf}“ prüft hier eine Anschaffung, bevor du sie machst.',
+  tourPlanGoals: 'Deine Spartöpfe: wofür du sparst und wie weit du schon bist.',
+  tourSetSecurity: 'Beträge verbergen, die App sperren, Erinnerungen – alles, was deine Daten schützt.',
+  tourSetDisplay: 'Sprache, hell oder dunkel, die Farbe der App und deine Währung.',
+  tourSetBook: 'Dein Haushaltsbuch: Kategorien und Budgets, Favoriten, Konten, Regeln und mehr.',
+  tourSetTransfer: 'Hier sicherst du alles in eine Datei – für ein neues Gerät oder einfach für alle Fälle.',
 };
 
 export type GuidePages = { [K in keyof typeof de]: string };

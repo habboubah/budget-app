@@ -504,7 +504,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
         )}
         {/* Amount — the one thing every entry needs, so it comes first: on a
             panel in the chosen category's colour, which follows the category. */}
-        <div data-hue={category?.hue} className="-mt-2 text-center rounded-md hue-tint px-3 pt-2 pb-2">
+        <div data-hue={category?.hue} data-tour="entry-amount" className="-mt-2 text-center rounded-md hue-tint px-3 pt-2 pb-2">
           <label htmlFor={amountId} className="eyebrow text-fg-mute">{t.amount}</label>
           {/* Written the way amounts are shown everywhere: "−45,12 €", left to right. */}
           <div dir="ltr" className="mt-0.5 flex items-baseline justify-center gap-1.5">
@@ -571,7 +571,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
         )}
 
         {/* What for — the placeholder says it; three of the user's own names below. */}
-        <div>
+        <div data-tour="entry-name">
           <Field
             inputRef={nameRef}
             label={income ? t.fromWhom : t.whatFor}
@@ -667,7 +667,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             {fmt(t.categoryMatch, { word: guesses[0].word })}
           </p>
         )}
-        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.category}>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.category} data-tour="entry-category">
           {shownCategories.map(c => {
             const on = c.id === categoryId;
             const cname = displayName(c.names, language);
@@ -709,7 +709,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
         </div>
 
         {/* The rest in one row: when, paid or open, how it repeats, a note. */}
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t.entryDetails}>
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t.entryDetails} data-tour="entry-details">
           {/* The system's date picker, under a pill: the input lies invisibly over it. */}
           <label className={`${PILL} focus-within:ring-focus ${dateValid ? '' : 'text-neg'}`}>
             <CalendarDays className="w-4 h-4 shrink-0 text-fg-mute" strokeWidth={2} aria-hidden="true" />
@@ -748,6 +748,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             type="button"
             aria-haspopup="menu"
             aria-label={`${t.repeat}: ${repeatLabel}`}
+            data-tour="entry-repeat"
             onMouseDown={e => e.preventDefault()}
             onClick={e => { tapLight(); setRepeatAt(e.currentTarget); }}
             className={`${PILL} focus-visible:ring-focus`}
@@ -856,6 +857,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             type="button"
             aria-haspopup="menu"
             aria-label={files.length ? `${t.receipt}: ${files.length}` : t.receiptAdd}
+            data-tour="entry-receipt"
             disabled={fileBusy === 'adding'}
             onMouseDown={e => e.preventDefault()}
             onClick={e => { tapLight(); setFileAt(e.currentTarget); }}

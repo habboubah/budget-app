@@ -104,9 +104,9 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
 }
 
 /** A grouped card of rows (an iOS inset grouped section). */
-export function Group({ title, footer, children }: { title?: string; footer?: React.ReactNode; children: React.ReactNode }) {
+export function Group({ title, footer, children, tour }: { title?: string; footer?: React.ReactNode; children: React.ReactNode; /** What a tour points at (src/guide.ts). */ tour?: string }) {
   return (
-    <section>
+    <section data-tour={tour}>
       {title && <h2 className="px-[16px] pb-1.5 eyebrow text-fg-mute wrap-compound">{title}</h2>}
       <div className="rounded-md bg-surface card-edge overflow-hidden divide-hairline-inset">{children}</div>
       {footer && <p className="px-[16px] pt-2 text-caption text-fg-mute wrap-prose">{footer}</p>}
@@ -115,7 +115,7 @@ export function Group({ title, footer, children }: { title?: string; footer?: Re
 }
 
 /** One row in a Group. A button when `onClick` is set. */
-export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger }: {
+export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger, tour }: {
   label: React.ReactNode;
   sub?: React.ReactNode;
   leading?: React.ReactNode;
@@ -123,6 +123,8 @@ export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger 
   onClick?: () => void;
   ariaLabel?: string;
   danger?: boolean;
+  /** What a tour points at (src/guide.ts). */
+  tour?: string;
 }) {
   const sep = { '--sep': leading ? '60px' : '1rem' } as React.CSSProperties;
   const body = (
@@ -136,10 +138,10 @@ export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger 
     </>
   );
   const shell = 'relative w-full min-h-[56px] px-[16px] py-3 flex items-center gap-[12px]';
-  if (!onClick) return <div className={shell} style={sep}>{body}</div>;
+  if (!onClick) return <div className={shell} style={sep} data-tour={tour}>{body}</div>;
   return (
     <button
-      type="button" onClick={() => { tapLight(); onClick(); }} aria-label={ariaLabel} style={sep}
+      type="button" onClick={() => { tapLight(); onClick(); }} aria-label={ariaLabel} style={sep} data-tour={tour}
       className={`${shell} transition-colors active:bg-surface-2 focus-visible:ring-focus`}
     >
       {body}

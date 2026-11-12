@@ -91,6 +91,7 @@ export function Sheet({ open, title, closeLabel, onClose, action, children }: Pr
                 type="button" onClick={action.onClick} disabled={action.disabled}
                 onMouseDown={e => e.preventDefault()}
                 aria-label={action.label} title={action.label}
+                data-tour="sheet-save"
                 className={`h-tap w-tap rounded-full inline-flex items-center justify-center transition-[transform,background-color] active:scale-[0.92] focus-visible:ring-focus ${
                   action.disabled ? 'bg-surface-2 text-fg-faint' : 'bg-accent-fill text-accent-fill-ink accent-lift'}`}
               >

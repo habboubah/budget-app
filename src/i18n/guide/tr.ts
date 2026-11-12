@@ -6,7 +6,6 @@ const tr: GuidePages = {
   guideSearch: 'Kılavuzda ara',
   guideShow: 'Göster',
   guideRead: 'okundu',
-  guideTourBody: 'Ay sayfası birkaç adımda – bir dakikadan kısa sürer.',
 
   // The chapters (Planen is the tab’s own name).
   guideChBasics: 'Temel bilgiler',
@@ -64,6 +63,39 @@ const tr: GuidePages = {
   tourMonth: 'Ayı buradan değiştirirsin. Tekrarlayan kalemler kendiliğinden gelir.',
   tourTabs: '“{stats}” geriye, “{plan}” ileriye bakar. Kılavuzun tamamı “{settings}” altında.',
   tourAdd: 'Buradan da bir şey girersin – önce tutar.',
+
+  // The tours: the guide's list, and one sentence a mark.
+  guideToursTitle: 'Turlar',
+  guideToursBody: 'Gerçek ekranlarda adım adım – her biri bir dakikadan kısa.',
+  tourNameMonth: 'Ay sayfası',
+  tourAboutMonth: 'Bakiye, işaretleme, ay değiştirme',
+  tourNameEntry: 'Kalem girmek',
+  tourAboutEntry: 'Tutar, ad, kategori ve gerisi',
+  tourNameStats: '{stats}',
+  tourAboutStats: 'Dönem, birikim oranı, para nereye gidiyor',
+  tourNamePlan: '{plan}',
+  tourAboutPlan: 'Bütçeler, önümüzdeki 30 gün, görünüm',
+  tourNameSettings: '{settings}',
+  tourAboutSettings: 'Güvenlik, görünüm, yedekleme',
+  tourEntryAmount: 'Önce tutar. Klavyenin üstündeki + − × ÷ tuşlarıyla bir fişi burada toplayabilirsin.',
+  tourEntryName: 'Sonra ne için. Spartopf daha önce kullandığın adları önerir ve yazarken tamamlar.',
+  tourEntryCategory: 'Spartopf ada uyan kategoriyi seçer (✦). Yanlışsa başka birine dokun.',
+  tourEntryDetails: 'Gerisi burada: tarih, ödendi ya da bekliyor, “{repeat}”, “{receipt}”, not ve “# {tag}”.',
+  tourSave: 'Bitti mi? Onay işareti kalemi kaydeder.',
+  tourStatsRange: 'Dönemi seç: 3, 6, 9 ya da 12 ay, bir yıl ya da tümü. Altındaki her şey buna uyar.',
+  tourStatsHero: 'En önemlisi bir bakışta: gelirinin ne kadarı kalıyor – ayda ortalama.',
+  tourStatsChart: 'Ay ay gelir ve gider. Her değeri görmek için parmağını üzerinde gezdir.',
+  tourStatsWhere: 'Para nereye gidiyor – kategoriye, alıcıya ya da etikete göre. Bir dokunuş ayrıntıları gösterir.',
+  tourStatsRhythm: 'En çok harcadığın haftanın günleri ve ayın günleri.',
+  tourPlanPace: 'Bu ay: her zamankinden hızlı mı harcıyorsun, ay sonunda nereye varacaksın?',
+  tourPlanBudgets: 'Bütçelerin: bu ay her kategoride ne kaldı.',
+  tourPlanRunway: 'Önümüzdeki 30 gün, gün gün – yeniden para gelmeden önceki en düşük seviyeyle.',
+  tourPlanOutlook: 'Önümüzdeki on iki ay. “{whatIf}” bir satın almayı yapmadan önce burada dener.',
+  tourPlanGoals: 'Kumbaraların: ne için biriktirdiğin ve ne kadar yol aldığın.',
+  tourSetSecurity: 'Tutarları gizle, uygulamayı kilitle, hatırlatmalar – verilerini koruyan her şey.',
+  tourSetDisplay: 'Dil, açık ya da koyu, uygulamanın rengi ve para birimin.',
+  tourSetBook: 'Bütçe defterin: kategoriler ve bütçeler, favoriler, hesaplar, kurallar ve daha fazlası.',
+  tourSetTransfer: 'Burada her şeyi tek bir dosyaya yedeklersin – yeni bir cihaz için ya da her ihtimale karşı.',
 };
 
 export default tr;

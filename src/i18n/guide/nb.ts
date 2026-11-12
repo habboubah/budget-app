@@ -6,7 +6,6 @@ const nb: GuidePages = {
   guideSearch: 'Søk i veiledningen',
   guideShow: 'Vis',
   guideRead: 'lest',
-  guideTourBody: 'Månedssiden i noen få steg – tar under ett minutt.',
 
   // The chapters (Planen is the tab’s own name).
   guideChBasics: 'Det grunnleggende',
@@ -64,6 +63,39 @@ const nb: GuidePages = {
   tourMonth: 'Her bytter du måned. Gjentakende poster blir med av seg selv.',
   tourTabs: '«{stats}» ser tilbake, «{plan}» ser framover. Hele veiledningen finner du under «{settings}».',
   tourAdd: 'Og her legger du inn noe – beløpet først.',
+
+  // The tours: the guide's list, and one sentence a mark.
+  guideToursTitle: 'Omvisninger',
+  guideToursBody: 'Steg for steg på de ekte skjermene – hver tar under ett minutt.',
+  tourNameMonth: 'Månedssiden',
+  tourAboutMonth: 'Saldo, hake av, bytte måned',
+  tourNameEntry: 'Legge inn en post',
+  tourAboutEntry: 'Beløp, navn, kategori og resten',
+  tourNameStats: '{stats}',
+  tourAboutStats: 'Periode, sparerate, hvor pengene går',
+  tourNamePlan: '{plan}',
+  tourAboutPlan: 'Budsjetter, de neste 30 dagene, utsikter',
+  tourNameSettings: '{settings}',
+  tourAboutSettings: 'Sikkerhet, visning, sikkerhetskopi',
+  tourEntryAmount: 'Først beløpet. Med + − × ÷ over tastaturet regner du sammen en kvittering rett her.',
+  tourEntryName: 'Så hva det gjelder. Spartopf foreslår navn du har brukt før, og fullfører dem mens du skriver.',
+  tourEntryCategory: 'Spartopf velger kategorien som passer navnet (✦). Stemmer den ikke, trykk på en annen.',
+  tourEntryDetails: 'Resten er her: dato, betalt eller venter, «{repeat}», «{receipt}», notat og «# {tag}».',
+  tourSave: 'Ferdig? Haken lagrer posten.',
+  tourStatsRange: 'Velg periode: 3, 6, 9 eller 12 måneder, et år eller alt. Alt under følger den.',
+  tourStatsHero: 'Det viktigste med ett blikk: hvor mye av inntekten som blir igjen – i snitt per måned.',
+  tourStatsChart: 'Inntekter og utgifter måned for måned. Dra fingeren over for å se hver verdi.',
+  tourStatsWhere: 'Hvor pengene går – etter kategori, mottaker eller tagg. Et trykk viser detaljene.',
+  tourStatsRhythm: 'Ukedagene og dagene i måneden du bruker mest på.',
+  tourPlanPace: 'Den løpende måneden: bruker du raskere enn vanlig, og hvor ender du ved månedsslutt?',
+  tourPlanBudgets: 'Budsjettene dine: hva som er igjen i hver kategori denne måneden.',
+  tourPlanRunway: 'De neste 30 dagene, dag for dag – med det laveste nivået før det kommer penger igjen.',
+  tourPlanOutlook: 'De neste tolv månedene. «{whatIf}» prøver et kjøp her før du gjør det.',
+  tourPlanGoals: 'Sparekrukkene dine: hva du sparer til og hvor langt du har kommet.',
+  tourSetSecurity: 'Skjule beløp, låse appen, påminnelser – alt som beskytter dataene dine.',
+  tourSetDisplay: 'Språk, lyst eller mørkt, appens farge og valutaen din.',
+  tourSetBook: 'Husholdningsboken din: kategorier og budsjetter, favoritter, kontoer, regler og mer.',
+  tourSetTransfer: 'Her sikkerhetskopierer du alt til én fil – for en ny enhet, eller for sikkerhets skyld.',
 };
 
 export default nb;

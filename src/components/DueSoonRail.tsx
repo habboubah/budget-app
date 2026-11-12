@@ -28,7 +28,7 @@ export function DueSoonRail({ items, categories, language, t, onEdit, onTick, on
 }) {
   const headingId = useId();
   return (
-    <motion.section variants={rise} aria-labelledby={headingId}>
+    <motion.section variants={rise} aria-labelledby={headingId} data-tour="due">
       <div className="px-1 mb-2.5 flex items-baseline gap-2">
         <h2 id={headingId} className="min-w-0 flex-1 display text-heading font-bold text-fg wrap-compound tracking-[-0.02em]">{t.dueTitle}</h2>
         <button

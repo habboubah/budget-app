@@ -124,7 +124,7 @@ try {
     await page.locator('input[type="search"]').fill('pdf');
     await page.waitForTimeout(200);
     await page.locator('input[type="search"]').fill('');
-    await page.locator('main section .hero.hero-glow').first().click();
+    await page.locator('[data-guide-tour="month"]').click();
     await page.waitForSelector('[data-tour-open]', { timeout: 10000 });
     for (let i = 0; i < 6 && await page.locator('[data-tour-open] [role="dialog"] button.hero').count(); i++) {
       await page.locator('[data-tour-open] [role="dialog"] button.hero').click();

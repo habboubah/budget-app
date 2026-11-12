@@ -73,7 +73,7 @@ import { inboxReview, inboxToEntries } from './native/inbox';
 import { CaptureView } from './components/CaptureView';
 import { HintCard } from './components/HintCard';
 import { nextTip } from './tips';
-import { GuideAction, GuideTopicId, TourStep, tourAnchor, tourSteps } from './guide';
+import { GuideTopic, GuideTopicId, GuideWords, MarkId, TourId, guideText, markText, tourAnchor, tourName, tourSteps } from './guide';
 import { guidePages, loadGuidePages } from './guidePages';
 import { DeepLink, parseDeepLink } from './native/deepLink';
 import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, setSecure, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
@@ -111,6 +111,20 @@ const loadTour = () => import('./components/Tour').then(m => { TourOverlay = m.T
 
 type TabId = 'month' | 'stats' | 'insights' | 'settings';
 /** Screens pushed over a tab's root. */
+/** A tour, or *Zeigen*'s one mark: the marks the screen had when it began, their sentences, and the one shown. */
+type TourState = {
+  marks: MarkId[];
+  texts: string[];
+  index: number;
+  label: string;
+  /** *Zeigen*: one mark, the topic's title over its words. */
+  point?: boolean;
+  /** The month page's tour ends on the add button. */
+  final?: 'add';
+  /** Begun in the guide: its last step leads back there. */
+  guide?: boolean;
+} | null;
+
 type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide';
 type ScreenId = TabId | PushedId;
 /**
@@ -1058,39 +1072,55 @@ export default function App() {
     void Promise.all([loadGuide(), loadGuidePages(language)]).then(() => push('guide'), () => undefined);
   };
   const pages = guidePages(language);
-  /** The tour's steps — the marks the page had when it began — and the one shown. */
-  const [tour, setTour] = useState<{ steps: TourStep[]; index: number } | null>(null);
+  /** The tours the guide offers: the entry sheet's needs somewhere to enter into, Statistik's and Planen's something to show. */
+  const guideTours = useMemo<TourId[]>(() => {
+    const filled = book.points.some(p => p.income || p.expense);
+    return (['month', 'entry', 'stats', 'plan', 'settings'] as const).filter(id => (id === 'entry' ? !!quickAddCategory && balance.started : id === 'stats' || id === 'plan' ? filled : true));
+  }, [book, quickAddCategory, balance.started]);
+  /** A tour, or *Zeigen*'s one mark: the marks the screen had when it began, their sentences, and the one shown. */
+  const [tour, setTour] = useState<TourState>(null);
   const tourTimer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(tourTimer.current), []);
-  const startTour = () => {
-    store.knowGuide();
-    hide();
-    openMonthPage(monthKeyOf());
-    // Once the month page stands (it comes in over about 300 ms).
+  const canAdd = !!quickAddCategory && balance.started;
+  /** A tab's root, whatever was pushed on it. */
+  const root = (id: TabId) => { setTab(id); setStack(s => ({ ...s, [id]: undefined })); };
+  /** Once the screen stands (it comes in over about 300 ms; a sheet a little longer), find the marks and begin. */
+  const beginMarks = (wait: number, make: (words: GuideWords) => TourState) => {
     window.clearTimeout(tourTimer.current);
     const loaded = Promise.all([loadTour(), loadGuidePages(language)]);
     tourTimer.current = window.setTimeout(() => {
-      void loaded.then(() => {
-        const steps = tourSteps(step => !!tourAnchor(step));
-        if (steps.length) setTour({ steps, index: 0 });
-      }, () => undefined);
-    }, 450);
+      void loaded.then(([, p]) => setTour(make({ ...t, ...p })), () => undefined);
+    }, wait);
   };
-  /** The month's "⋯" opened for the guide, once the month page is there to open it from. */
-  const menuAsked = useRef(false);
-  useEffect(() => {
-    if (!menuAsked.current || screen !== 'month') return;
-    menuAsked.current = false;
-    const id = window.setTimeout(() => {
-      const el = document.querySelector<HTMLElement>('[data-tour="actions"]');
-      if (el) setActionsAnchor(el);
-    }, 400);
-    return () => window.clearTimeout(id);
-  }, [screen]);
+  /** A tour (src/guide.ts), from the guide's list, a topic, or the *Gut zu wissen* card. */
+  const runTour = (id: TourId, fromGuide = false) => {
+    store.knowGuide();
+    hide();
+    if (id === 'month') openMonthPage(monthKeyOf());
+    else if (id === 'entry') {
+      openMonthPage(month);
+      if (quickAddCategory && balance.started) setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory });
+    } else root(id === 'plan' ? 'insights' : id);
+    if (fromGuide) setGuideAway(true);
+    beginMarks(id === 'entry' ? 650 : 450, words => {
+      const marks = tourSteps(id, m => !!tourAnchor(m));
+      if (!marks.length) return null;
+      return {
+        marks,
+        texts: marks.map(m => guideText(words, markText(m))),
+        index: 0,
+        label: guideText(words, tourName(id)),
+        final: id === 'month' && canAdd ? 'add' : undefined,
+        guide: fromGuide,
+      };
+    });
+  };
+  // ---- *Zeigen* goes where a topic is, lights up what it is about, and keeps a way back to the guide.
   // Back at the guide, however: nothing left to lead back to it.
   useEffect(() => { if (screen === 'guide') setGuideAway(false); }, [screen]);
   /** The capsule's "‹ Anleitung": whatever *Zeigen* opened closes, and the guide is shown with its topic. */
   const backToGuide = () => {
+    window.clearTimeout(tourTimer.current);
     setGuideAway(false);
     setTour(null);
     setEntrySheet(null);
@@ -1100,21 +1130,18 @@ export default function App() {
     setTab('settings');
     setStack(s => ({ ...s, settings: 'guide' }));
   };
-  /** *Zeigen*: the screen a topic is about, or the thing on the month page opened. */
-  const guideGo = (a: GuideAction) => {
+  /** *Zeigen*: the screen a topic is about — and on it, the thing to tap or read, marked. */
+  const guideGo = (topic: GuideTopic) => {
+    const a = topic.action;
+    if (!a) return;
     // Only a screen of Optionen takes the guide's place (its back leads there),
     // and the month start is a sheet over the guide: everything else gets the capsule.
     if (HOME[a as PushedId] !== 'settings' && a !== 'monthStart' && !(a === 'report' && book.months.some(k => k < now))) setGuideAway(true);
-    const root = (id: TabId) => { setTab(id); setStack(s => ({ ...s, [id]: undefined })); };
     if (a === 'month') openMonthPage(monthKeyOf());
     else if (a === 'stats' || a === 'insights' || a === 'settings') root(a);
     else if (a === 'entry') {
       openMonthPage(month);
-      if (quickAddCategory && balance.started) setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory });
-    } else if (a === 'monthPicker') { openMonthPage(month); setMonthPickerOpen(true); }
-    else if (a === 'monthMenu') {
-      if (screen === 'month') { const el = document.querySelector<HTMLElement>('[data-tour="actions"]'); if (el) setActionsAnchor(el); }
-      else { menuAsked.current = true; openMonthPage(month); }
+      if (canAdd) setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory! });
     } else if (a === 'monthStart') setMonthStartOpen(true);
     else if (a === 'report') {
       // The newest finished month's report; a book without one yet shows the statistics.
@@ -1129,6 +1156,12 @@ export default function App() {
       if (HOME[a] === 'settings') slide.current = 1;
       push(a);
       if (HOME[a] === 'settings') setGuideReturn(true);
+    }
+    const mark = topic.point;
+    if (mark) {
+      beginMarks(a === 'entry' ? 650 : 450, words => (tourAnchor(mark)
+        ? { marks: [mark], texts: [guideText(words, topic.body)], index: 0, label: guideText(words, topic.title), point: true, guide: true }
+        : null));
     }
   };
   // The guide is shown but a part of it isn't loaded (another language since): load it, or leave.
@@ -1153,7 +1186,7 @@ export default function App() {
       onFinish={finishSetup}
     />
   ) : store.introDone && !store.tipsDone && balance.started && monthEntries.length > 0 && month === monthKeyOf() ? (
-    <TipsCard t={t} onDismiss={() => { store.dismissTips(); store.knowGuide(); }} onTour={startTour} onGuide={openGuide} />
+    <TipsCard t={t} onDismiss={() => { store.dismissTips(); store.knowGuide(); }} onTour={() => runTour('month')} onGuide={openGuide} />
   ) : tip && store.introDone && store.tipsDone && balance.started && month === monthKeyOf() ? (
     <HintCard
       text={tip.id === 'guide' ? t.hintGuide : tip.id === 'capture' ? t.hintCapture : tip.id === 'favorite' ? fmt(t.hintFavorite, { name: tip.name })
@@ -1188,7 +1221,8 @@ export default function App() {
             open={guideTopic}
             onOpen={topic => { setGuideTopic(topic); if (topic) store.seeGuideTopic(topic); }}
             onBack={back}
-            onTour={startTour}
+            tours={guideTours}
+            onTour={id => runTour(id, true)}
             onDemo={store.hasDemo ? undefined : addDemo}
             onShow={guideGo}
           />
@@ -1934,17 +1968,20 @@ export default function App() {
         onConfirm={() => { if (confirmCategory) deleteCategory(confirmCategory); setConfirmCategory(null); }}
       />
 
-      {tour && TourOverlay && pages && (
+      {tour && TourOverlay && (
         <TourOverlay
-          steps={tour.steps}
+          marks={tour.marks}
+          texts={tour.texts}
           index={tour.index}
           t={t}
-          pages={pages}
-          onNext={() => setTour(s => (s && s.index < s.steps.length - 1 ? { ...s, index: s.index + 1 } : null))}
+          label={tour.label}
+          point={tour.point}
+          onNext={() => setTour(s => (s && s.index < s.marks.length - 1 ? { ...s, index: s.index + 1 } : null))}
           onEnd={() => setTour(null)}
-          onAdd={quickAddCategory && balance.started
-            ? () => { setTour(null); setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory }); }
+          final={tour.final === 'add' && canAdd
+            ? { label: t.addEntry, run: () => { setTour(null); setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory! }); } }
             : undefined}
+          onGuide={tour.guide ? backToGuide : undefined}
         />
       )}
 

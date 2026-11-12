@@ -25,10 +25,10 @@ import { searchTerms, foldForSearch } from './logic';
 export const GUIDE_CHAPTERS = ['basics', 'entering', 'planning', 'looking', 'importing', 'more', 'safe'] as const;
 export type GuideChapter = (typeof GUIDE_CHAPTERS)[number];
 
-/** Where *Zeigen* leads: a tab, a pushed screen, or something the month page opens. */
+/** Where *Zeigen* leads: a tab, a pushed screen, the entry sheet or the month start's sheet. */
 export type GuideAction =
   | 'month' | 'stats' | 'insights' | 'settings'
-  | 'entry' | 'monthPicker' | 'monthMenu' | 'monthStart' | 'report'
+  | 'entry' | 'monthStart' | 'report'
   | 'categories' | 'dueSoon' | 'favorites' | 'capture' | 'goals' | 'contracts' | 'debts'
   | 'transfer' | 'accounts' | 'projects' | 'tax' | 'reminders';
 
@@ -42,38 +42,42 @@ export interface GuideTopic {
   title: keyof GuideWords;
   body: keyof GuideWords;
   action?: GuideAction;
+  /** What *Zeigen* lights up once there — the button to tap, the card to read — with the topic's words beside it. */
+  point?: MarkId;
+  /** The tour that shows this part of the app, offered under the topic. */
+  tour?: TourId;
   /** `ios`: only where Shortcuts exist; `app`: only in an installed app (notifications). */
   only?: 'ios' | 'app';
 }
 
 export const GUIDE_TOPICS = [
-  { id: 'balances', chapter: 'basics', title: 'guideBalances', body: 'guideBalancesBody', action: 'month' },
-  { id: 'paid', chapter: 'basics', title: 'guidePaid', body: 'guidePaidBody', action: 'month' },
-  { id: 'months', chapter: 'basics', title: 'guideMonths', body: 'guideMonthsBody', action: 'monthPicker' },
+  { id: 'balances', chapter: 'basics', title: 'guideBalances', body: 'guideBalancesBody', action: 'month', point: 'balance', tour: 'month' },
+  { id: 'paid', chapter: 'basics', title: 'guidePaid', body: 'guidePaidBody', action: 'month', point: 'tick', tour: 'month' },
+  { id: 'months', chapter: 'basics', title: 'guideMonths', body: 'guideMonthsBody', action: 'month', point: 'month', tour: 'month' },
   { id: 'categories', chapter: 'basics', title: 'categories', body: 'guideCategoriesBody', action: 'categories' },
-  { id: 'search', chapter: 'basics', title: 'searchMonth', body: 'guideSearchBody', action: 'month' },
+  { id: 'search', chapter: 'basics', title: 'searchMonth', body: 'guideSearchBody', action: 'month', point: 'search' },
   { id: 'due', chapter: 'basics', title: 'dueTitle', body: 'guideDueBody', action: 'dueSoon' },
 
-  { id: 'add', chapter: 'entering', title: 'addEntry', body: 'guideAddBody', action: 'entry' },
-  { id: 'repeats', chapter: 'entering', title: 'guideRepeats', body: 'guideRepeatsBody', action: 'entry' },
+  { id: 'add', chapter: 'entering', title: 'addEntry', body: 'guideAddBody', action: 'month', point: 'add', tour: 'entry' },
+  { id: 'repeats', chapter: 'entering', title: 'guideRepeats', body: 'guideRepeatsBody', action: 'entry', point: 'entryRepeat' },
   { id: 'favorites', chapter: 'entering', title: 'favorites', body: 'guideFavoritesBody', action: 'favorites' },
-  { id: 'split', chapter: 'entering', title: 'guideSplit', body: 'guideSplitBody', action: 'month' },
-  { id: 'receipts', chapter: 'entering', title: 'guideReceipts', body: 'guideReceiptsBody', action: 'entry' },
+  { id: 'split', chapter: 'entering', title: 'guideSplit', body: 'guideSplitBody', action: 'month', point: 'tick' },
+  { id: 'receipts', chapter: 'entering', title: 'guideReceipts', body: 'guideReceiptsBody', action: 'entry', point: 'entryReceipt' },
   { id: 'capture', chapter: 'entering', title: 'captureRow', body: 'guideCaptureBody', action: 'capture', only: 'ios' },
 
-  { id: 'budgets', chapter: 'planning', title: 'budgetsTitle', body: 'guideBudgetsBody', action: 'categories' },
+  { id: 'budgets', chapter: 'planning', title: 'budgetsTitle', body: 'guideBudgetsBody', action: 'insights', point: 'planBudgets', tour: 'plan' },
   { id: 'goals', chapter: 'planning', title: 'goalsTitle', body: 'guideGoalsBody', action: 'goals' },
-  { id: 'outlook', chapter: 'planning', title: 'outlookTitle', body: 'guideOutlookBody', action: 'insights' },
+  { id: 'outlook', chapter: 'planning', title: 'outlookTitle', body: 'guideOutlookBody', action: 'insights', point: 'planOutlook', tour: 'plan' },
   { id: 'contracts', chapter: 'planning', title: 'contractsTitle', body: 'guideContractsBody', action: 'contracts' },
   { id: 'debts', chapter: 'planning', title: 'debtsTitle', body: 'guideDebtsBody', action: 'debts' },
 
-  { id: 'stats', chapter: 'looking', title: 'statsTitle', body: 'guideStatsBody', action: 'stats' },
+  { id: 'stats', chapter: 'looking', title: 'statsTitle', body: 'guideStatsBody', action: 'stats', point: 'statsHero', tour: 'stats' },
   { id: 'reports', chapter: 'looking', title: 'reportTitle', body: 'guideReportsBody', action: 'report' },
 
-  { id: 'bank', chapter: 'importing', title: 'guideBank', body: 'guideBankBody', action: 'monthMenu' },
-  { id: 'invoice', chapter: 'importing', title: 'scanInvoice', body: 'guideInvoiceBody', action: 'monthMenu' },
+  { id: 'bank', chapter: 'importing', title: 'guideBank', body: 'guideBankBody', action: 'month', point: 'actions' },
+  { id: 'invoice', chapter: 'importing', title: 'scanInvoice', body: 'guideInvoiceBody', action: 'month', point: 'actions' },
   { id: 'excel', chapter: 'importing', title: 'importExcel', body: 'guideExcelBody', action: 'transfer' },
-  { id: 'reconcile', chapter: 'importing', title: 'reconcileTitle', body: 'guideReconcileBody', action: 'monthMenu' },
+  { id: 'reconcile', chapter: 'importing', title: 'reconcileTitle', body: 'guideReconcileBody', action: 'month', point: 'actions' },
 
   { id: 'accounts', chapter: 'more', title: 'accountsTitle', body: 'guideAccountsBody', action: 'accounts' },
   { id: 'projects', chapter: 'more', title: 'projectsTitle', body: 'guideProjectsBody', action: 'projects' },
@@ -81,10 +85,10 @@ export const GUIDE_TOPICS = [
   { id: 'monthStart', chapter: 'more', title: 'monthStartRow', body: 'guideMonthStartBody', action: 'monthStart' },
 
   { id: 'private', chapter: 'safe', title: 'guidePrivate', body: 'guidePrivateBody' },
-  { id: 'backup', chapter: 'safe', title: 'transferTitle', body: 'guideBackupBody', action: 'transfer' },
-  { id: 'lock', chapter: 'safe', title: 'guideLock', body: 'guideLockBody', action: 'settings' },
+  { id: 'backup', chapter: 'safe', title: 'transferTitle', body: 'guideBackupBody', action: 'transfer', tour: 'settings' },
+  { id: 'lock', chapter: 'safe', title: 'guideLock', body: 'guideLockBody', action: 'settings', point: 'setSecurity', tour: 'settings' },
   { id: 'reminders', chapter: 'safe', title: 'remindersTitle', body: 'guideRemindersBody', action: 'reminders', only: 'app' },
-  { id: 'look', chapter: 'safe', title: 'displaySection', body: 'guideLookBody', action: 'settings' },
+  { id: 'look', chapter: 'safe', title: 'displaySection', body: 'guideLookBody', action: 'settings', point: 'setDisplay', tour: 'settings' },
 ] as const satisfies readonly GuideTopic[];
 
 export type GuideTopicId = (typeof GUIDE_TOPICS)[number]['id'];
@@ -148,43 +152,97 @@ export function readGuideSeen(v: unknown): GuideTopicId[] {
   return [...new Set(v.filter((x): x is GuideTopicId => typeof x === 'string' && ids.has(x)))];
 }
 
-/* ------------------------------------------------------------------- tour */
+/* ------------------------------------------------------------------ tours */
 
 /**
- * The tour: five marks on the running month's page, in the order the eye
- * meets them — and the add button last, so the tour ends on the thing to do.
- * Coach marks stop helping after about five, so there are no more.
+ * The tours: a handful of marks on a real screen, one at a time, in the order
+ * the eye meets them. Coach marks stop helping after about five, so no tour
+ * has more. The month page's ends on the add button — the thing to do — and
+ * the entry sheet's on the tick that saves. Only ever started by hand: from
+ * the guide, or the month page's from the *Gut zu wissen* card.
  */
-export const TOUR_STEPS = ['balance', 'tick', 'month', 'tabs', 'add'] as const;
-export type TourStep = (typeof TOUR_STEPS)[number];
+export const TOURS = ['month', 'entry', 'stats', 'plan', 'settings'] as const;
+export type TourId = (typeof TOURS)[number];
 
-/** What a step points at (`data-tour` on the month page and the tab bar; the first entry's row, tick and all). */
-export const TOUR_ANCHORS: Record<TourStep, string> = {
-  balance: '[data-tour="balance"]',
-  tick: '[data-entry-row]',
-  month: '[data-tour="month"]',
-  tabs: '[data-tour="tabs"]',
-  add: '[data-tour="add"]',
+/** What a mark points at (a selector, `data-tour` mostly), its ring's corners, and how it is brought into view. */
+export interface TourMark {
+  anchor: string;
+  radius: number;
+  /** `top`: the page's top; `center`: scrolled to the middle; `none`: fixed chrome that never moves. */
+  scroll: 'top' | 'center' | 'none';
+}
+
+const at = (name: string, radius: number, scroll: TourMark['scroll']): TourMark => ({ anchor: `[data-tour="${name}"]`, radius, scroll });
+
+/** Every mark a tour or a topic's *Zeigen* can light up. */
+export const MARKS = {
+  // The month page and the tab bar (the first entry's row, tick and all).
+  balance: at('balance', 36, 'top'),
+  tick: { anchor: '[data-entry-row]', radius: 18, scroll: 'center' },
+  month: at('month', 18, 'top'),
+  tabs: at('tabs', 999, 'none'),
+  add: at('add', 999, 'none'),
+  search: at('search', 999, 'top'),
+  actions: at('actions', 999, 'top'),
+  due: at('due', 24, 'center'),
+  // The entry sheet.
+  entryAmount: at('entry-amount', 24, 'center'),
+  entryName: at('entry-name', 18, 'center'),
+  entryCategory: at('entry-category', 18, 'center'),
+  entryDetails: at('entry-details', 18, 'center'),
+  entryRepeat: at('entry-repeat', 999, 'center'),
+  entryReceipt: at('entry-receipt', 999, 'center'),
+  save: at('sheet-save', 999, 'none'),
+  // Statistik.
+  statsRange: at('stats-range', 999, 'top'),
+  statsHero: at('stats-hero', 28, 'center'),
+  statsChart: at('stats-chart', 24, 'center'),
+  statsWhere: at('stats-where', 24, 'center'),
+  statsRhythm: at('stats-rhythm', 24, 'center'),
+  // Planen.
+  planPace: at('plan-pace', 28, 'center'),
+  planBudgets: at('plan-budgets', 24, 'center'),
+  planRunway: at('plan-runway', 24, 'center'),
+  planOutlook: at('plan-outlook', 24, 'center'),
+  planGoals: at('plan-goals', 24, 'center'),
+  // Optionen.
+  setSecurity: at('set-security', 24, 'center'),
+  setDisplay: at('set-display', 24, 'center'),
+  setBook: at('set-book', 24, 'center'),
+  setTransfer: at('set-transfer', 18, 'center'),
+} as const satisfies Record<string, TourMark>;
+export type MarkId = keyof typeof MARKS;
+
+/** Each tour's marks, in order. */
+export const TOUR_STEPS: Record<TourId, readonly MarkId[]> = {
+  month: ['balance', 'tick', 'month', 'tabs', 'add'],
+  entry: ['entryAmount', 'entryName', 'entryCategory', 'entryDetails', 'save'],
+  stats: ['statsRange', 'statsHero', 'statsChart', 'statsWhere', 'statsRhythm'],
+  plan: ['planPace', 'planBudgets', 'planRunway', 'planOutlook', 'planGoals'],
+  settings: ['setSecurity', 'setDisplay', 'setBook', 'setTransfer'],
 };
 
-/** What a step points at right now: the first match that is really on the page. */
-export function tourAnchor(step: TourStep): HTMLElement | null {
-  for (const el of document.querySelectorAll<HTMLElement>(TOUR_ANCHORS[step])) {
+const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+/** A mark's sentence in a tour: `tourBalance`, `tourEntryAmount` … */
+export const markText = (mark: MarkId) => `tour${cap(mark)}` as keyof GuidePages;
+/** A tour's name in the guide's list, and the line under it. */
+export const tourName = (tour: TourId) => `tourName${cap(tour)}` as keyof GuidePages;
+export const tourAbout = (tour: TourId) => `tourAbout${cap(tour)}` as keyof GuidePages;
+
+/** What a mark points at right now: the first match that is really on the screen. */
+export function tourAnchor(mark: MarkId): HTMLElement | null {
+  for (const el of document.querySelectorAll<HTMLElement>(MARKS[mark].anchor)) {
     if (el.getClientRects().length > 0 && !el.closest('[inert]')) return el;
   }
   return null;
 }
 
-export const TOUR_TEXT: Record<TourStep, keyof GuidePages> = {
-  balance: 'tourBalance', tick: 'tourTick', month: 'tourMonth', tabs: 'tourTabs', add: 'tourAdd',
-};
-
 /**
- * The steps a page can show: one whose anchor isn't there — no balance yet,
- * no entry to tick — is left out, so the tour never points at nothing.
+ * The steps a screen can show: a mark that isn't there — no balance yet, no
+ * entry to tick, no budget — is left out, so a tour never points at nothing.
  */
-export function tourSteps(present: (step: TourStep) => boolean): TourStep[] {
-  return TOUR_STEPS.filter(present);
+export function tourSteps(tour: TourId, present: (mark: MarkId) => boolean): MarkId[] {
+  return TOUR_STEPS[tour].filter(present);
 }
 
 /**

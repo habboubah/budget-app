@@ -6,7 +6,6 @@ const ar: GuidePages = {
   guideSearch: 'ابحث في الدليل',
   guideShow: 'أرِني',
   guideRead: 'مقروء',
-  guideTourBody: 'صفحة الشهر في خطوات قليلة – أقل من دقيقة.',
 
   // The chapters (Planen is the tab’s own name).
   guideChBasics: 'الأساسيات',
@@ -64,6 +63,39 @@ const ar: GuidePages = {
   tourMonth: 'من هنا تنتقل بين الأشهر. والبنود المتكررة تأتي معك تلقائيًا.',
   tourTabs: '«{stats}» تنظر إلى الوراء، و«{plan}» إلى الأمام. وفي «{settings}» تجد الدليل كاملًا.',
   tourAdd: 'ومن هنا تُدخل بندًا – المبلغ أولًا.',
+
+  // The tours: the guide's list, and one sentence a mark.
+  guideToursTitle: 'جولات',
+  guideToursBody: 'خطوة بخطوة على الشاشات الحقيقية – كل جولة أقل من دقيقة.',
+  tourNameMonth: 'صفحة الشهر',
+  tourAboutMonth: 'الرصيد، التأشير، تبديل الأشهر',
+  tourNameEntry: 'إضافة بند',
+  tourAboutEntry: 'المبلغ، الاسم، الفئة والباقي',
+  tourNameStats: '{stats}',
+  tourAboutStats: 'الفترة، نسبة الادخار، أين يذهب المال',
+  tourNamePlan: '{plan}',
+  tourAboutPlan: 'الميزانيات، الأيام الثلاثون القادمة، التوقعات',
+  tourNameSettings: '{settings}',
+  tourAboutSettings: 'الأمان، العرض، النسخ الاحتياطي',
+  tourEntryAmount: 'المبلغ أولًا. أزرار ⁦+ − × ÷⁩ فوق لوحة المفاتيح تجمع لك الفاتورة هنا مباشرة.',
+  tourEntryName: 'ثم الغرض. يقترح Spartopf أسماء استخدمتها من قبل ويكملها أثناء الكتابة.',
+  tourEntryCategory: 'يختار Spartopf الفئة المناسبة للاسم (✦). إن لم تكن صحيحة، اضغط على فئة أخرى.',
+  tourEntryDetails: 'الباقي هنا: التاريخ، مدفوع أو معلّق، «{repeat}»، «{receipt}»، ملاحظة و«# {tag}».',
+  tourSave: 'انتهيت؟ علامة الصح تحفظ البند.',
+  tourStatsRange: 'اختر الفترة: 3 أو 6 أو 9 أو 12 شهرًا، سنة أو الكل. كل ما تحتها يتبعها.',
+  tourStatsHero: 'الأهم بنظرة واحدة: كم يبقى من دخلك – في المتوسط شهريًا.',
+  tourStatsChart: 'الدخل والمصروف شهرًا بشهر. مرّر إصبعك عليه لترى كل قيمة.',
+  tourStatsWhere: 'أين يذهب المال – حسب الفئة أو المستفيد أو الوسم. ضغطة تعرض التفاصيل.',
+  tourStatsRhythm: 'أيام الأسبوع وأيام الشهر التي تنفق فيها أكثر.',
+  tourPlanPace: 'الشهر الجاري: هل تنفق أسرع من المعتاد، وأين ستصل في نهاية الشهر؟',
+  tourPlanBudgets: 'ميزانياتك: ما تبقى في كل فئة هذا الشهر.',
+  tourPlanRunway: 'الأيام الثلاثون القادمة يومًا بيوم – مع أدنى رصيد قبل أن يأتي المال من جديد.',
+  tourPlanOutlook: 'الأشهر الاثنا عشر القادمة. «{whatIf}» يجرّب هنا شراءً قبل أن تقوم به.',
+  tourPlanGoals: 'أوعية ادخارك: ما تدّخر له وإلى أين وصلت.',
+  tourSetSecurity: 'إخفاء المبالغ، قفل التطبيق، التذكيرات – كل ما يحمي بياناتك.',
+  tourSetDisplay: 'اللغة، فاتح أو داكن، لون التطبيق وعملتك.',
+  tourSetBook: 'دفتر ميزانيتك: الفئات والميزانيات، المفضلة، الحسابات، القواعد والمزيد.',
+  tourSetTransfer: 'هنا تحفظ كل شيء في ملف واحد – لجهاز جديد أو للاحتياط.',
 };
 
 export default ar;

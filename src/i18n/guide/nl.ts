@@ -6,7 +6,6 @@ const nl: GuidePages = {
   guideSearch: 'Zoek in de handleiding',
   guideShow: 'Laat zien',
   guideRead: 'gelezen',
-  guideTourBody: 'De maandpagina in een paar stappen – duurt nog geen minuut.',
 
   // The chapters (Planen is the tab’s own name).
   guideChBasics: 'De basis',
@@ -64,6 +63,39 @@ const nl: GuidePages = {
   tourMonth: 'Hier wissel je van maand. Terugkerende posten komen vanzelf mee.',
   tourTabs: '‘{stats}’ kijkt terug, ‘{plan}’ kijkt vooruit. De hele handleiding vind je onder ‘{settings}’.',
   tourAdd: 'En hier voer je iets in – eerst het bedrag.',
+
+  // The tours: the guide's list, and one sentence a mark.
+  guideToursTitle: 'Rondleidingen',
+  guideToursBody: 'Stap voor stap op de echte schermen – elke duurt minder dan een minuut.',
+  tourNameMonth: 'De maandpagina',
+  tourAboutMonth: 'Saldo, afvinken, van maand wisselen',
+  tourNameEntry: 'Een post invoeren',
+  tourAboutEntry: 'Bedrag, naam, categorie en de rest',
+  tourNameStats: '{stats}',
+  tourAboutStats: 'Periode, spaarquote, waar het geld heen gaat',
+  tourNamePlan: '{plan}',
+  tourAboutPlan: 'Budgetten, de komende 30 dagen, vooruitblik',
+  tourNameSettings: '{settings}',
+  tourAboutSettings: 'Beveiliging, weergave, back-up',
+  tourEntryAmount: 'Eerst het bedrag. Met + − × ÷ boven het toetsenbord tel je een bonnetje hier meteen op.',
+  tourEntryName: 'Dan waarvoor. Spartopf stelt namen voor die je al gebruikt hebt en vult ze aan terwijl je typt.',
+  tourEntryCategory: 'Spartopf kiest de categorie die bij de naam past (✦). Klopt die niet, tik dan een andere aan.',
+  tourEntryDetails: 'De rest staat hier: datum, betaald of open, ‘{repeat}’, ‘{receipt}’, notitie en ‘# {tag}’.',
+  tourSave: 'Klaar? Het vinkje bewaart de post.',
+  tourStatsRange: 'Kies de periode: 3, 6, 9 of 12 maanden, een jaar of alles. Alles eronder volgt die.',
+  tourStatsHero: 'Het belangrijkste in één oogopslag: hoeveel van je inkomen overblijft – gemiddeld per maand.',
+  tourStatsChart: 'Inkomsten en uitgaven per maand. Ga er met je vinger overheen om elke waarde te zien.',
+  tourStatsWhere: 'Waar het geld heen gaat – per categorie, ontvanger of tag. Een tik toont de details.',
+  tourStatsRhythm: 'De weekdagen en de dagen van de maand waarop je het meest uitgeeft.',
+  tourPlanPace: 'De lopende maand: geef je sneller uit dan normaal, en waar kom je aan het einde van de maand uit?',
+  tourPlanBudgets: 'Je budgetten: wat er deze maand in elke categorie over is.',
+  tourPlanRunway: 'De komende 30 dagen, dag voor dag – met het laagste punt voordat er weer geld binnenkomt.',
+  tourPlanOutlook: 'De komende twaalf maanden. ‘{whatIf}’ probeert hier een aankoop uit voordat je hem doet.',
+  tourPlanGoals: 'Je spaarpotten: waarvoor je spaart en hoe ver je al bent.',
+  tourSetSecurity: 'Bedragen verbergen, de app vergrendelen, herinneringen – alles wat je gegevens beschermt.',
+  tourSetDisplay: 'Taal, licht of donker, de kleur van de app en je valuta.',
+  tourSetBook: 'Je huishoudboekje: categorieën en budgetten, favorieten, rekeningen, regels en meer.',
+  tourSetTransfer: 'Hier maak je een back-up van alles in één bestand – voor een nieuw apparaat of voor de zekerheid.',
 };
 
 export default nl;

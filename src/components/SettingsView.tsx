@@ -99,16 +99,19 @@ function Next({ value }: { value?: ReactNode }) {
  * that is one button (it gives a little under the finger); the two sit side
  * by side and stack when large text no longer fits them abreast.
  */
-function QuickTile({ icon, hue, label, sub, onClick }: {
+function QuickTile({ icon, hue, label, sub, onClick, tour }: {
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   hue: string;
   label: string;
   sub: string;
   onClick: () => void;
+  /** What a tour points at (src/guide.ts). */
+  tour?: string;
 }) {
   return (
     <button
       type="button"
+      data-tour={tour}
       onClick={() => { tapLight(); onClick(); }}
       // A column from the top: a button would centre its content, and the taller card's icon would sit lower than its neighbour's.
       className="flex-1 basis-[9.5rem] min-w-0 rounded-md bg-surface card-edge press p-[14px] flex flex-col items-stretch justify-start text-start focus-visible:ring-focus"
@@ -237,10 +240,10 @@ export function SettingsView(p: Props) {
       {/* Where help and safety are looked for: large, and first. */}
       <div className="flex flex-wrap gap-[12px]">
         <QuickTile icon={Compass} hue="blue" label={t.guideTitle} sub={t.guideRowSub} onClick={p.onGuide} />
-        <QuickTile icon={Download} hue="sky" label={t.transferTitle} sub={t.transferRowSub} onClick={p.onTransfer} />
+        <QuickTile icon={Download} hue="sky" label={t.transferTitle} sub={t.transferRowSub} onClick={p.onTransfer} tour="set-transfer" />
       </div>
 
-      <Group title={t.bookSection}>
+      <Group title={t.bookSection} tour="set-book">
         <Row
           label={t.categoriesTitle}
           leading={<IconTile icon={Tags} hue="lavender" />}
@@ -270,7 +273,7 @@ export function SettingsView(p: Props) {
         />
       </Group>
 
-      <Group title={t.moreSection}>
+      <Group title={t.moreSection} tour="set-more">
         <Row
           label={t.debtsTitle}
           sub={t.debtsRowSub}
@@ -310,7 +313,7 @@ export function SettingsView(p: Props) {
         )}
       </Group>
 
-      <Group title={t.displaySection}>
+      <Group title={t.displaySection} tour="set-display">
         <MenuRow<Language>
           label={t.language}
           leading={<IconTile icon={Languages} hue="blue" />}
@@ -339,7 +342,7 @@ export function SettingsView(p: Props) {
         />
       </Group>
 
-      <Group title={t.securitySection}>
+      <Group title={t.securitySection} tour="set-security">
         <Row
           label={t.hideAmounts}
           sub={t.hideAmountsSub}

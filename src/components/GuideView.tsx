@@ -1,13 +1,13 @@
 import { CSSProperties, ComponentType, useEffect, useId, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  ArrowRight, BarChart3, Bell, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, CircleCheck, Compass, Download, EyeOff,
+  ArrowRight, BarChart3, PenLine, Settings, Bell, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, CircleCheck, Compass, Download, EyeOff,
   FileSpreadsheet, FileText, FlaskConical, HandCoins, Landmark, Luggage, Palette, Paperclip, PiggyBank, Play, Plus, QrCode, Repeat,
   Scale, ScrollText, Search, ShieldCheck, Split, Star, Tags, Target, TrendingUp, Wallet, WalletCards, Zap,
 } from 'lucide-react';
 import { Hue } from '../types';
 import { Strings, fmt } from '../translations';
-import { CHAPTER_TITLES, GuideAction, GuideTopic, GuideTopicId, GuideWords, byChapter, guideText, guideTopics, searchGuide } from '../guide';
+import { CHAPTER_TITLES, GuideTopic, GuideTopicId, GuideWords, TourId, byChapter, guideText, guideTopics, searchGuide, tourAbout, tourName } from '../guide';
 import type { GuidePages } from '../guidePages';
 import { Empty, Group, IconTile, Screen } from '../ui/Screen';
 import { SearchField } from '../ui/SearchField';
@@ -52,6 +52,15 @@ const LOOK: Record<GuideTopicId, [Icon, Hue]> = {
   look: [Palette, 'plum'],
 };
 
+/** Each tour's symbol and colour: its tab's, or the add button's. */
+const TOUR_LOOK: Record<TourId, [Icon, Hue]> = {
+  month: [CalendarDays, 'blue'],
+  entry: [PenLine, 'mint'],
+  stats: [BarChart3, 'sky'],
+  plan: [PiggyBank, 'berry'],
+  settings: [Settings, 'stone'],
+};
+
 interface Props {
   t: Strings;
   /** The guide's own words in the app's language (src/i18n/guide/). */
@@ -65,10 +74,12 @@ interface Props {
   open: GuideTopicId | null;
   onOpen: (id: GuideTopicId | null) => void;
   onBack: () => void;
-  onTour: () => void;
+  /** The tours this book can take (the entry sheet's needs a started month, Statistik's entries). */
+  tours: TourId[];
+  onTour: (id: TourId) => void;
   /** Adds the test data (Optionen › Ausprobieren); absent once the book has it. */
   onDemo?: () => void;
-  onShow: (action: GuideAction) => void;
+  onShow: (topic: GuideTopic) => void;
 }
 
 /**
@@ -77,7 +88,7 @@ interface Props {
  * *Zeigen*, which goes to the real screen. A search over it all, since a
  * list this long is only read by those who are not looking for something.
  */
-export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, onTour, onDemo, onShow }: Props) {
+export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, tours, onTour, onDemo, onShow }: Props) {
   const tourId = useId();
   const [query, setQuery] = useState('');
   const searching = query.trim() !== '';
@@ -102,20 +113,46 @@ export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, onTo
       accessory={<SearchField value={query} onChange={setQuery} placeholder={pages.guideSearch} clearLabel={t.searchClear} cancelLabel={t.cancel} />}
     >
       {!searching && (
-        <section className="rounded-md bg-surface card-edge p-5" aria-labelledby={tourId}>
-          <div className="flex items-start gap-3">
+        <section className="rounded-md bg-surface card-edge overflow-hidden" aria-labelledby={tourId}>
+          <div className="p-5 pb-2 flex items-start gap-3">
             <span className="w-10 h-10 rounded-full hero text-on-hero inline-flex items-center justify-center shrink-0" aria-hidden="true">
               <Compass className="w-5 h-5" strokeWidth={2.2} />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 id={tourId} className="display text-heading font-semibold text-fg wrap-compound">{t.guideTourTitle}</h2>
-              <p className="text-label text-fg-mute mt-0.5 wrap-prose">{pages.guideTourBody}</p>
+              <h2 id={tourId} className="display text-heading font-semibold text-fg wrap-compound">{pages.guideToursTitle}</h2>
+              <p className="text-label text-fg-mute mt-0.5 wrap-prose">{pages.guideToursBody}</p>
             </div>
           </div>
-          <div className="mt-4 -mx-1 flex flex-wrap items-center gap-2">
-            <Button icon={Play} onClick={onTour}>{t.guideTourStart}</Button>
-            {onDemo && <Button variant="ghost" icon={FlaskConical} onClick={onDemo}>{t.demoAdd}</Button>}
-          </div>
+          <ul className="divide-hairline-inset">
+            {tours.map(id => {
+              const [icon, hue] = TOUR_LOOK[id];
+              const name = guideText(words, tourName(id));
+              return (
+                <li key={id} style={{ '--sep': '60px' } as CSSProperties}>
+                  <button
+                    type="button"
+                    data-guide-tour={id}
+                    onClick={() => { tapLight(); onTour(id); }}
+                    className="relative w-full min-h-[56px] px-[16px] py-3 flex items-center gap-[12px] text-start transition-colors active:bg-surface-2 focus-visible:ring-focus"
+                  >
+                    <IconTile icon={icon} hue={hue} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-body text-fg wrap-compound">{name}</span>
+                      <span className="block text-caption text-fg-mute mt-0.5 wrap-compound">{guideText(words, tourAbout(id))}</span>
+                    </span>
+                    <span className="w-8 h-8 rounded-full bg-accent-dim text-accent inline-flex items-center justify-center shrink-0" aria-hidden="true">
+                      <Play className="w-4 h-4 ms-0.5 rtl:-scale-x-100" strokeWidth={2.4} fill="currentColor" />
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {onDemo && (
+            <div className="px-4 pb-4 pt-1 -mx-1">
+              <Button variant="ghost" icon={FlaskConical} onClick={onDemo}>{t.demoAdd}</Button>
+            </div>
+          )}
         </section>
       )}
 
@@ -131,7 +168,9 @@ export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, onTo
               foldable={!searching}
               seen={seen.includes(topic.id as GuideTopicId)}
               onToggle={() => onOpen(open === topic.id ? null : topic.id as GuideTopicId)}
+              tour={topic.tour && tours.includes(topic.tour) ? topic.tour : undefined}
               onShow={onShow}
+              onTour={onTour}
             />
           ))}
         </Group>
@@ -142,15 +181,18 @@ export function GuideView({ t, pages, ios, app, seen, open, onOpen, onBack, onTo
   );
 }
 
-function TopicRow({ topic, words, open, foldable, seen, onToggle, onShow }: {
+function TopicRow({ topic, words, open, foldable, seen, tour, onToggle, onShow, onTour }: {
   topic: GuideTopic;
   words: GuideWords;
   open: boolean;
   /** Off while searching: every hit stays open. */
   foldable: boolean;
   seen: boolean;
+  /** The tour that shows this part of the app, when the book can take it. */
+  tour?: TourId;
   onToggle: () => void;
-  onShow: (action: GuideAction) => void;
+  onShow: (topic: GuideTopic) => void;
+  onTour: (id: TourId) => void;
 }) {
   const panelId = useId();
   const [icon, hue] = LOOK[topic.id as GuideTopicId];
@@ -192,16 +234,30 @@ function TopicRow({ topic, words, open, foldable, seen, onToggle, onShow }: {
           className="ps-[60px] pe-[16px] pb-3 -mt-1.5"
         >
           <p className="text-label text-fg wrap-prose">{guideText(words, topic.body)}</p>
-          {action && (
-            <button
-              type="button"
-              onClick={() => { tapLight(); onShow(action); }}
-              aria-label={`${words.guideShow} — ${title}`}
-              className="mt-1 -mx-1 px-1 min-h-tap inline-flex items-center gap-1.5 text-body font-semibold text-accent rounded-sm active:opacity-60 focus-visible:ring-focus"
-            >
-              {words.guideShow}
-              <ArrowRight className="w-[18px] h-[18px] rtl:rotate-180" strokeWidth={2.4} aria-hidden="true" />
-            </button>
+          {(action || tour) && (
+            <div className="mt-1 -mx-1 flex flex-wrap items-center gap-x-4">
+              {action && (
+                <button
+                  type="button"
+                  onClick={() => { tapLight(); onShow(topic); }}
+                  aria-label={`${words.guideShow} — ${title}`}
+                  className="px-1 min-h-tap inline-flex items-center gap-1.5 text-body font-semibold text-accent rounded-sm active:opacity-60 focus-visible:ring-focus"
+                >
+                  {words.guideShow}
+                  <ArrowRight className="w-[18px] h-[18px] rtl:rotate-180" strokeWidth={2.4} aria-hidden="true" />
+                </button>
+              )}
+              {tour && (
+                <button
+                  type="button"
+                  onClick={() => { tapLight(); onTour(tour); }}
+                  className="px-1 min-h-tap inline-flex items-center gap-1.5 text-body font-semibold text-accent rounded-sm active:opacity-60 focus-visible:ring-focus wrap-compound text-start"
+                >
+                  <Play className="w-4 h-4 shrink-0 rtl:-scale-x-100" strokeWidth={2.4} fill="currentColor" aria-hidden="true" />
+                  {words.guideTourStart}
+                </button>
+              )}
+            </div>
           )}
         </motion.div>
       )}
