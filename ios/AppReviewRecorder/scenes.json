@@ -201,7 +201,7 @@
     {"pause": 2},
     {"see": "will be ticked off"},
     {"pause": 2},
-    {"select": "Car", "in": "Category", "nth": 4},
+    {"select": "Transport", "in": "Category", "nth": 4},
     {"pause": 1},
     {"tap": "Also future"},
     {"pause": 1.5},
