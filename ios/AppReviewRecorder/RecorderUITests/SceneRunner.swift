@@ -766,8 +766,16 @@ final class SceneRunner {
             choose.tap()
             rest(1.2)
         }
-        let search = app.searchFields.firstMatch
-        guard appears(search, within: 10) else {
+        // The Files picker's search field – not one of the page's own (Spartopf's
+        // "Search all months" came first and took the typing).
+        var picked: XCUIElement? = nil
+        let deadline = Date().addingTimeInterval(10)
+        repeat {
+            let page = Set(app.webViews.descendants(matching: .searchField).allElementsBoundByIndex.map { "\($0.frame)" })
+            picked = app.searchFields.allElementsBoundByIndex.first { $0.exists && !page.contains("\($0.frame)") }
+            if picked == nil { rest(0.4) }
+        } while picked == nil && Date() < deadline
+        guard let search = picked else {
             throw StepFailure("the Files picker didn't open (or has no search field)")
         }
         search.tap()
