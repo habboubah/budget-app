@@ -247,6 +247,12 @@ final class SceneRunner {
         if let direction = step.string("swipe"), let on = step.strings("on") {
             let el = try element(on, nth: nth, role: nil, timeout: timeout)
             try scrollIntoView(el)
+            // A swipe needs the whole row clear of the tab bar and the home indicator
+            // (one at the bottom edge became iOS's own gesture and deleted nothing).
+            for _ in 0..<3 where el.frame.maxY > visible.maxY - 110 {
+                scroll(down: true)
+                _ = steady(el)
+            }
             swipeAcross(el, toLeft: direction == "left")
             settle(); return
         }
@@ -619,9 +625,9 @@ final class SceneRunner {
         let y = { (part: CGFloat) in (v.minY + v.height * part - w.minY) / w.height }
         let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(start)))
         let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y(end)))
-        // Fast, with a hold before letting go so the page stops where the finger does
-        // (at the default speed one drag took ~1.8 s).
-        from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 0.15)
+        // Default speed, with a hold before letting go so the page stops where the
+        // finger does. (Fast drags moved WebKit's page only part of the way.)
+        from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .default, thenHoldForDuration: 0.1)
         rest(0.35)
     }
 
