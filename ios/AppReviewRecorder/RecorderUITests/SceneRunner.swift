@@ -272,6 +272,7 @@ final class SceneRunner {
             settle(); return
         }
         if let day = step.int("pickDay") { try pickDay(day, opener: step.strings("on") ?? ["Date:"]); settle(); return }
+        if let years = step.int("pickYearAhead") { try pickYearAhead(years, opener: step.strings("on") ?? ["Ends:"]); settle(); return }
         if let option = step.string("select"), let box = step.strings("in") {
             try select(option, in: box, nth: nth)
             settle(); return
@@ -846,6 +847,33 @@ final class SceneRunner {
         }
         button.tap()
         rest(0.6)
+        if let done = try? element(system("done", ["Done", "Fertig"]), nth: 0, role: "button", timeout: 1, modes: [.exact]), done.isHittable {
+            done.tap()
+        } else {
+            let region = app.otherElements["PopoverDismissRegion"]
+            if region.exists { region.tap() } else { app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.05)).tap() }
+        }
+    }
+
+    /// <input type=month> (a recurring entry's end): the system's month/year
+    /// wheels. The year wheel is the one whose value has digits; it is turned
+    /// one row per year by a slow drag (adjust(toPickerWheelValue:) would fail
+    /// the whole test on a value it can't find), then the picker is closed.
+    func pickYearAhead(_ years: Int, opener: [String]) throws {
+        let field = try element(opener, nth: 0, role: nil, timeout: 4)
+        try tap(field)
+        let first = app.pickerWheels.firstMatch
+        guard appears(first, within: 4) else { throw StepFailure("no month picker") }
+        let wheels = app.pickerWheels.allElementsBoundByIndex
+        guard let year = wheels.first(where: { (($0.value as? String) ?? "").rangeOfCharacter(from: .decimalDigits) != nil }) ?? wheels.last else {
+            throw StepFailure("no year wheel")
+        }
+        let row: CGFloat = 34
+        for _ in 0..<max(years, 0) {
+            let centre = year.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            centre.press(forDuration: 0.05, thenDragTo: centre.withOffset(CGVector(dx: 0, dy: -row)), withVelocity: .slow, thenHoldForDuration: 0.3)
+            rest(0.6)
+        }
         if let done = try? element(system("done", ["Done", "Fertig"]), nth: 0, role: "button", timeout: 1, modes: [.exact]), done.isHittable {
             done.tap()
         } else {

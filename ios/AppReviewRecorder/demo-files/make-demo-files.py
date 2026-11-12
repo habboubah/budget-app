@@ -1,122 +1,31 @@
 """Demo files for the Spartopf App Review screen recording.
 
 Regenerate for another month: change the dates below, then
-  python3 make-demo-files.py .   (needs openpyxl and Pillow)
+  python3 make-demo-files.py .   (needs Pillow, reportlab and segno)
 spartopf-demo-backup.spartopf comes from npm run rehearse:app-review instead.
+The Excel import is left out of the recording (Nov 2026): the earlier months
+come from Settings > Try it out > Add test data.
 
-All names and amounts are invented. Writes into the folder given as argv[1]:
-  spartopf-demo-history.xlsx  - Jun-Oct 2026, laid out like My_expense.xlsx
-  spartopf-demo-bank.csv      - Sparkasse CSV-CAMT export, November 2026
+All names, IBANs and amounts are invented. Writes into the folder given as argv[1]:
+  spartopf-demo-bank.csv        - Sparkasse CSV-CAMT export, November 2026
   spartopf-demo-banking-app.png - a banking-app transaction list to photograph
+  spartopf-demo-statement.pdf   - a bank statement as PDF (for banks without CSV)
+  spartopf-demo-other-app.csv   - an export from another budget app (Cashew-style columns)
+  spartopf-demo-invoice.png     - an invoice with a payment QR code (GiroCode)
+  spartopf-demo-receipt.png     - a shop receipt to attach to an entry
 """
 import sys
 from pathlib import Path
 
-from openpyxl import Workbook
+import io
+
+import segno
 from PIL import Image, ImageDraw, ImageFont
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 
 out = Path(sys.argv[1])
 out.mkdir(parents=True, exist_ok=True)
-
-# ---------------------------------------------------------------- Excel
-# Each category: header in row 1 over three columns (name, paid, open),
-# starting at column C like the original sheet.
-CATS = ["Income", "Home", "Car", "Groceries & drugstore", "Restaurants", "Family", "Children", "Others", "Investments"]
-
-CHILDREN = {
-    "06.2026": [("Daycare", 280.00, None), ("Nappies", 64.90, None), ("Kids' clothes", 118.40, None)],
-    "07.2026": [("Daycare", 280.00, None), ("Nappies", 59.80, None), ("Toys", 42.99, None), ("Swimming course", 120.00, None)],
-    "08.2026": [("Daycare", 280.00, None), ("Nappies", 61.20, None), ("Kids' clothes", 96.50, None)],
-    "09.2026": [("Daycare", 280.00, None), ("Nappies", 63.45, None), ("Toys", 24.99, None), ("Kids' shoes", 59.95, None)],
-    "10.2026": [("Daycare", 280.00, None), ("Nappies", 58.30, None), ("Toys", 35.99, None), ("Winter jacket", 89.95, None)],
-}
-# November opens with what October left (paid entries only), so the setup
-# balance typed in the recording (7,500.00 with salary received and the
-# 25.00 phone bill paid) lines up with the history: 7,500 - 3,200 + 25.
-TARGET_OCT_NOW = 4325.00
-
-MONTHS = {
-    "06.2026": {
-        "Income": [("Before", 1420.00, None), ("Salary", 3200.00, None), ("Child benefit", 255.00, None)],
-        "Home": [("Rent(3)", 950.00, None), ("Electricity(5)", 85.00, None), ("Mobile phone", 25.00, None), ("Internet", 39.99, None), ("Netflix", 13.99, None)],
-        "Car": [("Fuel", 112.40, None), ("Car insurance", 48.60, None)],
-        "Groceries & drugstore": [("Rewe", 212.35, None), ("Lidl", 168.90, None), ("Aldi", 94.20, None), ("dm", 38.75, None)],
-        "Restaurants": [("Pizzeria", 42.50, None), ("Bakery", 31.20, None)],
-        "Family": [("Day out", 64.00, None)],
-        "Others": [("Gym", 29.90, None), ("Amazon", 57.80, None)],
-        "Investments": [("ETF savings plan", 150.00, None)],
-    },
-    "07.2026": {
-        "Income": [("Salary", 3200.00, None), ("Child benefit", 255.00, None)],
-        "Home": [("Rent(3)", 950.00, None), ("Electricity(5)", 85.00, None), ("Mobile phone", 25.00, None), ("Internet", 39.99, None), ("Netflix", 13.99, None)],
-        "Car": [("Fuel", 124.10, None), ("Car insurance", 48.60, None), ("Car tax", 154.00, None)],
-        "Groceries & drugstore": [("Rewe", 198.60, None), ("Lidl", 181.45, None), ("Aldi", 88.30, None), ("dm", 41.10, None)],
-        "Restaurants": [("Pizzeria", 38.00, None), ("Bakery", 27.60, None), ("Ice cream", 18.40, None)],
-        "Family": [("Gift", 45.00, None)],
-        "Others": [("Gym", 29.90, None), ("Amazon", 34.99, None)],
-        "Investments": [("ETF savings plan", 150.00, None)],
-    },
-    "08.2026": {
-        "Income": [("Salary", 3200.00, None), ("Child benefit", 255.00, None)],
-        "Home": [("Rent(3)", 950.00, None), ("Electricity(5)", 85.00, None), ("Mobile phone", 25.00, None), ("Internet", 39.99, None), ("Netflix", 13.99, None)],
-        "Car": [("Fuel", 168.70, None), ("Car insurance", 48.60, None)],
-        "Groceries & drugstore": [("Rewe", 225.80, None), ("Lidl", 159.30, None), ("Aldi", 101.75, None), ("dm", 36.40, None)],
-        "Restaurants": [("Pizzeria", 46.00, None), ("Bakery", 29.80, None)],
-        "Family": [("Day out", 92.00, None)],
-        "Others": [("Gym", 29.90, None), ("Holiday flat", 680.00, None)],
-        "Investments": [("ETF savings plan", 150.00, None)],
-    },
-    "09.2026": {
-        "Income": [("Salary", 3200.00, None), ("Child benefit", 255.00, None)],
-        "Home": [("Rent(3)", 950.00, None), ("Electricity(5)", 85.00, None), ("Mobile phone", 25.00, None), ("Internet", 39.99, None), ("Netflix", 13.99, None)],
-        "Car": [("Fuel", 118.90, None), ("Car insurance", 48.60, None)],
-        "Groceries & drugstore": [("Rewe", 207.15, None), ("Lidl", 172.60, None), ("Aldi", 97.40, None), ("dm", 44.25, None)],
-        "Restaurants": [("Pizzeria", 41.50, None), ("Bakery", 33.10, None)],
-        "Family": [("School supplies", 76.30, None)],
-        "Others": [("Gym", 29.90, None), ("Amazon", 48.60, None)],
-        "Investments": [("ETF savings plan", 150.00, None)],
-    },
-    "10.2026": {
-        "Income": [("Salary", 3200.00, None), ("Child benefit", 255.00, None)],
-        "Home": [("Rent(3)", 950.00, None), ("Electricity(5)", 85.00, None), ("Mobile phone", 25.00, None), ("Internet", 39.99, None), ("Netflix", 15.99, None)],
-        "Car": [("Fuel", 121.30, None), ("Car insurance", 48.60, None), ("Garage", None, 210.00)],
-        "Groceries & drugstore": [("Rewe", 219.40, None), ("Lidl", 166.85, None), ("Aldi", 92.10, None), ("dm", 39.90, None)],
-        "Restaurants": [("Pizzeria", 58.00, None), ("Bakery", 36.40, None), ("Restaurant", 96.50, None)],
-        "Family": [("Birthday party", 120.00, None)],
-        "Others": [("Gym", 29.90, None), ("Amazon", 41.20, None)],
-        "Investments": [("ETF savings plan", 150.00, None)],
-    },
-}
-
-for tab, rows in CHILDREN.items():
-    MONTHS[tab]["Children"] = rows
-# Work out "Before" so October ends (paid only) on TARGET_OCT_NOW.
-net = 0.0
-for tab, data in MONTHS.items():
-    for cat, rows in data.items():
-        for name, paid, _open in rows:
-            if name == "Before" or paid is None:
-                continue
-            net += paid if cat == "Income" else -paid
-before = round(TARGET_OCT_NOW - net, 2)
-assert before > 0, before
-MONTHS["06.2026"]["Income"][0] = ("Before", before, None)
-print("Before =", before)
-
-wb = Workbook()
-wb.remove(wb.active)
-for tab, data in MONTHS.items():
-    ws = wb.create_sheet(tab)
-    for i, cat in enumerate(CATS):
-        col = 3 + i * 3  # C, F, I, ...
-        ws.cell(row=1, column=col, value=cat)
-        for r, (name, paid, open_) in enumerate(data.get(cat, []), start=2):
-            ws.cell(row=r, column=col, value=name)
-            if paid is not None:
-                ws.cell(row=r, column=col + 1, value=paid)
-            if open_ is not None:
-                ws.cell(row=r, column=col + 2, value=open_)
-wb.save(out / "spartopf-demo-history.xlsx")
 
 # ---------------------------------------------------------------- bank CSV
 HEADER = ["Auftragskonto", "Buchungstag", "Valutadatum", "Buchungstext", "Verwendungszweck",
@@ -174,4 +83,85 @@ for payee, amount in PHOTO:
     d.line((60, y + 20, W - 60, y + 20), fill="#e0e0e0", width=2)
     y += 70
 img.save(out / "spartopf-demo-banking-app.png")
+
+# ---------------------------------------------------------------- statement PDF
+# Two days after the CSV's last booking, so nothing in it is "already entered".
+STATEMENT = [
+    ("10.11.2026", "10.11.2026", "Kartenzahlung", "Apotheke am Markt", "Debitk.1 2026-11-10", "-18,45"),
+    ("11.11.2026", "11.11.2026", "Lastschrift", "Stadtbibliothek Muster", "Jahresausweis 2027", "-24,00"),
+]
+pdf = canvas.Canvas(str(out / "spartopf-demo-statement.pdf"), pagesize=A4)
+pdf.setTitle("Kontoauszug 11/2026")
+w, h = A4
+y = h - 70
+pdf.setFont("Helvetica-Bold", 15); pdf.drawString(50, y, "Musterbank eG"); y -= 22
+pdf.setFont("Helvetica", 10)
+pdf.drawString(50, y, "Kontoauszug vom 01.11.2026 bis 11.11.2026"); y -= 14
+pdf.drawString(50, y, "Girokonto DE00 0000 0000 0000 0000 00 - Max Mustermann"); y -= 30
+pdf.setFont("Helvetica-Bold", 10)
+pdf.drawString(50, y, "Buchung"); pdf.drawString(120, y, "Valuta"); pdf.drawString(190, y, "Vorgang"); pdf.drawRightString(w - 50, y, "Betrag EUR"); y -= 18
+pdf.setFont("Helvetica", 10)
+for day, value, kind, payee, detail, amount in STATEMENT:
+    pdf.drawString(50, y, day); pdf.drawString(120, y, value); pdf.drawString(190, y, kind); pdf.drawRightString(w - 50, y, amount); y -= 14
+    pdf.drawString(190, y, payee); y -= 14
+    pdf.drawString(190, y, detail); y -= 20
+pdf.save()
+
+# ---------------------------------------------------------------- another budget app's CSV
+# Cashew's export columns; the app recognises them by their titles.
+OTHER = [
+    ("2026-11-10 19:30:00.000", "-32.80", "Dining", "Sushi Bar", "Dinner"),
+    ("2026-11-11 08:05:00.000", "-4.20", "Dining", "Coffee", ""),
+]
+lines = ["Date,Amount,Category,Title,Note,Account"]
+for date, amount, cat, title, note in OTHER:
+    lines.append(",".join([date, amount, cat, title, note, "Main"]))
+(out / "spartopf-demo-other-app.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+# ---------------------------------------------------------------- invoice with a GiroCode
+# EPC069-12 "SEPA credit transfer" QR code; the IBAN is the standard example IBAN.
+giro = "\n".join(["BCD", "002", "1", "SCT", "", "Stadtwerke Muster GmbH", "DE02120300000000202051",
+                  "EUR89.00", "", "", "Rechnung 2026-4711 Kundennr. 10023", ""])
+qr = io.BytesIO()
+segno.make(giro, error="m").save(qr, kind="png", scale=12, border=4)
+qr_img = Image.open(io.BytesIO(qr.getvalue())).convert("RGB")
+W, H = 1240, 1754
+inv = Image.new("RGB", (W, H), "white")
+d = ImageDraw.Draw(inv)
+d.text((90, 90), "Stadtwerke Muster GmbH", font=font(54, True), fill="black")
+d.text((90, 170), "Musterstraße 1 · 12345 Musterstadt", font=font(32), fill="#444444")
+d.text((90, 320), "Rechnung 2026-4711", font=font(46, True), fill="black")
+d.text((90, 390), "Kundennummer 10023 · 02.11.2026", font=font(32), fill="#444444")
+yy = 500
+for item, price in [("Strom Oktober 2026", "71,40 €"), ("Grundpreis", "17,60 €")]:
+    d.text((90, yy), item, font=font(36), fill="black")
+    tw = d.textlength(price, font=font(36)); d.text((W - 90 - tw, yy), price, font=font(36), fill="black"); yy += 70
+d.line((90, yy + 10, W - 90, yy + 10), fill="black", width=3); yy += 40
+d.text((90, yy), "Zu zahlen bis 20.11.2026", font=font(40, True), fill="black")
+tw = d.textlength("89,00 €", font=font(40, True)); d.text((W - 90 - tw, yy), "89,00 €", font=font(40, True), fill="black")
+d.text((90, yy + 140), "Bequem bezahlen mit GiroCode:", font=font(32), fill="#444444")
+inv.paste(qr_img, (90, yy + 200))
+inv.save(out / "spartopf-demo-invoice.png")
+
+# ---------------------------------------------------------------- receipt photo
+W, H = 760, 1100
+rc = Image.new("RGB", (W, H), "#fbfbf8")
+d = ImageDraw.Draw(rc)
+def centred(y, text, f):
+    d.text(((W - d.textlength(text, font=f)) / 2, y), text, font=f, fill="black")
+centred(60, "ELEKTRO MUSTERMARKT", font(46, True))
+centred(125, "Hauptstraße 12 · Musterstadt", font(28))
+centred(165, "12.11.2026  14:32", font(28))
+yy = 260
+for item, price in [("Kopfhörer Bluetooth", "59,99")]:
+    d.text((50, yy), item, font=font(34), fill="black")
+    tw = d.textlength(price, font=font(34)); d.text((W - 50 - tw, yy), price, font=font(34), fill="black"); yy += 60
+d.line((50, yy + 10, W - 50, yy + 10), fill="black", width=3); yy += 40
+d.text((50, yy), "SUMME EUR", font=font(44, True), fill="black")
+tw = d.textlength("59,99", font=font(44, True)); d.text((W - 50 - tw, yy), "59,99", font=font(44, True), fill="black"); yy += 90
+d.text((50, yy), "MwSt 19 %", font=font(28), fill="#333333")
+tw = d.textlength("9,58", font=font(28)); d.text((W - 50 - tw, yy), "9,58", font=font(28), fill="#333333"); yy += 60
+centred(yy + 60, "Umtausch innerhalb 14 Tagen", font(28))
+centred(yy + 105, "nur mit Kassenbon", font(28))
+rc.save(out / "spartopf-demo-receipt.png")
 print("ok", sorted(p.name for p in out.iterdir()))
