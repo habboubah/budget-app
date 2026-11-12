@@ -823,7 +823,14 @@ final class SceneRunner {
             guard found.elementType != .searchField else { throw StepFailure("\(name) not found in Files – AirDrop it to the iPhone first") }
             file = found
         }
-        try tap(file!)
+        // On its thumbnail: a tile's cell can be far larger than the tile (its middle
+        // once fell on empty space below the photo).
+        let thumb = file!.images.firstMatch
+        if thumb.exists, !thumb.frame.isEmpty, window.contains(CGPoint(x: thumb.frame.midX, y: thumb.frame.midY)) {
+            thumb.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        } else {
+            try tap(file!)
+        }
         rest(1)
     }
 
