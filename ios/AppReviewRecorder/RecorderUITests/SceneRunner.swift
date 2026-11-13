@@ -173,12 +173,21 @@ final class SceneRunner {
         app.terminate() // the recording starts with a cold launch from the home screen
     }
 
+    /// Whether Spartopf was in front after the last step (not before the launch).
+    private var appOnScreen = false
+
     func run(scenes range: ClosedRange<Int>) throws {
         for index in range {
             let scene = spec.scenes[index - 1]
             log("Scene \(index): \(scene.name)")
             try XCTContext.runActivity(named: "Scene \(index): \(scene.name)") { _ in
                 for (n, step) in scene.steps.enumerated() {
+                    // A notification banner the run tapped (Gmail at 19:20 on 13 Nov) opens
+                    // another app: every query after it fails with kAXErrorServerNotFound.
+                    if appOnScreen && app.state != .runningForeground {
+                        throw StepFailure("Scene \(index) “\(scene.name)”, before step \(n + 1): Spartopf left the screen – probably a notification banner was tapped and opened another app. Turn on Do Not Disturb on the iPhone and record again; don't upload this video.")
+                    }
+                    defer { appOnScreen = app.state == .runningForeground }
                     do {
                         try perform(step)
                     } catch {

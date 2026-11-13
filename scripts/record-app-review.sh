@@ -136,7 +136,7 @@ if [ "${FROM:-1}" = "1" ] && [ "$RESET" = "1" ]; then
   echo "Spartopf on the iPhone is reset first (entries, settings and automatic backups are erased)."
 fi
 [ "${DRY_RUN:-}" = "1" ] && echo "Dry run: nothing is recorded."
-echo "Keep the iPhone unlocked and don't touch it until the test ends. (Face ID is only asked for if the app's lock is on from before: then look at the iPhone when the run starts.)"
+echo "Turn on Do Not Disturb (a notification tapped by the run opens another app and ends up on the video). Keep the iPhone unlocked and don't touch it until the test ends. (Face ID is only asked for if the app's lock is on from before: then look at the iPhone when the run starts.)"
 mkdir -p build
 
 set +e
