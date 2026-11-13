@@ -498,15 +498,16 @@ statistic or a plan, on about one screen:
   accounts, favourites.
 - **Werkzeuge** — what you may use: importing, debts and loans, trips and
   projects, the tax list, import rules, automatic capture (iPhone).
-- **Einstellungen** — one row to the screen with what is set once:
-  - **Darstellung** — language, light or dark, the colour, the currency.
+- **Einstellungen** — one row to the screen with what is set once. On top,
+  the app's card: its name and version, "ohne Konto, ohne Server", and how
+  much your book holds (months and entries, never an amount). Then:
+  - **Darstellung** — language, light or dark, the colour, the currency
+    (picking another currency applies at once).
   - **Sicherheit und Mitteilungen** — hide amounts, the lock, reminders, the
     phone's backup.
   - **Haushaltsbuch** — the day the month begins.
   - **Ausprobieren** — the test data, in and out.
-  - **Über Spartopf** — what the app is: its name and version, "ohne Konto,
-    ohne Server", and how much your book holds (months and entries, never
-    an amount); then rating, feedback and the privacy policy.
+  - **Über Spartopf** — rating, feedback and the privacy policy.
   - Last, on its own, *App zurücksetzen*.
 
 Every row has an icon in its own colour within its group; counts (21

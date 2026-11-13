@@ -183,9 +183,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   so those four stay in it), *Sicherheit und Mitteilungen* (hide amounts
   first, then the lock, reminders, the phone's backup), *Haushaltsbuch* (the
   day the month begins), *Ausprobieren* (the test data), *Über Spartopf*
-  (the card on the hero — icon, name, version, the tagline, how many months
-  and entries the book holds: counts from two on, never an amount — then
-  rating, feedback, the privacy policy), and resetting last and alone. Back
+  (rating, feedback, the privacy policy), and resetting last and alone. The
+  page opens on the app's card on the hero — icon, name, version, the
+  tagline, how many months and entries the book holds: counts from two on,
+  never an amount. The currency applies as it is picked: it only relabels,
+  and picking the old one again undoes it — no `Confirm`. Back
   from the reminders leads to Einstellungen again (`prefsReturn`, like
   `guideReturn`). A new feature's row joins *Werkzeuge* (or *Haushaltsbuch*
   when every book has it), a new setting joins its group in Einstellungen —

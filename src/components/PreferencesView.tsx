@@ -122,15 +122,15 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
  * Mehr › Einstellungen (plan 39): what is set once and then left alone, in
  * the order it is looked for:
  *
+ *   0. on top, the card on the hero: what the app is, its version, how much
+ *      the book holds (months and entries, never an amount);
  *   1. *Darstellung* — language, light or dark, the colour, the currency
  *      (the guide sends people here by this name: keep those four in it);
  *   2. *Sicherheit und Mitteilungen* — hiding amounts first (every device
  *      has it), then the lock, reminders and the phone's backup (apps only);
  *   3. *Haushaltsbuch* — the day the month begins;
  *   4. *Ausprobieren* — the test data, in and out;
- *   5. *Über Spartopf* — the card on the hero (what the app is, its version,
- *      how much the book holds: months and entries, never an amount), then
- *      rating, feedback and the privacy policy;
+ *   5. *Über Spartopf* — rating, feedback and the privacy policy;
  *   6. last, on its own, resetting.
  *
  * Every icon tile in a group has its own colour, so a row is found by it.
@@ -155,6 +155,28 @@ export function PreferencesView(p: Props) {
 
   return (
     <Screen title={t.prefsTitle} onBack={p.onBack} backLabel={t.back} tabbed>
+      {/* First on the page: what the app is, its version, how much the book holds. */}
+      <section className="rounded-lg hero hero-glow hero-art overflow-hidden text-on-hero p-[18px]" aria-labelledby="about-title">
+        <div className="flex items-center gap-3.5">
+          <img src="/icon.svg" alt="" className="w-[52px] h-[52px] rounded-[14px] shrink-0 shadow-[0_0_0_1px_rgb(255_255_255/0.2)]" />
+          <div className="min-w-0 flex-1">
+            <h2 id="about-title" className="display text-heading font-semibold wrap-compound">{t.about}</h2>
+            <p className="text-caption text-on-hero-mute tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
+          </div>
+        </div>
+        <p className="mt-3 text-label text-on-hero-mute wrap-prose">{t.aboutBody}</p>
+        {facts.length > 0 && (
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {facts.map(f => (
+              <li key={f.text} className="min-h-[30px] ps-2.5 pe-3 py-1 rounded-full hero-panel inline-flex items-center gap-1.5 text-caption font-semibold text-on-hero tabular-nums">
+                <f.icon className="w-[15px] h-[15px] shrink-0 text-on-hero-soft" strokeWidth={2.2} aria-hidden="true" />
+                {f.text}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <div data-prefs="display">
         <Group title={t.displaySection} tour="set-display">
           <MenuRow<Language>
@@ -263,29 +285,9 @@ export function PreferencesView(p: Props) {
         </Group>
       </div>
 
-      {/* About the app: the card, then where to rate it, write to its maker and read the privacy policy. */}
-      <div data-prefs="about" className="space-y-3">
-        <section className="rounded-lg hero hero-glow hero-art overflow-hidden text-on-hero p-[18px]" aria-labelledby="about-title">
-          <div className="flex items-center gap-3.5">
-            <img src="/icon.svg" alt="" className="w-[52px] h-[52px] rounded-[14px] shrink-0 shadow-[0_0_0_1px_rgb(255_255_255/0.2)]" />
-            <div className="min-w-0 flex-1">
-              <h2 id="about-title" className="display text-heading font-semibold wrap-compound">{t.about}</h2>
-              <p className="text-caption text-on-hero-mute tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
-            </div>
-          </div>
-          <p className="mt-3 text-label text-on-hero-mute wrap-prose">{t.aboutBody}</p>
-          {facts.length > 0 && (
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {facts.map(f => (
-                <li key={f.text} className="min-h-[30px] ps-2.5 pe-3 py-1 rounded-full hero-panel inline-flex items-center gap-1.5 text-caption font-semibold text-on-hero tabular-nums">
-                  <f.icon className="w-[15px] h-[15px] shrink-0 text-on-hero-soft" strokeWidth={2.2} aria-hidden="true" />
-                  {f.text}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <Group>
+      {/* About the app (its card stands at the top): where to rate it, write to its maker and read the privacy policy. */}
+      <div data-prefs="about">
+        <Group title={t.aboutSection}>
           {p.onRate && <Row label={t.rateApp} leading={<IconTile icon={Star} hue="lemon" />} trailing={<Away />} onClick={p.onRate} />}
           <Row label={t.sendFeedback} sub={t.sendFeedbackSub} leading={<IconTile icon={Mail} hue="blue" />} trailing={<Away />} onClick={p.onFeedback} />
           <Row label={t.privacyPolicy} leading={<IconTile icon={ShieldCheck} hue="leaf" />} trailing={<Away />} onClick={p.onPrivacy} />
