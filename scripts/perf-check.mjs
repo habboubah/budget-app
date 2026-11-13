@@ -152,7 +152,7 @@ try {
   await page.waitForTimeout(500);
 
   // Typing an amount into a new entry.
-  await page.locator('nav button.hero').click();
+  await page.locator('[data-tour="add"]').click();
   await page.waitForSelector('[role="dialog"]');
   await page.waitForTimeout(500);
   await page.evaluate(() => { window.__long = []; });

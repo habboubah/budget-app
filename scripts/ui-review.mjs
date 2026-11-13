@@ -354,8 +354,8 @@ const SCREENS = [
   { name: 'month-scroll', run: page => page.evaluate(() => window.scrollTo(0, 720)) },
   { name: 'month-end', run: page => page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight)) },
   { name: 'search', run: async page => { await page.click('input[type="search"]'); await page.keyboard.type('Lidl'); await page.waitForTimeout(300); } },
-  { name: 'entry-new', run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
-  { name: 'entry-new-kb', run: page => page.click('nav button.hero'), wait: dialog, keyboard: true },
+  { name: 'entry-new', run: page => page.click('[data-tour="add"]'), wait: dialog, audit: 'dialog' },
+  { name: 'entry-new-kb', run: page => page.click('[data-tour="add"]'), wait: dialog, keyboard: true },
   { name: 'entry-edit', run: page => page.locator('[data-entry-row] [data-entry-body]').nth(3).click(), wait: dialog },
   { name: 'month-picker', run: page => page.click('h1 button[aria-haspopup="dialog"]'), wait: dialog, audit: 'dialog' },
   { name: 'month-actions', run: page => page.locator('header button').last().click(), wait: '[role="menu"]', audit: 'menu' },
@@ -522,10 +522,10 @@ const SCREENS = [
   { name: 'first-month-later', fresh: true, run: start('month', false), audit: 'page' },
   // The start put off: every step is still on the list (what it was told is left out of it).
   { name: 'first-steps', fresh: true, run: async page => { await start('month', false)(page); await page.locator('[data-steps] button').first().click(); }, wait: dialog, audit: 'dialog' },
-  { name: 'first-entry', fresh: true, run: async page => { await start('month', false)(page); await page.click('nav button.hero'); }, wait: dialog, audit: 'dialog' },
+  { name: 'first-entry', fresh: true, run: async page => { await start('month', false)(page); await page.click('[data-tour="add"]'); }, wait: dialog, audit: 'dialog' },
   { name: 'first-entry-more', fresh: true, run: async page => {
     await start('month', false)(page);
-    await page.click('nav button.hero');
+    await page.click('[data-tour="add"]');
     await page.waitForSelector('[data-tour="entry-more"]');
     await page.waitForTimeout(500);
     await page.locator('[data-tour="entry-more"]').click();
@@ -537,7 +537,7 @@ const SCREENS = [
   // The same folds on a book with months of data: the balance card closed, the entry sheet's
   // further pills behind "⋯", Planen and Statistik as headlines — one opened.
   { name: 'month-folded', storage: FOLDED, audit: 'page' },
-  { name: 'entry-new-folded', storage: FOLDED, run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
+  { name: 'entry-new-folded', storage: FOLDED, run: page => page.click('[data-tour="add"]'), wait: dialog, audit: 'dialog' },
   { name: 'insights-headlines', storage: FOLDED, run: tab(2), full: true, audit: 'page' },
   { name: 'insights-headline-open', storage: FOLDED, run: async page => { await tab(2)(page); await page.locator('[data-tour="plan-runway"] button').first().click(); await page.waitForTimeout(400); }, full: true },
   { name: 'stats-headlines', storage: FOLDED, run: tab(1), full: true, audit: 'page' },
@@ -602,7 +602,7 @@ const SCREENS = [
     // Monatsbericht, the balance, then Umbuchen.
     await page.locator('[role="menuitem"]').nth(2).click();
   }, wait: dialog, audit: 'dialog' },
-  { name: 'entry-account', accounts: true, run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
+  { name: 'entry-account', accounts: true, run: page => page.click('[data-tour="add"]'), wait: dialog, audit: 'dialog' },
   { name: 'insights-accounts', accounts: true, run: tab(2), full: true },
   // Debts and loans (plan 31).
   { name: 'debts-empty', run: openDebts, audit: 'page' },
@@ -610,7 +610,7 @@ const SCREENS = [
   { name: 'debt-sheet', debts: true, run: async (page, l) => { await openDebts(page, l); await page.locator('main button[aria-label]').nth(1).click(); }, wait: dialog, audit: 'dialog' },
   { name: 'debt-new', run: async (page, l) => { await openDebts(page, l); await page.locator('main button', { hasText: '+' }).or(page.locator('main [class*="py-12"] button')).first().click(); }, wait: dialog, audit: 'dialog' },
   { name: 'insights-debts', debts: true, run: tab(2), full: true },
-  { name: 'entry-debt', debts: true, run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
+  { name: 'entry-debt', debts: true, run: page => page.click('[data-tour="add"]'), wait: dialog, audit: 'dialog' },
 ];
 // Snapshotted as static HTML with --dom (mockups start from these).
 const DOM_SCREENS = ['month', 'entry-new', 'stats', 'insights', 'settings', 'category', 'month-report'];

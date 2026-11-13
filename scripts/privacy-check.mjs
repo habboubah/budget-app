@@ -109,11 +109,11 @@ try {
     await page.locator('[data-start="later"]').click();
     await page.locator('[data-start="later"]').click();
     await page.locator('[data-start="finish"]').click();
-    await page.waitForSelector('nav button.hero');
+    await page.waitForSelector('[data-tour="add"]');
     await page.waitForTimeout(300);
   });
   await step('an entry added and ticked off', async () => {
-    await page.locator('nav button.hero').click();
+    await page.locator('[data-tour="add"]').click();
     await page.waitForSelector('[role="dialog"]');
     // Fill the field itself: the sheet focuses it a frame after it appears, and typing earlier would go nowhere.
     await page.locator('[role="dialog"] input[inputmode="decimal"]').first().fill('12,34');
@@ -225,7 +225,7 @@ try {
     const exif = Buffer.concat([Buffer.from([0xff, 0xe1, (body.length + 2) >> 8, (body.length + 2) & 0xff]), body]);
     const photo = Buffer.concat([shot.subarray(0, 2), exif, shot.subarray(2)]);
     if (!photo.includes('GPS-SECRET')) throw new Error('the test photo has no EXIF');
-    await page.locator('nav button.hero').click();
+    await page.locator('[data-tour="add"]').click();
     await page.waitForSelector('[role="dialog"]');
     await page.locator('[role="dialog"] input[inputmode="decimal"]').first().fill('7,77');
     // On a new book the receipt pill waits behind the sheet's "⋯" (plan 39).
