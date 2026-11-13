@@ -51,10 +51,14 @@ npm run record:watch                               # lets Claude start the runs
 Preparation and troubleshooting: [ios/AppReviewRecorder/README.md](ios/AppReviewRecorder/README.md).
 
 ## Google Play
+https://play.google.com/
 
 - Closed testing: https://play.google.com/store/apps/details?id=com.habboubah.spartopf
 - Internal testing: https://play.google.com/apps/internaltest/4700086830731001200
 
-## More
+# App store
+https://appstoreconnect.apple.com/apps
 
-Release to both stores with `npm run release`. Release steps, features and plans are in [docs/](docs).
+## Release
+Release to both stores with `npm run release`.
+
