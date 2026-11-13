@@ -711,7 +711,7 @@ describe('upgrading categories saved before schema 2', () => {
     expect(up.find(c => c.id === 'insurance')!.names.en).toBe('Insurance');
     expect(up.map(c => c.id).slice(4)).toEqual([
       'restaurants', 'clothing', 'shopping', 'telecom', 'mobility', 'travel', 'leisure', 'sport', 'health', 'education',
-      'investment', 'insurance', 'cash', 'taxes', 'children',
+      'investment', 'insurance', 'cash', 'taxes', 'lent', 'children',
     ]);
     expect(standardCategoryIds(up)).toEqual(['income', 'fixed', 'extra', 'groceries', 'restaurants', 'children']);
     expect(up.find(c => c.id === 'investment')!.budget).toBe('save');
@@ -729,7 +729,8 @@ describe('upgrading categories saved before schema 2', () => {
   it('puts the new ones before an existing “Sonstiges”, and is a no-op the second time', () => {
     const fallback = { id: 'other', names: { de: 'Sonstiges', en: 'Other' }, emoji: '📦', hue: 'stone' as const, kind: 'expense' as const, repeat: 'none' as const };
     const up = upgradeCategories([...v1(), fallback]);
-    expect(up[up.length - 1].id).toBe('other');
+    // Schema 30's "Verliehenes Geld" comes after it, at the very end.
+    expect(up.slice(-2).map(c => c.id)).toEqual(['other', 'lent']);
     expect(up.filter(c => c.id === 'other')).toHaveLength(1);
     expect(upgradeCategories(up)).toEqual(up);
     expect(upgradeCategories([])).toEqual([]);
@@ -739,11 +740,14 @@ describe('upgrading categories saved before schema 2', () => {
   it('runs on a backup from version 1, not on a current one', () => {
     const old = { app: 'spartopf', schemaVersion: 1, categories: v1(), entries: [], months: [] };
     const parsed = parseBackup(JSON.stringify(old));
-    expect(parsed.ok && parsed.data.categories.length).toBe(19);
-    // From version 2 on, only the restaurants (schema 5) and the children (schema 8) are still to come.
+    expect(parsed.ok && parsed.data.categories.length).toBe(20);
+    // From version 2 on, only the restaurants (schema 5), the children (schema 8) and the money lent (schema 30) are still to come.
     const v2 = parseBackup(JSON.stringify({ ...old, schemaVersion: 2 }));
-    expect(v2.ok && v2.data.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries', 'restaurants', 'children']);
-    const current = parseBackup(JSON.stringify({ ...old, schemaVersion: 8 }));
+    expect(v2.ok && v2.data.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries', 'restaurants', 'lent', 'children']);
+    // From 8 on, only the money lent (schema 30); from 30, nothing.
+    const eight = parseBackup(JSON.stringify({ ...old, schemaVersion: 8 }));
+    expect(eight.ok && eight.data.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'groceries', 'lent']);
+    const current = parseBackup(JSON.stringify({ ...old, schemaVersion: SCHEMA_VERSION }));
     expect(current.ok && current.data.categories.length).toBe(4);
   });
 });
@@ -753,9 +757,9 @@ describe('Arabic', () => {
     const v2: Category[] = defaultCategories().slice(0, 3).map(c => ({ ...c, names: { de: c.names.de, en: c.names.en } }));
     v2[1] = { ...v2[1], names: { de: 'Miete & Nebenkosten' } };
     const up = upgradeCategories(v2, 2);
-    expect(up.map(c => c.names.ar)).toEqual(['الدخل', undefined, 'السيارة']);
+    expect(up.map(c => c.names.ar)).toEqual(['الدخل', undefined, 'السيارة', 'أموال مُقرَضة']);
     expect(up[1].names).toEqual({ de: 'Miete & Nebenkosten' });
-    expect(up).toHaveLength(3);
+    expect(up).toHaveLength(4);
     expect(upgradeCategories(up, SCHEMA_VERSION)).toBe(up);
   });
   it('reads amounts typed on an Arabic keyboard', () => {
@@ -799,8 +803,8 @@ describe('schema 4: Wohnen and Sonstiges', () => {
   it('folds "Wohnen und Garten" into Wohnen and the old "Sonstiges" into Sonstiges, entries and months too', () => {
     const up = upgradeData(v3(), 3, new Date(2026, 10, 7));
     // (Schemas 5 and 8 then add the restaurants and the children: no neighbours here, so at the end.)
-    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'insurance', 'restaurants', 'children']);
-    expect(up.categories.map(c => c.names.de)).toEqual(['Einkommen', 'Wohnen', 'Sonstiges', 'Versicherungen', 'Restaurants', 'Kinder']);
+    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'extra', 'insurance', 'lent', 'restaurants', 'children']);
+    expect(up.categories.map(c => c.names.de)).toEqual(['Einkommen', 'Wohnen', 'Sonstiges', 'Versicherungen', 'Verliehenes Geld', 'Restaurants', 'Kinder']);
     expect(up.categories.find(c => c.id === 'extra')!.emoji).toBe('📦');
     expect(up.entries.map(x => [x.name, x.categoryId, x.order])).toEqual([['IKEA', 'fixed', undefined], ['Post', 'extra', undefined], ['Miete', 'fixed', 0]]);
     expect(up.months[0].categories).toEqual(['income', 'fixed', 'extra', 'restaurants', 'children']);
@@ -840,7 +844,7 @@ describe('schema 5: Restaurants', () => {
   });
   it('arrives after the groceries, in the running month and later ones; earlier months stay as they were', () => {
     const up = upgradeData(v4(), 4, today);
-    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children', 'cash']);
+    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children', 'cash', 'lent']);
     const shown = (key: string) => monthCategories(up, key).map(c => c.id);
     expect(shown('2026-09')).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'family']);
     expect(shown('2026-10')).toEqual(['income', 'fixed', 'groceries']);
@@ -899,7 +903,7 @@ describe('schema 8: Kinder', () => {
       entries: [], months: [{ key: '2026-11', startedAt: 0, categories: ['income', 'family'] }],
     };
     const up = upgradeData(v7, 7, new Date(2026, 10, 7));
-    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'groceries', 'restaurants', 'family', 'children', 'cash']);
+    expect(up.categories.map(c => c.id)).toEqual(['income', 'fixed', 'groceries', 'restaurants', 'family', 'children', 'cash', 'lent']);
     expect(up.months[0].categories).toEqual(['income', 'family', 'children']);
     const own = { ...v7, categories: [...v7.categories, { id: 'k1', names: { de: 'Kinder' }, emoji: '👶', hue: 'sand' as const, kind: 'expense' as const, repeat: 'none' as const }] };
     expect(upgradeData(own, 7, new Date(2026, 10, 7)).categories.some(c => c.id === 'children')).toBe(false);

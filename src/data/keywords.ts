@@ -185,6 +185,11 @@ export const CATEGORY_KEYWORDS: Record<string, ShippedKeywords> = {
     en: ['Tax', 'Taxes', 'Fee', 'Fees', 'Bank fee', 'Account fee', 'Parking fine', 'Tax office', 'Passport', 'ID card', 'Lawyer'],
     ar: ['ضريبة', 'ضرائب', 'رسوم', 'رسوم البنك', 'غرامة', 'مخالفة', 'جواز سفر', 'هوية', 'بلدية', 'محامي'],
   },
+  lent: {
+    de: ['Verliehen', 'Geliehen', 'Ausgeliehen', 'Leihe', 'Darlehen an', 'Privatdarlehen', 'Vorgestreckt', 'Ausgelegt', 'Zurückgezahlt', 'Rückzahlung von'],
+    en: ['Lent', 'Loan to', 'Lending', 'Paid back', 'Repaid', 'Fronted'],
+    ar: ['سلفة', 'سلف', 'قرض لـ', 'أقرضت', 'إقراض', 'دين لي', 'رد الدين', 'سداد'],
+  },
 };
 
 /**

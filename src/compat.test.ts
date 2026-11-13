@@ -167,9 +167,9 @@ describe('a backup from schema 8 (before budgets)', () => {
     expect(parsed.ok).toBe(true);
   });
 
-  it('keeps its categories, the user’s own one too, and adds none', () => {
+  it('keeps its categories, the user’s own one too, and adds only schema 30’s “Verliehenes Geld”', () => {
     if (!parsed.ok) return;
-    expect(parsed.data.categories.map(c => c.id)).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children', 'u-pets']);
+    expect(parsed.data.categories.map(c => c.id)).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children', 'u-pets', 'lent']);
     expect(parsed.data.categories.find(c => c.id === 'u-pets')).toMatchObject({ names: { de: 'Hund' }, standard: false });
     expect(parsed.data.categories.some(c => c.limit !== undefined)).toBe(false);
   });
@@ -271,5 +271,25 @@ describe('version 29 (the tax mark)', () => {
   it('keeps an expense marked for the tax return', () => {
     const { data } = stored('storage-v29.json');
     expect(data.entries.find(e => e.id === 'x6')).toMatchObject({ tax: 'craftsman', amount: 8950 });
+  });
+  it('gains "Verliehenes Geld" on the upgrade to 30, in no month, and only once', () => {
+    const { raw, data } = stored('storage-v29.json');
+    const before = (raw['spartopf-categories'] as { id: string }[]).map(c => c.id);
+    const ids = data.categories.map(c => c.id);
+    expect(ids.slice(0, before.length)).toEqual(before);
+    expect(ids[ids.length - 1]).toBe('lent');
+    expect(ids.filter(id => id === 'lent')).toHaveLength(1);
+    expect(data.categories.find(c => c.id === 'lent')).toMatchObject({ kind: 'expense', budget: 'save', emoji: '🤝', standard: false });
+    expect(data.months.some(m => m.categories?.includes('lent'))).toBe(false);
+  });
+});
+
+describe('version 30 (money lent)', () => {
+  it('keeps money lent and what came back of it, netted in the category', () => {
+    const { data } = stored('storage-v30.json');
+    const lent = data.entries.filter(e => e.categoryId === 'lent');
+    expect(lent.map(e => [e.name, e.amount, !!e.refund])).toEqual([['Geld an Sami', 30000, false], ['Sami zurückgezahlt', -10000, true]]);
+    expect(lent.reduce((s, e) => s + e.amount, 0)).toBe(20000);
+    expect(data.categories.filter(c => c.id === 'lent')).toHaveLength(1);
   });
 });

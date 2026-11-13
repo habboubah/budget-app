@@ -154,6 +154,12 @@ Write 1–3 short lines per release, e.g.
 
 ### Next release (after 1.2.0)
 
+**DE:** Neue Kategorie „Verliehenes Geld“: für Geld, das du jemandem leihst. Was zurückkommt, trägst du dort als Rückzahlung ein – so siehst du, was noch aussteht.
+
+**EN:** New category "Money lent": for money you lend someone. Enter what comes back there as money back, and you see what is still owed.
+
+**AR:** فئة جديدة «أموال مُقرَضة»: للمال الذي تُقرضه لأحد. أدخل ما يُردّ إليك فيها كمبلغ مسترجَع، فترى ما لم يُسدَّد بعد.
+
 **DE:** Umsätze aus Foto: Ein Screenshot des ganzen Bildschirms wird jetzt zuverlässig gelesen, auch im Dunkelmodus. Was nicht eindeutig zu lesen ist, wird trotzdem angezeigt – zum Ergänzen.
 
 **EN:** Transactions from a photo: a screenshot of the whole screen is now read reliably, in dark mode too. What can't be read clearly is still shown, for you to complete.
