@@ -41,7 +41,7 @@ const de = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'Oben auf der Monatsseite stehen zwei Zahlen: was jetzt auf dem Konto ist, und was am Monatsende übrig bleibt.',
-  guideBalancesSteps: '{now} zählt nur, was schon bezahlt oder eingegangen ist – so wie deine Bank.\n{end} rechnet alles Offene mit ein: die Miete, die noch abgeht, das Gehalt, das noch kommt.\nDie Linie dazwischen zeigt den Weg: Der Punkt ist heute, gestrichelt geht es bis zum Monatsende.\nTippe auf die Zeile unten in der Karte, um Übertrag, Einnahmen und Ausgaben zu sehen.',
+  guideBalancesSteps: '{now} zählt nur, was schon bezahlt oder eingegangen ist – so wie deine Bank.\n{end} rechnet alles Offene mit ein: die Miete, die noch abgeht, das Gehalt, das noch kommt.\nTippe auf {end}, und die Karte klappt auf. Die Linie zeigt den Weg dorthin: Der Punkt ist heute, gestrichelt geht es bis zum Monatsende.\nTippe auf die Zeile unten in der Karte, um Übertrag, Einnahmen und Ausgaben zu sehen.',
   guideBalancesTip: 'Stimmt {now} nicht mit deiner Bank überein? Tippe auf {actions} › {reconcile}.',
   guidePaidSum: 'Jeder Eintrag ist entweder schon bezahlt oder noch offen – so weiß Spartopf, was noch kommt.',
   guidePaidSteps: 'Ein leerer Kreis vor dem Eintrag heißt: noch offen. Ein gefüllter Kreis heißt: bezahlt.\nTippe auf den Kreis, um einen Eintrag abzuhaken – oder wisch den Eintrag nach rechts.\nWisch einen Eintrag nach links, um ihn zu löschen.',

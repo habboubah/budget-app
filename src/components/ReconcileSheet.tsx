@@ -64,7 +64,7 @@ export function ReconcileSheet({ open, month, now, currentOpening, extraId, inco
   };
 
   return (
-    <Sheet open={open} title={t.reconcileTitle} closeLabel={t.cancel} onClose={onClose}
+    <Sheet open={open} title={t.balanceCheck} closeLabel={t.cancel} onClose={onClose}
       action={{ label: t.save, onClick: save, disabled: bank === null }}>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-5">
         <p className="text-label text-fg-mute wrap-prose">{monthLabel(month, t.locale)} — {t.reconcileBody}</p>

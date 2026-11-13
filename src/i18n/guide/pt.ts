@@ -27,7 +27,7 @@ const pt: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'No topo da página do mês há dois números: o que está agora na conta e o que sobra no fim do mês.',
-  guideBalancesSteps: '{now} conta só o que já foi pago ou recebido – tal como o teu banco.\n{end} inclui tudo o que está pendente: a renda que ainda vai sair, o salário que ainda vai entrar.\nA linha entre os dois mostra o caminho: o ponto é hoje; tracejada, segue até ao fim do mês.\nToca na linha no fundo do cartão para veres o transporte, as receitas e as despesas.',
+  guideBalancesSteps: '{now} conta só o que já foi pago ou recebido – tal como o teu banco.\n{end} inclui tudo o que está pendente: a renda que ainda vai sair, o salário que ainda vai entrar.\nToca em {end} e o cartão abre-se. A linha mostra o caminho: o ponto é hoje; tracejada, segue até ao fim do mês.\nToca na linha no fundo do cartão para veres o transporte, as receitas e as despesas.',
   guideBalancesTip: '{now} não bate certo com o banco? Toca em {actions} › {reconcile}.',
   guidePaidSum: 'Cada registo está já pago ou ainda pendente – é assim que o Spartopf sabe o que ainda vem.',
   guidePaidSteps: 'Um círculo vazio antes do registo significa: ainda pendente. Um círculo cheio: pago.\nToca no círculo para marcar um registo – ou desliza o registo para a direita.\nDesliza um registo para a esquerda para o apagar.',

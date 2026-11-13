@@ -27,7 +27,7 @@ const nb: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'Øverst på månedssiden står to tall: det som er på kontoen nå, og det som er igjen ved slutten av måneden.',
-  guideBalancesSteps: '{now} teller bare det som allerede er betalt eller kommet inn – akkurat som banken din.\n{end} regner med alt som venter: husleien som skal trekkes, lønnen som skal komme.\nLinjen imellom viser veien: Punktet er i dag, stiplet fortsetter den til slutten av måneden.\nTrykk på raden nederst på kortet for å se overføring, inntekter og utgifter.',
+  guideBalancesSteps: '{now} teller bare det som allerede er betalt eller kommet inn – akkurat som banken din.\n{end} regner med alt som venter: husleien som skal trekkes, lønnen som skal komme.\nTrykk på {end}, så åpnes kortet. Linjen viser veien dit: Punktet er i dag, stiplet fortsetter den til slutten av måneden.\nTrykk på raden nederst på kortet for å se overføring, inntekter og utgifter.',
   guideBalancesTip: 'Stemmer ikke {now} med banken? Trykk på {actions} › {reconcile}.',
   guidePaidSum: 'Hver post er enten allerede betalt eller venter fortsatt – slik vet Spartopf hva som gjenstår.',
   guidePaidSteps: 'En tom sirkel foran posten betyr: venter fortsatt. En fylt sirkel: betalt.\nTrykk på sirkelen for å hake av en post – eller sveip posten til høyre.\nSveip en post til venstre for å slette den.',

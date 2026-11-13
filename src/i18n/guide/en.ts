@@ -27,7 +27,7 @@ const en: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'At the top of the month page are two numbers: what is in your account now, and what will be left at the end of the month.',
-  guideBalancesSteps: '{now} only counts what has been paid or received – just like your bank.\n{end} includes everything still open: the rent that is still to go out, the salary that is still to come.\nThe line in between shows the way: the dot is today, dashed it runs on to the end of the month.\nTap the row at the bottom of the card to see carry-over, income and spending.',
+  guideBalancesSteps: '{now} only counts what has been paid or received – just like your bank.\n{end} includes everything still open: the rent that is still to go out, the salary that is still to come.\nTap {end} and the card opens. The line shows the way there: the dot is today, dashed it runs on to the end of the month.\nTap the row at the bottom of the card to see carry-over, income and spending.',
   guideBalancesTip: 'Doesn’t {now} match your bank? Tap {actions} › {reconcile}.',
   guidePaidSum: 'Every entry is either paid already or still open – that’s how Spartopf knows what is still to come.',
   guidePaidSteps: 'An empty circle in front of an entry means: still open. A filled circle means: paid.\nTap the circle to tick an entry off – or swipe the entry to the right.\nSwipe an entry to the left to delete it.',

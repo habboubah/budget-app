@@ -27,7 +27,7 @@ const tr: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'Ay sayfasının üstünde iki sayı var: şu an hesabında olan ve ay sonunda kalacak olan.',
-  guideBalancesSteps: '{now} yalnızca ödenmiş ya da gelmiş olanı sayar – tıpkı bankan gibi.\n{end} bekleyen her şeyi de hesaba katar: henüz çekilmemiş kirayı, henüz gelmemiş maaşı.\nAradaki çizgi yolu gösterir: nokta bugündür, kesikli kısım ay sonuna kadar uzanır.\nDevri, gelirleri ve giderleri görmek için kartın altındaki satıra dokun.',
+  guideBalancesSteps: '{now} yalnızca ödenmiş ya da gelmiş olanı sayar – tıpkı bankan gibi.\n{end} bekleyen her şeyi de hesaba katar: henüz çekilmemiş kirayı, henüz gelmemiş maaşı.\n{end} satırına dokun, kart açılır. Çizgi oraya giden yolu gösterir: nokta bugündür, kesikli kısım ay sonuna kadar uzanır.\nDevri, gelirleri ve giderleri görmek için kartın altındaki satıra dokun.',
   guideBalancesTip: '{now} bankanla uyuşmuyor mu? {actions} › {reconcile} seçeneğine dokun.',
   guidePaidSum: 'Her kalem ya ödenmiştir ya da hâlâ bekliyordur – Spartopf neyin geleceğini böyle bilir.',
   guidePaidSteps: 'Kalemin önündeki boş daire: hâlâ bekliyor. Dolu daire: ödendi.\nBir kalemi işaretlemek için daireye dokun – ya da kalemi sağa kaydır.\nSilmek için kalemi sola kaydır.',

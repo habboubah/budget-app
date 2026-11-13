@@ -27,7 +27,7 @@ const fr: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'En haut de la page du mois, deux chiffres : ce qu’il y a sur votre compte maintenant, et ce qu’il restera en fin de mois.',
-  guideBalancesSteps: '{now} ne compte que ce qui est déjà payé ou reçu – comme votre banque.\n{end} inclut tout ce qui est en attente : le loyer qui doit encore partir, le salaire qui doit encore arriver.\nLa ligne entre les deux montre le chemin : le point, c’est aujourd’hui ; en pointillé, elle va jusqu’à la fin du mois.\nTouchez la ligne en bas de la carte pour voir le report, les revenus et les dépenses.',
+  guideBalancesSteps: '{now} ne compte que ce qui est déjà payé ou reçu – comme votre banque.\n{end} inclut tout ce qui est en attente : le loyer qui doit encore partir, le salaire qui doit encore arriver.\nTouchez {end} et la carte se déplie. La ligne montre le chemin : le point, c’est aujourd’hui ; en pointillé, elle va jusqu’à la fin du mois.\nTouchez la ligne en bas de la carte pour voir le report, les revenus et les dépenses.',
   guideBalancesTip: '{now} ne correspond pas à votre banque ? Touchez {actions} › {reconcile}.',
   guidePaidSum: 'Chaque écriture est soit déjà payée, soit encore en attente – c’est ainsi que Spartopf sait ce qui reste à venir.',
   guidePaidSteps: 'Un cercle vide devant l’écriture signifie : encore en attente. Un cercle plein : payée.\nTouchez le cercle pour cocher une écriture – ou balayez l’écriture vers la droite.\nBalayez une écriture vers la gauche pour la supprimer.',

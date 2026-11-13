@@ -27,7 +27,7 @@ const cs: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'Nahoře na stránce měsíce jsou dvě čísla: kolik je teď na účtu a kolik zbude na konci měsíce.',
-  guideBalancesSteps: '{now} počítá jen to, co je už zaplacené nebo přišlo – stejně jako tvoje banka.\n{end} započítá všechno, co čeká: nájem, který ještě odejde, výplatu, která ještě přijde.\nČára mezi nimi ukazuje cestu: tečka je dnešek, čárkovaně pokračuje do konce měsíce.\nKlepni na řádek dole na kartě a uvidíš převod, příjmy a výdaje.',
+  guideBalancesSteps: '{now} počítá jen to, co je už zaplacené nebo přišlo – stejně jako tvoje banka.\n{end} započítá všechno, co čeká: nájem, který ještě odejde, výplatu, která ještě přijde.\nKlepni na {end} a karta se rozbalí. Čára ukazuje cestu: tečka je dnešek, čárkovaně pokračuje do konce měsíce.\nKlepni na řádek dole na kartě a uvidíš převod, příjmy a výdaje.',
   guideBalancesTip: '{now} nesedí s bankou? Klepni na {actions} › {reconcile}.',
   guidePaidSum: 'Každá položka je buď už zaplacená, nebo ještě čeká – tak Spartopf ví, co ještě přijde.',
   guidePaidSteps: 'Prázdné kolečko před položkou znamená: ještě čeká. Plné kolečko: zaplaceno.\nKlepnutím na kolečko položku odškrtneš – nebo položku potáhni doprava.\nPotažením doleva položku smažeš.',
