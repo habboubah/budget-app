@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'motion/react';
 import { Plus } from 'lucide-react';
 import { tapLight, tapMedium } from './haptics';
-import { useDockShown } from './Screen';
 
 export interface Tab<T extends string> {
   id: T;
@@ -25,11 +24,11 @@ export interface Tab<T extends string> {
 
 /**
  * The add button: a 56 px rounded square on the accent's gradient
- * (`add-fab`), floating above the tab bar's trailing end, in thumb reach on
- * every tab and where the guide says it is ("unten rechts"). Scrolling down a
- * list tucks it away so it doesn't sit on the amounts at the row ends;
- * scrolling back up, reaching the top or the end, or focusing it brings it
- * back. It steps aside while a screen docks its own primary button (`Dock`).
+ * (`add-fab`), floating above the tab bar's trailing end, in thumb reach and
+ * where the guide says it is ("unten rechts"). Only the month page shows it
+ * (App passes `add` there alone). Scrolling down the month tucks it away so it
+ * doesn't sit on the amounts at the row ends; scrolling back up, reaching the
+ * top or the end, or focusing it brings it back.
  *
  * It answers the finger the moment it lands — it gives, the plus begins to
  * turn — and says what it did: while the sheet it opened is up the plus stays
@@ -40,7 +39,6 @@ export interface Tab<T extends string> {
 function AddButton({ label, open, onClick }: { label: string; open: boolean; onClick: () => void }) {
   const [taps, setTaps] = useState(0);
   const calm = useReducedMotion();
-  const docked = useDockShown();
   const [tucked, setTucked] = useState(false);
   useEffect(() => {
     let last = window.scrollY;
@@ -59,7 +57,7 @@ function AddButton({ label, open, onClick }: { label: string; open: boolean; onC
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(frame); };
   }, []);
-  const away = docked || (tucked && !open);
+  const away = tucked && !open;
   return createPortal(
     <div
       className="fixed inset-x-0 z-30 pointer-events-none"
@@ -71,8 +69,6 @@ function AddButton({ label, open, onClick }: { label: string; open: boolean; onC
           type="button"
           data-tour="add"
           aria-label={label}
-          aria-hidden={docked || undefined}
-          tabIndex={docked ? -1 : undefined}
           title={label}
           onFocus={() => setTucked(false)}
           onClick={() => { tapMedium(); setTaps(n => n + 1); onClick(); }}
@@ -118,7 +114,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
   active: T;
   onChange: (id: T) => void;
   label: string;
-  /** The add button floating above the bar's trailing end; hidden while there is nothing to add to. `open`: the sheet it opens is up. */
+  /** The add button floating above the bar's trailing end; only where it's passed (the month page), and while there is something to add to. `open`: the sheet it opens is up. */
   add?: { label: string; onClick: () => void; open?: boolean } | null;
 }) {
   return createPortal(
