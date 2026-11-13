@@ -367,9 +367,10 @@ when it is wanted:
   months); and the table — a month opens its **Monatsbericht**.
 - **Wann du Geld ausgibst**: everyday spending per weekday — "Teuerster
   Wochentag: Samstag" when one clearly leads — and the picked month as a
-  calendar, each day shaded by what went out on it. A day tapped shows its
-  amount and what it was. Rent and contracts stay out, so the 1st isn't
-  every month's priciest day.
+  calendar, each day shaded by what went out on it, with the day's sum in
+  its square ("134", "1,2k"). A day tapped shows its amount and what it
+  was. Rent and contracts stay out, so the 1st isn't every month's priciest
+  day.
 - **The charts answer the finger**: put it down and drag across a chart —
   the values follow from month to month (or day to day) with a tick each.
   Lines are drawn in, columns grow, the ring sweeps round; all of it still

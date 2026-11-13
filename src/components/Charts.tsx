@@ -1384,9 +1384,12 @@ const HEAT = ['bg-surface-2 text-fg-mute', 'heat-1 text-fg', 'heat-2 text-fg', '
 
 /**
  * A month as a calendar, each day shaded by what went out on it (one hue,
- * more is darker — `heatLevel`). A day is a button: it says its date and
- * amount, and picking it lets the card write them out. Days still to come
- * are outlined; today carries a dot. The legend runs from less to more.
+ * more is darker — `heatLevel`). A day with spending carries its sum under
+ * its number — whole units, no currency sign, thousands as "1,2k"
+ * (`dayAmount`): the square is about 40 px wide. A day is a button: it says
+ * its date and amount, and picking it lets the card write them out in full.
+ * Days still to come are outlined; today carries a dot. The legend runs from
+ * less to more.
  */
 export function HeatCalendar({ month: m, t, selected, onSelect }: {
   month: MonthDays;
@@ -1400,6 +1403,15 @@ export function HeatCalendar({ month: m, t, selected, onSelect }: {
   const lead = m.days.length ? (m.days[0].weekday - first + 7) % 7 : 0;
   const today = isoDay();
   const num = new Intl.NumberFormat(t.locale);
+  // A sum that fits a square, at most four signs: "45", "380", "1,2k", "12k". Not while the amounts are hidden.
+  const whole = new Intl.NumberFormat(t.locale, { maximumFractionDigits: 0, useGrouping: false });
+  const tenth = new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1, useGrouping: false });
+  const dayAmount = (cents: number) => {
+    if (areAmountsHidden() || cents <= 0) return null;
+    const units = cents / 100;
+    if (units < 999.5) return whole.format(Math.max(1, Math.round(units)));
+    return `${units < 9950 ? tenth.format(units / 1000) : whole.format(units / 1000)}k`;
+  };
   return (
     <div>
       <div className="grid grid-cols-7 gap-[5px]" aria-hidden="true">
@@ -1410,6 +1422,7 @@ export function HeatCalendar({ month: m, t, selected, onSelect }: {
         {m.days.map((d, i) => {
           const level = d.future ? 0 : heatLevel(d.amount, m.max);
           const on = selected === d.day;
+          const sum = d.future ? null : dayAmount(d.amount);
           return (
             <button
               key={d.date}
@@ -1417,12 +1430,15 @@ export function HeatCalendar({ month: m, t, selected, onSelect }: {
               aria-pressed={on}
               aria-label={`${dayLabel(d.date, t.locale)}: ${spoken(formatMoney(d.amount, t.locale), t.amountHidden)}`}
               onClick={() => { tapLight(); onSelect(on ? null : d.day); }}
-              className={`heat-pop hit-44 relative aspect-square rounded-[10px] flex items-center justify-center text-caption tabular-nums focus-visible:ring-focus ${
+              className={`heat-pop hit-44 relative aspect-square rounded-[10px] flex flex-col items-center justify-center text-caption tabular-nums focus-visible:ring-focus ${
                 d.future ? 'border border-dashed border-hairline text-fg-mute' : HEAT[level]} ${on ? 'heat-on' : ''}`}
               style={{ animationDelay: `${Math.min(i * 14, 420)}ms` }}
             >
-              {num.format(Number(d.date.slice(8)))}
-              {d.date === today && <span className="absolute bottom-[4px] w-1 h-1 rounded-full bg-current" aria-hidden="true" />}
+              {/* With a sum under it the day steps back: smaller, and the sum is what is read. */}
+              <span className={sum ? 'text-[11px] leading-[13px]' : undefined}>{num.format(Number(d.date.slice(8)))}</span>
+              {/* Physical sizes, like the square: its width does not grow with the text size (the day's line above the calendar does). */}
+              {sum && <span className="max-w-full px-px text-[11px] leading-[13px] font-semibold whitespace-nowrap overflow-hidden" aria-hidden="true">{sum}</span>}
+              {d.date === today && <span className={`absolute w-1 h-1 rounded-full bg-current ${sum ? 'top-[3px] end-[3px]' : 'bottom-[4px]'}`} aria-hidden="true" />}
             </button>
           );
         })}
