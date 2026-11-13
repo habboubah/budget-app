@@ -5,7 +5,7 @@
 - **Size:** L — four phases, each shippable by itself
 - **Native:** none
 - **Schema:** no change. Every feature stays. Only where a feature first appears changes; new state is view preferences only.
-- **Status:** built in November 2026, all four phases, with the proposed answer to each of the five decisions — see [What was built](#what-was-built). Open: the test with five people, the App Review recording, the device checks (`docs/TODO.md`).
+- **Status:** built in November 2026, all four phases, with the proposed answer to each of the five decisions — see [What was built](#what-was-built). Open: the test with five people, the App Review recording's run on the iPhone, the device checks (`docs/TODO.md`).
 
 ## The problem, measured
 
@@ -241,7 +241,7 @@ With the test data (a year), as headlines: *Planen* 1.9 screens instead of 6.4, 
 ### What is left
 
 - [ ] **The five-minute test** (phase 4, step 2), once with five people on a fresh install. There is no baseline from before phase 1 — the plan was built in one go — so the walk through 1.2.18 at the top of this file stands in for it.
-- [ ] **The App Review recording.** `ios/AppReviewRecorder/scenes.json` was not touched. Its scenes pass through the setup card, *Optionen* and the old "⋯"; `docs/TODO.md` lists what each scene needs.
+- [x] **The App Review recording.** `ios/AppReviewRecorder/scenes.json` was rewritten on 13 November for the start, the entry sheet, *Importieren* and *Mehr › Einstellungen*, and cut to the main features (ten scenes, about 8 minutes instead of close to half an hour). The rehearsal passes; the run on the iPhone needs a build with this plan first (`docs/TODO.md`).
 - [ ] **On the iPhone:** the start with the keyboard, the folds with VoiceOver and at the largest text size, *Mehr*'s search (`docs/TODO.md`).
 - [ ] **The guide's pictures on the Mac.** They were taken again in a Linux container, like the ones before them; `npm run guide-shots` on the Mac gives Apple's type and emoji.
 
