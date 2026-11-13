@@ -363,7 +363,7 @@ Write 1–3 short lines per release, e.g.
 
 ```
 1) Screen recording
-Attached: a screen recording from an iPhone [model] on iOS [version]. It starts with launching the app and shows the typical use: the three questions of the first start, adding entries and ticking them off, importing bank transactions from a CSV file and from a photo, checking the bank balance, the month report, statistics, budgets and the outlook, the settings with reminders and the Face ID lock, and exporting a backup. All names and amounts in it are invented.
+Attached: a screen recording from an iPhone [model] on iOS [version]. It starts with launching the app and shows the typical use: the three questions of the first start, adding entries and ticking them off, checking the bank balance, the month report, statistics, budgets and the outlook, and the settings with reminders and the Face ID lock. All names and amounts in it are invented.
 
 2) Purpose and target audience
 Spartopf is a household budget book for private individuals and families who keep track of their monthly income and expenses, as a replacement for a monthly spreadsheet. Every entry is either paid or still open, and the app shows two balances: what is in the account now, and what will be left at the end of the month once everything open is paid.
@@ -371,7 +371,7 @@ Spartopf is a household budget book for private individuals and families who kee
 3) How to use the app
 No login, account or sample files are needed; the first start asks three questions, each can be skipped. To see every screen filled in: More > Settings > Add test data (a year of invented household data; Remove test data takes it out again).
 - Month tab: + adds an entry (amount, name, category, optional due day and monthly/yearly repeat). Tap the circle in front of an entry to mark it as paid; both balances update. Recurring entries come along into the next month as open.
-- Transactions without typing, all read on the device and shown for checking before anything is saved: Month > ... > Import takes the CSV file or PDF statement from online banking, a photo or screenshot of a banking app, an invoice's payment QR code, or an Excel budget sheet. The recording shows the CSV file and the photo, with demo files.
+- Transactions without typing, all read on the device and shown for checking before anything is saved: Month > ... > Import takes the CSV file or PDF statement from online banking, a photo or screenshot of a banking app, an invoice's payment QR code, or an Excel budget sheet.
 - Statistics tab: what stands out, income and spending over time, spending by category or payee.
 - Plan tab: the month so far, budgets, a twelve-month outlook, savings pots, subscriptions and contracts, a money check.
 - More tab: a guide, categories and budgets, backup export (encrypted with a password by default) and import, and optional tools: more accounts, debts, trips and projects, a tax list. More > Settings: language, appearance, currency, Face ID lock, reminders, reset app (deletes all data).

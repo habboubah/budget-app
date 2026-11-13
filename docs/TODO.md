@@ -23,19 +23,16 @@ items off, or delete them once done. The details are in each plan's notes.
 
 - [ ] **The 2.1 resubmission, if it isn't sent yet:** the screen recording
   and the App Review note in `store/listing.md` (plan 16). The recording
-  plays itself and shows the main features only — ten scenes, about 8
-  minutes (`ios/AppReviewRecorder/README.md`). In this order:
+  plays itself and shows the main features only — seven scenes, about 6
+  minutes, no demo files (`ios/AppReviewRecorder/README.md`). In this order:
   1. A build with the start on the iPhone, from TestFlight: 1.2.20
      (build 24) is the first. On 13 Nov the iPhone still had 1.2.17 — the
      new scenes stop in its preflight, before anything is recorded.
-  2. AirDrop `spartopf-demo-bank.csv` and `spartopf-demo-banking-app.png`
-     into Files › Downloads.
-  3. `DRY_RUN=1 npm run record:app-review`, then `npm run
+  2. `DRY_RUN=1 npm run record:app-review`, then `npm run
      record:app-review`; tell Claude where it stops. New on the iPhone and
      only rehearsed in Chromium so far: the start's three questions with the
-     keyboard up, the row *Settings* at the end of *More*, *Import* as a
-     sheet.
-  4. Paste the note from `store/listing.md` — it now says the video shows
+     keyboard up, and the row *Settings* at the end of *More*.
+  3. Paste the note from `store/listing.md` — it now says the video shows
      the typical use, with the new paths (*More › Settings*, *Import*).
 - [ ] **Once the app is live:** *Mehr › Einstellungen › Spartopf bewerten* opens the
   review page (plan 15, app id 6829541731).
@@ -238,9 +235,10 @@ and Arabic, light and dark, SE to Pro Max, once at 200 % text).
   reads its finding and says it opens; *Weniger* is reachable under each
   open card; the entry sheet's "⋯" reads *Mehr* / *Weniger*.
 - [x] **The App Review recording** follows the new screens (13 Nov): the
-  start instead of the setup card, the entry sheet as it opens, *Import* as
-  one row and a sheet, *More › Settings*. It was cut to the main features on
-  the way; `npm run rehearse:app-review` passes. What is left is the run on
+  start instead of the setup card, the entry sheet as it opens, *More ›
+  Settings*. It was cut to the main features on the way — without the bank
+  import, the backup and the lock at reopening; `npm run
+  rehearse:app-review` passes. What is left is the run on
   the iPhone — under *App Store* above.
 - [ ] **Store screenshots and the guide's pictures:** `npm run screenshots`
   still passes on the seeded book (it counts as a book in use). The guide's

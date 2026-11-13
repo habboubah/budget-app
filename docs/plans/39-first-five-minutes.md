@@ -241,7 +241,7 @@ With the test data (a year), as headlines: *Planen* 1.9 screens instead of 6.4, 
 ### What is left
 
 - [ ] **The five-minute test** (phase 4, step 2), once with five people on a fresh install. There is no baseline from before phase 1 — the plan was built in one go — so the walk through 1.2.18 at the top of this file stands in for it.
-- [x] **The App Review recording.** `ios/AppReviewRecorder/scenes.json` was rewritten on 13 November for the start, the entry sheet, *Importieren* and *Mehr › Einstellungen*, and cut to the main features (ten scenes, about 8 minutes instead of close to half an hour). The rehearsal passes; the run on the iPhone needs a build with this plan first (`docs/TODO.md`).
+- [x] **The App Review recording.** `ios/AppReviewRecorder/scenes.json` was rewritten on 13 November for the start, the entry sheet and *Mehr › Einstellungen*, and cut to the main features (seven scenes, about 6 minutes instead of close to half an hour). The rehearsal passes; the run on the iPhone needs a build with this plan first (`docs/TODO.md`).
 - [ ] **On the iPhone:** the start with the keyboard, the folds with VoiceOver and at the largest text size, *Mehr*'s search (`docs/TODO.md`).
 - [ ] **The guide's pictures on the Mac.** They were taken again in a Linux container, like the ones before them; `npm run guide-shots` on the Mac gives Apple's type and emoji.
 
