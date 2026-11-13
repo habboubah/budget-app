@@ -163,9 +163,9 @@ export function useAppStore() {
   const [balanceOpen, setBalanceOpen] = useState(() => startOpen(K.balanceOpen));
   const [entryMore, setEntryMore] = useState(() => startOpen(K.entryMore));
   const [calcKeys, setCalcKeys] = useState(() => startOpen(K.calcKeys));
-  /** Planen's and Statistik's cards: whole, or headlines with these opened (src/fold.ts) — the same rule. */
-  const [planOpen, setPlanOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.planOpen), inUse));
-  const [statsOpen, setStatsOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.statsOpen), inUse));
+  /** Planen's and Statistik's cards: whole — as every book starts — or headlines with these opened (src/fold.ts). */
+  const [planOpen, setPlanOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.planOpen)));
+  const [statsOpen, setStatsOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.statsOpen)));
   /** The start (plan 39; before it, the setup card on the first month) — done for good once finished or put off. */
   const [introDone, setIntroDone] = useState(() => readString(K.intro) === '1');
   /**
@@ -796,8 +796,9 @@ export function useAppStore() {
     setBalanceOpen(false);
     setEntryMore(false);
     setCalcKeys(false);
-    setPlanOpen([]);
-    setStatsOpen([]);
+    // Planen and Statistik show whole, as on every new book.
+    setPlanOpen(null);
+    setStatsOpen(null);
     setLastExport('');
     setCopyCardDismissed(false);
     // A fresh start shows the month reviews and hints again (opening a review
@@ -1004,8 +1005,8 @@ export function useAppStore() {
     language, setLanguage: chooseLanguage, themeMode, setThemeMode, accent, setAccent, storageError: saveFailed,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
     stepsDone, dismissSteps: () => setStepsDone(true),
-    demoTrial, setDemoTrial,
     stepsAnswered, answerSteps: (ids: string[]) => setStepsAnswered(ids),
+    demoTrial, setDemoTrial,
     balanceOpen, setBalanceOpen, entryMore, setEntryMore, calcKeys, setCalcKeys,
     planOpen, setPlanOpen, statsOpen, setStatsOpen, unfoldAll,
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),

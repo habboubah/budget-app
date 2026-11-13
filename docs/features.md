@@ -340,8 +340,8 @@ when it is wanted:
   Monatsende · Dein Konto wächst: +2.992 € seit Juni", "Wofür das Geld geht
   · Wohnen 41 % · Lebensmittel 21 %" — and opens in place; *Weniger* under
   it folds it again, and the button in the bar folds or unfolds them all.
-  What is open is remembered. A new book starts with headlines, a book in
-  use with every card whole.
+  What is open is remembered. Every book starts with every card whole —
+  headlines are for whoever folds the page.
 - **In the first month** there is nothing to compare yet: Statistik shows
   what stands out, where the money goes and when — and says that trends and
   the rest come with the second month. No period to choose, no chart of one

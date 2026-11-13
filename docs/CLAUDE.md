@@ -709,9 +709,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     `ui/FoldCard.tsx`): each card can be one row — its name and what it has
     found, "Budgets · 3 von 4 im Rahmen" — that opens in place, with
     *Weniger* under the open card; `FoldAllButton` in the bar goes from
-    every card whole (`null`, a book in use) to headlines (a list of the
-    opened ids, a new book) and back. `spartopf-plan-open` /
-    `spartopf-stats-open`. A card is only built once open, so a folded page
+    every card whole (`null`, how every book starts — November 2026, Ahmad:
+    nobody should have to open each card for its chart) to headlines (a list
+    of the opened ids) and back. `spartopf-plan-open` /
+    `spartopf-stats-open`: `"all"` or `{ open: [...] }`; a bare list is the
+    fold a new book got unasked before, and reads as whole. A card is only built once open, so a folded page
     draws no charts. *November bis heute*, the period's hero and *Das fällt
     auf* are the answer and never fold. A new card gets an id, a headline
     from its own finding, and a `FoldCard` around it.
