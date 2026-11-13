@@ -1,7 +1,7 @@
 import {
   ACCOUNT_KINDS, Account, AccountKind, AppData, Attachment, Backup, Category, CategoryKind, Contract, Debt, DemoInfo, Entry, EntryDraft, Favorite, Goal, HUES, Hue, INTERVALS, Interval, MonthKey, MonthRecord, Names, Project, REPEATS, Repeat, Rule, TAX_KINDS, TaxKind,
 } from './types';
-import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
+import { MERGED_V4, NEW_MAIN, SHIPPED_V5, NAME_SUGGESTIONS, NEW_IN_V2, NEW_IN_V30, OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3, defaultCategories } from './data/defaults';
 import { isSupportedCurrency } from './currency';
 
 /** Bump when a stored shape changes, and migrate in `normalizeState`.
@@ -30,8 +30,9 @@ import { isSupportedCurrency } from './currency';
  *  26: `Entry.refund` (money back in an expense category; its amount is negative) — optional.
  *  27: `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is kept for) — optional.
  *  28: trips and projects (`AppData.projects`) — optional, unset = none.
- *  29: `Entry.tax` (an expense marked for the tax return) — optional. */
-export const SCHEMA_VERSION = 29;
+ *  29: `Entry.tax` (an expense marked for the tax return) — optional.
+ *  30: the built-in "Verliehenes Geld" (id `lent`) — added to a book saved before, in no month. */
+export const SCHEMA_VERSION = 30;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -2067,7 +2068,9 @@ const sameNames = (a: Names, b: Names) =>
  *            there, else at the end; not in any month), and built-ins whose
  *            name or emoji changed get the new one;
  *   below 3: built-ins still named as shipped get the names in every language
- *            the app now speaks (Arabic) — and again below 19 (eleven more).
+ *            the app now speaks (Arabic) — and again below 19 (eleven more);
+ *   below 30: "Verliehenes Geld" (`lent`) is added at the end — unless the
+ *            user has one of their own by that name already.
  */
 export function upgradeCategories(categories: Category[], from = 1): Category[] {
   if (!categories.length || from >= SCHEMA_VERSION) return categories;
@@ -2084,12 +2087,18 @@ export function upgradeCategories(categories: Category[], from = 1): Category[] 
     if (sameNames(next.names, now.names)) next.names = { ...now.names };
     return next;
   });
-  if (from >= 2) return out;
+  const lentWords = new Set(['verliehenes geld', 'verliehen', 'geld verliehen', 'money lent', 'lent', 'lending', 'أموال مقرضة', 'أموال مُقرَضة', 'سلف'].map(normalizeName));
+  const later = from < 30
+    ? NEW_IN_V30.filter(id => !out.some(c => c.id === id) && !out.some(c => Object.values(c.names).some(n => lentWords.has(normalizeName(n)))))
+      .map(id => ({ ...shipped.get(id)! }))
+    : [];
+  if (from >= 2) return [...out, ...later];
   const have = new Set(out.map(c => c.id));
   const added = NEW_IN_V2.filter(id => !have.has(id)).map(id => shipped.get(id)!);
   // Before the old "Sonstiges" (id `other`, merged away in schema 4), as it was then.
   const other = out.findIndex(c => c.id === 'other');
-  return other < 0 ? [...out, ...added] : [...out.slice(0, other), ...added, ...out.slice(other)];
+  const withV2 = other < 0 ? [...out, ...added] : [...out.slice(0, other), ...added, ...out.slice(other)];
+  return [...withV2, ...later];
 }
 
 /**

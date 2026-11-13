@@ -556,7 +556,11 @@ categories, 3 favourites) sit in a small pill at the row's end.
   switched off for new months until you want them: *Bekleidung, Einkäufe, Telekommunikation,
   Mobilität, Reisen, Freizeit und Unterhaltung, Sport und Hobby, Gesundheit
   und Wellness, Bildung und Erziehung, Geldanlage, Versicherungen, Bargeld,
-  Steuern und Gebühren*, each with its own name suggestions. Create your own
+  Steuern und Gebühren, Verliehenes Geld*, each with its own name suggestions.
+  *Verliehenes Geld* (🤝) is for money lent to someone: it counts like money
+  put aside, not spending, and what comes back is entered in it as money
+  back, so the category shows what is still out (schema 30 gives it to
+  books from before). Create your own
   (income or expense, default repeat, emoji, colour), edit, drag to reorder,
   delete (undoable; asks first if entries go with it), *Standard
   wiederherstellen*.

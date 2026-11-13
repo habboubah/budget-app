@@ -52,6 +52,10 @@ const SHIPPED: Category[] = [
   { id: 'insurance', names: { de: 'Versicherungen', en: 'Insurance', ar: 'التأمين' }, emoji: '🛡️', hue: 'lemon', kind: 'expense', repeat: 'monthly', budget: 'need', standard: false, builtin: true },
   { id: 'cash', names: { de: 'Bargeld', en: 'Cash', ar: 'النقد' }, emoji: '🪙', hue: 'lemon', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
   { id: 'taxes', names: { de: 'Steuern und Gebühren', en: 'Taxes & fees', ar: 'الضرائب والرسوم' }, emoji: '🏛️', hue: 'blue', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
+  // Money lent to someone (schema 30). Counted like money put aside — it
+  // leaves the account but is still yours — and what comes back is entered
+  // here as money back (a refund), so the category nets to what is still out.
+  { id: 'lent', names: { de: 'Verliehenes Geld', en: 'Money lent', ar: 'أموال مُقرَضة' }, emoji: '🤝', hue: 'sand', kind: 'expense', repeat: 'none', budget: 'save', standard: false, builtin: true },
 ];
 
 const CATEGORIES: Category[] = SHIPPED.map(c => ({ ...c, names: withLanguages(c.names, CATEGORY_NAMES, c.id) }));
@@ -69,6 +73,8 @@ export const OTHER_CATEGORY: Category = CATEGORIES.find(c => c.id === 'extra')!;
  * built-ins appended, and the built-ins whose look changed are updated —
  * field by field, only where the user still has what the app shipped.
  */
+/** Schema 30: built-ins added since, appended to a book saved before (not to any month). */
+export const NEW_IN_V30 = ['lent'];
 export const NEW_IN_V2 = [
   'clothing', 'shopping', 'telecom', 'mobility', 'travel', 'leisure', 'sport', 'health', 'education',
   'investment', 'insurance', 'cash', 'taxes',
