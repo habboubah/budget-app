@@ -27,7 +27,7 @@ const da: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'Øverst på månedssiden står to tal: det, der er på kontoen nu, og det, der er tilbage ved månedens slutning.',
-  guideBalancesSteps: '{now} tæller kun det, der allerede er betalt eller kommet ind – ligesom din bank.\n{end} regner alt det afventende med: huslejen, der skal trækkes, lønnen, der skal komme.\nTryk på {end}, så foldes kortet ud. Linjen viser vejen derhen: Prikken er i dag, stiplet fortsætter den til månedens slutning.\nTryk på rækken nederst på kortet for at se overførsel, indtægter og udgifter.',
+  guideBalancesSteps: '{now} tæller kun det, der allerede er betalt eller kommet ind – ligesom din bank.\n{end} regner alt det afventende med: huslejen, der skal trækkes, lønnen, der skal komme.\nTryk på {cardMore}, så foldes kortet ud. Linjen viser vejen derhen: Prikken er i dag, stiplet fortsætter den til månedens slutning.\nTryk på rækken nederst på kortet for at se overførsel, indtægter og udgifter.',
   guideBalancesTip: 'Passer {now} ikke med banken? Tryk på {actions} › {reconcile}.',
   guidePaidSum: 'Hver post er enten allerede betalt eller afventer stadig – sådan ved Spartopf, hvad der mangler.',
   guidePaidSteps: 'En tom cirkel foran posten betyder: afventer stadig. En fyldt cirkel: betalt.\nTryk på cirklen for at hakke en post af – eller stryg posten til højre.\nStryg en post til venstre for at slette den.',

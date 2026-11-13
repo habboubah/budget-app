@@ -27,7 +27,7 @@ const pl: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'Na górze strony miesiąca są dwie liczby: ile masz teraz na koncie i ile zostanie na koniec miesiąca.',
-  guideBalancesSteps: '{now} liczy tylko to, co już zapłacone lub otrzymane – tak jak twój bank.\n{end} uwzględnia wszystko, co oczekuje: czynsz, który jeszcze zejdzie, pensję, która jeszcze wpłynie.\nStuknij {end}, a karta się rozwinie. Linia pokazuje drogę: kropka to dziś, przerywana część biegnie do końca miesiąca.\nStuknij wiersz na dole karty, aby zobaczyć przeniesienie, dochody i wydatki.',
+  guideBalancesSteps: '{now} liczy tylko to, co już zapłacone lub otrzymane – tak jak twój bank.\n{end} uwzględnia wszystko, co oczekuje: czynsz, który jeszcze zejdzie, pensję, która jeszcze wpłynie.\nStuknij {cardMore}, a karta się rozwinie. Linia pokazuje drogę: kropka to dziś, przerywana część biegnie do końca miesiąca.\nStuknij wiersz na dole karty, aby zobaczyć przeniesienie, dochody i wydatki.',
   guideBalancesTip: '{now} nie zgadza się z bankiem? Stuknij {actions} › {reconcile}.',
   guidePaidSum: 'Każda pozycja jest albo już zapłacona, albo jeszcze oczekuje – tak Spartopf wie, co jeszcze przyjdzie.',
   guidePaidSteps: 'Puste kółko przed pozycją oznacza: jeszcze oczekuje. Wypełnione kółko: zapłacona.\nStuknij kółko, aby odhaczyć pozycję – albo przesuń pozycję w prawo.\nPrzesuń pozycję w lewo, aby ją usunąć.',

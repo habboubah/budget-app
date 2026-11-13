@@ -34,9 +34,9 @@ interface Props {
    */
   account?: AccountSwitch;
   /**
-   * Folded (plan 39): the balance and one row — what is left at the end of
-   * the month — which opens the rest: the line, the ring, the two panels and
-   * the workings. A new book starts folded; the choice is kept (store).
+   * Folded (plan 39): the balance alone, with a slim "Mehr" row that opens
+   * the rest: the line, the ring, the two panels and the workings. A new book
+   * starts folded; the choice is kept (store).
    */
   open?: boolean;
   onOpen?: (open: boolean) => void;
@@ -87,9 +87,9 @@ type Note = { text: string; tone: string };
  * With *Beträge verbergen* on, every amount reads "•••• €" (logic.ts) and an
  * eye beside the first caption shows them for a while.
  *
- * Folded (plan 39, how a new book starts) it is the balance and one row:
- * *Am Monatsende* with what it still waits for. The row opens everything
- * above; a slim row at the card's end folds it again. Before the book knows
+ * Folded (plan 39, how a new book starts) it is the balance alone, with a
+ * slim "Mehr" row that opens everything above; a slim "Weniger" row at the
+ * card's end folds it again. Before the book knows
  * a balance, the card says what the month spent and offers to enter one.
  *
  * Swiping the card sideways turns the month, as in Calendar: it follows the
@@ -198,27 +198,16 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
           </div>
         </>
       ) : b.started && !open ? (
-        <div className="mx-2.5 mb-2.5 rounded-[22px] hero-panel overflow-hidden">
-          <button
-            type="button"
-            aria-expanded={false}
-            onClick={() => { tapLight(); onOpen?.(true); }}
-            className="w-full min-h-tap ps-3.5 pe-3 pt-3 pb-2.5 flex items-center gap-2 text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
-          >
-            <span className="min-w-0 flex-1">
-              <span className="flex items-start gap-1.5 text-caption font-medium text-on-hero-soft">
-                <CalendarCheck className="w-[15px] h-[15px] shrink-0 mt-[1.5px]" strokeWidth={2.2} aria-hidden="true" />
-                <span className="min-w-0 wrap-prose">{t.balanceEnd}</span>
-              </span>
-              <span className={`block rounded-num text-heading font-bold whitespace-nowrap mt-1 ${b.end < 0 ? 'text-on-hero-neg' : 'text-on-hero'}`}>
-                <span className="sr-only">{say(money(b.end))}</span>
-                <span aria-hidden="true"><CountingMoney cents={b.end} money={money} /></span>
-              </span>
-              <span className={`block text-caption font-medium wrap-prose ${endNote.tone}`}>{endNote.text}</span>
-            </span>
-            <ChevronDown className="w-5 h-5 shrink-0 text-on-hero-soft" strokeWidth={2.5} aria-hidden="true" />
-          </button>
-        </div>
+        // Folded: the balance alone, and a slim row that opens the rest.
+        <button
+          type="button"
+          aria-expanded={false}
+          onClick={() => { tapLight(); onOpen?.(true); }}
+          className="w-full min-h-tap -mt-3 ps-5 pe-4 pb-1 flex items-center justify-end gap-1 text-caption text-on-hero-mute active:opacity-60 transition-opacity focus-visible:ring-focus"
+        >
+          {t.more}
+          <ChevronDown className="w-4 h-4 shrink-0" strokeWidth={2.5} aria-hidden="true" />
+        </button>
       ) : b.started ? (
         <>
           {track && <MonthLine track={track} t={t} money={money} say={say} />}
