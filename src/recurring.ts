@@ -41,7 +41,22 @@ export function activeSeries(entries: Entry[]): ActiveSeries[] {
     const paid = list.filter(e => e.paid);
     out.push({ seriesId, latest, last: paid[paid.length - 1] ?? latest, next, every });
   }
-  // The monthly ones first, then the rarer ones; within each, the next one first.
-  return out.sort((a, b) => (a.every === 1) !== (b.every === 1) ? (a.every === 1 ? -1 : 1)
+  // By how often they come (monthly first, yearly last); within each, the next one first.
+  return out.sort((a, b) => a.every !== b.every ? a.every - b.every
     : a.next < b.next ? -1 : a.next > b.next ? 1 : a.latest.name.localeCompare(b.latest.name));
+}
+
+/**
+ * Removing a series from Wiederkehrende Posten: it stops coming. Its open
+ * entries from the running month on go (`remove`); what is paid, and what is
+ * still open from before, stays as it happened, and the newest of what stays
+ * gets its own month as the last one (`end`), so no later month brings it
+ * again. Nothing stays: `end` is null.
+ */
+export function stopSeries(entries: readonly Entry[], seriesId: string, running: MonthKey): { remove: string[]; end: { id: string; until: MonthKey } | null } {
+  const list = entries.filter(e => e.seriesId === seriesId && !e.transfer).sort(order);
+  const remove = list.filter(e => !e.paid && e.month >= running).map(e => e.id);
+  const kept = list.filter(e => !remove.includes(e.id));
+  const newest = kept[kept.length - 1];
+  return { remove, end: newest && newest.repeat !== 'none' ? { id: newest.id, until: newest.month } : null };
 }

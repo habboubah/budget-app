@@ -16,6 +16,7 @@ import { ReminderPrefs, normalizeReminderPrefs } from './reminders';
 import { hydratedData, loadStored, saver, wipeAll } from './storage';
 import { cancelAllReminders } from './notify';
 import { addDemoData, hasDemoData, removeDemoData } from './demo';
+import { stopSeries } from './recurring';
 
 /** View preferences: localStorage, here. The data itself goes through storage.ts. */
 const K = {
@@ -544,6 +545,29 @@ export function useAppStore() {
     return { entry: entries[index], index };
   };
 
+  /**
+   * Mehr › Wiederkehrende Posten › Entfernen: the series stops coming
+   * (`stopSeries` in recurring.ts). Returns its entries as they were, with
+   * their places, for the undo (`restoreSeries`); null when there is nothing.
+   */
+  const removeSeries = (seriesId: string, running: MonthKey): { seriesId: string; before: { entry: Entry; index: number }[] } | null => {
+    const { remove, end } = stopSeries(entries, seriesId, running);
+    if (!remove.length && !end) return null;
+    const before = entries.flatMap((entry, index) => (entry.seriesId === seriesId ? [{ entry, index }] : []));
+    setEntries(prev => prev
+      .filter(e => !remove.includes(e.id))
+      .map(e => (end && e.id === end.id ? { ...e, until: end.until } : e)));
+    return { seriesId, before };
+  };
+
+  /** The undo of `removeSeries`: the series' entries back as they were, each in its place. */
+  const restoreSeries = (done: { seriesId: string; before: { entry: Entry; index: number }[] }) =>
+    setEntries(prev => {
+      const out = prev.filter(e => e.seriesId !== done.seriesId);
+      for (const { entry, index } of done.before) out.splice(Math.min(index, out.length), 0, entry);
+      return out;
+    });
+
   const restoreEntry = (entry: Entry, index: number) =>
     setEntries(prev => (prev.some(e => e.id === entry.id) ? prev : [...prev.slice(0, index), entry, ...prev.slice(index)]));
 
@@ -1035,7 +1059,7 @@ export function useAppStore() {
     currency, setCurrency: (c: Currency) => setCurrency(c),
     data, categories, entries, months, balances,
     startMonth, pullRecurring, setOpening, setReconciled, removeMonth, restoreMonth, hideCategory, showCategory,
-    addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, moveEntry, restoreEntries, importEntries, undoImport,
+    addEntry, updateEntry, togglePaid, removeEntry, restoreEntry, removeSeries, restoreSeries, moveEntry, restoreEntries, importEntries, undoImport,
     splitEntry, unsplit,
     addTransfer, updateTransfer, removeTransfer, restoreTransfer,
     accounts, addAccount, updateAccount, removeAccount, restoreAccount, accountView: shownAccount, setAccountView,

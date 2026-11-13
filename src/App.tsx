@@ -1408,8 +1408,16 @@ export default function App() {
             categories={data.categories}
             t={t}
             onBack={back}
+            // Changed right here: the newest entry is the one the next months copy.
+            onEdit={s => setEntrySheet({ kind: 'edit', entry: s.latest })}
             // The month it last happened, with the entry open in it.
             onOpen={s => { openMonthPage(s.last.month); setEntrySheet({ kind: 'edit', entry: s.last }); }}
+            onRemove={s => {
+              const done = store.removeSeries(s.seriesId, runningMonth);
+              if (!done) return;
+              notifyWarning();
+              show(fmt(t.recurringRemoved, { name: s.latest.name }), { label: t.undo, run: () => store.restoreSeries(done) });
+            }}
           />
         ) : id === 'contracts' ? (
           <ContractsView items={contracts} categories={categories} t={t} onBack={back} onOpen={setContractFor} />
