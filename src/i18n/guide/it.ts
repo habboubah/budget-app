@@ -27,7 +27,7 @@ const it: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'In cima alla pagina del mese ci sono due numeri: quanto c’è ora sul conto e quanto resterà a fine mese.',
-  guideBalancesSteps: '{now} conta solo ciò che è già pagato o incassato – proprio come la tua banca.\n{end} include tutto ciò che è in sospeso: l’affitto che deve ancora uscire, lo stipendio che deve ancora arrivare.\nTocca {end} e la scheda si apre. La linea mostra il percorso: il punto è oggi, tratteggiata prosegue fino a fine mese.\nTocca la riga in fondo alla scheda per vedere riporto, entrate e uscite.',
+  guideBalancesSteps: '{now} conta solo ciò che è già pagato o incassato – proprio come la tua banca.\n{end} include tutto ciò che è in sospeso: l’affitto che deve ancora uscire, lo stipendio che deve ancora arrivare.\nTocca {cardMore} e la scheda si apre. La linea mostra il percorso: il punto è oggi, tratteggiata prosegue fino a fine mese.\nTocca la riga in fondo alla scheda per vedere riporto, entrate e uscite.',
   guideBalancesTip: '{now} non corrisponde alla banca? Tocca {actions} › {reconcile}.',
   guidePaidSum: 'Ogni voce è già pagata oppure ancora in sospeso – così Spartopf sa cosa deve ancora arrivare.',
   guidePaidSteps: 'Un cerchio vuoto davanti alla voce significa: ancora in sospeso. Un cerchio pieno: pagata.\nTocca il cerchio per spuntare una voce – oppure scorri la voce verso destra.\nScorri una voce verso sinistra per eliminarla.',

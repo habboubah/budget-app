@@ -27,7 +27,7 @@ const nl: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'Bovenaan de maandpagina staan twee getallen: wat er nu op je rekening staat en wat er aan het einde van de maand overblijft.',
-  guideBalancesSteps: '{now} telt alleen wat al betaald of ontvangen is – net als je bank.\n{end} rekent alles mee wat nog openstaat: de huur die nog afgaat, het salaris dat nog komt.\nTik op {end} en de kaart klapt open. De lijn toont de weg ernaartoe: de stip is vandaag, gestreept loopt hij door tot het einde van de maand.\nTik op de regel onderaan de kaart om overboeking, inkomsten en uitgaven te zien.',
+  guideBalancesSteps: '{now} telt alleen wat al betaald of ontvangen is – net als je bank.\n{end} rekent alles mee wat nog openstaat: de huur die nog afgaat, het salaris dat nog komt.\nTik op {cardMore} en de kaart klapt open. De lijn toont de weg ernaartoe: de stip is vandaag, gestreept loopt hij door tot het einde van de maand.\nTik op de regel onderaan de kaart om overboeking, inkomsten en uitgaven te zien.',
   guideBalancesTip: 'Klopt {now} niet met je bank? Tik op {actions} › {reconcile}.',
   guidePaidSum: 'Elke post is al betaald of staat nog open – zo weet Spartopf wat er nog komt.',
   guidePaidSteps: 'Een leeg rondje voor de post betekent: staat nog open. Een gevuld rondje: betaald.\nTik op het rondje om een post af te vinken – of veeg de post naar rechts.\nVeeg een post naar links om hem te verwijderen.',

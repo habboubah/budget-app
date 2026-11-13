@@ -21,6 +21,8 @@ export function guideLabels(t: Strings): Record<string, string> {
   return {
     // The tabs, and the two balances.
     month: t.tabMonth, stats: t.tabStats, plan: t.tabInsights, settings: t.tabSettings, now: t.balanceNow, end: t.balanceEnd,
+    // The balance card's "Mehr" row, which unfolds it.
+    cardMore: t.more,
     // On screen as symbols.
     add: '+', actions: '⋯', more: '⋯', save: '✓', info: 'ⓘ', arrows: '‹ ›',
     // The entry sheet.

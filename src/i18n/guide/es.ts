@@ -27,7 +27,7 @@ const es: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'Arriba en la página del mes hay dos cifras: lo que hay ahora en la cuenta y lo que quedará a fin de mes.',
-  guideBalancesSteps: '{now} solo cuenta lo que ya está pagado o cobrado, igual que tu banco.\n{end} incluye todo lo pendiente: el alquiler que aún saldrá, el sueldo que aún llegará.\nToca {end} y la tarjeta se despliega. La línea muestra el camino: el punto es hoy; discontinua, sigue hasta fin de mes.\nToca la fila de abajo de la tarjeta para ver el saldo arrastrado, los ingresos y los gastos.',
+  guideBalancesSteps: '{now} solo cuenta lo que ya está pagado o cobrado, igual que tu banco.\n{end} incluye todo lo pendiente: el alquiler que aún saldrá, el sueldo que aún llegará.\nToca {cardMore} y la tarjeta se despliega. La línea muestra el camino: el punto es hoy; discontinua, sigue hasta fin de mes.\nToca la fila de abajo de la tarjeta para ver el saldo arrastrado, los ingresos y los gastos.',
   guideBalancesTip: '¿{now} no coincide con tu banco? Toca {actions} › {reconcile}.',
   guidePaidSum: 'Cada apunte está ya pagado o sigue pendiente: así sabe Spartopf lo que aún falta.',
   guidePaidSteps: 'Un círculo vacío delante del apunte significa: sigue pendiente. Un círculo lleno: pagado.\nToca el círculo para marcar un apunte, o desliza el apunte hacia la derecha.\nDesliza un apunte hacia la izquierda para eliminarlo.',

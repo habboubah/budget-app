@@ -27,7 +27,7 @@ const sv: GuidePages = {
 
   // The topics, in the guide’s order: what it is, the steps (one a line), a tip.
   guideBalancesSum: 'Överst på månadssidan står två tal: vad som finns på kontot nu och vad som blir kvar vid månadens slut.',
-  guideBalancesSteps: '{now} räknar bara det som redan är betalt eller har kommit in – precis som din bank.\n{end} räknar in allt som väntar: hyran som ska dras, lönen som ska komma.\nTryck på {end} så fälls kortet ut. Linjen visar vägen dit: punkten är i dag, streckat fortsätter den till månadens slut.\nTryck på raden längst ner på kortet för att se överföring, inkomster och utgifter.',
+  guideBalancesSteps: '{now} räknar bara det som redan är betalt eller har kommit in – precis som din bank.\n{end} räknar in allt som väntar: hyran som ska dras, lönen som ska komma.\nTryck på {cardMore} så fälls kortet ut. Linjen visar vägen dit: punkten är i dag, streckat fortsätter den till månadens slut.\nTryck på raden längst ner på kortet för att se överföring, inkomster och utgifter.',
   guideBalancesTip: 'Stämmer inte {now} med banken? Tryck på {actions} › {reconcile}.',
   guidePaidSum: 'Varje post är antingen redan betald eller väntar fortfarande – så vet Spartopf vad som återstår.',
   guidePaidSteps: 'En tom cirkel framför posten betyder: väntar fortfarande. En fylld cirkel: betald.\nTryck på cirkeln för att bocka av en post – eller svep posten åt höger.\nSvep en post åt vänster för att radera den.',
