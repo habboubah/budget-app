@@ -1,4 +1,4 @@
-import { ComponentType, useEffect, useState } from 'react';
+import { ComponentType, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'motion/react';
 import { Plus } from 'lucide-react';
@@ -28,7 +28,7 @@ export interface Tab<T extends string> {
  * where the guide says it is ("unten rechts"). Only the month page shows it
  * (App passes `add` there alone). Scrolling down the month tucks it away so it
  * doesn't sit on the amounts at the row ends; scrolling back up, reaching the
- * top or the end, or focusing it brings it back.
+ * top or the end, focusing it, or closing the sheet it opened brings it back.
  *
  * It answers the finger the moment it lands — it gives, the plus begins to
  * turn — and says what it did: while the sheet it opened is up the plus stays
@@ -40,18 +40,31 @@ function AddButton({ label, open, onClick }: { label: string; open: boolean; onC
   const [taps, setTaps] = useState(0);
   const calm = useReducedMotion();
   const [tucked, setTucked] = useState(false);
+  // While its sheet is up the page under it isn't the user's scrolling: iOS
+  // scrolls it to show the keyboard, and that used to tuck the button away
+  // for good — after saving an entry the + was gone until you scrolled up.
+  // So scrolls are ignored then, and the button comes back as the sheet goes
+  // (and stays through the scroll lock putting the page back just after).
+  const sheetUp = useRef(open);
+  const closedAt = useRef(0);
+  const last = useRef(0);
   useEffect(() => {
-    let last = window.scrollY;
+    sheetUp.current = open;
+    if (!open) { closedAt.current = performance.now(); last.current = window.scrollY; setTucked(false); }
+  }, [open]);
+  useEffect(() => {
+    last.current = window.scrollY;
     let frame = 0;
     const check = () => {
       frame = 0;
       const y = window.scrollY;
+      if (sheetUp.current || performance.now() - closedAt.current < 700) { last.current = y; return; }
       const end = document.documentElement.scrollHeight - window.innerHeight;
-      if (y < 24 || y > end - 24) { setTucked(false); last = y; return; }
-      const dy = y - last;
+      if (y < 24 || y > end - 24) { setTucked(false); last.current = y; return; }
+      const dy = y - last.current;
       if (Math.abs(dy) < 8) return;
       setTucked(dy > 0);
-      last = y;
+      last.current = y;
     };
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(check); };
     window.addEventListener('scroll', onScroll, { passive: true });
