@@ -1813,8 +1813,8 @@ export default function App() {
           { id: 'insights', label: t.tabInsights, icon: PiggyBank },
           { id: 'settings', label: t.tabSettings, icon: CircleEllipsis },
         ]}
-        // On every tab: a receipt can be noted down from anywhere, into the month shown.
-        add={quickAddCategory && balance.started
+        // On the month page only (its root, not a screen pushed over it): entries go into the month shown there.
+        add={tab === 'month' && !stack.month && quickAddCategory && balance.started
           ? { label: t.addEntry, open: entrySheet?.kind === 'new', onClick: () => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory }) }
           : null}
       />

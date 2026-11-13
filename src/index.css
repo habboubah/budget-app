@@ -399,8 +399,10 @@
 @utility pb-safe-dock { padding-bottom: calc(196px + env(safe-area-inset-bottom)); }
 /* A docked button's own padding: the tab bar (62px above its gap over the home indicator) and a breath. */
 @utility pb-above-tabs { padding-bottom: calc(max(env(safe-area-inset-bottom) - 6px, 14px) + 62px + 12px); }
-/* Clears the floating tab bar and the add button above its end (56px + 14px of air over the bar). */
-@utility pb-safe-tabs { padding-bottom: calc(176px + env(safe-area-inset-bottom)); }
+/* Clears the floating tab bar (62px + its gap above the home indicator). */
+@utility pb-safe-tabs { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
+/* The month page: clears the tab bar and the add button above its end (56px + 14px of air over the bar). */
+@utility pb-safe-add { padding-bottom: calc(176px + env(safe-area-inset-bottom)); }
 /* Just above the floating tab bar. */
 @utility bottom-above-tabs { bottom: calc(86px + env(safe-area-inset-bottom)); }
 

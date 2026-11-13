@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronsUpDown } from 'lucide-react';
 import { tapLight } from './haptics';
@@ -16,8 +16,10 @@ interface Props {
   leading?: React.ReactNode;
   /** Extra bottom padding for a docked bar. */
   docked?: boolean;
-  /** A tab screen: bottom padding clears the tab bar and the add button above it. */
+  /** A tab screen: bottom padding clears the tab bar. */
   tabbed?: boolean;
+  /** The month page: bottom padding also clears the add button floating above the bar. */
+  withAdd?: boolean;
   /** Replaces the plain large title (the month switcher). */
   titleSlot?: React.ReactNode;
   /** Under the large title, scrolling with it — the search field, as on iOS. */
@@ -35,7 +37,7 @@ interface Props {
  * (a gradient, never a blur — backdrop-filter over a scrolling list is too
  * expensive in a WebView).
  */
-export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, docked, tabbed, titleSlot, accessory, still, children }: Props) {
+export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, docked, tabbed, titleSlot, accessory, still, withAdd, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
   // At the very top the bar is see-through, so the page's accent light shows
   // behind it; once anything scrolls under it, it turns solid (as iOS does).
@@ -48,7 +50,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
   }, []);
 
   return (
-    <div className={`relative isolate mx-auto w-full max-w-xl min-h-screen ${tabbed ? 'pb-safe-tabs' : docked ? 'pb-safe-dock' : 'pb-16'}`}>
+    <div className={`relative isolate mx-auto w-full max-w-xl min-h-screen ${withAdd ? 'pb-safe-add' : tabbed ? 'pb-safe-tabs' : docked ? 'pb-safe-dock' : 'pb-16'}`}>
       {/* The accent's light at the top of the page, while the page rests at the
           top; it fades as the bar turns solid, so the two never meet in a seam.
           Wider than the column so it never shows an edge (App clips the overflow). */}
@@ -263,7 +265,6 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions }: 
  * otherwise capture `position: fixed` and carry the bar along with it.
  */
 export function Dock({ children }: { children: React.ReactNode }) {
-  useEffect(() => { countDocks(1); return () => countDocks(-1); }, []);
   return createPortal(
     <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none">
       {/* Above the tab bar, which stays on every screen: the button used to lie half under it. */}
@@ -272,17 +273,5 @@ export function Dock({ children }: { children: React.ReactNode }) {
       </div>
     </div>,
     document.body,
-  );
-}
-
-/* How many docked buttons are up: the floating add button (ui/TabBar) steps
-   aside while one is, so the two never sit on each other. */
-let docks = 0;
-const dockListeners = new Set<() => void>();
-function countDocks(d: number) { docks += d; dockListeners.forEach(f => f()); }
-export function useDockShown(): boolean {
-  return useSyncExternalStore(
-    f => { dockListeners.add(f); return () => { dockListeners.delete(f); }; },
-    () => docks > 0,
   );
 }

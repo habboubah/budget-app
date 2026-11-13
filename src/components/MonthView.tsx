@@ -214,6 +214,7 @@ export function MonthView(p: Props) {
       still
       title={label}
       tabbed
+      withAdd
       subtitle={monthStartDay() !== 1 ? periodLabel(month, t) : undefined}
       eyebrow={month === current ? t.thisMonth : (
         <button
