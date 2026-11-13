@@ -1149,7 +1149,7 @@ const da: Strings = {
   crashExport: 'Eksportér data',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'Hver 2. måned',
-  repeatQuarterly: 'Kvartalsvis',
+  repeatQuarterly: 'Hver 3. måned',
   repeatHalfYearly: 'Halvårligt',
   repeatHintEvery: 'Kommer igen hver {n}. måned som åben.',
   repeatEnds: 'Slutter',

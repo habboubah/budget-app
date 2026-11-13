@@ -1149,7 +1149,7 @@ const nl: Strings = {
   crashExport: 'Gegevens exporteren',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'Elke 2 maanden',
-  repeatQuarterly: 'Per kwartaal',
+  repeatQuarterly: 'Elke 3 maanden',
   repeatHalfYearly: 'Halfjaarlijks',
   repeatHintEvery: 'Komt elke {n} maanden terug als open.',
   repeatEnds: 'Eindigt',

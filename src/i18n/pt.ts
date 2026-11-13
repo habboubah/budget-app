@@ -1150,7 +1150,7 @@ const pt: Strings = {
   crashExport: 'Exportar dados',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'A cada 2 meses',
-  repeatQuarterly: 'Trimestral',
+  repeatQuarterly: 'A cada 3 meses',
   repeatHalfYearly: 'Semestral',
   repeatHintEvery: 'Volta a cada {n} meses, como pendente.',
   repeatEnds: 'Termina',

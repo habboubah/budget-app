@@ -1150,7 +1150,7 @@ const nb: Strings = {
   crashExport: 'Eksporter data',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'Annenhver måned',
-  repeatQuarterly: 'Kvartalsvis',
+  repeatQuarterly: 'Hver 3. måned',
   repeatHalfYearly: 'Halvårlig',
   repeatHintEvery: 'Kommer tilbake hver {n}. måned som åpen.',
   repeatEnds: 'Slutter',

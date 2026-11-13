@@ -1153,7 +1153,7 @@ const cs: Strings = {
   crashExport: 'Exportovat data',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'Každé 2 měsíce',
-  repeatQuarterly: 'Čtvrtletně',
+  repeatQuarterly: 'Každé 3 měsíce',
   repeatHalfYearly: 'Pololetně',
   repeatHintEvery: 'Vrací se každé {n} měs. jako otevřená.',
   repeatEnds: 'Končí',

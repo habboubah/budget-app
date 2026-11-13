@@ -1152,7 +1152,7 @@ const pl: Strings = {
   crashExport: 'Eksportuj dane',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'Co 2 miesiące',
-  repeatQuarterly: 'Co kwartał',
+  repeatQuarterly: 'Co 3 miesiące',
   repeatHalfYearly: 'Co pół roku',
   repeatHintEvery: 'Wraca co {n} mies. jako otwarta.',
   repeatEnds: 'Koniec',

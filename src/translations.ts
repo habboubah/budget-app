@@ -1179,7 +1179,7 @@ const de = {
   crashExport: 'Daten exportieren',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'Alle 2 Monate',
-  repeatQuarterly: 'Vierteljährlich',
+  repeatQuarterly: 'Alle 3 Monate',
   repeatHalfYearly: 'Halbjährlich',
   repeatHintEvery: 'Kommt alle {n} Monate als offen wieder.',
   repeatEnds: 'Endet',
@@ -2441,7 +2441,7 @@ const en: Strings = {
   crashExport: 'Export data',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'Every 2 months',
-  repeatQuarterly: 'Quarterly',
+  repeatQuarterly: 'Every 3 months',
   repeatHalfYearly: 'Every 6 months',
   repeatHintEvery: 'Comes back every {n} months, as pending.',
   repeatEnds: 'Ends',
@@ -3717,7 +3717,7 @@ const ar: Strings = {
   crashExport: 'تصدير البيانات',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'كل شهرين',
-  repeatQuarterly: 'كل ثلاثة أشهر',
+  repeatQuarterly: 'كل 3 أشهر',
   repeatHalfYearly: 'كل ستة أشهر',
   repeatHintEvery: 'يعود كل {n} أشهر كبند مفتوح.',
   repeatEnds: 'ينتهي',

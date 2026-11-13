@@ -1150,7 +1150,7 @@ const sv: Strings = {
   crashExport: 'Exportera data',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: 'Varannan månad',
-  repeatQuarterly: 'Kvartalsvis',
+  repeatQuarterly: 'Var 3:e månad',
   repeatHalfYearly: 'Halvårsvis',
   repeatHintEvery: 'Kommer tillbaka var {n}:e månad som obetald.',
   repeatEnds: 'Slutar',

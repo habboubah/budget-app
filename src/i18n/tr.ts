@@ -1152,7 +1152,7 @@ const tr: Strings = {
   crashExport: 'Verileri dışa aktar',
   // Repeat intervals and an end (schema 24)
   repeatEvery2: '2 ayda bir',
-  repeatQuarterly: 'Üç ayda bir',
+  repeatQuarterly: '3 ayda bir',
   repeatHalfYearly: 'Altı ayda bir',
   repeatHintEvery: 'Her {n} ayda bir açık olarak geri gelir.',
   repeatEnds: 'Bitiş',
