@@ -36,7 +36,6 @@
     {"select": "English", "in": ["Sprache", "Language", "اللغة", "Jazyk", "Sprog", "Idioma", "Langue", "Lingua", "Språk", "Taal", "Język", "Dil"]},
     {"pause": 1},
     {"select": "US Dollar (USD)", "in": "Currency"},
-    {"optional": [{"tap": "Change"}]},
     {"pause": 1},
     {"tap": "Month"}
   ]},
@@ -538,7 +537,7 @@
     {"pause": 2},
     {"select": "British Pound (GBP)", "in": "Currency"},
     {"pause": 1.5},
-    {"tap": "Cancel"},
+    {"select": "US Dollar (USD)", "in": "Currency"},
     {"pause": 1},
     {"select": "العربية", "in": "Language"},
     {"pause": 3},

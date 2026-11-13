@@ -139,8 +139,6 @@ export function PreferencesView(p: Props) {
   const { t } = p;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmDemo, setConfirmDemo] = useState(false);
-  /** A currency change only relabels, so confirm it once before applying. */
-  const [pendingCurrency, setPendingCurrency] = useState<Currency | null>(null);
   const lockLabel = p.lockKind === 'faceId' ? t.lockFaceId : p.lockKind === 'touchId' ? t.lockTouchId : t.lockCode;
   const LockIcon = p.lockKind === 'faceId' ? ScanFace : p.lockKind === 'touchId' ? Fingerprint : Lock;
   // From two on: the strings are plurals ("14 Monate").
@@ -182,7 +180,7 @@ export function PreferencesView(p: Props) {
             label={t.currency}
             leading={<IconTile icon={Coins} hue="lemon" />}
             value={p.currency}
-            onChange={c => { if (c !== p.currency) setPendingCurrency(c); }}
+            onChange={p.onCurrency}
             options={CURRENCIES.map(c => ({ value: c, label: currencyName(c, t.locale) }))}
           />
         </Group>
@@ -301,15 +299,6 @@ export function PreferencesView(p: Props) {
         </Group>
       </div>
 
-      <Confirm
-        open={!!pendingCurrency}
-        title={t.currencyChangeTitle}
-        body={t.currencyChangeBody}
-        confirmLabel={t.currencyChange}
-        cancelLabel={t.cancel}
-        onCancel={() => setPendingCurrency(null)}
-        onConfirm={() => { if (pendingCurrency) p.onCurrency(pendingCurrency); setPendingCurrency(null); }}
-      />
       <Confirm
         open={confirmDemo}
         title={t.demoRemoveTitle}
