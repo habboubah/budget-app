@@ -154,6 +154,14 @@ Write 1–3 short lines per release, e.g.
 
 ### Next release (after 1.2.0)
 
+**DE:** Neu: ein leichterer Start. Drei kurze Fragen – Kontostand, Einkommen, feste Kosten – und Spartopf zeigt dir, was am Monatsende bleibt. Die Monatsseite und das Eintragen zeigen am Anfang nur das Wichtigste; alles Weitere ist einen Tipp entfernt. „Optionen“ heißt jetzt „Mehr“ und hat eine Suche, die Einstellungen liegen darunter. Planen und Statistik öffnen als kurze Übersicht. Dein bestehendes Haushaltsbuch sieht aus wie bisher.
+
+**EN:** New: an easier start. Three short questions – your balance, your income, your fixed costs – and Spartopf shows you what is left at the end of the month. The month page and the entry sheet begin with the essentials; everything else is one tap away. "Settings" is now "More", with a search; the settings sit under it. Plan and Statistics open as a short overview. Your existing budget book looks as it did.
+
+**AR:** جديد: بداية أسهل. ثلاثة أسئلة قصيرة – رصيدك ودخلك وتكاليفك الثابتة – ويريك Spartopf ما يتبقى في نهاية الشهر. صفحة الشهر وورقة الإدخال تبدآن بالأساسيات، وكل ما عداها على بُعد لمسة. «الإعدادات» صارت «المزيد» ومعها بحث، والإعدادات تحتها. «التخطيط» و«الإحصاءات» يُفتحان كنظرة موجزة. ودفتر ميزانيتك الحالي يبقى كما كان.
+
+(Plan 39. If the two lines below about *Optionen* are still unreleased when this ships, drop "Optionen neu geordnet" and say *Mehr* in the guide's line.)
+
 **DE:** Optionen neu geordnet: oben die Anleitung und „Sichern und übertragen“, darunter erst dein Haushaltsbuch, dann weitere Funktionen, Darstellung und Sicherheit.
 
 **EN:** Settings, reordered: the guide and "Back up and transfer" on top, then your budget book, more features, display and security.

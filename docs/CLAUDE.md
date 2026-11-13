@@ -70,8 +70,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `src/xlsx.ts`, `src/excelImport.ts` | Reading an .xlsx on the device; a budget sheet into months |
 | `src/receipts.ts` | Receipts and documents on an entry |
 | `src/keywords.ts` | Name completion and the category guessed from the name |
-| `src/tips.ts` | The one tip card on the month page |
-| `src/guide.ts`, `src/guideKit.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Optionen › Anleitung*), the tours and what *Zeigen* points at: topics and what is remembered (`guide.ts`, in the main bundle); labels, search and the tours' marks (`guideKit.ts`, a lazy chunk); its pages per language, loaded on demand (all pure, tested) |
+| `src/tips.ts` | The one tip card on the month page, and the three gestures each at its moment |
+| `src/start.ts`, `src/fold.ts` | The first five minutes (plan 39): the start's answers as the book's first entries; Planen's and Statistik's cards as headlines |
+| `src/guide.ts`, `src/guideKit.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Mehr › Anleitung*), the tours and what *Zeigen* points at: topics and what is remembered (`guide.ts`, in the main bundle); labels, search and the tours' marks (`guideKit.ts`, a lazy chunk); its pages per language, loaded on demand (all pure, tested) |
 | `src/crypto.ts`, `src/export.ts`, `src/limits.ts` | Encrypted backups (WebCrypto), sharing files, the size limits of every import |
 | `src/currency.ts`, `src/links.ts`, `src/platform.ts` | Currencies; the links *Über Spartopf* opens; which app we run in |
 | `src/demo.ts` | The test data year |
@@ -161,27 +162,38 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     `parseBackup()`; old plain backups still import. All WebCrypto, no library.
   - *App zurücksetzen* calls `saver.forget()` first, so `data.prev.json`
     (and the snapshots) keep no copy of the old book.
-  - View preferences (language, theme, accent, folded cards, intro, tips,
-    reminders, lock, hidden amounts) stay in localStorage in `store.ts`: losing
+  - View preferences (language, theme, accent, folded cards, the start and
+    its steps, tips, what a new book keeps folded, reminders, lock, hidden
+    amounts) stay in localStorage in `store.ts`: losing
     them costs nothing, and a failed write of one doesn't raise the banner.
   - Debug: `localStorage['spartopf-debug'] = '1'` (Safari Web Inspector on a
     device) shows *WebKit-Daten löschen* in *Sichern und übertragen* — what
     iOS does when it reclaims web storage; after a relaunch the file has it all.
-- **Optionen (`SettingsView`) is ordered by need, not by history:** the
-  header on the hero (icon, name, version, the tagline, how many months and
-  entries the book holds — counts from two on, since the strings are
-  plurals, and never an amount), two `QuickTile` cards (the guide; backup
-  and transfer), then *Haushaltsbuch* (what every book has: categories,
-  accounts, favourites, the month's first day), *Weitere Funktionen* (what a
-  book may use: debts, projects, the tax list, import rules, automatic
-  capture), *Darstellung* (language, appearance, colour, currency — the
-  guide's `{display}` sends people here, so those four stay in it),
-  *Sicherheit und Mitteilungen* (hide amounts first, then the lock,
-  reminders, the phone's backup), *Ausprobieren*, *Über Spartopf*, and
-  resetting last and alone. A new row joins the group it belongs to and
-  takes an `IconTile` hue no other row of that group has; a count goes into
-  `Next`'s pill. Scripts find rows by their text (`main button` with the
-  label), so a row may move freely but must stay a button with its label.
+- **Mehr (`MoreView`, the fourth tab; it was *Optionen*) holds what is done,
+  Einstellungen (`PreferencesView`, pushed as `preferences`) what is set
+  once** (plan 39). *Mehr*, on about one screen: a search ("Was möchtest du
+  tun?" — its own rows, what Einstellungen holds (`prefsIndex` in App) and the
+  guide's topics, whose words are fetched when the search begins), two
+  `QuickTile` cards (the guide; backup and transfer), *Haushaltsbuch* (what
+  every book has: categories and budgets, accounts, favourites), *Werkzeuge*
+  (what a book may use: importing — the same `ImportSheet` as the month's
+  "⋯" —, debts, trips and projects, the tax list, import rules, automatic
+  capture) and one row to *Einstellungen*: *Darstellung* (language,
+  appearance, colour, currency — the guide's `{display}` sends people here,
+  so those four stay in it), *Sicherheit und Mitteilungen* (hide amounts
+  first, then the lock, reminders, the phone's backup), *Haushaltsbuch* (the
+  day the month begins), *Ausprobieren* (the test data), *Über Spartopf*
+  (the card on the hero — icon, name, version, the tagline, how many months
+  and entries the book holds: counts from two on, never an amount — then
+  rating, feedback, the privacy policy), and resetting last and alone. Back
+  from the reminders leads to Einstellungen again (`prefsReturn`, like
+  `guideReturn`). A new feature's row joins *Werkzeuge* (or *Haushaltsbuch*
+  when every book has it), a new setting joins its group in Einstellungen —
+  with an `IconTile` hue no other row of that group has, a count in `Next`'s
+  pill, and a line in `prefsIndex` so the search finds it. *Mehr* has a
+  budget of 13 rows (`scripts/simplicity-check.mjs`). Scripts find rows by
+  their text (`main button` with the label), so a row may move freely but
+  must stay a button with its label.
 - **Screens** live in `src/components/XxxView.tsx`; forms shown in a bottom
   sheet are `XxxSheet.tsx`. Named exports, `Props` interface above.
 - **Shared primitives** live in `src/ui/` (`Screen`, `Sheet`, `Button`,
@@ -375,7 +387,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   **schema 28** `AppData.projects` (below);
   **schema 29** `Entry.tax` (a `TaxKind`; `taxYear` / `taxYears` in
   `insights/tax.ts` list what is marked *and paid* by kind, in the year of
-  the entry's date; `TaxView` under *Optionen › Weitere Funktionen*, whose switch
+  the entry's date; `TaxView` under *Mehr › Werkzeuge*, whose switch
   — view preference `spartopf-tax-marks`, or any marked entry — puts the
   *Steuer* pill into the entry sheet; the PDF is `PrintSpec.kind: 'tax'`
   through `PrintReport`. The app collects and says it gives no tax advice:
@@ -547,7 +559,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   currency than the book's is left out. Never commit a real invoice or code.
 - **Accounts and transfers (plan 30).** A book has its main account (id
   `main`, `MAIN_ACCOUNT`) and nothing else until the user adds cash, a savings
-  account or another under *Optionen › Konten*; `AppData.accounts` (schema 20)
+  account or another under *Mehr › Konten*; `AppData.accounts` (schema 20)
   is unset until then, and `hasAccounts()` is what every screen asks before
   showing anything about accounts. With the first extra account the main one
   is written down too (unnamed, so it reads *Girokonto* in every language;
@@ -626,24 +638,102 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     code come from `package.json` (`android/app/build.gradle`).
   - `localStorage['spartopf-dev-platform'] = 'android'` (dev only) gives the
     browser Android's wording and face: `ui-review.mjs --devices pixel,android360`.
+- **The first five minutes (plan 39).** What a new book puts in front of
+  someone is counted and has a budget; what a book in use shows is what it
+  always showed. The rules, then the parts:
+  - **A part of a screen appears once the book has something to put in it,
+    and every "show more" is remembered.** Never a mode or a setting. The
+    folds are view preferences whose unset value is decided once, by whether
+    the book held an entry when this version first opened it (`inUse` in
+    `store.ts`): open for a book in use, closed for a new one — and
+    `unfoldAll()` opens them when a backup is restored into a new book.
+    `resetAll` closes them again.
+  - **The start** (`StartFlow`, a lazy chunk; `startOpen` in App while
+    `introDone` is unset and the book is empty): a welcome — one sentence, the
+    promise, *Los geht's*, *Ich habe schon Daten* (to *Sichern und
+    übertragen*) and *Erst mit Testdaten ansehen* — then three questions, each
+    with *Später*: what is on the account, what comes in every month and on
+    which day, what goes out every month (five names from
+    `NAME_SUGGESTIONS.fixed`). `startPlan()` (`src/start.ts`, pure, tested)
+    turns the answers into the running month's first entries, all monthly — a
+    day up to today is paid, a later one open — and the opening that leads to
+    the balance given; the last screen says what is left at the end of the
+    month. It replaced the setup card: something does come before the month
+    page now (decision 1 of the plan), but nothing that has to be read, and
+    every step can be put off. The test data from the welcome is a trial:
+    `DemoPill` above the tab bar says so until it is taken out again, and
+    then the start returns.
+  - **The month page of a new book.** `BalanceCard` has three states: no
+    balance given (`balanceGiven()` in `logic.ts`: no opening was ever typed)
+    — "Diesen Monat ausgegeben", and one row, *Kontostand eintragen*
+    (`BalanceNowSheet`), so a coffee is never a negative bank balance;
+    closed — *Kontostand jetzt* large and *Am Monatsende* as the row that
+    opens it; open — the card as it was, with *Weniger* under it
+    (`spartopf-balance-open`). The search and the pending filter wait until
+    the book has grown (`grown` in App: 15 entries or a second month), the
+    empty categories are one chip. Where the setup card stood: *Erste
+    Schritte* (`FirstSteps.tsx`, "2 von 4", ✕ puts it away), then a gesture's
+    tip, then a feature's.
+  - **The month's "⋯" has four rows** (`MonthActionsMenu`): the report, the
+    balance (*Kontostand eintragen*, then *Kontostand prüfen* — the match
+    with the bank, with the opening balance behind a button in the same
+    sheet), *Importieren* (`ImportSheet`: photo, CSV, PDF, invoice QR, Excel,
+    each with its sentence), and *Mehr* (fetch recurring entries, fold all,
+    delete the month). *Umbuchen* joins the four once there are accounts.
+    A new action joins *Mehr* or a sheet — the four have a budget.
+  - **The entry sheet** opens with *Ausgabe | Einnahme* (it picks a category
+    of that kind; nothing new in the data), the amount, the name, the
+    category, three pills — date, paid, repeat — and a round "⋯" that opens
+    the others in place (`spartopf-entry-more`; a pill that holds a value
+    always shows). *Sichern & nächster* and *Als Favorit merken* are behind
+    it too; the confirmation's *Noch einer* is the short way to the next
+    entry. The calculator keys open from the key at the amount
+    (`spartopf-calc-keys`). A new pill goes behind the "⋯".
+  - **Planen and Statistik as headlines** (`src/fold.ts`, pure, tested;
+    `ui/FoldCard.tsx`): each card can be one row — its name and what it has
+    found, "Budgets · 3 von 4 im Rahmen" — that opens in place, with
+    *Weniger* under the open card; `FoldAllButton` in the bar goes from
+    every card whole (`null`, a book in use) to headlines (a list of the
+    opened ids, a new book) and back. `spartopf-plan-open` /
+    `spartopf-stats-open`. A card is only built once open, so a folded page
+    draws no charts. *November bis heute*, the period's hero and *Das fällt
+    auf* are the answer and never fold. A new card gets an id, a headline
+    from its own finding, and a `FoldCard` around it.
+  - **A first month says only what it can.** Statistik with entries in fewer
+    than two months (`young`): what stands out, where the money goes, when —
+    and one line that the rest comes with the second month; no period to
+    choose, no chart of one point. Planen as headlines: no budget yet is the
+    invitation *Budget festlegen* (`BudgetsCard invite`), no savings goal the
+    row *Für etwas sparen?*, the contracts wait for the first one, and the
+    pace leaves out its chart until there is a usual month (`PaceCard lean`).
+  - **The budget** (`scripts/simplicity-check.mjs`, part of `npm run check`):
+    from a fresh install, what can be tapped in the first viewport of the
+    first screen, the month page, the entry sheet, Planen and Statistik, the
+    rows of the "⋯" and of *Mehr*, and the amounts on the month page. A new
+    control on one of these is a decision: raising a budget takes a note in
+    the plan that raised it, like the bundle size.
 - **Tips (plan 37, `src/tips.ts`, pure and tested).** `nextTip(data, state,
   ctx)` gives at most one tip — capture, favourite, reserve, budget, backup,
   in that order — shown as `HintCard` in the month page's setup slot, only on
-  the running month and after the setup and gestures cards. Closing or using
-  it puts it in `store.tipState.done` for good (a device pref) and starts a
-  seven-day pause. A new feature gets a tip here rather than anything on the
-  first screens; `docs/plans/37-simplicity-review.md` has the table of where each
-  feature first appears and the first-viewport counts to compare with. The
-  first tip of all is `guide` (`ctx.guide`): one line that the guide exists,
-  for whoever had the app before it — `knowGuide` marks it met, without a
-  pause, once the guide was opened, a tour taken or the gestures card put away.
+  the running month and once *Erste Schritte* is done or put away. Closing or
+  using it puts it in `store.tipState.done` for good (a device pref) and
+  starts a seven-day pause. A new feature gets a tip here rather than anything
+  on the first screens; `docs/plans/37-simplicity-review.md` has the table of
+  where each feature first appears. The first tip of all is `guide`
+  (`ctx.guide`): one line that the guide exists, for whoever had the app
+  before it — `knowGuide` marks it met, without a pause, once the guide was
+  opened or a tour taken. Before these come the **three gestures** (plan 39;
+  they were one card, *Gut zu wissen*): the circle once the month has an open
+  entry, the swipe from the fifth entry, hold and drag once two entries share
+  a category — one a day (`TipState.gesture`), each a sentence with nothing
+  to open, and done for whoever read the old card (`knowGestures`).
 - **The guide and the tour (`src/guide.ts`, pure and tested).** How the app
   teaches, after a look at Apple's onboarding guidelines and the apps cited as
-  the best at it: nothing before the first screen (the setup card *is* the
-  first action), tips at the moment they help (above), and — new — a place to
-  look things up that is always in the same spot, plus a tour that only runs
-  when asked for.
-  - **The guide** is the first card of *Optionen* (a `QuickTile`; `GuideView`, pushed as
+  the best at it: before the first screen only the start — three questions
+  whose answer is that screen —, tips at the moment they help (above), and a
+  place to look things up that is always in the same spot, plus a tour that
+  only runs when asked for.
+  - **The guide** is the first card of *Mehr* (a `QuickTile`; `GuideView`, pushed as
     `guide`): the tours on top, then `GUIDE_TOPICS` by chapter. A row opens
     to a real screenshot of its screen with the app's test data
     (`public/guide/<lang>-<theme>/<topic>.webp`, sizes in `src/guideShots.ts`;
@@ -663,7 +753,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     `npm run guide-shots`** (`-- --only <topic>` for one, `-- --sets de-light`
     for a set): it fills a fresh app with *Testdaten hinzufügen*, goes to each
     topic's screen, outlines the control and writes the pictures and the
-    sizes. Run it on the Mac for Apple's emoji and fonts; elsewhere it needs a
+    sizes. The month page and the entry sheet are shown as a new book has
+    them, with what a topic is about opened the way its steps say. Run it on the Mac for Apple's emoji and fonts; elsewhere it needs a
     colour emoji font (Noto Color Emoji).
   - **Its words** are not in `translations.ts`: `src/i18n/guide/<lang>.ts`
     (type `GuidePages`, derived from `de.ts`) holds the pages and the tours'
@@ -675,7 +766,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     search, `MARKS` / `TOUR_STEPS`: App only ever imports its types, and
     gets the functions from `loadTour` (`guideKit`, handed to `beginMarks`).
     `src/guide.ts` keeps only what the store and App need from the start. Only what shows outside the guide stays in `Strings`: the row,
-    the gestures card's two buttons, the tip, *Weiter* / *Tour beenden* /
+    the tip, *Weiter* / *Tour beenden* /
     "{n} von {total}", *Zurück zur Anleitung*. A text names a button through
     a placeholder — `{split}`, `{settings}`, `{add}`, … (`guideLabels`) —
     never by typing it out: `guideParts` hands GuideView the pieces and it
@@ -688,7 +779,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     and lights up `topic.point`, the control it is about, with the topic's
     sentence and *Zurück zur Anleitung* (a one-mark tour, `point: true`). It
     no longer opens menus for the user: tapping the lit "⋯" themselves is
-    how it is learnt. A screen of Optionen takes the guide's place
+    how it is learnt. A screen of Mehr (Einstellungen too: `action:
+    'preferences'`) takes the guide's place
     (`guideReturn` makes `under` the guide, and `back` — the bar, the edge
     swipe, Android's back — returns there, topic still open; `slide` gives
     that same-depth change its direction). Anywhere else `guideAway` shows
@@ -696,7 +788,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     sheet and menu (z-35); `backToGuide` closes what Zeigen opened and shows
     the guide.
   - **The tours** (`Tour`, a portal over everything, z-70): `TOURS` — the
-    month page, the entry sheet, Statistik, Planen, Optionen — each at most
+    month page, the entry sheet, Statistik, Planen, Mehr — each at most
     five `MARKS` (`TOUR_STEPS`; a mark is a selector, mostly a `data-tour`
     attribute on the screen — keep them — with its ring's radius and how it
     is scrolled into view). A mark that isn't there is left out
@@ -707,8 +799,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     (`tourCardPlace`), and follows a sheet's own scroll and the keyboard. A
     dialog: focus stays in the card, Escape and Android's back end it. The
     month page's ends on *Eintrag hinzufügen*; one begun in the guide ends
-    with *Zurück zur Anleitung*. Started only by hand — the guide, a topic,
-    or the gestures card (`TipsCard`, the month page's).
+    with *Zurück zur Anleitung*. Started only by hand — the guide, or a
+    topic. Marks on a folded card (Planen, Statistik) point at its headline.
 - **Automatic capture (plan 19, iPhone).** Two more App Intents in
   `SpartopfIntents.swift` for Shortcuts automations — `LogPaymentIntent`
   (the *Transaction* trigger: merchant, amount, card) and
@@ -722,7 +814,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   *Erst prüfen* (`store.captureReview`, a device pref) the `CAPTURE_SOURCES`
   stay in the inbox, App shows *Neu: n* on the running month, and
   `inboxReview` opens them in `StatementImportSheet` (`source: 'inbox'`);
-  confirmed, they leave the inbox. `CaptureView` (*Optionen › Automatisch
+  confirmed, they leave the inbox. `CaptureView` (*Mehr › Automatisch
   erfassen*, native only) is the guide and the mode switch. The share
   extension (*Teilen an Spartopf*) needs its own Xcode target — not built.
 - **Month from payday (plan 32, `src/period.test.ts`).** `AppData.monthStart`
@@ -740,7 +832,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   dated entry to its new month, keeps each account's balance from every month
   on where it was (manual openings are adjusted by what crossed them), drops
   months it emptied, and says how many entries moved — the sheet's preview
-  (`MonthStartSheet`, *Optionen › Haushaltsbuch › Monat beginnt am*); the
+  (`MonthStartSheet`, *Mehr › Einstellungen › Monat beginnt am*); the
   change is undone as a whole (`store.changeStart` returns the book before).
   The month title's subline shows the dates while the start isn't the 1st.
   Siri's `amounts.json` carries `until`, the period's last day.
@@ -757,7 +849,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   currency, takes a **new** entry's amount in that currency:
   `fromProjectCurrency(typed, project)` is what is saved, the typed amount
   becomes the note. Rates are typed, never fetched. `ProjectsView` (from
-  *Optionen › Weitere Funktionen*, the way in), `ProjectSheet`, and Planen's
+  *Mehr › Werkzeuge*, the way in), `ProjectSheet`, and Planen's
   `ProjectsCard` once there is one. Deleting a project keeps the tags.
 - **Debts and loans (plan 31, `src/insights/debts.ts`, pure and tested).**
   `Debt { name, direction: 'owe' | 'owed', principal, start, rate?, payment?,
@@ -771,7 +863,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   latest amount; this month's if none was made yet) until nothing is left:
   `left`, `paid`, `interestPaid`, `interestLeft`, `payoff`, `never` (the
   payment doesn't cover the interest). `annuityPayment` is checked against the
-  published tables. *Optionen › Schulden und Kredite* (`DebtsView`, the way in
+  published tables. *Mehr › Schulden und Kredite* (`DebtsView`, the way in
   for the first one), `DebtSheet`, and Planen's `DebtsCard`, which exists only
   once there is a debt. Deleting a debt keeps its entries and drops the link
   (undoable).
@@ -830,7 +922,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   fields as optional; bump `SCHEMA_VERSION` and migrate in `normalizeState`
   when a shape changes.
 - IDs are generated with `uid()` from `logic.ts` by callers, never by the store.
-- **Test data** (*Optionen → Ausprobieren*, `src/demo.ts`, tested in
+- **Test data** (*Mehr › Einstellungen › Ausprobieren*, the guide, and the
+  start's *Erst mit Testdaten ansehen*; `src/demo.ts`, tested in
   `demo.test.ts`): `addDemoData(data, { today, language })` puts a realistic
   year — twelve finished months and the running one, paid up to today, the
   rest open, one bill overdue — beside the user's own data, never instead of
@@ -932,7 +1025,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   takes `press` (it gives a little under the finger). Floating chrome (tab
   bar, nav buttons) is `glass-chrome` (`float-chrome` is its solid fallback).
 - **Accent** = `data-accent` on `<html>` (store `accent`, key
-  `spartopf-accent`, a view preference — not in backups; picked in Optionen →
+  `spartopf-accent`, a view preference — not in backups; picked in Mehr › Einstellungen →
   Darstellung → Farbe). Eight in `ACCENTS` (`types.ts`); each `[data-accent]`
   block in index.css sets `--acc-l` (day) / `--acc-d` + `--acc-ink-d` (night)
   and three gradient stops `--hero-1..3`. The theme blocks map `--t-accent*`
@@ -1116,7 +1209,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     with `@theme`). The PDF always has its amounts: an `AmountsShown` pair
     around the print copy lifts *Beträge verbergen* for it alone. Web:
     `window.print()`.
-  - **Ratings and feedback (plan 15).** *Optionen › Über Spartopf*: *Spartopf
+  - **Ratings and feedback (plan 15).** *Mehr › Einstellungen › Über Spartopf*: *Spartopf
     bewerten* (iPhone app only; `REVIEW_URL` with `APP_STORE_ID`),
     *Feedback senden* (Mail with the app's and the system's version, nothing
     else — `feedbackMail`), *Datenschutz* (`privacyUrl`: German, else
@@ -1236,6 +1329,8 @@ commits and tags.
      amount, a month switch painted within 150 ms, the main bundle at most
      10 % over its recorded gzip size (raise the baseline only with a note in
      the plan that grew it);
+   - `check:simplicity` (`scripts/simplicity-check.mjs`, plan 39): what a new
+     book shows in its first five minutes, counted against its budget;
    - `audit:contrast`.
    A money rule changed on purpose: re-record the golden year and say why in
    the commit. A new schema version: add its `storage-v*.json` fixture.

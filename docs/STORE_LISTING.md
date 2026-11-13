@@ -215,7 +215,7 @@ device backup is Android's own and the user's choice (*Im Gerätebackup
 sichern*); Google counts it as the user's backup, not as collection by the app.
 
 - **Is all of the user data encrypted in transit?** Not applicable — none is sent.
-- **Do you provide a way to request data deletion?** Not applicable — no account; *Optionen › Alle Daten löschen* erases everything on the device.
+- **Do you provide a way to request data deletion?** Not applicable — no account; *Mehr › Einstellungen › App zurücksetzen* erases everything on the device.
 
 ### 2.6 App content
 

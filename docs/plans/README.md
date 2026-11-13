@@ -18,9 +18,9 @@ There is one plan per feature, built strictly in order. The plans draw on two so
    - The app can be locked.
    - Lock screen, widgets and notifications show no amounts unless the user turns that on.
 3. **Free for everyone, no ads.** No in-app purchases, no "Pro" and no paywalled features, ever.
-4. **Simple for new users.** A new user sees what the redesign shows: first run, the month page and the add button. Every new feature:
-   - stays hidden until it's relevant, or lives where people already look (a "⋯" menu, the entry sheet's "+", *Planen*, *Optionen*);
-   - adds no required field and no first-run step;
+4. **Simple for new users.** A new user sees the start — three questions, each one skippable — then the month page and the add button, and what they show is counted against a budget (plan 39, `scripts/simplicity-check.mjs`). Every new feature:
+   - stays hidden until it's relevant, or lives where people already look (the "⋯" menu's *Mehr*, the entry sheet's "⋯", *Planen*, the *Mehr* tab);
+   - adds no required field and no step to the start;
    - has a default that works, and an undo.
 5. **The maths is never wrong.**
    - Money rules are pure, tested functions in `src/logic.ts`, `src/insights/` and `src/budgets.ts`.
@@ -68,6 +68,11 @@ Change them here if you disagree, before the plan that depends on them starts.
 | Statistik looks back, Planen looks ahead. At most three hints per screen, ranked, each with a next step. | One time scope per section, and hints that lead somewhere (D2). | 06a, 13 |
 | No financial health score: *Finanz-Check* shows the indicators themselves. | A single score is opaque and judgmental (D4). | 06a, 11, 12 |
 | Forecasts are ranges, rounded, and name their basis; *Ausblick* replaces *Prognose*. | A forecast with cents reads as a promise (D6). | 06a, 11 |
+| Something may come before the month page: a welcome and three questions, each skippable, whose answer is the first month page. | With nothing entered the app's idea — what is left at the end of the month — shows as four zeros. | 39 |
+| On the closed balance card the large figure is *Kontostand jetzt*; *Am Monatsende* is the row under it. | It can be checked against the banking app. | 39 |
+| What a new book keeps folded, a book in use shows as it always did — decided once, by whether the book held an entry at the update. | Nobody who stayed should find the app rearranged. | 39 |
+| The fourth tab is *Mehr*; what is set once is *Einstellungen*, a screen under it. | Debts, trips, the tax list and importing are things to do, not settings. | 39 |
+| *Planen* and *Statistik* open as headlines on a new book. | *Planen* was 6.3 screens before the first budget. | 39 |
 
 ## Order
 
@@ -191,5 +196,5 @@ From COMPETITOR_ANALYSIS.md §4 (reviews of the 13 competitors).
 - [ ] 36 On-device bank connection (FinTS)
 - [ ] 37 Simplicity review — checkpoint after plan 32 done, `npm run check` passes: the feature table, the first-viewport counts, *Optionen › Haushaltsbuch* reordered, and the tip system (`src/tips.ts`, five tips, one a week, tested). Open: the three-people test, VoiceOver / large text, speed on old phones (TODO.md)
 - [ ] 38 Screenshots, story and release
-- [ ] 39 The first five minutes — plan written November 2026 from a measured walk through 1.2.18 (21 tappable elements on the first screen, 25 in the first entry sheet, a coffee that reads as three negative balances). Nothing built; its five decisions are open, and decision 1 would change ground rule 4's "first run, the month page and the add button"
+- [ ] 39 The first five minutes — built November 2026 with the proposed answer to each of its five decisions (now in the table above), `npm run check` passes with the new `check:simplicity`. A new book opens on the start (a welcome, three skippable questions, what is left at the end of the month); the first screen went from 21 tappable elements to 4, the month page of a new book from 16–23 to 13 with one amount, the entry sheet from 25 to 16, the month's "⋯" from 9 rows to 4, *Optionen* (17–22 rows, 2.5 screens) became *Mehr* with 11–12 rows and a search, and *Planen* and *Statistik* open as headlines (6.3 and 4.2 screens of test data down to about 2 each). A book in use looks as it did. Open: the five-minute test with five people, the App Review recording's scenes, and the device checks in TODO.md"
 - [x] Outside the numbered plans (merged 11 November 2026): the second redesign, and ten features — repeats every 2, 3 or 6 months and an end, yearly and rollover budgets, refunds, the daily nudge and the budget warning, return and warranty dates, *Kann ich mir das leisten?*, invoice QR codes, statement PDFs, trips and projects, the tax list. Device checks in `docs/TODO.md`.

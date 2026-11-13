@@ -47,7 +47,7 @@ exports remain the protection. **Not run yet** — until then, it is the latter.
 
 ## Deleting everything
 
-*Optionen → Alle Daten löschen* calls `wipeAll()` (`src/storage.ts`): the data
+*Mehr › Einstellungen › App zurücksetzen* calls `wipeAll()` (`src/storage.ts`): the data
 file, its previous version, and all automatic snapshots — in both folders, in
 and out of the backup — plus pending reminders and the App Group's snapshot
 and inbox (plan 14). Later features with their own files or secrets register a cleaner
