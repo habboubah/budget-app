@@ -22,7 +22,7 @@ export interface FirstStep {
 export function FirstStepsRow({ steps, t, onOpen, onHide }: { steps: FirstStep[]; t: Strings; onOpen: () => void; onHide: () => void }) {
   const done = steps.filter(s => s.done).length;
   return (
-    <section className="rounded-md bg-surface card-edge flex items-center" aria-label={t.stepsTitle}>
+    <section data-steps className="rounded-md bg-surface card-edge flex items-center" aria-label={t.stepsTitle}>
       <button
         type="button"
         onClick={() => { tapLight(); onOpen(); }}

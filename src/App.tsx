@@ -1266,6 +1266,8 @@ export default function App() {
     } else {
       // A screen of Mehr takes the guide's place: back returns to the guide.
       if (HOME[a] === 'settings') slide.current = 1;
+      // Einstellungen from its top: the mark brings its own group into view.
+      if (a === 'preferences') setPrefsSection(undefined);
       push(a);
       if (HOME[a] === 'settings') setGuideReturn(true);
     }

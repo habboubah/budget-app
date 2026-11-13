@@ -64,6 +64,7 @@ const LANGS = {
     locale: 'de-DE',
     categories: 'Kategorien',
     guide: 'Anleitung',
+    prefs: 'Einstellungen',
     show: 'Zeigen',
     transfer: 'Sichern und übertragen',
     reminders: 'An offene Posten erinnern',
@@ -82,6 +83,7 @@ const LANGS = {
     locale: 'ar',
     categories: 'الفئات',
     guide: 'الدليل',
+    prefs: 'الإعدادات',
     show: 'أرِني',
     transfer: 'النسخ الاحتياطي والنقل',
     reminders: 'التذكير بالبنود المعلّقة',
@@ -185,13 +187,13 @@ const DEBTS = l => {
     ]),
   };
 };
-/** Optionen → Schulden und Kredite. */
+/** Mehr → Schulden und Kredite. */
 const openDebts = async (page, l) => {
   await tab(3)(page);
   await page.locator('main button', { hasText: l.debts.title }).first().click();
   await page.waitForTimeout(500);
 };
-/** Optionen → Konten. */
+/** Mehr → Konten. */
 const openAccounts = async (page, l) => {
   await tab(3)(page);
   await page.locator('main button', { hasText: l.accounts.title }).first().click();
@@ -205,12 +207,55 @@ const openCategories = async (page, l) => {
   await page.locator('main button', { hasText: l.categories }).first().click();
   await page.waitForTimeout(500);
 };
-/** Optionen → Anleitung (src/guide.ts). */
+/** Mehr → Anleitung (src/guide.ts). */
 const openGuide = async (page, l) => {
   await tab(3)(page);
   await page.locator('main button', { hasText: l.guide }).first().click();
   await page.waitForTimeout(500);
 };
+/** Mehr → Einstellungen (plan 39): what is set once. */
+const openPrefs = async page => {
+  await tab(3)(page);
+  await page.locator('[data-tour="set-prefs"] button').click();
+  await page.waitForTimeout(500);
+};
+/**
+ * The start of a new book (plan 39), up to a step: `welcome`, `balance`,
+ * `income`, `fixed`, `done` (what it comes to) or `month` (the first month
+ * page). With `answers` the three questions are answered, else put off.
+ */
+const start = (upTo, answers = true) => async page => {
+  const steps = ['welcome', 'balance', 'income', 'fixed', 'done', 'month'];
+  const at = n => steps.indexOf(upTo) >= steps.indexOf(n);
+  const next = async () => { await page.locator(`[data-start="${answers ? 'next' : 'later'}"]`).click(); await page.waitForTimeout(450); };
+  await page.waitForSelector('[data-start="go"]');
+  if (!at('balance')) return;
+  await page.locator('[data-start="go"]').click();
+  await page.waitForTimeout(450);
+  if (!at('income')) return;
+  if (answers) await page.locator('[data-start="balance"]').fill('2450');
+  await next();
+  if (!at('fixed')) return;
+  if (answers) await page.locator('[data-start="income"]').fill('3200');
+  await next();
+  if (!at('done')) return;
+  if (answers) { await page.locator('[data-start="fixed-0"]').fill('950'); await page.locator('[data-start="fixed-1"]').fill('80'); }
+  await next();
+  // Put off, the start has nothing to sum up: it ends on the month page.
+  if (!answers || !at('month')) return;
+  await page.waitForTimeout(500);
+  await page.locator('[data-start="finish"]').click();
+  await page.waitForTimeout(600);
+};
+/** The month's "⋯" → Importieren: the sheet with every way to bring entries in (plan 39). */
+const openImport = async page => {
+  await page.locator('header button').last().click();
+  await page.waitForSelector('[role="menu"]');
+  await page.waitForTimeout(300);
+  await page.locator('[role="menuitem"]').nth(2).click();
+};
+/** A new book's folds (plan 39) on the seeded data: what someone sees who began with this version. */
+const FOLDED = { 'spartopf-balance-open': '0', 'spartopf-entry-more': '0', 'spartopf-calc-keys': '0', 'spartopf-plan-open': '[]', 'spartopf-stats-open': '[]' };
 /** A tour from the guide's list (src/guide.ts), `steps` times *Weiter* on. */
 const openTour = (tour, steps) => async (page, l) => {
   await openGuide(page, l);
@@ -406,29 +451,35 @@ const SCREENS = [
     const all = contractsCard(page, l).locator(':scope > div:first-child > button');
     if (await all.count()) { await all.click(); await page.waitForTimeout(600); }
   }, audit: 'page' },
+  // Mehr (it was Optionen): the root, its search, and Einstellungen pushed over it.
   { name: 'settings', run: tab(3), audit: 'page' },
   { name: 'settings-full', run: tab(3), full: true },
-  // The iPhone app's Optionen: the lock, the iPhone backup and reminders (dev flag: shown on the web, nothing scheduled).
-  { name: 'settings-native', storage: { 'spartopf-dev-native': '1' }, run: tab(3), audit: 'page' },
+  { name: 'settings-search', run: async page => { await tab(3)(page); await page.locator('[data-tour="set-search"] input').fill('budget'); await page.waitForTimeout(900); }, audit: 'page' },
+  { name: 'prefs', run: openPrefs, audit: 'page' },
+  { name: 'prefs-full', run: openPrefs, full: true },
+  // The iPhone app's rows: automatic capture in Mehr; the lock, the iPhone backup and reminders in Einstellungen
+  // (dev flag: shown on the web, nothing scheduled).
+  { name: 'settings-native', storage: { 'spartopf-dev-native': '1' }, run: tab(3), full: true, audit: 'page' },
+  { name: 'prefs-native', storage: { 'spartopf-dev-native': '1' }, run: openPrefs, full: true, audit: 'page' },
   // Beträge verbergen (plan 06): every amount "•••• €", the eye on the balance card, and a peek.
   { name: 'month-hidden', storage: HIDDEN, audit: 'page' },
   { name: 'month-hidden-details', storage: HIDDEN, run: openDetails, audit: 'page' },
   { name: 'month-peek', storage: HIDDEN, run: async page => { await page.locator('section.hero button').first().click(); await page.waitForTimeout(700); } },
   { name: 'stats-hidden', storage: HIDDEN, run: tab(1), full: true },
   { name: 'insights-hidden', storage: HIDDEN, run: tab(2), full: true },
-  // Optionen → An offene Posten erinnern, switched on.
+  // Mehr → Einstellungen → An offene Posten erinnern, switched on.
   { name: 'reminders', storage: { 'spartopf-dev-native': '1', 'spartopf-reminders': JSON.stringify({ on: true, time: '09:00', lead: 1, amounts: false }) }, run: async (page, l) => {
-    await tab(3)(page);
+    await openPrefs(page);
     await page.locator('main button', { hasText: l.reminders }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page' },
-  // Optionen → Automatisch erfassen (plan 19).
+  // Mehr → Automatisch erfassen (plan 19).
   { name: 'capture', storage: { 'spartopf-dev-native': '1' }, run: async (page, l) => {
     await tab(3)(page);
     await page.locator('main button', { hasText: l.capture }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page', full: true },
-  // Optionen → Sichern und übertragen.
+  // Mehr → Sichern und übertragen.
   { name: 'transfer', run: async (page, l) => {
     await tab(3)(page);
     await page.locator('main button', { hasText: l.transfer }).first().click();
@@ -443,17 +494,41 @@ const SCREENS = [
     await page.waitForTimeout(400);
   }, audit: 'page' },
   { name: 'category-edit', run: async (page, l) => { await openCategories(page, l); await page.locator('main [data-category-body]').nth(4).click(); }, wait: dialog, audit: 'dialog' },
-  { name: 'first-run', fresh: true, audit: 'page' },
-  { name: 'first-run-full', fresh: true, full: true },
-  // The setup's first step answered: the balance card appears above it.
-  { name: 'setup-balance', fresh: true, run: async page => {
-    await page.locator('main section input[inputmode="decimal"]').first().fill('1234,56');
-    await page.locator('main section form button[type="submit"]').first().click();
-    await page.waitForTimeout(400);
-    await page.evaluate(() => document.querySelector('main section[aria-labelledby]')?.scrollIntoView({ block: 'center' }));
-  }, audit: 'page' },
-  // After the setup: the gestures card on the running month.
-  { name: 'tips', storage: { 'spartopf-tips-done': '0' }, run: page => page.evaluate(() => window.scrollTo(0, 560)), audit: 'page' },
+  // A new book (plan 39): the start — the welcome, the three questions, what it comes to — and the
+  // first month after it, answered and put off; then the first entry, Planen and Statistik.
+  { name: 'first-run', fresh: true, run: start('welcome'), audit: 'page' },
+  { name: 'first-run-full', fresh: true, run: start('welcome'), full: true },
+  { name: 'start-balance', fresh: true, run: start('balance'), audit: 'page' },
+  { name: 'start-balance-kb', fresh: true, run: start('balance'), keyboard: true },
+  { name: 'start-income', fresh: true, run: start('income'), audit: 'page' },
+  { name: 'start-fixed', fresh: true, run: start('fixed'), audit: 'page' },
+  { name: 'start-fixed-full', fresh: true, run: start('fixed'), full: true },
+  { name: 'start-done', fresh: true, run: start('done'), audit: 'page' },
+  { name: 'first-month', fresh: true, run: start('month'), audit: 'page' },
+  { name: 'first-month-full', fresh: true, run: start('month'), full: true },
+  { name: 'first-month-later', fresh: true, run: start('month', false), audit: 'page' },
+  { name: 'first-steps', fresh: true, run: async page => { await start('month')(page); await page.locator('[data-steps] button').first().click(); }, wait: dialog, audit: 'dialog' },
+  { name: 'first-entry', fresh: true, run: async page => { await start('month', false)(page); await page.click('nav button.hero'); }, wait: dialog, audit: 'dialog' },
+  { name: 'first-entry-more', fresh: true, run: async page => {
+    await start('month', false)(page);
+    await page.click('nav button.hero');
+    await page.waitForSelector('[data-tour="entry-more"]');
+    await page.waitForTimeout(500);
+    await page.locator('[data-tour="entry-more"]').click();
+  }, wait: dialog, audit: 'dialog' },
+  { name: 'first-actions', fresh: true, run: async page => { await start('month', false)(page); await page.locator('header button').last().click(); }, wait: '[role="menu"]', audit: 'menu' },
+  { name: 'first-stats', fresh: true, run: async page => { await start('month')(page); await tab(1)(page); }, audit: 'page' },
+  { name: 'first-insights', fresh: true, run: async page => { await start('month')(page); await tab(2)(page); }, audit: 'page' },
+  { name: 'first-settings', fresh: true, run: async page => { await start('month', false)(page); await tab(3)(page); }, audit: 'page' },
+  // The same folds on a book with months of data: the balance card closed, the entry sheet's
+  // further pills behind "⋯", Planen and Statistik as headlines — one opened.
+  { name: 'month-folded', storage: FOLDED, audit: 'page' },
+  { name: 'entry-new-folded', storage: FOLDED, run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
+  { name: 'insights-headlines', storage: FOLDED, run: tab(2), full: true, audit: 'page' },
+  { name: 'insights-headline-open', storage: FOLDED, run: async page => { await tab(2)(page); await page.locator('[data-tour="plan-runway"] button').first().click(); await page.waitForTimeout(400); }, full: true },
+  { name: 'stats-headlines', storage: FOLDED, run: tab(1), full: true, audit: 'page' },
+  // The month's "⋯" → Importieren.
+  { name: 'import-sheet', run: openImport, wait: dialog, audit: 'dialog' },
   // The guide: its screen, a topic opened, a search, the tour's marks, and the one tip that points to it.
   { name: 'guide', run: openGuide, audit: 'page' },
   { name: 'guide-full', run: openGuide, full: true },
@@ -473,8 +548,8 @@ const SCREENS = [
   { name: 'tour-tabs', run: openTour('month', 3), audit: 'dialog' },
   { name: 'tour-add', run: openTour('month', 4), audit: 'dialog' },
   // A first run has no balance and nothing to tick: the tour is three steps.
-  { name: 'tour-fresh', fresh: true, run: openTour('month', 0), audit: 'dialog' },
-  // The other tours: the entry sheet, Statistik, Planen, Optionen.
+  { name: 'tour-fresh', fresh: true, run: async (page, l) => { await start('month', false)(page); await openTour('month', 0)(page, l); }, audit: 'dialog' },
+  // The other tours: the entry sheet, Statistik, Planen, Mehr.
   { name: 'tour-entry-amount', run: openTour('entry', 0), audit: 'dialog' },
   { name: 'tour-entry-details', run: openTour('entry', 3), audit: 'dialog' },
   { name: 'tour-entry-save', run: openTour('entry', 4), audit: 'dialog' },
@@ -483,9 +558,9 @@ const SCREENS = [
   { name: 'tour-stats-rhythm', run: openTour('stats', 4), audit: 'dialog' },
   { name: 'tour-plan-pace', run: openTour('plan', 0), audit: 'dialog' },
   { name: 'tour-plan-outlook', run: openTour('plan', 3), audit: 'dialog' },
-  { name: 'tour-settings-transfer', run: openTour('settings', 0), audit: 'dialog' },
-  { name: 'tour-settings-more', run: openTour('settings', 2), audit: 'dialog' },
-  { name: 'tour-settings-security', run: openTour('settings', 4), audit: 'dialog' },
+  { name: 'tour-settings-search', run: openTour('settings', 0), audit: 'dialog' },
+  { name: 'tour-settings-more', run: openTour('settings', 3), audit: 'dialog' },
+  { name: 'tour-settings-prefs', run: openTour('settings', 4), audit: 'dialog' },
   // Zeigen: the mark on the screen a topic leads to, and the way back once it is put away.
   { name: 'point-add', run: openPoint('add'), audit: 'dialog' },
   { name: 'point-repeats', run: openPoint('repeats'), audit: 'dialog' },
@@ -494,7 +569,7 @@ const SCREENS = [
   { name: 'point-lock', run: openPoint('lock'), audit: 'dialog' },
   { name: 'guide-back', run: openPoint('bank', true), audit: 'page' },
   { name: 'hint-guide', storage: { 'spartopf-tip-state': '{"done":[]}' }, run: page => page.evaluate(() => document.querySelector('main section[aria-label]:not(.hero)')?.scrollIntoView({ block: 'center' })), audit: 'page' },
-  { name: 'stats-empty', fresh: true, run: tab(1) },
+  { name: 'stats-empty', fresh: true, run: async page => { await start('month', false)(page); await tab(1)(page); } },
   // Cash and savings accounts (plan 30): the switch on the balance card, the transfers card, Konten, the sheets.
   { name: 'accounts-month', accounts: true, audit: 'page' },
   { name: 'accounts-month-full', accounts: true, full: true },
@@ -510,7 +585,8 @@ const SCREENS = [
     await page.locator('header button').last().click();
     await page.waitForSelector('[role="menu"]');
     await page.waitForTimeout(300);
-    await page.locator('[role="menuitem"]').nth(3).click();
+    // Monatsbericht, the balance, then Umbuchen.
+    await page.locator('[role="menuitem"]').nth(2).click();
   }, wait: dialog, audit: 'dialog' },
   { name: 'entry-account', accounts: true, run: page => page.click('nav button.hero'), wait: dialog, audit: 'dialog' },
   { name: 'insights-accounts', accounts: true, run: tab(2), full: true },

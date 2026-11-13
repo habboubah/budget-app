@@ -1,11 +1,13 @@
-// The guide's pictures (Optionen › Anleitung): a real screenshot of each
+// The guide's pictures (Mehr › Anleitung): a real screenshot of each
 // topic's screen, from the app's own test data.
 //
 // Starts Vite's dev server in-process, opens a fresh app at iPhone size
-// (393 × 852, its safe areas, 2×), puts the setup away, taps *Testdaten
-// hinzufügen* in Optionen — the same year of a household anyone can add —
-// and then, topic by topic, goes where the topic is, outlines the control it
-// is about and crops that part of the screen. German, English and Arabic,
+// (393 × 852, its safe areas, 2×), skips the start, taps *Testdaten
+// hinzufügen* in Mehr › Einstellungen — the same year of a household anyone
+// can add — and then, topic by topic, goes where the topic is, outlines the
+// control it is about and crops that part of the screen. The month page and
+// the entry sheet are shown as a new book has them (plan 39), with what a
+// topic is about opened the way its steps say; Planen shows its cards whole. German, English and Arabic,
 // light and dark; the other languages show the English pictures
 // (src/guideShots.ts says which exist and how large they are).
 //
@@ -48,11 +50,16 @@ const { GUIDE_TOPICS } = await server.ssrLoadModule('/src/guide.ts');
 
 const wait = (page, ms = 450) => page.waitForTimeout(ms);
 const tab = async (page, n) => { await page.locator('nav button:not(.hero)').nth(n).click(); await wait(page); };
-/** A row or a card of Optionen (or any screen) by its label. */
+/** A row or a card of Mehr (or any screen) by its label. */
 const open = async (page, label) => { await page.locator('main button', { hasText: label }).first().click(); await wait(page, 550); };
 const addSheet = async page => { await page.locator('[data-tour="add"]').click(); await page.waitForSelector('[data-tour="entry-amount"]'); await wait(page, 500); };
 const actionsMenu = async page => { await page.locator('[data-tour="actions"]').click(); await page.waitForSelector('[role="menu"]'); await wait(page, 350); };
 const menuItem = (t, label) => `[role="menu"] [role="menuitem"]:has-text("${label.replace(/"/g, '\\"')}")`;
+/** Mehr › Einstellungen: what is set once (plan 39). */
+const prefs = async (page, t) => { await tab(page, 3); await open(page, t.prefsTitle); };
+/** The month's "⋯" › Importieren: the sheet with every way to bring entries in. */
+const importSheet = async (page, t) => { await actionsMenu(page); await page.locator(menuItem(t, t.importMenu)).first().click(); await page.waitForSelector('[role="dialog"]'); await wait(page, 600); };
+const sheetRow = label => `[role="dialog"] button:has-text("${label.replace(/"/g, '\\"')}")`;
 
 /**
  * Each topic: where it is (`go`), what is cut out (`crop`: selectors whose
@@ -106,7 +113,8 @@ const SHOTS = {
     ring: t => [`[role="dialog"] button:has-text("${t.splitPayAction}")`], pad: 70, stay: true,
   },
   receipts: {
-    go: addSheet,
+    // The receipt and the tag wait behind the sheet's "⋯" on a new book.
+    go: async p => { await addSheet(p); await p.locator('[data-tour="entry-more"]').click(); await wait(p, 400); },
     crop: ['[data-tour="entry-details"]'], ring: t => ['[data-tour="entry-receipt"]', `[data-tour="entry-details"] button:has-text("${t.tag}")`], pad: 24,
   },
   capture: { go: async (p, t) => { await tab(p, 3); await open(p, t.captureRow); }, top: true, max: 420 },
@@ -117,19 +125,19 @@ const SHOTS = {
   debts: { go: async (p, t) => { await tab(p, 3); await open(p, t.debtsTitle); }, top: true, max: 380 },
   stats: { go: p => tab(p, 1), crop: ['[data-tour="stats-hero"]'], max: 440 },
   reports: { go: async (p, t) => { await actionsMenu(p); await p.locator(menuItem(t, t.reportTitle)).first().click(); await wait(p, 800); }, top: true, max: 430 },
-  bank: { go: actionsMenu, crop: t => [menuItem(t, t.importCsv), menuItem(t, t.importPhoto), menuItem(t, t.importPdf)], ring: t => [menuItem(t, t.importPhoto), menuItem(t, t.importCsv), menuItem(t, t.importPdf)], pad: 50, max: 520 },
-  invoice: { go: actionsMenu, crop: t => [menuItem(t, t.scanInvoice)], ring: t => [menuItem(t, t.scanInvoice)], pad: 110 },
+  bank: { go: importSheet, crop: t => [sheetRow(t.importPhoto), sheetRow(t.importCsv), sheetRow(t.importPdf)], ring: t => [sheetRow(t.importPhoto), sheetRow(t.importCsv), sheetRow(t.importPdf)], pad: 50, max: 520, stay: true },
+  invoice: { go: importSheet, crop: t => [sheetRow(t.scanInvoice)], ring: t => [sheetRow(t.scanInvoice)], pad: 110, stay: true },
   excel: { go: async (p, t) => { await tab(p, 3); await open(p, t.transferTitle); }, crop: t => [`main section:has(button:has-text("${t.importExcel}"))`], ring: t => [`main button:has-text("${t.importExcel}")`], max: 300 },
-  reconcile: { go: actionsMenu, crop: t => [menuItem(t, t.reconcileMenuItem)], ring: t => [menuItem(t, t.reconcileMenuItem)], pad: 110 },
+  reconcile: { go: actionsMenu, crop: t => [menuItem(t, t.balanceCheck)], ring: t => [menuItem(t, t.balanceCheck)], pad: 110 },
   accounts: { go: async (p, t) => { await tab(p, 3); await open(p, t.accountsTitle); }, top: true, max: 380 },
   projects: { go: async (p, t) => { await tab(p, 3); await open(p, t.projectsTitle); }, top: true, max: 380 },
   tax: { go: async (p, t) => { await tab(p, 3); await open(p, t.taxTitle); }, top: true, max: 400 },
-  monthStart: { go: async (p, t) => { await tab(p, 3); await open(p, t.monthStartRow); await wait(p, 300); }, crop: ['[role="dialog"]'], max: 440 },
-  private: { go: p => tab(p, 3), crop: ['main section.hero'], max: 360 },
+  monthStart: { go: async (p, t) => { await prefs(p, t); await open(p, t.monthStartRow); await wait(p, 300); }, crop: ['[role="dialog"]'], max: 440 },
+  private: { go: prefs, crop: ['main section.hero'], max: 360 },
   backup: { go: async (p, t) => { await tab(p, 3); await open(p, t.transferTitle); }, top: true, max: 420 },
-  lock: { go: p => tab(p, 3), crop: ['[data-tour="set-security"]'], max: 440 },
-  reminders: { go: async (p, t) => { await tab(p, 3); await open(p, t.remindersRow); }, top: true, max: 420 },
-  look: { go: p => tab(p, 3), crop: ['[data-tour="set-display"]'], max: 420 },
+  lock: { go: prefs, crop: ['[data-tour="set-security"]'], max: 440 },
+  reminders: { go: async (p, t) => { await prefs(p, t); await open(p, t.remindersRow); }, top: true, max: 420 },
+  look: { go: prefs, crop: ['[data-tour="set-display"]'], max: 420 },
 };
 
 const missing = GUIDE_TOPICS.map(t => t.id).filter(id => !SHOTS[id]);
@@ -154,7 +162,8 @@ for (const set of sets) {
   const page = await ctx.newPage();
   page.on('pageerror', e => console.error(`  [${set}] page error: ${e.message}`));
   // A fresh book, once (sessionStorage survives the reloads between topics):
-  // the setup and the gestures card put away, every tip met, the phone app's rows on.
+  // the start skipped and its *Erste Schritte* put away, every tip met, the
+  // phone app's rows on, and Planen's cards whole (a new book has headlines).
   await page.addInitScript(([lang, tips]) => {
     if (sessionStorage.getItem('guide-shots')) return;
     sessionStorage.setItem('guide-shots', '1');
@@ -162,6 +171,8 @@ for (const set of sets) {
     localStorage.setItem('spartopf-lang', lang);
     localStorage.setItem('spartopf-intro-done', '1');
     localStorage.setItem('spartopf-tips-done', '1');
+    localStorage.setItem('spartopf-steps-done', '1');
+    localStorage.setItem('spartopf-plan-open', '"all"');
     localStorage.setItem('spartopf-tip-state', JSON.stringify({ done: tips }));
     localStorage.setItem('spartopf-last-export', new Date().toISOString().slice(0, 10));
     localStorage.setItem('spartopf-dev-native', '1');
@@ -173,7 +184,7 @@ for (const set of sets) {
   await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
   // The test data, the way anyone adds it.
-  await tab(page, 3);
+  await prefs(page, t);
   await page.locator('main button', { hasText: t.demoAdd }).first().click();
   await wait(page, 1200);
 

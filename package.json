@@ -28,10 +28,11 @@
     "lint": "tsc --noEmit",
     "audit:contrast": "node scripts/contrast-audit.mjs",
     "test": "vitest run",
-    "check": "npm run lint && npm run check:security && npm test && vite build && npm run check:privacy -- --no-build && npm run check:perf -- --no-build && npm run audit:contrast",
+    "check": "npm run lint && npm run check:security && npm test && vite build && npm run check:privacy -- --no-build && npm run check:perf -- --no-build && npm run check:simplicity -- --no-build && npm run audit:contrast",
     "check:security": "node scripts/no-console.mjs && npm audit --omit=dev --audit-level=high",
     "check:privacy": "node scripts/privacy-check.mjs",
     "check:perf": "node scripts/perf-check.mjs",
+    "check:simplicity": "node scripts/simplicity-check.mjs",
     "ocr:copy": "node scripts/copy-ocr.mjs"
   },
   "dependencies": {
