@@ -527,14 +527,28 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `parseBankCsv()` (finds the header row by column titles: Sparkasse
   CSV-CAMT, ING-style Soll/Haben, English exports; Windows-1252 or UTF-8 via
   `readTextFile`), `parseStatementText()` (the text of a banking-app
-  screenshot), `cleanPayee()` (payee → name), `planStatement()` (the user's
+  screenshot: a date heading — a date, *Heute*, *Gestern* — then payee,
+  amount, details, the bank's category. The reader tears that layout apart
+  in a different way on every picture, so the parser puts it together
+  again — an amount on a detail line or alone goes to the oldest payee
+  without one, an amount behind the payee's logo to the payee above, a minus
+  left on the line above to its amount — and when nothing fits it still
+  returns the amounts it read, named "?", so the review sheet opens instead
+  of *Keine Umsätze erkannt*. A photo that reads badly gets a test with the
+  reader's text for it, in made-up values), `cleanPayee()` (payee → name), `planStatement()` (the user's
   own name and category for a known payee, else the bank's category, income
   always in an income category; `exists` / `pay` / `new` against what is
   entered, by `Entry.ref` or same month + amount + name / date ±3 days) and
   `applyStatement()`. `StatementImportSheet` shows the plan; nothing is
   written before the user confirms (`store.importEntries`, undoable;
   months it needs start empty — the bank's list is what happened). Photos are
-  read on the device by tesseract.js (`src/ocr.ts`): worker, SIMD core and
+  read on the device by tesseract.js (`src/ocr.ts`). `prepare()` scales the
+  picture, makes it grey, turns a dark one light and stretches the contrast
+  between the levels `stretchWindow()` (pure, tested) picks: the 2nd and 98th
+  percentile, narrowed when that window misses the writing — on a whole
+  screen with a short list the letters are a hundredth of the pixels, and a
+  fixed cut stretched the page against the card and left the card blank.
+  Worker, SIMD core and
   the German model are copied into `public/ocr/` by `scripts/copy-ocr.mjs`
   (a Vite plugin runs it for dev and every build; generated, gitignored, not
   precached by the PWA). Never commit a real bank export or screenshot.

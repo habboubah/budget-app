@@ -247,7 +247,10 @@ when it is wanted:
   (Sparkasse and others), the statement itself as a **PDF** (*Kontoauszug
   importieren (PDF)*, for banks that offer nothing else), a photo or
   screenshot of the banking app — the text is read on the phone itself — an
-  invoice's QR code, and an Excel budget sheet. Every transaction is shown to check first: new ones, ones
+  invoice's QR code, and an Excel budget sheet. A photo may be a crop or the
+  whole screen, by day or at night; entries under *Heute* or *Gestern* get
+  that day; and where the list itself cannot be made out, the amounts that
+  were read are still shown, nameless, to complete. Every transaction is shown to check first: new ones, ones
   already entered, and open bills they pay (those get ticked off). Money
   coming in from a shop you buy from is offered as a refund in that shop's
   category, and an awaited refund is ticked off instead of entered twice. An

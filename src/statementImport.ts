@@ -1,5 +1,5 @@
 import { AppData, Category, Entry, MonthKey, Rule } from './types';
-import { displayName, isIsoDay, monthKeyOf, normalizeDigits, periodOf, normalizeName, parseAmount, uid } from './logic';
+import { displayName, isIsoDay, isoDay, monthKeyOf, normalizeDigits, periodOf, normalizeName, parseAmount, uid } from './logic';
 import { OTHER_CATEGORY, SHIPPED_V1, SHIPPED_V3 } from './data/defaults';
 import { LIMITS, checkCount } from './limits';
 
@@ -354,25 +354,47 @@ export function parseBankCsv(text: string, bookCurrency = 'EUR'): Found[] {
   return out;
 }
 
-const AMOUNT_AT_END = /([+\-−–])?\s*(\d{1,3}(?:[.\s]\d{3})*[,.]\d{2}|\d+[,.]\d{2})\s*([+\-−–])?\s*(EUR|€)?\W{0,2}$/i;
+/** A minus as the reader hands it back: the real ones, and what a thin dash gets read as ("„", "~", "="). */
+const MINUS = '\\-−–—„~=';
+const AMOUNT_AT_END = new RegExp(`([+${MINUS}])?\\s*(\\d{1,3}(?:[.\\s]\\d{3})*[,.]\\d{2}|\\d+[,.]\\d{2})\\s*([+\\-−–])?\\s*(EUR|€)?\\W{0,2}$`, 'i');
+/** A sign left alone at the end of a line: its amount was read onto the next one. */
+const SIGN_AT_END = new RegExp(`(?:^|\\s)([+${MINUS}])$`);
 const DATE_LINE = /^(?:[A-Za-zÄÖÜäöü]{2,10},?\s+)?(\d{1,2}\.\d{1,2}\.(?:\d{4}|\d{2})|\d{4}-\d{2}-\d{2})\s*$/;
-/** A line under a payee: a card time stamp, a reference number, a PayPal shop. */
-const looksLikeDetail = (text: string) => /^\d/.test(text) || /\d{4}-\d{2}-\d{2}T/.test(text) || /ihr einkauf bei/i.test(text);
-/** Icons read as letters: "Y", "©", "AM" in front of a line. */
-const stripMarks = (line: string) => line.replace(/^(?:(?![+\-−–]\s?\d)[^\sA-Za-zÄÖÜäöü0-9]+\s*|[A-Za-z]{1,2}\s{2,})+/, '').replace(/^(?:[A-Za-z]{1,2}\s+)(?=[A-ZÄÖÜ][a-zäöü])/, '').trim();
+/** A heading that names its day in words, and how many days ago that was. */
+const RELATIVE_DAY: [RegExp, number][] = [[/^(heute|today)$/i, 0], [/^(gestern|yesterday)$/i, 1], [/^vorgestern$/i, 2]];
+/** A line under a payee: a card time stamp, a reference number (maybe behind a logo read as a short word), a PayPal shop. */
+const looksLikeDetail = (text: string) => /^\d/.test(text) || /\d{4}-\d{2}-\d{2}T/.test(text) || /ihr einkauf bei/i.test(text)
+  || /^(?:\S{1,3}\s)?[A-Za-z]{0,3}\d{6,}/.test(text);
+/** Icons read as letters or marks: "Y", "©", "AM", "[m]", "(0" in front of a line. */
+const MARKS = new RegExp(`^(?:[[({<][^\\s\\])}>]{0,3}[\\])}>]?(?:\\s+|$)|(?![+${MINUS}]\\s?\\d)[^\\sA-Za-zÄÖÜäöü0-9]+\\s*|[A-Za-z]{1,2}\\s{2,})+`);
+const stripMarks = (line: string) => line.replace(MARKS, '').replace(/^(?:[A-Za-z]{1,2}\s+)(?=[A-ZÄÖÜ][a-zäöü])/, '').trim();
 /** A logo's word or a stray mark — not a payee. */
 const isNoise = (line: string) => (line.match(/[A-Za-zÄÖÜäöü]/g)?.length ?? 0) < 3 || /^[a-zäöü]{2,12}$/.test(line);
+/** Two lines that begin with the same word: a logo read as text repeats the payee's line above it. */
+const startsAlike = (a: string, b: string) => {
+  const first = (s: string) => fold(s.split(/[\s/]/)[0]);
+  return first(a).length >= 3 && first(a) === first(b);
+};
 
 /**
  * The text read off a photo or screenshot of a transaction list → the
- * transactions in it. Reads the layout banking apps share: a date heading,
- * then per transaction a line with the payee and the amount at its end,
- * detail lines (a PayPal shop, a card time stamp) and maybe the bank's
- * category. Where the reader split an amount from its payee, it goes to the
- * oldest payee still without one. A minus marks money going out; when the
- * list uses minus signs, an amount without one is money coming in.
+ * transactions in it. Reads the layout banking apps share: a date heading
+ * (a date, or "Heute" / "Gestern"), then per transaction a line with the
+ * payee and the amount at its end, detail lines (a PayPal shop, a card time
+ * stamp, a reference number) and maybe the bank's category.
+ *
+ * The reader rarely hands the layout back whole, so what it tears apart is
+ * put together again: an amount read onto a detail line or a line of its own
+ * goes to the oldest payee still without one; an amount behind the payee's
+ * logo, read as a word, to the payee on the line above; a minus left on the
+ * line above its amount is that amount's. A minus marks money going out;
+ * when the list uses minus signs, an amount without one is money coming in.
+ *
+ * When no line fits, the amounts that were read are still returned — each
+ * with the next payee that has none, or nameless ("?") — so the review sheet
+ * opens with something to correct instead of "nothing found".
  */
-export function parseStatementText(text: string, categoryNames: string[] = []): Found[] {
+export function parseStatementText(text: string, categoryNames: string[] = [], today = new Date()): Found[] {
   const lines = normalizeDigits(text).split(/\r?\n/).map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
   const known = categoryNames.map(fold).filter(Boolean);
   const categoryIn = (line: string) => {
@@ -381,22 +403,37 @@ export function parseStatementText(text: string, categoryNames: string[] = []): 
   };
   type Item = Found & { signed: boolean; purpose: string };
   const items: Item[] = [];
+  /** Amounts that stood before any payee: taken up only when nothing else was found. */
+  const orphans: { cents: number; signed: boolean; date?: string }[] = [];
   let day: string | undefined;
+  /** A sign read on the line above its amount (line `at`), and the payee it stood behind, if one did. */
+  let loose: { at: number; minus: boolean; item?: Item } | undefined;
   const detail = (it: Item, line: string) => {
     if (it.purpose) return;
     it.purpose = line;
-    const stamp = /(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}/.exec(line);
+    // The reader takes the stamp's "T" for a 7 now and then.
+    const stamp = /(\d{4}-\d{2}-\d{2})[T7]?\d{2}:\d{2}/.exec(line);
     if (!it.date && stamp) it.date = parseDay(stamp[1]);
     if (/paypal/i.test(it.raw)) it.name = cleanPayee(it.raw, line);
   };
-  const add = (raw: string, cents = 0) => {
-    const it: Item = { date: day, name: cleanPayee(raw), raw, amount: Math.abs(cents), income: false, signed: cents < 0, purpose: '' };
+  const add = (raw: string) => {
+    const it: Item = { date: day, name: cleanPayee(raw), raw, amount: 0, income: false, signed: false, purpose: '' };
     items.push(it);
     return it;
   };
-  for (const original of lines) {
-    const heading = DATE_LINE.exec(original);
+  const give = (it: Item, cents: number, minus: boolean) => {
+    it.amount = cents;
+    it.signed = minus;
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const whole = lines[i];
+    const heading = DATE_LINE.exec(whole);
     if (heading) { day = parseDay(heading[1]); continue; }
+    const ago = RELATIVE_DAY.find(([re]) => re.test(stripMarks(whole)));
+    if (ago) { day = isoDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() - ago[1])); continue; }
+    const tail = AMOUNT_AT_END.test(whole) ? null : SIGN_AT_END.exec(whole);
+    const original = tail ? whole.slice(0, tail.index).trim() : whole;
+    if (tail) loose = { at: i, minus: tail[1] !== '+' };
     const last = items[items.length - 1];
     const cat = categoryIn(original);
     if (cat) {
@@ -405,26 +442,35 @@ export function parseStatementText(text: string, categoryNames: string[] = []): 
     }
     const line = stripMarks(original);
     const m = AMOUNT_AT_END.exec(line);
-    const cents = m ? signedCents(`${m[1] ?? ''}${m[2]}${m[3] ?? ''}`) : null;
-    const before = m ? line.slice(0, m.index).replace(/\s+$/, '') : line;
-    if (cents) {
-      if (!before || looksLikeDetail(before)) {
-        const waiting = items.find(i => !i.amount);
-        if (waiting) {
-          waiting.amount = Math.abs(cents);
-          waiting.signed = cents < 0;
-          if (before) detail(waiting, before);
-          continue;
-        }
-        if (!before) continue;
-      }
-      add(before, cents);
+    const cents = m ? signedCents(m[2]) : null;
+    if (m && cents) {
+      const before = line.slice(0, m.index).replace(/\s+$/, '');
+      const above = loose?.at === i - 1 && !m[1] && !m[3] ? loose : undefined;
+      const minus = above ? above.minus : [m[1], m[3]].some(sign => sign && sign !== '+');
+      // Whose amount it is, when it is not this line's own payee's.
+      let owner: Item | undefined;
+      let note = before;
+      if (above?.item && !above.item.amount) owner = above.item;
+      else if (!before || looksLikeDetail(before)) owner = items.find(it => !it.amount);
+      else if (last && !last.amount && !last.purpose && !last.bankCategory && startsAlike(before, last.raw)) { owner = last; note = ''; }
+      if (owner) {
+        give(owner, cents, minus);
+        if (note) detail(owner, note);
+      } else if (before) give(add(before), cents, minus);
+      else orphans.push({ cents, signed: minus, date: day });
       continue;
     }
     if (last && !last.purpose && looksLikeDetail(line)) { detail(last, line); continue; }
     if (isNoise(line)) continue;
     // A payee whose amount comes later (or never — then it is dropped).
-    add(line);
+    const waiting = add(line);
+    if (loose?.at === i) loose.item = waiting;
+  }
+  if (!items.some(it => it.amount)) {
+    for (const o of orphans) {
+      const it = items.find(x => !x.amount) ?? Object.assign(add(''), { date: o.date });
+      give(it, o.cents, o.signed);
+    }
   }
   const found = items.filter(i => i.amount > 0);
   const anySigned = found.some(i => i.signed);
