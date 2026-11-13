@@ -78,6 +78,7 @@ const es: Strings = {
   recurringTitle: 'Apuntes recurrentes',
   recurringRowSub: 'Todos los activos, con el mes de la última vez',
   recurringLast: 'Última vez {month}',
+  recurringLeft: 'Queda',
   recurringNext: 'Próxima vez {month}',
   recurringNone: 'No hay apuntes recurrentes',
   recurringHint: 'Toca uno para cambiarlo. Con ⋯ abres su mes o lo quitas.',

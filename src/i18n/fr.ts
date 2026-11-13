@@ -79,6 +79,7 @@ const fr: Strings = {
   recurringTitle: 'Opérations récurrentes',
   recurringRowSub: 'Toutes celles en cours, avec le mois de leur dernière fois',
   recurringLast: 'Dernière fois : {month}',
+  recurringLeft: 'Reste',
   recurringNext: 'Prochaine fois : {month}',
   recurringNone: 'Aucune opération récurrente',
   recurringHint: 'Touchez une opération pour la modifier. Avec ⋯, ouvrez son mois ou supprimez-la.',

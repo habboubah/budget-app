@@ -78,6 +78,7 @@ const da: Strings = {
   recurringTitle: 'Tilbagevendende poster',
   recurringRowSub: 'Alle igangværende, med måneden de sidst var',
   recurringLast: 'Sidst {month}',
+  recurringLeft: 'Tilbage',
   recurringNext: 'Næste gang {month}',
   recurringNone: 'Ingen tilbagevendende poster',
   recurringHint: 'Tryk på en post for at ændre den. Brug ⋯ til at åbne dens måned eller fjerne den.',

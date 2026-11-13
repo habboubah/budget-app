@@ -101,15 +101,15 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   /** What VoiceOver reads for an amount: the amount, or "Betrag verborgen". */
   const say = (text: string) => spoken(text, t.amountHidden);
-  const [details, setDetails] = useState(false);
   const [accountMenu, setAccountMenu] = useState<HTMLElement | null>(null);
-  const detailsId = useId();
   const swipe = useMonthSwipe(t.dir === 'rtl', onSwipe);
   const today = new Date();
   const running = b.key === monthKeyOf(today);
   const settled = monthSettled(b);
   const perDay = leftPerDay(settled.net, b.key, today);
   const anyOpen = b.incomeOpen !== 0 || b.expenseOpen !== 0;
+  // Folded: the balance and the paid count, smaller, and a row that opens the rest.
+  const folded = given && b.started && !open;
 
   // What the end of the month still waits for.
   const endNote: Note = b.openCount
@@ -122,12 +122,10 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
     ? { text: fmt(t.perDay, { amount: formatMoneyApprox(perDay, t.locale) }), tone: 'text-on-hero' }
     : anyOpen ? { text: t.colSettled, tone: 'text-on-hero-soft' } : null;
   const net = settled.net;
-  // The carry-over in a word, for the details row.
-  const carryShort = b.overridden ? t.openingShort : b.prevKey ? t.carryShort : t.startingBalance;
 
   return (
     <motion.section className="hero hero-glow hero-art hero-shine rounded-lg overflow-hidden" aria-label={t.balanceNow} data-tour="balance" {...swipe}>
-      <div className="ps-5 pe-4 pt-5 pb-4">
+      <div className={`ps-5 pe-4 ${folded ? 'pt-4 pb-3' : 'pt-5 pb-4'}`}>
         {/* The ring grows with the text size; once the balance would be squeezed
             beside it (the basis is in rem), it moves under the balance. */}
         <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
@@ -164,10 +162,10 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
                 </button>
               )}
             </div>
-            <BigMoney cents={given ? b.now : b.expensePaid} money={money} say={say} />
+            <BigMoney cents={given ? b.now : b.expensePaid} money={money} say={say} small={folded} />
           </div>
-          {open && b.expenseCount > 0 && (
-            <PaidRing paid={b.expensePaidCount} total={b.expenseCount} caption={capitalize(t.paidState)} label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })} />
+          {(open || folded) && b.expenseCount > 0 && (
+            <PaidRing small={folded} paid={b.expensePaidCount} total={b.expenseCount} caption={capitalize(t.paidState)} label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })} />
           )}
         </div>
       </div>
@@ -198,7 +196,7 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
           </div>
         </>
       ) : b.started && !open ? (
-        // Folded: the balance alone, and a slim row that opens the rest.
+        // Folded: the balance and the paid count, and a slim row that opens the rest.
         <button
           type="button"
           aria-expanded={false}
@@ -229,33 +227,8 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
             </Panel>
           </dl>
 
-          <button
-            type="button"
-            aria-expanded={details}
-            aria-controls={detailsId}
-            onClick={() => { tapLight(); setDetails(v => !v); }}
-            className="w-full min-h-tap ps-5 pe-4 pt-3 pb-3.5 flex items-center gap-2 text-caption text-on-hero-mute text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
-          >
-            <span className="min-w-0 flex-1 wrap-prose">
-              {carryShort} <span className="num font-semibold text-on-hero whitespace-nowrap">{money(b.openingNow)}</span>
-              {' · '}{t.detailsIncomeExpenses}
-            </span>
-            <ChevronDown
-              className={`w-4 h-4 shrink-0 transition-transform duration-200 ${details ? 'rotate-180' : ''}`}
-              strokeWidth={2.5}
-              aria-hidden="true"
-            />
-          </button>
-
-          {/* Appears in place (a fade, never a height animation). */}
-          {details && (
-            <motion.div
-              id={detailsId}
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-              className="mx-2.5 mb-2.5 rounded-[22px] hero-panel overflow-hidden"
-            >
+          {/* Everything at once: one level of unfolding, not two. */}
+          <div className="mx-2.5 mt-2 mb-2.5 rounded-[22px] hero-panel overflow-hidden">
               <CarryRow balance={b} t={t} money={money} onOpening={onOpening} />
               <Workings balance={b} t={t} money={money} />
               {b.transferPaid !== undefined && (b.transferPaid !== 0 || b.transferOpen !== 0) && (
@@ -272,9 +245,8 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
                   {fmt(t.reconciledOn, { date: new Date(reconciledAt).toLocaleDateString(t.locale, { day: 'numeric', month: 'short' }) })}
                 </p>
               )}
-            </motion.div>
-          )}
-          {/* Back to the balance and one row. */}
+          </div>
+          {/* Back to the balance and the paid count. */}
           {onOpen && (
             <button
               type="button"
@@ -636,14 +608,14 @@ function Workings({ balance: b, t, money }: { balance: MonthBalance; t: Strings;
  * sign smaller and quieter beside it ("35.773,20 €", "€35,773.20"). It runs
  * to a new value rather than jumping; VoiceOver reads only the final one.
  */
-function BigMoney({ cents, money, say }: { cents: number; money: (c: number) => string; say: (text: string) => string }) {
+function BigMoney({ cents, money, say, small }: { cents: number; money: (c: number) => string; say: (text: string) => string; /** The folded card's size. */ small?: boolean }) {
   const text = money(useCountUp(cents));
   // The figure — or the "••••" that stands for it while amounts are hidden (plan 06).
   const m = /^([^\d−•-]*?)\s*([−-]?[\d.,\u00a0\u202f]*\d|•+)\s*([^\d•]*)$/.exec(text);
   const [before, figure, after] = m ? [m[1], m[2], m[3]] : ['', text, ''];
   const sign = 'text-[0.6em] font-semibold text-on-hero-mute';
   return (
-    <p className="rounded-num font-extrabold mt-1.5 text-[clamp(34px,11vw,46px)] leading-[1.06] tracking-[-0.02em] wrap-prose text-on-hero">
+    <p className={`rounded-num font-extrabold mt-1 ${small ? 'text-[clamp(28px,8.5vw,36px)]' : 'text-[clamp(34px,11vw,46px)]'} leading-[1.06] tracking-[-0.02em] wrap-prose text-on-hero`}>
       <span className="sr-only">{say(money(cents))}</span>
       <span aria-hidden="true">
         {before && <span className={`${sign} me-1`}>{before}</span>}
@@ -655,7 +627,7 @@ function BigMoney({ cents, money, say }: { cents: number; money: (c: number) => 
 }
 
 /** Apple-Fitness-style ring: how many of the month's bills are paid. */
-function PaidRing({ paid, total, label, caption }: { paid: number; total: number; label: string; /** One word under the ring: what the count is of. */ caption: string }) {
+function PaidRing({ paid, total, label, caption, small }: { paid: number; total: number; label: string; /** One word under the ring: what the count is of. */ caption: string; /** The folded card's size. */ small?: boolean }) {
   const r = 22;
   const c = 2 * Math.PI * r;
   const ratio = total ? paid / total : 0;
@@ -666,7 +638,7 @@ function PaidRing({ paid, total, label, caption }: { paid: number; total: number
   return (
     <div className="shrink-0 ms-auto flex flex-col items-center gap-1">
     <div
-      className="relative w-[3.75rem] h-[3.75rem]"
+      className={`relative ${small ? 'w-[3.125rem] h-[3.125rem]' : 'w-[3.75rem] h-[3.75rem]'}`}
       role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={paid} aria-label={label} title={label}
     >
       <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90" aria-hidden="true">

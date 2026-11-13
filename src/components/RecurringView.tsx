@@ -32,19 +32,32 @@ export function RecurringView({ items, categories, t, onBack, onEdit, onOpen, on
   const byId = new Map(categories.map(c => [c.id, c]));
   const [menu, setMenu] = useState<{ at: HTMLElement; s: ActiveSeries } | null>(null);
   // `items` comes sorted by interval, so the groups keep that order.
-  const groups: { every: number; title: string; list: ActiveSeries[]; sum: number }[] = [];
+  // Per group, its income and its expenses each interval (both in cents, positive).
+  const groups: { every: number; title: string; list: ActiveSeries[]; income: number; expense: number }[] = [];
   for (const s of items) {
-    // Income counts up, expenses down, so the sum is what the group nets per interval.
-    const signed = byId.get(s.latest.categoryId)?.kind === 'income' ? s.latest.amount : -s.latest.amount;
-    const g = groups.find(x => x.every === s.every);
-    if (g) { g.list.push(s); g.sum += signed; }
-    else groups.push({ every: s.every, title: repeatName(t, s.latest), list: [s], sum: signed });
+    const isIncome = byId.get(s.latest.categoryId)?.kind === 'income';
+    let g = groups.find(x => x.every === s.every);
+    if (!g) groups.push(g = { every: s.every, title: repeatName(t, s.latest), list: [], income: 0, expense: 0 });
+    g.list.push(s);
+    if (isIncome) g.income += s.latest.amount; else g.expense += s.latest.amount;
   }
   return (
     <Screen title={t.recurringTitle} subtitle={items.length ? t.recurringHint : undefined} onBack={onBack} backLabel={t.back} tabbed>
       {items.length === 0 ? <Empty emoji="🔁" title={t.recurringNone} /> : groups.map(g => (
         <section key={g.every}>
-          <h2 className="px-4 pb-1.5 eyebrow text-fg-mute tabular-nums">{g.title} · {g.list.length} · {formatMoney(g.sum, t.locale, 'exceptZero')}</h2>
+          {/* A group without income: its expenses beside the count. With income: income, expenses and what is left, on a line of their own. */}
+          <h2 className="px-4 pb-1.5 eyebrow text-fg-mute tabular-nums">
+            {g.title} · {g.list.length}{g.income === 0 && <> · {formatMoney(-g.expense, t.locale, 'exceptZero')}</>}
+          </h2>
+          {g.income !== 0 && (
+            <p className="px-4 -mt-1 pb-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-caption text-fg-mute tabular-nums">
+              <span>{t.income} <span className="font-semibold text-pos">{formatMoney(g.income, t.locale, 'exceptZero')}</span></span>
+              {g.expense !== 0 && <span>{t.expenses} <span className="font-semibold text-fg">{formatMoney(-g.expense, t.locale, 'exceptZero')}</span></span>}
+              {g.expense !== 0 && (
+                <span>{t.recurringLeft} <span className={`font-semibold ${g.income - g.expense < 0 ? 'text-neg' : 'text-fg'}`}>{formatMoney(g.income - g.expense, t.locale, 'exceptZero')}</span></span>
+              )}
+            </p>
+          )}
           <ul className="rounded-md bg-surface card-edge overflow-hidden divide-hairline-inset" style={{ '--sep': '64px' } as CSSProperties}>
             {g.list.map(s => {
               const c = byId.get(s.latest.categoryId);

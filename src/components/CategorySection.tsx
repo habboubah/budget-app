@@ -284,7 +284,7 @@ export function CategorySection({
               <p className="hairline-t px-4 py-3 text-label text-fg-mute">{t.nothingOpen}</p>
             )}
             {rows.length > 0 && (
-              <ul className="pb-1">
+              <ul className="pb-2">
                 <AnimatePresence initial={false}>{rows}</AnimatePresence>
               </ul>
             )}
@@ -301,10 +301,10 @@ export function CategorySection({
               </button>
             )}
 
-            {/* The card's own row of actions: add an entry — and, on a spending
-                category, its budget: set one, or change the one it has (also in
-                the "⋯" above, which a folded card keeps). */}
-            {!search && <div className="flex items-stretch">
+            {/* An empty card's one row: add its first entry. A card with entries
+                has none — adding is the month's + and the "⋯" above, which also
+                sets or changes a spending category's budget. */}
+            {!search && all.length === 0 && <div className="flex items-stretch">
               <button
                 type="button"
                 onClick={() => { tapLight(); onAdd(); }}
@@ -314,7 +314,7 @@ export function CategorySection({
                 <span className="w-[26px] h-[26px] rounded-full bg-accent-dim text-accent inline-flex items-center justify-center shrink-0" aria-hidden="true">
                   <Plus className="w-4 h-4" strokeWidth={2.8} />
                 </span>
-                <span className="min-w-0 text-body font-medium text-start wrap-prose">{all.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
+                <span className="min-w-0 text-body font-medium text-start wrap-prose">{`${t.add} · ${t.sectionEmpty}`}</span>
               </button>
               {onBudget && (
                 <button
@@ -399,7 +399,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;
 
   return (
-    <div className={`flex items-stretch min-h-[54px] transition-opacity duration-150 ${lifted ? 'opacity-35' : ''}`}>
+    <div className={`flex items-stretch min-h-tap transition-opacity duration-150 ${lifted ? 'opacity-35' : ''}`}>
       <button
         type="button"
         role="checkbox"
@@ -411,7 +411,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
       >
         {/* Ticked in the category's colour, with a small pop as it fills and a ring that spreads out of it. */}
         <motion.span
-          className={`relative w-[26px] h-[26px] rounded-full inline-flex items-center justify-center transition-colors duration-200 ${
+          className={`relative w-[22px] h-[22px] rounded-full inline-flex items-center justify-center transition-colors duration-200 ${
             e.paid ? 'bg-hue-chart text-chart-label' : `border-2 ${overdue ? 'border-neg' : 'border-fg-faint'}`}`}
           initial={false}
           animate={{ scale: e.paid ? [1, 1.22, 1] : 1 }}
@@ -434,7 +434,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
                 transition={{ type: 'spring', duration: 0.3, bounce: 0.4 }}
                 className="inline-flex"
               >
-                <Check className="w-[15px] h-[15px]" strokeWidth={3.25} />
+                <Check className="w-[13px] h-[13px]" strokeWidth={3.25} />
               </motion.span>
             )}
           </AnimatePresence>
@@ -453,12 +453,12 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
         aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
         aria-label={`${fmt(t.editNamed, { name: e.name })}, ${spoken(formatMoney(e.amount, t.locale), t.amountHidden)}, ${
           e.paid ? (gain ? t.receivedState : t.paidState) : overdue ? t.overdue : gain ? t.expected : t.open}${e.refund ? `, ${t.refund}` : ''}`}
-        className="flex-1 min-w-0 py-2 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
+        className="flex-1 min-w-0 py-1 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         <span className="min-w-0 flex-1">
-          <span className="block text-body text-fg wrap-compound"><Highlight text={e.name} query={search} /></span>
+          <span className="block text-label text-fg wrap-compound"><Highlight text={e.name} query={search} /></span>
           {meta.length > 0 && (
-            <span className="flex flex-wrap items-center gap-x-1.5 text-caption text-fg-mute mt-0.5">
+            <span className="flex flex-wrap items-center gap-x-1.5 text-caption text-fg-mute">
               {meta.map((m, i) => (
                 <React.Fragment key={i}>{i > 0 && <span aria-hidden="true">·</span>}{m}</React.Fragment>
               ))}
@@ -466,7 +466,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
           )}
         </span>
         {/* Open money is grey, like a pending card payment; it turns solid once paid. */}
-        <span className={`shrink-0 rounded-num text-body font-semibold ${e.paid ? (gain ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
+        <span className={`shrink-0 rounded-num text-label font-semibold ${e.paid ? (gain ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
           <Highlight text={e.refund ? formatMoney(-e.amount, t.locale, 'always') : formatMoney(e.amount, t.locale)} query={search} />
         </span>
       </button>

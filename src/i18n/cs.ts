@@ -82,6 +82,7 @@ const cs: Strings = {
   recurringTitle: 'Opakované položky',
   recurringRowSub: 'Všechny běžící, s měsícem, kdy byly naposledy',
   recurringLast: 'Naposledy {month}',
+  recurringLeft: 'Zbývá',
   recurringNext: 'Příště {month}',
   recurringNone: 'Žádné opakované položky',
   recurringHint: 'Klepnutím položku změníte. Přes ⋯ otevřete její měsíc nebo ji odstraníte.',

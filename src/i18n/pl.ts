@@ -81,6 +81,7 @@ const pl: Strings = {
   recurringTitle: 'Pozycje cykliczne',
   recurringRowSub: 'Wszystkie aktywne, z miesiącem, w którym były ostatnio',
   recurringLast: 'Ostatnio {month}',
+  recurringLeft: 'Zostaje',
   recurringNext: 'Następnie {month}',
   recurringNone: 'Brak pozycji cyklicznych',
   recurringHint: 'Stuknij pozycję, aby ją zmienić. Przez ⋯ otworzysz jej miesiąc lub ją usuniesz.',

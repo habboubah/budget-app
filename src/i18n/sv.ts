@@ -79,6 +79,7 @@ const sv: Strings = {
   recurringTitle: 'Återkommande poster',
   recurringRowSub: 'Alla som pågår, med månaden de senast var',
   recurringLast: 'Senast {month}',
+  recurringLeft: 'Kvar',
   recurringNext: 'Nästa gång {month}',
   recurringNone: 'Inga återkommande poster',
   recurringHint: 'Tryck på en post för att ändra den. Med ⋯ öppnar du dess månad eller tar bort den.',
