@@ -1410,3 +1410,14 @@ commits and tags.
 ## Commit style
 Short, imperative, feature-focused summaries, no conventional-commit prefixes
 (same as pizza-driver-log and shopping-list).
+
+## Committing and merging (Ahmad, 13 November 2026)
+- **Commit without being asked.** Work happens on a branch off `main`, one
+  commit per finished step; nobody has to ask for the commit.
+- **Merge into `main` when the job is finished** (`git merge --no-ff`), once
+  the checks in *Before calling a change done* pass.
+- **Delete the branch once it is merged** (`git branch -d`): a merged branch
+  is obsolete. Never delete one that isn't merged.
+- **Never push** unless Ahmad asks for it.
+- Commit only your own changes: files another session is still working on
+  stay out of the commit, as they are.
