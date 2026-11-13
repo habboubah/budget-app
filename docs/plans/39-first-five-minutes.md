@@ -216,7 +216,7 @@ On the branch `plan-39-first-five-minutes`, one commit a step. How each part wor
 
 ### The budget, as recorded
 
-Counted by `scripts/simplicity-check.mjs` on the production build, from a fresh install, in German at 393 × 852: what can be tapped in the first viewport, the tab bar and its add button included (five of each count); with a sheet or a menu open, only what is in it.
+Counted by `scripts/simplicity-check.mjs` on the production build, from a fresh install, in German at 393 × 852: what can be tapped in the first viewport, the four tabs and the add button included (five of every count on a tab's page); with a sheet or a menu open, only what is in it.
 
 | State | Before | Aimed for | Reached | Budget |
 |---|---|---|---|---|
