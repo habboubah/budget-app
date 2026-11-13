@@ -32,16 +32,19 @@ export function RecurringView({ items, categories, t, onBack, onEdit, onOpen, on
   const byId = new Map(categories.map(c => [c.id, c]));
   const [menu, setMenu] = useState<{ at: HTMLElement; s: ActiveSeries } | null>(null);
   // `items` comes sorted by interval, so the groups keep that order.
-  const groups: { every: number; title: string; list: ActiveSeries[] }[] = [];
+  const groups: { every: number; title: string; list: ActiveSeries[]; sum: number }[] = [];
   for (const s of items) {
+    // Income counts up, expenses down, so the sum is what the group nets per interval.
+    const signed = byId.get(s.latest.categoryId)?.kind === 'income' ? s.latest.amount : -s.latest.amount;
     const g = groups.find(x => x.every === s.every);
-    if (g) g.list.push(s); else groups.push({ every: s.every, title: repeatName(t, s.latest), list: [s] });
+    if (g) { g.list.push(s); g.sum += signed; }
+    else groups.push({ every: s.every, title: repeatName(t, s.latest), list: [s], sum: signed });
   }
   return (
     <Screen title={t.recurringTitle} subtitle={items.length ? t.recurringHint : undefined} onBack={onBack} backLabel={t.back} tabbed>
       {items.length === 0 ? <Empty emoji="🔁" title={t.recurringNone} /> : groups.map(g => (
         <section key={g.every}>
-          <h2 className="px-4 pb-1.5 eyebrow text-fg-mute">{g.title} · {g.list.length}</h2>
+          <h2 className="px-4 pb-1.5 eyebrow text-fg-mute tabular-nums">{g.title} · {g.list.length} · {formatMoney(g.sum, t.locale, 'exceptZero')}</h2>
           <ul className="rounded-md bg-surface card-edge overflow-hidden divide-hairline-inset" style={{ '--sep': '64px' } as CSSProperties}>
             {g.list.map(s => {
               const c = byId.get(s.latest.categoryId);
