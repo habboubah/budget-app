@@ -31,6 +31,11 @@ const list = process.argv.includes('--list');
  *     after install had 21–23 controls, the month page of a new book 16–23
  *     with 4–5 amounts, the entry sheet 25, the month's "⋯" 9–10 rows,
  *     Optionen 17–22 rows on 2.5 screens, Planen 12.
+ *   - November 2026, on Ahmad's word: Planen and Statistik show every card
+ *     whole from the start (nobody should have to open each card for its
+ *     chart), so Planen's first viewport holds the 30-day chart's four weeks
+ *     (9 → 13); and *Wofür das Geld geht* has its period menu on the
+ *     categories too (Statistik 8 → 9).
  */
 const BUDGET = {
   'the first screen after install': { taps: 6 },
@@ -38,8 +43,8 @@ const BUDGET = {
   'the entry sheet, a new entry': { taps: 16 },
   'the month’s “⋯”': { rows: 4 },
   'Mehr': { rows: 13 },
-  'Planen in the first month': { taps: 9 },
-  'Statistik in the first month': { taps: 8 },
+  'Planen in the first month': { taps: 13 },
+  'Statistik in the first month': { taps: 9 },
 };
 
 const failures = [];

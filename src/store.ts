@@ -45,6 +45,7 @@ const K = {
   entryMore: 'spartopf-entry-more',
   calcKeys: 'spartopf-calc-keys',
   steps: 'spartopf-steps-done',
+  stepsStart: 'spartopf-steps-start',
   demoTrial: 'spartopf-demo-trial',
   planOpen: 'spartopf-plan-open',
   statsOpen: 'spartopf-stats-open',
@@ -162,9 +163,9 @@ export function useAppStore() {
   const [balanceOpen, setBalanceOpen] = useState(() => startOpen(K.balanceOpen));
   const [entryMore, setEntryMore] = useState(() => startOpen(K.entryMore));
   const [calcKeys, setCalcKeys] = useState(() => startOpen(K.calcKeys));
-  /** Planen's and Statistik's cards: whole, or headlines with these opened (src/fold.ts) — the same rule. */
-  const [planOpen, setPlanOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.planOpen), inUse));
-  const [statsOpen, setStatsOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.statsOpen), inUse));
+  /** Planen's and Statistik's cards: whole — as every book starts — or headlines with these opened (src/fold.ts). */
+  const [planOpen, setPlanOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.planOpen)));
+  const [statsOpen, setStatsOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.statsOpen)));
   /** The start (plan 39; before it, the setup card on the first month) — done for good once finished or put off. */
   const [introDone, setIntroDone] = useState(() => readString(K.intro) === '1');
   /**
@@ -175,6 +176,8 @@ export function useAppStore() {
   const [readGestures] = useState(() => (readString(K.tips) ?? readString(K.intro)) === '1');
   /** The *Erste Schritte* row on the month page — gone once every step is done, or put away. */
   const [stepsDone, setStepsDone] = useState(() => { const v = readString(K.steps); return v === null ? readGestures : v === '1'; });
+  /** The steps the start's questions already answered (balance, income, fixed): *Erste Schritte* doesn't list them again. */
+  const [stepsAnswered, setStepsAnswered] = useState<string[]>(() => readIds(readJson(K.stepsStart)));
   /** The test data was started with from the welcome screen: a capsule says so until it is taken out again. */
   const [demoTrial, setDemoTrial] = useState(() => readString(K.demoTrial) === '1');
   /** Reminders and the lock: settings of this device, not data — not in a backup, kept by "delete all". */
@@ -221,6 +224,7 @@ export function useAppStore() {
   // Written once more, so a later launch never falls back to the intro's flag for it.
   useEffect(() => { persist(K.tips, readGestures ? '1' : '0'); }, [readGestures]);
   useEffect(() => { persist(K.steps, stepsDone ? '1' : '0'); }, [stepsDone]);
+  useEffect(() => { persist(K.stepsStart, JSON.stringify(stepsAnswered)); }, [stepsAnswered]);
   useEffect(() => { persist(K.demoTrial, demoTrial ? '1' : '0'); }, [demoTrial]);
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
   useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
@@ -786,13 +790,15 @@ export function useAppStore() {
     setThemeMode('system');
     setIntroDone(false);
     setStepsDone(false);
+    setStepsAnswered([]);
     setDemoTrial(false);
     // A new book starts folded again (plan 39).
     setBalanceOpen(false);
     setEntryMore(false);
     setCalcKeys(false);
-    setPlanOpen([]);
-    setStatsOpen([]);
+    // Planen and Statistik show whole, as on every new book.
+    setPlanOpen(null);
+    setStatsOpen(null);
     setLastExport('');
     setCopyCardDismissed(false);
     // A fresh start shows the month reviews and hints again (opening a review
@@ -999,6 +1005,7 @@ export function useAppStore() {
     language, setLanguage: chooseLanguage, themeMode, setThemeMode, accent, setAccent, storageError: saveFailed,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
     stepsDone, dismissSteps: () => setStepsDone(true),
+    stepsAnswered, answerSteps: (ids: string[]) => setStepsAnswered(ids),
     demoTrial, setDemoTrial,
     balanceOpen, setBalanceOpen, entryMore, setEntryMore, calcKeys, setCalcKeys,
     planOpen, setPlanOpen, statsOpen, setStatsOpen, unfoldAll,

@@ -640,7 +640,8 @@ describe('categories per month', () => {
 
   it('shows the standard categories (and any with entries) in a month without its own list', () => {
     const ids = monthCategories(base([{ key: '2026-11', startedAt: 0 }]), '2026-11').map(c => c.id);
-    expect(ids).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children']);
+    // The income and the home are in every month; "Sonstiges" because the month has an entry in it.
+    expect(ids).toEqual(['income', 'fixed', 'extra']);
     const withCash = { ...base([{ key: '2026-11', startedAt: 0 }]), entries: [extra, e('2026-11', 'cash', 'Geldautomat', 5000, true)] };
     expect(monthCategories(withCash, '2026-11').map(c => c.id)).toEqual([...ids, 'cash']);
   });
@@ -815,7 +816,11 @@ describe('schema 4: Wohnen and Sonstiges', () => {
 describe('schema 5: Restaurants', () => {
   const shipped = new Map(defaultCategories().map(c => [c.id, c]));
   const v4 = (): AppData => ({
-    categories: ['income', 'fixed', 'car', 'extra', 'groceries', 'family', 'cash'].map(id => ({ ...shipped.get(id)! })),
+    // As schema 4 stored them: the main ones without `standard` (in every new month), the cash without it too.
+    categories: ['income', 'fixed', 'car', 'extra', 'groceries', 'family', 'cash'].map(id => {
+      const { standard: _standard, ...c } = shipped.get(id)!;
+      return id === 'cash' ? { ...c, standard: false } : c;
+    }),
     entries: [e('2026-10', 'groceries', 'Rewe', 4500, true)],
     months: [
       { key: '2026-09', startedAt: 0 },
@@ -829,7 +834,8 @@ describe('schema 5: Restaurants', () => {
   it('is a main category of a fresh start, beside the groceries', () => {
     const ids = defaultCategories().map(c => c.id);
     expect(ids.indexOf('restaurants')).toBe(ids.indexOf('groceries') + 1);
-    expect(standardCategoryIds(defaultCategories())).toEqual(['income', 'fixed', 'car', 'extra', 'groceries', 'restaurants', 'family', 'children']);
+    // Only what comes and goes every month is part of every new one; the rest joins with its first entry.
+    expect(standardCategoryIds(defaultCategories())).toEqual(['income', 'fixed']);
     expect(suggestNames({ entries: [], categoryId: 'restaurants', lang: 'de' }).map(s => s.name)).toContain('Lieferando');
   });
   it('arrives after the groceries, in the running month and later ones; earlier months stay as they were', () => {

@@ -3,10 +3,11 @@
  * as one row — what it is called and what it has found — that opens in place
  * to the card itself. What is open is a view preference:
  *
- *   null     every card whole, as the pages always were — a book that was
- *            in use before keeps this, and "Alles aufklappen" returns to it;
- *   a list   headlines, with the cards named in it opened — a new book
- *            starts with none.
+ *   null     every card whole — how every book starts (nobody should have
+ *            to open each card to see its chart), and what "Alles
+ *            aufklappen" returns to;
+ *   a list   headlines, with the cards named in it opened — only once the
+ *            bar's button has folded the page.
  *
  * Pure and tested (fold.test.ts); the store keeps one of these per page.
  */
@@ -15,15 +16,20 @@ export type CardsOpen = string[] | null;
 /** The most ids kept: a page has about ten cards. */
 const KEEP = 30;
 
-/** What was stored: "all" for every card whole, else the opened ids. Unset: whole for a book in use, headlines for a new one. */
-export function readCardsOpen(saved: unknown, inUse: boolean): CardsOpen {
-  if (saved === 'all') return null;
-  if (Array.isArray(saved)) return [...new Set(saved.filter((x): x is string => typeof x === 'string'))].slice(0, KEEP);
-  return inUse ? null : [];
+/**
+ * What was stored: `{ open: [...] }` for headlines with these opened; "all",
+ * nothing or anything else for every card whole. A bare list is how a new
+ * book was folded before November 2026, when it started as headlines without
+ * anyone asking: it reads as whole.
+ */
+export function readCardsOpen(saved: unknown): CardsOpen {
+  const open = saved && typeof saved === 'object' && !Array.isArray(saved) ? (saved as { open?: unknown }).open : undefined;
+  if (!Array.isArray(open)) return null;
+  return [...new Set(open.filter((x): x is string => typeof x === 'string'))].slice(0, KEEP);
 }
 
 /** As it is stored. */
-export const storeCardsOpen = (open: CardsOpen): string => JSON.stringify(open ?? 'all');
+export const storeCardsOpen = (open: CardsOpen): string => JSON.stringify(open === null ? 'all' : { open });
 
 /** Whether a card shows whole. */
 export const cardOpen = (open: CardsOpen, id: string): boolean => open === null || open.includes(id);

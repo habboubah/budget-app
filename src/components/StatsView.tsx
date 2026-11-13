@@ -4,7 +4,7 @@ import { ArrowDownRight, ArrowUpRight, ChevronRight, X } from 'lucide-react';
 import { Category, MonthKey } from '../types';
 import {
   NameTotal, dayLabel, displayName, formatMoney, formatMoneyApprox, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding,
-  normalizeName, spoken, topNames,
+  normalizeName, parseMonthKey, spoken, topNames,
 } from '../logic';
 import { Book, Fraction, Insight, MonthPoint, TagTotal, WhereRow, balanceChange, bookYears, compareYears, firstWeekday, monthDays, nearFraction, periodChange, periodSeries, savings, tagTotals, upToNow, weekdayPattern, whereRows } from '../insights';
 import { Strings, capitalize, fmt } from '../translations';
@@ -446,6 +446,16 @@ function RhythmCard({ book, pattern, months, month, t, onExplain }: { book: Book
   );
 }
 
+/** A span of months in a few signs, for the period menu beside a card's title: "Juni – Okt.", across years "Nov. 25 – Okt. 26". */
+function shortSpan(keys: MonthKey[], locale: string): string {
+  if (!keys.length) return '';
+  const first = parseMonthKey(keys[0]);
+  const last = parseMonthKey(keys[keys.length - 1]);
+  const f = new Intl.DateTimeFormat(locale, first.year === last.year ? { month: 'short' } : { month: 'short', year: '2-digit' });
+  const of = (k: { year: number; month: number }) => f.format(new Date(k.year, k.month - 1, 1));
+  return keys.length === 1 ? of(first) : `${of(first)} – ${of(last)}`;
+}
+
 /** Rows shown before "Alle n Kategorien". */
 const WHERE_ROWS = 8;
 
@@ -455,6 +465,13 @@ const WHERE_ROWS = 8;
  * as many months before, its budget as a tick on the bar; a row opens the
  * category's screen — or by payee ("Lidl" 6× · 12 %) over this month or the
  * last 2, 3, 6 or 12, a row opening that payee's sheet.
+ *
+ * One period for all of it, in the card's corner. Until one is picked each
+ * view keeps its own: the categories the page's months (their first option,
+ * named by its span in short — the line under the title has it in full),
+ * payees and tags this month. A period picked for the
+ * categories gives the average month over the started months in it — this
+ * month alone is what it has cost so far.
  */
 function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee }: {
   book: Book;
@@ -469,10 +486,14 @@ function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee 
 }) {
   const { entries, categories } = book.data;
   const [chosenView, setView] = useState<'categories' | 'payees' | 'tags'>('categories');
-  const [period, setPeriod] = useState(1);
+  // 0: nothing picked yet — the page's months for the categories, this month for payees and tags.
+  const [picked, setPeriod] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [allRows, setAllRows] = useState(false);
-  const periodMonths = useMemo(() => monthsEnding(monthKeyOf(), period), [period]);
+  const now = monthKeyOf();
+  // The page's months are just this month (a first month): "Dieser Monat" says it.
+  const pageIsNow = averageOver.length === 1 && averageOver[0] === now;
+  const periodMonths = useMemo(() => monthsEnding(now, picked || 1), [now, picked]);
   const payeeMonths = periodMonths;
   const payees = useMemo(() => topNames(entries, categories, payeeMonths), [entries, categories, payeeMonths]);
   // The Tags breakdown appears only once any entry has a tag (plan 26).
@@ -480,26 +501,37 @@ function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee 
   const tags = useMemo(() => tagTotals(entries, categories, periodMonths), [entries, categories, periodMonths]);
   // Fall back to categories if the tags view was open but tags are gone.
   const view = chosenView === 'tags' && !hasTags ? 'categories' : chosenView;
+  const period = view === 'categories' && !pageIsNow ? picked : picked || 1;
+  // The categories over a picked period: the started months in it (an average over months without a page would be too low).
+  const ownMonths = useMemo(() => periodMonths.filter(k => book.months.includes(k)), [periodMonths, book]);
+  const ownWhere = useMemo(() => whereRows(book, ownMonths), [book, ownMonths]);
+  const shown = period === 0 ? where : ownWhere;
+  const shownOver = period === 0 ? averageOver : ownMonths;
+  const shownTotal = shown.rows.reduce((sum, r) => sum + r.average, 0);
   const total = payees.reduce((sum, p) => sum + p.total, 0);
   const tagTotal = tags.reduce((sum, x) => sum + x.amount, 0);
   const payeeSpan = monthSpanLabel(payeeMonths, t.locale);
-  const rows = allRows ? where.rows : where.rows.slice(0, WHERE_ROWS);
-  const scale = Math.max(1, ...where.rows.map(r => Math.max(r.average, monthlyLimit(r.category) ?? 0)));
+  const rows = allRows ? shown.rows : shown.rows.slice(0, WHERE_ROWS);
+  const scale = Math.max(1, ...shown.rows.map(r => Math.max(r.average, monthlyLimit(r.category) ?? 0)));
+  const periods = [1, 2, 3, 6, 12].map(n => ({ value: n, label: n === 1 ? t.periodThisMonth : fmt(t.periodLastN, { n }) }));
 
   return (
     <Card
       title={t.whereMoneyGoes}
       sub={view === 'categories'
-        ? fmt(t.averageFrom, { span: monthSpanLabel(averageOver, t.locale) })
+        // One month is what it has cost; several are their average month.
+        ? (shownOver.length === 1 && period !== 0
+          ? (shownTotal ? fmt(t.whereSub, { span: monthSpanLabel(shownOver, t.locale), total: formatMoney(shownTotal, t.locale) }) : monthSpanLabel(shownOver, t.locale))
+          : shownOver.length ? fmt(t.averageFrom, { span: monthSpanLabel(shownOver, t.locale) }) : payeeSpan)
         : view === 'tags'
           ? (tagTotal ? fmt(t.whereSub, { span: payeeSpan, total: formatMoney(tagTotal, t.locale) }) : payeeSpan)
           : total ? fmt(t.whereSub, { span: payeeSpan, total: formatMoney(total, t.locale) }) : payeeSpan}
-      action={(view === 'payees' || view === 'tags') && (
+      action={(
         <MenuPicker
           label={t.wherePeriod}
           value={period}
-          onChange={n => { setPeriod(n); setExpanded(false); }}
-          options={[1, 2, 3, 6, 12].map(n => ({ value: n, label: n === 1 ? t.periodThisMonth : fmt(t.periodLastN, { n }) }))}
+          onChange={n => { setPeriod(n); setExpanded(false); setAllRows(false); }}
+          options={view === 'categories' && !pageIsNow ? [{ value: 0, label: shortSpan(averageOver, t.locale) }, ...periods] : periods}
         />
       )}
     >
@@ -514,33 +546,33 @@ function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee 
         ) : view === 'payees' ? (
           <PayeesList payees={payees} total={total} categories={categories} language={language} t={t}
             expanded={expanded} onExpand={() => setExpanded(true)} onPayee={onPayee} />
-        ) : where.rows.length === 0 ? (
+        ) : shown.rows.length === 0 ? (
           <p className="text-label text-fg-mute wrap-prose">{t.whereNone}</p>
         ) : (
           <>
-            {where.rows.length > 1 && (
+            {shown.rows.length > 1 && (
               // The whole split at a glance; the rows under it carry every name and figure.
               <ShareBar
                 className="mb-2"
-                label={where.rows.map(r => `${displayName(r.category.names, language)} ${formatPercent(Math.round(r.share * 100), t.locale)}`).join(', ')}
-                items={where.rows.map(r => ({ key: r.category.id, hue: r.category.hue, value: r.average }))}
+                label={shown.rows.map(r => `${displayName(r.category.names, language)} ${formatPercent(Math.round(r.share * 100), t.locale)}`).join(', ')}
+                items={shown.rows.map(r => ({ key: r.category.id, hue: r.category.hue, value: r.average }))}
               />
             )}
             <ul className="-mx-4 divide-hairline-inset" style={{ '--sep': '16px' } as CSSProperties}>
               {rows.map((r, i) => <WhereRowButton key={r.category.id} row={r} index={i} scale={scale} language={language} t={t} onOpen={() => onCategory(r.category.id)} />)}
             </ul>
-            {!allRows && where.rows.length > rows.length && (
+            {!allRows && shown.rows.length > rows.length && (
               <button
                 type="button"
                 onClick={() => { tapLight(); setAllRows(true); }}
                 className="mt-1 -mb-2 h-tap w-full text-label font-semibold text-accent active:opacity-60 focus-visible:ring-focus rounded-sm"
               >
-                {fmt(t.whereAllCategories, { n: where.rows.length })}
+                {fmt(t.whereAllCategories, { n: shown.rows.length })}
               </button>
             )}
             <p className="text-caption text-fg-mute mt-3 wrap-prose tabular-nums">
               {t.whereTapHint}
-              {where.before.length > 0 && where.rows.some(r => r.change) && ` ${fmt(t.whereChangeCaption, { span: monthSpanLabel(where.before, t.locale) })}`}
+              {shown.before.length > 0 && shown.rows.some(r => r.change) && ` ${fmt(t.whereChangeCaption, { span: monthSpanLabel(shown.before, t.locale) })}`}
             </p>
           </>
         )}

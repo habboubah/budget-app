@@ -2,24 +2,28 @@ import { describe, expect, it } from 'vitest';
 import { cardOpen, readCardsOpen, storeCardsOpen, toggleAllCards, toggleCard } from './fold';
 
 describe('Planen and Statistik as headlines (plan 39)', () => {
-  it('a book in use starts with every card whole, a new one with headlines', () => {
-    expect(readCardsOpen(undefined, true)).toBeNull();
-    expect(readCardsOpen(undefined, false)).toEqual([]);
+  it('every book starts with every card whole', () => {
+    expect(readCardsOpen(undefined)).toBeNull();
+    expect(readCardsOpen(null)).toBeNull();
   });
 
-  it('reads what was stored, whatever the book: "all", or the opened ids — each once, strings only', () => {
-    expect(readCardsOpen('all', false)).toBeNull();
-    expect(readCardsOpen([], true)).toEqual([]);
-    expect(readCardsOpen(['budgets', 'budgets', 7, 'outlook'], true)).toEqual(['budgets', 'outlook']);
+  it('reads what was stored: "all", or the opened ids — each once, strings only', () => {
+    expect(readCardsOpen('all')).toBeNull();
+    expect(readCardsOpen({ open: [] })).toEqual([]);
+    expect(readCardsOpen({ open: ['budgets', 'budgets', 7, 'outlook'] })).toEqual(['budgets', 'outlook']);
     // Anything else is as good as unset.
-    expect(readCardsOpen({ a: 1 }, true)).toBeNull();
-    expect(readCardsOpen('some', false)).toEqual([]);
+    expect(readCardsOpen({ a: 1 })).toBeNull();
+    expect(readCardsOpen('some')).toBeNull();
+  });
+
+  it('a bare list — a new book folded without being asked, before every card showed whole — reads as whole', () => {
+    expect(readCardsOpen([])).toBeNull();
+    expect(readCardsOpen(['budgets'])).toBeNull();
   });
 
   it('survives a round trip', () => {
     for (const open of [null, [], ['runway', 'goals']]) {
-      expect(readCardsOpen(JSON.parse(storeCardsOpen(open)), false)).toEqual(open);
-      expect(readCardsOpen(JSON.parse(storeCardsOpen(open)), true)).toEqual(open);
+      expect(readCardsOpen(JSON.parse(storeCardsOpen(open)))).toEqual(open);
     }
   });
 

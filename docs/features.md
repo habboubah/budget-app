@@ -43,8 +43,10 @@ server, no ads; everything stays on the device.
   each a card in its own colour with what is paid so far and, below it, the
   total including what is still open. Each month has its own set: a new
   month gets the ones switched on under *Mehr › Kategorien und Budgets ›
-  (a category) › In jedem neuen Monat*; empty ones sit in a *Noch leer* row
-  (on a new book one chip, "Kategorien (8)", that opens it),
+  (a category) › In jedem neuen Monat* — as shipped only **Einkommen** and
+  **Wohnen**, what comes and goes every month; every other category joins a
+  month with its first entry there. Empty ones sit in a *Noch leer* row
+  (on a new book one chip, "Kategorien (2)", that opens it),
   can be removed from the month (undoable), and *Kategorie hinzufügen*
   brings any category in — as does picking it when entering something. A
   category with entries always stays.
@@ -105,7 +107,11 @@ server, no ads; everything stays on the device.
   start).
 - **Erste Schritte.** Until all four are done — the balance, the income, the
   fixed costs, the first expense — one slim row on the month page says how
-  many are ("2 von 4") and opens the list; ✕ puts it away.
+  many are ("2 von 4") and opens the list; ✕ puts it away. What the start's
+  questions already answered is not on the list; with one step left the row
+  is that step ("Erste Ausgabe eintragen"). A step, ticked or not, leads to
+  its place on the month page — the balance card, its category — lights it
+  up, and opens the form there.
 - **Tips at the right moment.** One small card on the month page. First the
   three gestures, each when the page has something to try it on: the circle
   that ticks an entry once one is open, the swipe from the fifth entry, hold
@@ -334,8 +340,8 @@ when it is wanted:
   Monatsende · Dein Konto wächst: +2.992 € seit Juni", "Wofür das Geld geht
   · Wohnen 41 % · Lebensmittel 21 %" — and opens in place; *Weniger* under
   it folds it again, and the button in the bar folds or unfolds them all.
-  What is open is remembered. A new book starts with headlines, a book in
-  use with every card whole.
+  What is open is remembered. Every book starts with every card whole —
+  headlines are for whoever folds the page.
 - **In the first month** there is nothing to compare yet: Statistik shows
   what stands out, where the money goes and when — and says that trends and
   the rest come with the second month. No period to choose, no chart of one
@@ -356,12 +362,15 @@ when it is wanted:
   (still open or expected is hatched); the balance at each month's end;
   where the money goes — the whole split as one bar, then by category (Ø,
   share, how it moved against the months before, the budget as a tick), by
-  payee or by tag; and the table — a month opens its **Monatsbericht**.
+  payee or by tag, each over the period picked in the card's corner (this
+  month, the last 2, 3, 6 or 12; the categories begin with the page's own
+  months); and the table — a month opens its **Monatsbericht**.
 - **Wann du Geld ausgibst**: everyday spending per weekday — "Teuerster
   Wochentag: Samstag" when one clearly leads — and the picked month as a
-  calendar, each day shaded by what went out on it. A day tapped shows its
-  amount and what it was. Rent and contracts stay out, so the 1st isn't
-  every month's priciest day.
+  calendar, each day shaded by what went out on it, with the day's sum in
+  its square ("134", "1,2k"). A day tapped shows its amount and what it
+  was. Rent and contracts stay out, so the 1st isn't every month's priciest
+  day.
 - **The charts answer the finger**: put it down and drag across a chart —
   the values follow from month to month (or day to day) with a tick each.
   Lines are drawn in, columns grow, the ring sweeps round; all of it still
@@ -498,15 +507,16 @@ statistic or a plan, on about one screen:
   accounts, favourites.
 - **Werkzeuge** — what you may use: importing, debts and loans, trips and
   projects, the tax list, import rules, automatic capture (iPhone).
-- **Einstellungen** — one row to the screen with what is set once:
-  - **Darstellung** — language, light or dark, the colour, the currency.
+- **Einstellungen** — one row to the screen with what is set once. On top,
+  the app's card: its name and version, "ohne Konto, ohne Server", and how
+  much your book holds (months and entries, never an amount). Then:
+  - **Darstellung** — language, light or dark, the colour, the currency
+    (picking another currency applies at once).
   - **Sicherheit und Mitteilungen** — hide amounts, the lock, reminders, the
     phone's backup.
   - **Haushaltsbuch** — the day the month begins.
   - **Ausprobieren** — the test data, in and out.
-  - **Über Spartopf** — what the app is: its name and version, "ohne Konto,
-    ohne Server", and how much your book holds (months and entries, never
-    an amount); then rating, feedback and the privacy policy.
+  - **Über Spartopf** — rating, feedback and the privacy policy.
   - Last, on its own, *App zurücksetzen*.
 
 Every row has an icon in its own colour within its group; counts (21
@@ -534,8 +544,8 @@ categories, 3 favourites) sit in a small pill at the row's end.
   real checkbox, never colour alone), larger text up to 200 %, 44-point tap
   targets, contrast checked for every colour in both themes, reduced motion.
 - **Categories to choose from.** Besides the eight above, the usual
-  categories of a German banking app are built in, switched off for new
-  months until you want them: *Bekleidung, Einkäufe, Telekommunikation,
+  categories of a German banking app are built in — like six of those eight
+  switched off for new months until you want them: *Bekleidung, Einkäufe, Telekommunikation,
   Mobilität, Reisen, Freizeit und Unterhaltung, Sport und Hobby, Gesundheit
   und Wellness, Bildung und Erziehung, Geldanlage, Versicherungen, Bargeld,
   Steuern und Gebühren*, each with its own name suggestions. Create your own

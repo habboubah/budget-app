@@ -183,9 +183,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   so those four stay in it), *Sicherheit und Mitteilungen* (hide amounts
   first, then the lock, reminders, the phone's backup), *Haushaltsbuch* (the
   day the month begins), *Ausprobieren* (the test data), *Über Spartopf*
-  (the card on the hero — icon, name, version, the tagline, how many months
-  and entries the book holds: counts from two on, never an amount — then
-  rating, feedback, the privacy policy), and resetting last and alone. Back
+  (rating, feedback, the privacy policy), and resetting last and alone. The
+  page opens on the app's card on the hero — icon, name, version, the
+  tagline, how many months and entries the book holds: counts from two on,
+  never an amount. The currency applies as it is picked: it only relabels,
+  and picking the old one again undoes it — no `Confirm`. Back
   from the reminders leads to Einstellungen again (`prefsReturn`, like
   `guideReturn`). A new feature's row joins *Werkzeuge* (or *Haushaltsbuch*
   when every book has it), a new setting joins its group in Einstellungen —
@@ -264,9 +266,15 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     berechnet?* / *Ausblenden*, undoable); then under the heading *Verlauf*
     (`#history-title` — the store screenshot scrolls to it): income vs.
     spending (Angelegt in the tooltip), balance, *Wofür* (a `ShareBar` of the
-    whole split, rows → `CategoryView`, payees → `PayeeSheet`), `RhythmCard`
+    whole split, rows → `CategoryView`, payees → `PayeeSheet`; one period
+    menu in the card's corner for categories, payees and tags — the
+    categories start on the page's months, option 0, payees and tags on this
+    month; a picked period averages the categories over the started months
+    in it), `RhythmCard`
     (*Wann du Geld ausgibst*: `WeekdayBars`, and the picked month as a
-    `HeatCalendar` — a day tapped is written out above it), the table (an
+    `HeatCalendar` — each day's sum in its square, whole units without a
+    sign, in fixed px since the square doesn't grow with the text; a day
+    tapped is written out above it), the table (an
     *Angelegt* column when any; a month → its report).
   - **`InsightsView`** (Planen, id `insights`): `PaceCard` (*November bis
     heute*: the finding and its three figures on a hero header — today's
@@ -341,10 +349,14 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   shows; `monthCategories()` adds anything with entries, so money never
   vanishes. Unset (months from before, Excel imports) = the standard ones. New
   months take `standardCategoryIds()` (categories with `standard !== false`).
-  Of the 21 built-ins eight are standard — the six from the Excel sheet plus
-  `restaurants` (after `groceries`) and `children` (after `family`); the banking-app ones (`clothing` …
-  `taxes`) ship with `standard: false` — keep it that way, or every month
-  fills up with empty cards. Only an empty category can be taken
+  Of the 21 built-ins two are standard, `income` and `fixed` (Wohnen): what
+  comes and goes every month. The other six main ones (`car`, `extra`,
+  `groceries`, `restaurants`, `children`, `family`) and the banking-app ones
+  (`clothing` … `taxes`) ship with `standard: false` (November 2026, Ahmad:
+  a new month opens on two cards) — keep it that way, or every month fills
+  up with empty cards. A book from before keeps what it stored (no schema
+  change), and `restaurants` / `children` still arrive in an older book as
+  standard, as they did (`upgradeData` drops the shipped `standard`). Only an empty category can be taken
   out of a month (`canRemoveFromMonth`).
 - **Schema 2** added those built-ins; **schema 3** gives built-ins still named
   as shipped their Arabic names; **schema 4** (`upgradeData`, `MERGED_V4` /
@@ -673,7 +685,13 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     the book has grown (`grown` in App: 15 entries or a second month), the
     empty categories are one chip. Where the setup card stood: *Erste
     Schritte* (`FirstSteps.tsx`, "2 von 4", ✕ puts it away), then a gesture's
-    tip, then a feature's.
+    tip, then a feature's. What the start was told is not a step
+    (`store.stepsAnswered`, `spartopf-steps-start`, set in `applyStart`); a
+    single step left is the row itself. A step's `run` is App's `stepTo`:
+    it scrolls to the step's place on the month page (`[data-tour="balance"]`,
+    the category's `[data-drop-category]` card or chip, else the folded row
+    `[data-empty-categories]`), lights it with `data-step-here` (index.css)
+    and then opens its sheet — ticked steps too.
   - **The month's "⋯" has four rows** (`MonthActionsMenu`): the report, the
     balance (*Kontostand eintragen*, then *Kontostand prüfen* — the match
     with the bank, with the opening balance behind a button in the same
@@ -693,9 +711,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     `ui/FoldCard.tsx`): each card can be one row — its name and what it has
     found, "Budgets · 3 von 4 im Rahmen" — that opens in place, with
     *Weniger* under the open card; `FoldAllButton` in the bar goes from
-    every card whole (`null`, a book in use) to headlines (a list of the
-    opened ids, a new book) and back. `spartopf-plan-open` /
-    `spartopf-stats-open`. A card is only built once open, so a folded page
+    every card whole (`null`, how every book starts — November 2026, Ahmad:
+    nobody should have to open each card for its chart) to headlines (a list
+    of the opened ids) and back. `spartopf-plan-open` /
+    `spartopf-stats-open`: `"all"` or `{ open: [...] }`; a bare list is the
+    fold a new book got unasked before, and reads as whole. A card is only built once open, so a folded page
     draws no charts. *November bis heute*, the period's hero and *Das fällt
     auf* are the answer and never fold. A new card gets an id, a headline
     from its own finding, and a `FoldCard` around it.
@@ -1067,7 +1087,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   card payment. Swipe actions come from `ui/SwipeRow` (touch only — the mouse
   drags to sort); everything a swipe does must also be reachable without it.
 - Navigation: tapping the month's name opens `MonthPickerSheet`; ‹ › sit in
-  one floating capsule. The add button lives in the tab bar (`TabBar add`).
+  one floating capsule. The add button lives in the tab bar (`TabBar add`),
+  in its middle slot — not beside the capsule, where a 62 px button crowded a
+  small phone. Scripts find it as `nav button.hero`, the tabs as
+  `nav button:not(.hero)`.
 - Money colours mean one thing each: `text-pos` income / plus, `text-neg`
   a negative balance or overdue, `text-warn` (+ `bg-warn-dim`) *open*. Expenses
   themselves are plain `text-fg` — a bill is not an error.

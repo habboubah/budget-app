@@ -149,7 +149,7 @@ const en: GuidePages = {
   tourStatsRange: 'Pick the period: 3, 6, 9 or 12 months, a year or everything. Everything below follows it.',
   tourStatsHero: 'The main thing at a glance: how much of your income is left – on average per month.',
   tourStatsChart: 'Income and spending month by month. Run your finger across it to see every value.',
-  tourStatsWhere: 'Where the money goes – by category, payee or tag. A tap shows the details.',
+  tourStatsWhere: 'Where the money goes – by category, by who was paid or by tag. A tap shows the details.',
   tourStatsRhythm: 'The weekdays and the days of the month you spend the most on.',
   tourPlanPace: 'The running month: are you spending faster than usual, and where will you end up?',
   tourPlanBudgets: 'Your budgets: what is left in each category this month.',

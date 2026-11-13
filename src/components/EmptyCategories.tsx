@@ -41,6 +41,7 @@ export function EmptyCategories({ categories, language, t, dropOn, onAdd, onRemo
       <motion.div variants={rise} className="px-1">
         <button
           type="button"
+          data-empty-categories
           aria-expanded={false}
           onClick={() => { tapLight(); onUnfold?.(); }}
           className="min-h-tap rounded-full bg-surface card-edge ps-4 pe-3 py-1.5 inline-flex items-center gap-1.5 text-label text-fg-mute active:scale-[0.97] transition-transform focus-visible:ring-focus"
