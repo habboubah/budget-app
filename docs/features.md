@@ -105,7 +105,11 @@ server, no ads; everything stays on the device.
   start).
 - **Erste Schritte.** Until all four are done — the balance, the income, the
   fixed costs, the first expense — one slim row on the month page says how
-  many are ("2 von 4") and opens the list; ✕ puts it away.
+  many are ("2 von 4") and opens the list; ✕ puts it away. What the start's
+  questions already answered is not on the list; with one step left the row
+  is that step ("Erste Ausgabe eintragen"). A step, ticked or not, leads to
+  its place on the month page — the balance card, its category — lights it
+  up, and opens the form there.
 - **Tips at the right moment.** One small card on the month page. First the
   three gestures, each when the page has something to try it on: the circle
   that ticks an entry once one is open, the swipe from the fifth entry, hold

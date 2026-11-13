@@ -1116,6 +1116,12 @@ export default function App() {
       store.showCategory(m, category.id);
     }
     if (plan.opening !== undefined) store.setOpening(m, plan.opening);
+    // What was answered here is not asked again as one of the *Erste Schritte*.
+    store.answerSteps([
+      ...(plan.opening !== undefined ? ['balance'] : []),
+      ...(plan.entries.some(e => e.kind === 'income') ? ['income'] : []),
+      ...(plan.entries.some(e => e.kind === 'expense') ? ['fixed'] : []),
+    ]);
     store.dismissIntro();
     // Whoever starts here needs no "new: a guide" (it is one tap from *Erste Schritte*).
     store.knowGuide();
@@ -1152,16 +1158,47 @@ export default function App() {
   const [stepsOpen, setStepsOpen] = useState(false);
   const kindOf = new Map(categories.map(c => [c.id, c.kind]));
   const runningMonth = monthKeyOf();
-  const firstSteps: FirstStep[] = [
-    { id: 'balance', label: t.noBalanceAsk, sub: t.noBalanceAskSub, done: multi || balanceGiven(balances, runningMonth),
-      run: () => setBalanceNowOpen(true) },
-    ...(salaryCategory ? [{ id: 'income' as const, label: t.setupSalary, sub: t.setupSalarySub, done: entries.some(e => kindOf.get(e.categoryId) === 'income'),
-      run: () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: salaryCategory.id, preset: { name: t.setupSalaryName, repeat: 'monthly' } }) }] : []),
+  /**
+   * A step leads to where it lives on the month page — the balance card, its
+   * category's card (or chip, or the folded row of the empty ones) — lights
+   * that up for a moment, and only then opens its sheet: the place is seen
+   * before the form covers it, and is where the entry turns up afterwards.
+   */
+  const stepTimers = useRef<number[]>([]);
+  useEffect(() => () => stepTimers.current.forEach(id => window.clearTimeout(id)), []);
+  const stepTo = (place: string, open: () => void) => {
+    const later = (fn: () => void, ms: number) => { stepTimers.current.push(window.setTimeout(fn, ms)); };
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Once the list has gone down (its sheet leaves in about a quarter second).
+    later(() => {
+      const el = document.querySelector<HTMLElement>(place) ?? document.querySelector<HTMLElement>('[data-empty-categories]');
+      if (!el) { open(); return; }
+      el.scrollIntoView({ block: 'center', behavior: calm ? 'auto' : 'smooth' });
+      el.setAttribute('data-step-here', '');
+      later(() => el.removeAttribute('data-step-here'), 1600);
+      later(open, calm ? 400 : 750);
+    }, 260);
+  };
+  const categoryPlace = (id: string) => `[data-drop-category="${CSS.escape(id)}"]`;
+  const hasIncome = entries.some(e => kindOf.get(e.categoryId) === 'income');
+  // "Ein Kaffee, ein Einkauf": the category used last when it is one for everyday
+  // spending, else the groceries — not the home, where the fixed costs' step leads.
+  const everyday = (id: string | null | undefined) => categories.find(c => c.id === id && c.kind === 'expense' && c.repeat === 'none')?.id;
+  const spendCategory = everyday(lastCategory) ?? everyday('groceries')
+    ?? categories.find(c => c.kind === 'expense' && c.repeat === 'none')?.id ?? quickAddCategory;
+  const firstSteps: FirstStep[] = ([
+    { id: 'balance' as const, label: t.noBalanceAsk, sub: t.noBalanceAskSub, done: multi || balanceGiven(balances, runningMonth),
+      run: () => stepTo('[data-tour="balance"]', () => setBalanceNowOpen(true)) },
+    // The first income is the salary; one more is whatever it is.
+    ...(salaryCategory ? [{ id: 'income' as const, label: t.setupSalary, sub: t.setupSalarySub, done: hasIncome,
+      run: () => stepTo(categoryPlace(salaryCategory.id), () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: salaryCategory.id,
+        preset: hasIncome ? { repeat: 'monthly' } : { name: t.setupSalaryName, repeat: 'monthly' } })) }] : []),
     ...(fixedCategory ? [{ id: 'fixed' as const, label: t.setupFixed, sub: t.setupFixedSub, done: entries.some(e => kindOf.get(e.categoryId) === 'expense' && e.repeat !== 'none'),
-      run: () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: fixedCategory.id, preset: { repeat: 'monthly' } }) }] : []),
-    ...(quickAddCategory ? [{ id: 'expense' as const, label: t.stepsFirstExpense, sub: t.stepsFirstExpenseSub, done: entries.some(e => kindOf.get(e.categoryId) === 'expense' && e.repeat === 'none'),
-      run: () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: quickAddCategory }) }] : []),
-  ];
+      run: () => stepTo(categoryPlace(fixedCategory.id), () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: fixedCategory.id, preset: { repeat: 'monthly' } })) }] : []),
+    ...(spendCategory ? [{ id: 'expense' as const, label: t.stepsFirstExpense, sub: t.stepsFirstExpenseSub, done: entries.some(e => kindOf.get(e.categoryId) === 'expense' && e.repeat === 'none'),
+      run: () => stepTo(categoryPlace(spendCategory), () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: spendCategory })) }] : []),
+    // The start asked the first three: what it was told there is not a step any more.
+  ] satisfies FirstStep[]).filter(s => !store.stepsAnswered.includes(s.id));
   const stepsLeft = firstSteps.some(s => !s.done);
   // Every step done: the row has nothing more to say, on this device for good.
   // (Not while the test data stands in for a book: its steps are nobody's.)

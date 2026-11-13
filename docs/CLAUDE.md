@@ -675,7 +675,13 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     the book has grown (`grown` in App: 15 entries or a second month), the
     empty categories are one chip. Where the setup card stood: *Erste
     Schritte* (`FirstSteps.tsx`, "2 von 4", ✕ puts it away), then a gesture's
-    tip, then a feature's.
+    tip, then a feature's. What the start was told is not a step
+    (`store.stepsAnswered`, `spartopf-steps-start`, set in `applyStart`); a
+    single step left is the row itself. A step's `run` is App's `stepTo`:
+    it scrolls to the step's place on the month page (`[data-tour="balance"]`,
+    the category's `[data-drop-category]` card or chip, else the folded row
+    `[data-empty-categories]`), lights it with `data-step-here` (index.css)
+    and then opens its sheet — ticked steps too.
   - **The month's "⋯" has four rows** (`MonthActionsMenu`): the report, the
     balance (*Kontostand eintragen*, then *Kontostand prüfen* — the match
     with the bank, with the opening balance behind a button in the same

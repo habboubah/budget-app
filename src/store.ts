@@ -45,6 +45,7 @@ const K = {
   entryMore: 'spartopf-entry-more',
   calcKeys: 'spartopf-calc-keys',
   steps: 'spartopf-steps-done',
+  stepsStart: 'spartopf-steps-start',
   demoTrial: 'spartopf-demo-trial',
   planOpen: 'spartopf-plan-open',
   statsOpen: 'spartopf-stats-open',
@@ -175,6 +176,8 @@ export function useAppStore() {
   const [readGestures] = useState(() => (readString(K.tips) ?? readString(K.intro)) === '1');
   /** The *Erste Schritte* row on the month page — gone once every step is done, or put away. */
   const [stepsDone, setStepsDone] = useState(() => { const v = readString(K.steps); return v === null ? readGestures : v === '1'; });
+  /** The steps the start's questions already answered (balance, income, fixed): *Erste Schritte* doesn't list them again. */
+  const [stepsAnswered, setStepsAnswered] = useState<string[]>(() => readIds(readJson(K.stepsStart)));
   /** The test data was started with from the welcome screen: a capsule says so until it is taken out again. */
   const [demoTrial, setDemoTrial] = useState(() => readString(K.demoTrial) === '1');
   /** Reminders and the lock: settings of this device, not data — not in a backup, kept by "delete all". */
@@ -221,6 +224,7 @@ export function useAppStore() {
   // Written once more, so a later launch never falls back to the intro's flag for it.
   useEffect(() => { persist(K.tips, readGestures ? '1' : '0'); }, [readGestures]);
   useEffect(() => { persist(K.steps, stepsDone ? '1' : '0'); }, [stepsDone]);
+  useEffect(() => { persist(K.stepsStart, JSON.stringify(stepsAnswered)); }, [stepsAnswered]);
   useEffect(() => { persist(K.demoTrial, demoTrial ? '1' : '0'); }, [demoTrial]);
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
   useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
@@ -786,6 +790,7 @@ export function useAppStore() {
     setThemeMode('system');
     setIntroDone(false);
     setStepsDone(false);
+    setStepsAnswered([]);
     setDemoTrial(false);
     // A new book starts folded again (plan 39).
     setBalanceOpen(false);
@@ -1000,6 +1005,7 @@ export function useAppStore() {
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
     stepsDone, dismissSteps: () => setStepsDone(true),
     demoTrial, setDemoTrial,
+    stepsAnswered, answerSteps: (ids: string[]) => setStepsAnswered(ids),
     balanceOpen, setBalanceOpen, entryMore, setEntryMore, calcKeys, setCalcKeys,
     planOpen, setPlanOpen, statsOpen, setStatsOpen, unfoldAll,
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),

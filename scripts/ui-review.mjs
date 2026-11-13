@@ -507,7 +507,8 @@ const SCREENS = [
   { name: 'first-month', fresh: true, run: start('month'), audit: 'page' },
   { name: 'first-month-full', fresh: true, run: start('month'), full: true },
   { name: 'first-month-later', fresh: true, run: start('month', false), audit: 'page' },
-  { name: 'first-steps', fresh: true, run: async page => { await start('month')(page); await page.locator('[data-steps] button').first().click(); }, wait: dialog, audit: 'dialog' },
+  // The start put off: every step is still on the list (what it was told is left out of it).
+  { name: 'first-steps', fresh: true, run: async page => { await start('month', false)(page); await page.locator('[data-steps] button').first().click(); }, wait: dialog, audit: 'dialog' },
   { name: 'first-entry', fresh: true, run: async page => { await start('month', false)(page); await page.click('nav button.hero'); }, wait: dialog, audit: 'dialog' },
   { name: 'first-entry-more', fresh: true, run: async page => {
     await start('month', false)(page);

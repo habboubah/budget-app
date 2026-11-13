@@ -701,6 +701,16 @@ input[type="search"]::-webkit-search-results-button {
 /* The picked day: a ring of the text colour, set off from the day by the card's. */
 @utility heat-on { box-shadow: 0 0 0 2px var(--t-surface), 0 0 0 4px var(--t-fg); }
 
+/* Where a step of *Erste Schritte* happens (App's `stepTo`): a ring of the
+   accent that comes and goes while the page scrolls there. Set from outside
+   React as an attribute, so no render takes it away. */
+@keyframes step-here { 0%, 100% { outline-color: transparent; } 20%, 70% { outline-color: var(--t-accent); } }
+[data-step-here] {
+  outline: 3px solid transparent;
+  outline-offset: 3px;
+  animation: step-here 1500ms ease-out both;
+}
+
 /* A screen's cards coming in: each child of <main> rises into place, the
    next a moment later (ui/Screen). Only when it appears — a card added later
    rises on its own. `no-rise` (the copy of a screen under a back swipe)
