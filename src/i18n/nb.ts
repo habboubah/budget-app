@@ -79,6 +79,7 @@ const nb: Strings = {
   recurringTitle: 'Gjentakende poster',
   recurringRowSub: 'Alle som pågår, med måneden de sist var',
   recurringLast: 'Sist {month}',
+  recurringLeft: 'Igjen',
   recurringNext: 'Neste gang {month}',
   recurringNone: 'Ingen gjentakende poster',
   recurringHint: 'Trykk på en post for å endre den. Bruk ⋯ for å åpne måneden eller fjerne den.',

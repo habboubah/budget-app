@@ -78,6 +78,7 @@ const nl: Strings = {
   recurringTitle: 'Terugkerende posten',
   recurringRowSub: 'Alle lopende, met de maand waarin ze het laatst waren',
   recurringLast: 'Laatst {month}',
+  recurringLeft: 'Over',
   recurringNext: 'Volgende keer {month}',
   recurringNone: 'Geen terugkerende posten',
   recurringHint: 'Tik op een post om hem te wijzigen. Met ⋯ open je zijn maand of verwijder je hem.',

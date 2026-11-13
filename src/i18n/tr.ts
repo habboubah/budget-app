@@ -81,6 +81,7 @@ const tr: Strings = {
   recurringTitle: 'Tekrarlayan kayıtlar',
   recurringRowSub: 'Devam edenlerin hepsi, en son oldukları ayla',
   recurringLast: 'Son: {month}',
+  recurringLeft: 'Kalan',
   recurringNext: 'Sonraki: {month}',
   recurringNone: 'Tekrarlayan kayıt yok',
   recurringHint: 'Değiştirmek için birine dokun. ⋯ ile ayını açabilir veya kaldırabilirsin.',

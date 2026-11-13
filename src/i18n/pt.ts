@@ -79,6 +79,7 @@ const pt: Strings = {
   recurringTitle: 'Lançamentos recorrentes',
   recurringRowSub: 'Todos os ativos, com o mês da última vez',
   recurringLast: 'Última vez {month}',
+  recurringLeft: 'Sobra',
   recurringNext: 'Próxima vez {month}',
   recurringNone: 'Sem lançamentos recorrentes',
   recurringHint: 'Toque num lançamento para o alterar. Com ⋯ abre o seu mês ou remove-o.',

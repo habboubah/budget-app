@@ -78,6 +78,7 @@ const it: Strings = {
   recurringTitle: 'Voci ricorrenti',
   recurringRowSub: 'Tutte quelle in corso, con il mese dell’ultima volta',
   recurringLast: 'Ultima volta {month}',
+  recurringLeft: 'Resta',
   recurringNext: 'Prossima volta {month}',
   recurringNone: 'Nessuna voce ricorrente',
   recurringHint: 'Tocca una voce per modificarla. Con ⋯ apri il suo mese o la rimuovi.',
