@@ -783,11 +783,13 @@ export function useAppStore() {
     setAccountView(MAIN_ACCOUNT);
     setDebts([]);
     setProjects([]);
-    // Back to the defaults of a fresh install: the phone's currency, language
-    // and appearance (US dollars, German and light when it gives none).
+    // Back to the defaults of a fresh install: the phone's currency and
+    // language (US dollars and German when it gives none).
     setCurrency(systemCurrency());
     chooseLanguage(systemLanguage());
-    setThemeMode('system');
+    // The appearance is the one exception: a reset book always starts light,
+    // whatever the phone is set to (a fresh install follows the phone).
+    setThemeMode('light');
     setIntroDone(false);
     setStepsDone(false);
     setStepsAnswered([]);

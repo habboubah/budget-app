@@ -51,8 +51,10 @@ server, no ads; everything stays on the device.
   brings any category in — as does picking it when entering something. A
   category with entries always stays.
 - **Fold and filter.** Tap a card's header to fold it down to one line
-  (remembered per category, in every month); the month's "⋯" › *Mehr* folds
-  or unfolds them all. A card's "⋯" can show only what is still open there.
+  (remembered per category, in every month); the month's "⋯" folds or
+  unfolds them all. A card's "⋯" can show only what is still open there.
+  The filter beside the search field does that for the whole page — and
+  unfolds every card while it is on; the folds are back when it is off.
 - **Paid or open.** Every entry has a circle in front: empty = still open
   (rent not paid yet, salary expected), filled = paid. One tap toggles it —
   or swipe the entry to the right. Swipe left to delete (undoable). Every
@@ -87,12 +89,12 @@ server, no ads; everything stays on the device.
   "November" then runs from 25 Oct to 24 Nov (named after the calendar month
   most of its days fall in) and the month title says so. Before the change
   the sheet says how many entries move to another month; it can be undone.
-- **The month's "⋯" menu has four rows:** the *Monatsbericht*; the balance
+- **The month's "⋯" menu is one level:** the *Monatsbericht*; the balance
   (*Kontostand eintragen* until one is known, then *Kontostand prüfen*);
-  *Importieren* — one sheet with every way to bring entries in (below); and
-  *Mehr*, with what is needed now and then: fetching recurring entries,
-  folding every category, *Monat löschen*. *Umbuchen* joins them once there
-  is more than one account.
+  *Importieren* — one sheet with every way to bring entries in (below);
+  then fetching recurring entries and folding every category; and, apart,
+  *Monat löschen*. *Umbuchen* joins them once there is more than one
+  account.
 - **The start.** A new book opens on a welcome — what the app does in one
   sentence, "ohne Konto, ohne Server", the language to change — and *Los
   geht's* leads through three questions, each of which *Später* skips: what
@@ -247,7 +249,10 @@ when it is wanted:
   (Sparkasse and others), the statement itself as a **PDF** (*Kontoauszug
   importieren (PDF)*, for banks that offer nothing else), a photo or
   screenshot of the banking app — the text is read on the phone itself — an
-  invoice's QR code, and an Excel budget sheet. Every transaction is shown to check first: new ones, ones
+  invoice's QR code, and an Excel budget sheet. A photo may be a crop or the
+  whole screen, by day or at night; entries under *Heute* or *Gestern* get
+  that day; and where the list itself cannot be made out, the amounts that
+  were read are still shown, nameless, to complete. Every transaction is shown to check first: new ones, ones
   already entered, and open bills they pay (those get ticked off). Money
   coming in from a shop you buy from is offered as a refund in that shop's
   category, and an awaited refund is ticked off instead of entered twice. An
@@ -281,7 +286,9 @@ when it is wanted:
 - **Monthly budgets.** Give a spending category a budget (with a suggestion
   from what it cost on average): its card shows paid and open against it, a
   tick for today, "noch 212,88 €" or "50,04 € drüber", and how much is left
-  per day.
+  per day. The budget is set and changed on the month page itself: at the
+  foot of the card, beside *Hinzufügen* (*Monatsbudget …*, or the budget it
+  has), and in the card's "⋯".
 - **Per year, or with the rest carried on.** A budget can run **per year**
   (*Pro Jahr*: clothes, holidays, presents — the calendar year's months count
   together, "Jahresbudget 600 € · noch 212 €"), or stay monthly and **take
@@ -475,7 +482,8 @@ when it is wanted:
   sichern* does the same for Google's backup.
 - **App zurücksetzen** (*Mehr › Einstellungen*) erases every month, entry, category and
   automatic backup on this device; the app then begins again with the start,
-  in the phone's language and currency.
+  in the phone's language and currency, and light (*Darstellung › Hell*)
+  whatever the phone is set to.
 
 ## Backup and transfer
 

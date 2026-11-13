@@ -154,6 +154,12 @@ Write 1–3 short lines per release, e.g.
 
 ### Next release (after 1.2.0)
 
+**DE:** Umsätze aus Foto: Ein Screenshot des ganzen Bildschirms wird jetzt zuverlässig gelesen, auch im Dunkelmodus. Was nicht eindeutig zu lesen ist, wird trotzdem angezeigt – zum Ergänzen.
+
+**EN:** Transactions from a photo: a screenshot of the whole screen is now read reliably, in dark mode too. What can't be read clearly is still shown, for you to complete.
+
+**AR:** الحركات من صورة: تُقرأ الآن لقطة الشاشة الكاملة بشكل موثوق، وفي الوضع الداكن أيضًا. وما لا يُقرأ بوضوح يُعرض مع ذلك لتكمله بنفسك.
+
 **DE:** Neu: ein leichterer Start. Drei kurze Fragen – Kontostand, Einkommen, feste Kosten – und Spartopf zeigt dir, was am Monatsende bleibt. Die Monatsseite und das Eintragen zeigen am Anfang nur das Wichtigste; alles Weitere ist einen Tipp entfernt. „Optionen“ heißt jetzt „Mehr“ und hat eine Suche, die Einstellungen liegen darunter. Planen und Statistik öffnen als kurze Übersicht. Dein bestehendes Haushaltsbuch sieht aus wie bisher.
 
 **EN:** New: an easier start. Three short questions – your balance, your income, your fixed costs – and Spartopf shows you what is left at the end of the month. The month page and the entry sheet begin with the essentials; everything else is one tap away. "Settings" is now "More", with a search; the settings sit under it. Plan and Statistics open as a short overview. Your existing budget book looks as it did.

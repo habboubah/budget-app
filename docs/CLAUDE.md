@@ -521,20 +521,43 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   the search field, one for the whole page (`allOpen` in MonthView): every
   card shows only its pending entries and cards without any are hidden.
   Turning one card's filter off while the page filter is on keeps the others
-  filtered.
+  filtered. Under the page filter every card is unfolded, whatever is
+  remembered in `store.collapsed`: a fold made there lives in MonthView
+  (`foldedInFilter`) and ends with the filter, and the remembered folds are
+  back when it is switched off.
+- **A category's budget from its card:** a spending category's card has the
+  budget beside *Hinzufügen*, in the row at its foot (`CategorySection
+  onBudget`): *Monatsbudget …* while it has none, the budget itself
+  ("Budget 300 €") once it has — both open `BudgetSheet`. The card's "⋯"
+  has the same row, which a folded card and the chips of the empty
+  categories rely on.
 - **Bank import** (month "⋯" → *Kontoumsätze importieren (CSV)* / *Umsätze aus
   Foto übernehmen*): `src/statementImport.ts` is pure and tested —
   `parseBankCsv()` (finds the header row by column titles: Sparkasse
   CSV-CAMT, ING-style Soll/Haben, English exports; Windows-1252 or UTF-8 via
   `readTextFile`), `parseStatementText()` (the text of a banking-app
-  screenshot), `cleanPayee()` (payee → name), `planStatement()` (the user's
+  screenshot: a date heading — a date, *Heute*, *Gestern* — then payee,
+  amount, details, the bank's category. The reader tears that layout apart
+  in a different way on every picture, so the parser puts it together
+  again — an amount on a detail line or alone goes to the oldest payee
+  without one, an amount behind the payee's logo to the payee above, a minus
+  left on the line above to its amount — and when nothing fits it still
+  returns the amounts it read, named "?", so the review sheet opens instead
+  of *Keine Umsätze erkannt*. A photo that reads badly gets a test with the
+  reader's text for it, in made-up values), `cleanPayee()` (payee → name), `planStatement()` (the user's
   own name and category for a known payee, else the bank's category, income
   always in an income category; `exists` / `pay` / `new` against what is
   entered, by `Entry.ref` or same month + amount + name / date ±3 days) and
   `applyStatement()`. `StatementImportSheet` shows the plan; nothing is
   written before the user confirms (`store.importEntries`, undoable;
   months it needs start empty — the bank's list is what happened). Photos are
-  read on the device by tesseract.js (`src/ocr.ts`): worker, SIMD core and
+  read on the device by tesseract.js (`src/ocr.ts`). `prepare()` scales the
+  picture, makes it grey, turns a dark one light and stretches the contrast
+  between the levels `stretchWindow()` (pure, tested) picks: the 2nd and 98th
+  percentile, narrowed when that window misses the writing — on a whole
+  screen with a short list the letters are a hundredth of the pixels, and a
+  fixed cut stretched the page against the card and left the card blank.
+  Worker, SIMD core and
   the German model are copied into `public/ocr/` by `scripts/copy-ocr.mjs`
   (a Vite plugin runs it for dev and every build; generated, gitignored, not
   precached by the PWA). Never commit a real bank export or screenshot.
@@ -692,13 +715,16 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     the category's `[data-drop-category]` card or chip, else the folded row
     `[data-empty-categories]`), lights it with `data-step-here` (index.css)
     and then opens its sheet — ticked steps too.
-  - **The month's "⋯" has four rows** (`MonthActionsMenu`): the report, the
-    balance (*Kontostand eintragen*, then *Kontostand prüfen* — the match
-    with the bank, with the opening balance behind a button in the same
-    sheet), *Importieren* (`ImportSheet`: photo, CSV, PDF, invoice QR, Excel,
-    each with its sentence), and *Mehr* (fetch recurring entries, fold all,
-    delete the month). *Umbuchen* joins the four once there are accounts.
-    A new action joins *Mehr* or a sheet — the four have a budget.
+  - **The month's "⋯" is one level** (`MonthActionsMenu`; plan 39 had a
+    *Mehr* row with a second menu behind it — gone on Ahmad's word, 13
+    November 2026): the report, the balance (*Kontostand eintragen*, then
+    *Kontostand prüfen* — the match with the bank, with the opening balance
+    behind a button in the same sheet) and *Importieren* (`ImportSheet`:
+    photo, CSV, PDF, invoice QR, Excel, each with its sentence — the one
+    thing that stays a sheet); then fetch recurring entries and fold all;
+    then, apart, delete the month. *Umbuchen* joins the first group once
+    there are accounts. The rows have a budget (`check:simplicity`): a new
+    action goes onto a sheet, or the budget is raised with a note.
   - **The entry sheet** opens with *Ausgabe | Einnahme* (it picks a category
     of that kind; nothing new in the data), the amount, the name, the
     category, three pills — date, paid, repeat — and a round "⋯" that opens
@@ -1054,7 +1080,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   theme, the hero and its panel, the paid ticks — it must pass.
 - **The hero** (`hero` + `hero-glow`): the accent's gradient with a sheen, a
   rim of light and a glow of its own colour. It carries the balance card, the
-  statistics' month summary, the add button and primary `Button`s. The big
+  statistics' month summary, the add button and primary `Button`s. The add
+  button wears it as a small lit dome (`add-orb`: light on the upper rim,
+  shade inside the lower edge, its own glow on the glass) in a ring of the
+  accent's tint (`add-halo`). The big
   hero cards add `hero-art` (fine rings in the far corner) and the balance
   card `hero-shine` (one band of light when it appears); both stay under
   `--hero-sheen`, which the audit reads — keep it that way. The balance card
@@ -1115,7 +1144,14 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `<main>`; `no-rise` holds the copy under a back swipe still). A tab comes
   forward out of a slight depth, a pushed screen slides. A category's paid
   bar slides in from empty (a transform under the track's round mask), the balance card's line is drawn in once per month (its svg is keyed by the month) and its meters run out when the details open, a paid tick pops with a ring spreading out of it, the chosen tab's
-  symbol lands with a bounce. Charts come in once: columns grow from the
+  symbol lands with a bounce. The add button (`AddButton` in `ui/TabBar.tsx`)
+  answers on touch-down, not on release: the dome gives (0.88, no bounce on
+  the way in), its ring swells out from under the fingertip and the plus
+  turns towards a cross; a tap sends one ring of light out of it; the plus
+  stays a cross while the new-entry sheet is up (`add.open`) and springs back
+  when it goes — the sheet covers the bar on a phone, so what the eye gets is
+  the press and the return. Springs throughout, so a touch can take over
+  mid-way; a plus must never turn by 90° (it looks the same afterwards). Charts come in once: columns grow from the
   baseline (`chart-grow`, via `grow()` in Charts.tsx; `col-grow` outside an
   SVG), a line chart is drawn from the left (`ChartFrame reveal`: a clip
   runs across the marks — its width a `motion` attribute, so the grid stays

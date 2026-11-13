@@ -123,6 +123,75 @@ describe('reading a photo, when the reader splits the layout', () => {
   });
 });
 
+describe('reading a photo of a list under "Heute", torn apart by the reader', () => {
+  // One card of a bank's web page (made-up values). The amount stands between
+  // the payee's line and its details, so the reader puts it on either — or
+  // behind the payee's logo, which it reads as a word.
+  const today = new Date(2026, 10, 13);
+  const names = ['Absicherung und Vorsorge', 'Sonstiges'];
+  const read = (lines: string[]) => parseStatementText(lines.join('\n'), names, today)
+    .map(x => [x.date, x.name, x.income ? x.amount : -x.amount, x.bankCategory ?? '']);
+  const both = [
+    ['2026-11-13', 'Mustershop', -3190, ''],
+    ['2026-11-13', 'MUVK Musterversicherungsverein', -4815, 'Absicherung und Vorsorge'],
+  ];
+
+  it('takes "Heute" for the day, a minus left on the line above, and the amount behind the logo', () => {
+    expect(read([
+      'Heute',
+      'MUSTERSHOP.COM/12 example dr, Musterville, 12345, F/MUSTERVILLE/US/3',
+      '[m]                                                    -',
+      '_     2026-11-12T10:00 Debitk.1 2030-01 Einsatzentgelt 0,65 EUR Zahl.System DebitMastercard          31,90 EUR',
+      'MUVK Musterversicherungsverein a.G.',
+      'MUVK                               9                    -48,15 EUR',
+      'Z00012345678 Hausrat, Unfall, Haftpflicht, Rechtsschutz',
+      '( © Absicherung und Vorsorge',
+    ])).toEqual(both);
+  });
+  it('reads a minus the reader took for another mark, and one left behind the payee', () => {
+    expect(read([
+      'Heute',
+      'MUSTERSHOP.COM/12 example dr, Musterville, 12345, F/MUSTERVILLE/US/3    „31,90 EUR',
+      '2026-11-12T10:00 Debitk.1 2030-01 Einsatzentgelt 0,65 EUR Zahl.System DebitMastercard',
+      'MUVK Musterversicherungsverein a.G.    -',
+      'vom    200012345678 Hausrat, Unfall, Haftpflicht, Rechtsschutz    48,15 EUR',
+      '(0    Absicherung und Vorsorge )',
+    ])).toEqual(both);
+    expect(read(['Heute', 'Kiosk Muster', '[EM]    =', '4,20 EUR', 'Erstattung Muster', '+25,00 EUR']).map(x => x[2])).toEqual([-420, 2500]);
+  });
+  it('skips an icon read in brackets, and takes a reference number for a detail', () => {
+    expect(read([
+      'Heute',
+      '[m]    MUSTERSHOP.COM/12 example dr, Musterville, 12345, F/MUSTERVILLE/US/3    -31.90 EUR',
+      '2026-11-12710:00 Debitk.1 2030-01 Einsatzentgelt 0,65 EUR Zahl.System DebitMastercard    C',
+      'MUVK Musterversicherungsverein a.G.',
+      'MUVK    COENSVersiCherUNGSVErG    -48,15 EUR',
+      'Z00012345678 Hausrat, Unfall, Haftpflicht, Rechtsschutz',
+      'C O Absicherung und Vorsorge )',
+    ])).toEqual(both);
+  });
+  it('counts back from today under "Gestern" and "Vorgestern"; a date heading still wins', () => {
+    expect(read(['Gestern', 'Kiosk Muster -4,20 EUR', 'Vorgestern', 'Backstube Muster -3,50 EUR', 'Yesterday', 'Cafe Muster -2,80 EUR', '03.11.2026', 'Markt Muster -9,90 EUR'])
+      .map(x => x[0])).toEqual(['2026-11-12', '2026-11-11', '2026-11-12', '2026-11-03']);
+    // The card's own time stamp only dates a transaction that stands under no heading.
+    expect(read(['Kiosk Muster -4,20 EUR', '2026-11-02T10:00 Debitk.1 2030-01'])[0][0]).toBe('2026-11-02');
+  });
+});
+
+describe('reading a photo the layout of which is not understood', () => {
+  const read = (lines: string[]) => parseStatementText(lines.join('\n')).map(x => [x.name, x.income ? x.amount : -x.amount]);
+  it('still hands back the amounts it read, nameless, for the user to complete', () => {
+    expect(read(['-31,90 EUR', '##', '-48,15 EUR'])).toEqual([['?', -3190], ['?', -4815]]);
+  });
+  it('gives amounts read before their payees to them, in order', () => {
+    expect(read(['-4,20 EUR', '-3,50 EUR', 'Kiosk Muster', 'Backstube Muster'])).toEqual([['Kiosk Muster', -420], ['Backstube Muster', -350]]);
+  });
+  it('leaves a lone amount out once the list itself was read', () => {
+    expect(read(['1.234,56 EUR', 'Kiosk Muster -4,20 EUR'])).toEqual([['Kiosk Muster', -420]]);
+    expect(read(['Heute', '© Sonstiges'])).toEqual([]);
+  });
+});
+
 describe('planning an import', () => {
   const cats = defaultCategories();
   let n = 0;

@@ -1,6 +1,6 @@
-import { ComponentType, Fragment } from 'react';
+import { ComponentType, Fragment, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Plus } from 'lucide-react';
 import { tapLight, tapMedium } from './haptics';
 
@@ -22,13 +22,73 @@ export interface Tab<T extends string> {
  *
  * Portalled so a screen's slide-in transform can't capture `position: fixed`.
  */
+
+/**
+ * The add button: the hero as a small lit dome (`add-orb`) in a ring of the
+ * accent's tint. It answers the finger the moment it lands — the dome gives,
+ * the ring swells out from under the fingertip, the plus begins to turn — and
+ * says what it did: while the sheet it opened is up the plus stays a cross,
+ * and turns back with a little spring when the sheet goes. A tap also sends
+ * one ring of light out of it, like a paid tick's. All springs, so a second
+ * touch takes over from wherever the first one left it.
+ */
+function AddButton({ label, open, onClick }: { label: string; open: boolean; onClick: () => void }) {
+  const [taps, setTaps] = useState(0);
+  const calm = useReducedMotion();
+  return (
+    <motion.button
+      type="button"
+      data-tour="add"
+      aria-label={label}
+      title={label}
+      onClick={() => { tapMedium(); setTaps(n => n + 1); onClick(); }}
+      initial="away"
+      animate={open ? 'open' : 'rest'}
+      whileTap="down"
+      variants={{
+        away: { scale: 0.6, opacity: 0 },
+        rest: { scale: 1, opacity: 1 },
+        open: { scale: 1, opacity: 1 },
+        // In at once, without a bounce; the spring below is the way back out.
+        down: { scale: 0.88, transition: { type: 'spring', duration: 0.16, bounce: 0 } },
+      }}
+      transition={{ type: 'spring', duration: 0.45, bounce: 0.45 }}
+      className="relative place-self-center w-[48px] h-[48px] rounded-full hero add-orb text-on-hero inline-flex items-center justify-center focus-visible:ring-focus"
+    >
+      <motion.span
+        aria-hidden="true"
+        className="absolute -inset-[3px] rounded-full add-halo pointer-events-none"
+        variants={{ away: { scale: 1, opacity: 0 }, rest: { scale: 1, opacity: 1 }, open: { scale: 1, opacity: 1 }, down: { scale: 1.22, opacity: 0.55 } }}
+        transition={{ type: 'spring', duration: 0.4, bounce: 0.3 }}
+      />
+      {taps > 0 && !calm && (
+        <motion.span
+          key={taps}
+          aria-hidden="true"
+          className="absolute inset-0 rounded-full add-burst pointer-events-none"
+          initial={{ scale: 1, opacity: 0.7 }}
+          animate={{ scale: 2.1, opacity: 0 }}
+          transition={{ duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
+        />
+      )}
+      <motion.span
+        className="relative inline-flex"
+        variants={{ away: { rotate: -90 }, rest: { rotate: 0 }, open: { rotate: 45 }, down: { rotate: 45 } }}
+        transition={{ type: 'spring', duration: 0.5, bounce: 0.4 }}
+      >
+        <Plus className="w-[24px] h-[24px]" strokeWidth={2.75} />
+      </motion.span>
+    </motion.button>
+  );
+}
+
 export function TabBar<T extends string>({ tabs, active, onChange, label, add }: {
   tabs: Tab<T>[];
   active: T;
   onChange: (id: T) => void;
   label: string;
-  /** The round add button in the bar's middle; hidden while there is nothing to add to. */
-  add?: { label: string; onClick: () => void } | null;
+  /** The round add button in the bar's middle; hidden while there is nothing to add to. `open`: the sheet it opens is up. */
+  add?: { label: string; onClick: () => void; open?: boolean } | null;
 }) {
   const middle = Math.ceil(tabs.length / 2);
   return createPortal(
@@ -51,22 +111,7 @@ export function TabBar<T extends string>({ tabs, active, onChange, label, add }:
               return (
                 <Fragment key={id}>
                   {/* The add button takes the middle slot, between the second tab and the third. */}
-                  {add && i === middle && (
-                    <motion.button
-                      type="button"
-                      data-tour="add"
-                      aria-label={add.label}
-                      title={add.label}
-                      onClick={() => { tapMedium(); add.onClick(); }}
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      whileTap={{ scale: 0.9, rotate: 90 }}
-                      transition={{ type: 'spring', duration: 0.35, bounce: 0.25 }}
-                      className="place-self-center w-[52px] h-[52px] rounded-full hero text-on-hero inline-flex items-center justify-center focus-visible:ring-focus"
-                    >
-                      <Plus className="w-[26px] h-[26px]" strokeWidth={2.4} />
-                    </motion.button>
-                  )}
+                  {add && i === middle && <AddButton label={add.label} open={!!add.open} onClick={add.onClick} />}
                   <button
                     type="button"
                     aria-current={on ? 'page' : undefined}

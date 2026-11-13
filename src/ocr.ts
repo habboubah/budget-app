@@ -7,12 +7,42 @@
  * enough and huge photos don't run out of memory, made grey, light text on a
  * dark background (a banking app at night) turned dark on light, and the
  * contrast stretched — the recogniser reads black on white best.
+ *
+ * The stretch must never cut the writing away: on a whole screen with a short
+ * list in it the letters are a hundredth of the picture, and a fixed 2 % cut
+ * left only the card's grey against the page's — the reader then saw a blank
+ * card ("Keine Umsätze erkannt"). `stretchWindow` narrows the cut until the
+ * writing is inside.
  */
 
 import { isAndroid, isNative } from './platform';
 
 const MAX_SIDE = 4000;
 const MIN_WIDTH = 2800;
+
+/**
+ * The grey levels the contrast is stretched between, from the picture's
+ * histogram: the 2nd and 98th percentile — unless that window holds less than
+ * half of the picture's whole range (measured without its 0.01 % outliers).
+ * Then all it caught is background, the writing being rarer than the cut, and
+ * the cut is narrowed (0.5 %, 0.1 %, the whole range) until the writing is in.
+ */
+export function stretchWindow(hist: ArrayLike<number>, count: number): [number, number] {
+  const at = (share: number): [number, number] => {
+    const cut = count * share;
+    let lo = 0;
+    let hi = 255;
+    for (let acc = 0; lo < 255 && (acc += hist[lo]) < cut; lo++);
+    for (let acc = 0; hi > 0 && (acc += hist[hi]) < cut; hi--);
+    return [lo, hi];
+  };
+  const whole = at(0.0001);
+  for (const share of [0.02, 0.005, 0.001]) {
+    const window = at(share);
+    if (window[1] - window[0] >= (whole[1] - whole[0]) / 2) return window;
+  }
+  return whole;
+}
 
 async function prepare(file: Blob, minWidth = MIN_WIDTH): Promise<HTMLCanvasElement> {
   const bitmap = await createImageBitmap(file);
@@ -36,14 +66,9 @@ async function prepare(file: Blob, minWidth = MIN_WIDTH): Promise<HTMLCanvasElem
     sum += g;
   }
   const dark = sum / grey.length < 128;
-  // Stretch between the 2nd and 98th percentile.
   const hist = new Uint32Array(256);
   for (const g of grey) hist[g]++;
-  const cut = grey.length * 0.02;
-  let lo = 0;
-  let hi = 255;
-  for (let acc = 0; lo < 255 && (acc += hist[lo]) < cut; lo++);
-  for (let acc = 0; hi > 0 && (acc += hist[hi]) < cut; hi--);
+  const [lo, hi] = stretchWindow(hist, grey.length);
   const span = Math.max(1, hi - lo);
   for (let i = 0, j = 0; i < px.length; i += 4, j++) {
     let v = ((grey[j] - lo) / span) * 255;

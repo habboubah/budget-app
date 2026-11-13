@@ -1792,7 +1792,7 @@ export default function App() {
         ]}
         // On every tab: a receipt can be noted down from anywhere, into the month shown.
         add={quickAddCategory && balance.started
-          ? { label: t.addEntry, onClick: () => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory }) }
+          ? { label: t.addEntry, open: entrySheet?.kind === 'new', onClick: () => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory }) }
           : null}
       />
 
