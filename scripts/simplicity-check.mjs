@@ -118,7 +118,7 @@ try {
   const putOff = async page => {
     await page.locator('[data-start="go"]').click();
     for (let i = 0; i < 3; i++) { await wait(page, 350); await page.locator('[data-start="later"]').click(); }
-    await page.waitForSelector('nav button.hero');
+    await page.waitForSelector('[data-tour="add"]');
     await wait(page, 600);
   };
   /** The start, answered: a balance, an income, the rent. */
@@ -132,7 +132,7 @@ try {
     await page.locator('[data-start="next"]').click();
     await wait(page, 700);
     await page.locator('[data-start="finish"]').click();
-    await page.waitForSelector('nav button.hero');
+    await page.waitForSelector('[data-tour="add"]');
     await wait(page, 600);
   };
   const check = async (page, state, rowsOf) => {
@@ -156,7 +156,7 @@ try {
     await check(page, 'the first screen after install');
     await putOff(page);
     await check(page, 'the month page, everything put off');
-    await page.locator('nav button.hero').click();
+    await page.locator('[data-tour="add"]').click();
     await page.waitForSelector('[role="dialog"] input[inputmode="decimal"]');
     await wait(page, 700);
     await check(page, 'the entry sheet, a new entry');
