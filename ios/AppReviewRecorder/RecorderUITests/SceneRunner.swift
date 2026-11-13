@@ -268,6 +268,7 @@ final class SceneRunner {
             let a = try element(from, nth: nth, role: nil, timeout: timeout)
             try scrollIntoView(a)
             let b = try element(to, nth: step.int("toNth") ?? 0, role: nil, timeout: timeout)
+            try bringIntoView(a, b)
             a.press(forDuration: step.number("hold") ?? 0.8, thenDragTo: b, withVelocity: .slow, thenHoldForDuration: 0.4)
             settle(); return
         }
@@ -622,6 +623,40 @@ final class SceneRunner {
         }
     }
 
+    /// A drag needs its row and its drop target on screen at the same time, clear
+    /// of the header and the tab bar: scrolling only the row into view left the
+    /// target card's header under the month bar, and the drop went nowhere.
+    /// Scrolls so the two sit around the middle.
+    func bringIntoView(_ a: XCUIElement, _ b: XCUIElement) throws {
+        for _ in 0..<4 {
+            _ = steady(a)
+            let v = visible, fa = a.frame, fb = b.frame
+            let top = v.minY + 90, bottom = v.maxY - 100
+            let clear = { (f: CGRect) in f.midY > top && f.midY < bottom }
+            if clear(fa) && clear(fb) { return }
+            if abs(fa.midY - fb.midY) > bottom - top {
+                throw StepFailure("“\(a.label)” and “\(b.label)” don't fit on the screen together")
+            }
+            nudge(by: (fa.midY + fb.midY) / 2 - v.midY)
+        }
+        log("  couldn't bring “\(a.label)” and “\(b.label)” fully on screen – dragging anyway")
+    }
+
+    /// Moves the page by about `points`: positive moves the content up (as
+    /// scrolling down does), negative moves it down.
+    func nudge(by points: CGFloat) {
+        let v = visible, w = window
+        let d = max(min(abs(points), v.height * 0.6), 24)
+        let mid = v.minY + v.height * 0.5
+        let startY = points > 0 ? mid + d / 2 : mid - d / 2
+        let endY = points > 0 ? mid - d / 2 : mid + d / 2
+        let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: (startY - w.minY) / w.height))
+        let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: (endY - w.minY) / w.height))
+        // As in scroll(): default speed and a hold, so the page stops where the finger does.
+        from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .default, thenHoldForDuration: 0.1)
+        rest(0.35)
+    }
+
     /// Moves the page (or the open sheet) by `share` of what is visible: almost
     /// half by default, up to two thirds when the target is further away (Reset
     /// app at the end of Settings took a dozen short drags).
@@ -812,11 +847,17 @@ final class SceneRunner {
                     return !f.isEmpty && f.minY > below && window.contains(CGPoint(x: f.midX, y: f.midY))
                         && !suggestions.contains { f.midY >= $0.minY && f.midY <= $0.maxY }
                 }
-            // The file's tile (a cell) – tapping only its name text doesn't open it;
-            // else the smallest match.
-            file = shown.filter { $0.elementType == .cell }
-                .min { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
-                ?? shown.min { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
+            // The file's tile (a cell) – tapping only its name text doesn't open it.
+            // The topmost one: the search results start right under the search field,
+            // while the Recents grid behind them (hidden, but still in the tree) can
+            // hold the same file further down – its thumbnail took every tap meant for
+            // the invoice in scene 5. Ones that can be tapped first.
+            let byPlace = { (a: XCUIElement, b: XCUIElement) -> Bool in
+                a.frame.minY != b.frame.minY ? a.frame.minY < b.frame.minY : a.frame.minX < b.frame.minX
+            }
+            let tappable = shown.filter { $0.isHittable }
+            let pool = tappable.isEmpty ? shown : tappable
+            file = pool.filter { $0.elementType == .cell }.min(by: byPlace) ?? pool.min(by: byPlace)
             if file == nil { rest(0.4) }
         } while file == nil && Date() < fileDeadline
         if file == nil {
@@ -825,14 +866,46 @@ final class SceneRunner {
             file = found
         }
         // On its thumbnail: a tile's cell can be far larger than the tile (its middle
-        // once fell on empty space below the photo).
-        let thumb = file!.images.firstMatch
-        if thumb.exists, !thumb.frame.isEmpty, window.contains(CGPoint(x: thumb.frame.midX, y: thumb.frame.midY)) {
-            thumb.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        } else {
-            try tap(file!)
+        // once fell on empty space below the photo). A tap while the results were
+        // still settling once went nowhere and left the picker open (the invoice in
+        // scene 5), so check that the picker closed and tap again – the second time
+        // on the tile itself.
+        for attempt in 0..<3 {
+            let thumb = file!.images.firstMatch
+            if attempt != 1, thumb.exists, !thumb.frame.isEmpty, window.contains(CGPoint(x: thumb.frame.midX, y: thumb.frame.midY)) {
+                thumb.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            } else {
+                try tap(file!)
+            }
+            if pickerClosed(within: 3) { rest(1); return }
+            log("  the Files picker is still open – tapping \(name) again")
+            rest(0.8)
+            guard file!.exists else { break }
         }
-        rest(1)
+        if pickerClosed(within: 2) { rest(1); return }
+        throw StepFailure("tapping \(name) in Files didn't open it")
+    }
+
+    /// Whether the Files picker closed within the time: no search field left
+    /// outside the web view (the page's own "Search all months" doesn't count).
+    /// Read from one snapshot of the whole tree: element by element, a search field
+    /// that vanished between being listed and being read (the picker closing) failed
+    /// the whole test.
+    private func pickerClosed(within seconds: Double) -> Bool {
+        let deadline = Date().addingTimeInterval(seconds)
+        while filesPickerOpen() && Date() < deadline { rest(0.25) }
+        return !filesPickerOpen()
+    }
+
+    private func filesPickerOpen() -> Bool {
+        // Mid-change the snapshot can fail: count that as still open and look again.
+        guard let root = try? app.snapshot() else { return true }
+        func outsideWeb(_ s: XCUIElementSnapshot, inWeb: Bool) -> Bool {
+            let web = inWeb || s.elementType == .webView
+            if s.elementType == .searchField && !web { return true }
+            return s.children.contains { outsideWeb($0, inWeb: web) }
+        }
+        return outsideWeb(root, inWeb: false)
     }
 
     /// The system date picker: tap the field, then the day in the calendar.
