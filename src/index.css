@@ -552,6 +552,25 @@
 @utility hero-glow {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 0 0 0.5px rgb(255 255 255 / 0.12), 0 18px 36px -14px rgb(var(--hero-glow) / 0.75), 0 4px 10px -4px rgb(var(--hero-glow) / 0.4);
 }
+/* The add button in the tab bar: the hero as a small lit dome — light along
+   its upper rim, shade inside its lower edge, and on the glass beneath it a
+   glow of its own colour. Its ring (`add-halo`) and the ring of light a tap
+   sends out (`add-burst`) are the accent's tint, so they hold by day and at
+   night; only their transform and opacity ever move. */
+@utility add-orb {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.34),
+    inset 0 0 0 0.5px rgb(255 255 255 / 0.16),
+    inset 0 -9px 12px -8px rgb(0 0 0 / 0.3),
+    0 7px 14px -5px rgb(var(--hero-glow) / 0.7),
+    0 2px 4px -1px rgb(var(--hero-glow) / 0.45);
+}
+@utility add-halo {
+  box-shadow: inset 0 0 0 3px rgb(var(--t-accent-rgb) / 0.2);
+}
+@utility add-burst {
+  box-shadow: inset 0 0 0 2px rgb(var(--t-accent-rgb) / 0.75);
+}
 /* The big hero cards only (the balance, a report's summary): fine rings in
    the far corner, like the guilloche of a bank card. Each line is lighter
    than the sheen the audit already allows for, so the ink over it holds. */

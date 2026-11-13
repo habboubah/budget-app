@@ -1068,7 +1068,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   theme, the hero and its panel, the paid ticks — it must pass.
 - **The hero** (`hero` + `hero-glow`): the accent's gradient with a sheen, a
   rim of light and a glow of its own colour. It carries the balance card, the
-  statistics' month summary, the add button and primary `Button`s. The big
+  statistics' month summary, the add button and primary `Button`s. The add
+  button wears it as a small lit dome (`add-orb`: light on the upper rim,
+  shade inside the lower edge, its own glow on the glass) in a ring of the
+  accent's tint (`add-halo`). The big
   hero cards add `hero-art` (fine rings in the far corner) and the balance
   card `hero-shine` (one band of light when it appears); both stay under
   `--hero-sheen`, which the audit reads — keep it that way. The balance card
@@ -1129,7 +1132,14 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `<main>`; `no-rise` holds the copy under a back swipe still). A tab comes
   forward out of a slight depth, a pushed screen slides. A category's paid
   bar slides in from empty (a transform under the track's round mask), the balance card's line is drawn in once per month (its svg is keyed by the month) and its meters run out when the details open, a paid tick pops with a ring spreading out of it, the chosen tab's
-  symbol lands with a bounce. Charts come in once: columns grow from the
+  symbol lands with a bounce. The add button (`AddButton` in `ui/TabBar.tsx`)
+  answers on touch-down, not on release: the dome gives (0.88, no bounce on
+  the way in), its ring swells out from under the fingertip and the plus
+  turns towards a cross; a tap sends one ring of light out of it; the plus
+  stays a cross while the new-entry sheet is up (`add.open`) and springs back
+  when it goes — the sheet covers the bar on a phone, so what the eye gets is
+  the press and the return. Springs throughout, so a touch can take over
+  mid-way; a plus must never turn by 90° (it looks the same afterwards). Charts come in once: columns grow from the
   baseline (`chart-grow`, via `grow()` in Charts.tsx; `col-grow` outside an
   SVG), a line chart is drawn from the left (`ChartFrame reveal`: a clip
   runs across the marks — its width a `motion` attribute, so the grid stays
