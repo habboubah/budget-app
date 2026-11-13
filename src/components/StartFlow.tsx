@@ -250,8 +250,9 @@ export function StartFlow({ t, language, month, fixedNames, canIncome, canFixed,
 
         {step === 'income' && (
           <>
-            <div className="mt-6 flex items-stretch gap-2">
-              <label className={`${box} flex-1 min-w-0`}>
+            {/* The day beside the amount; under it once large text leaves the amount no room (the basis is in rem). */}
+            <div className="mt-6 flex flex-wrap items-stretch gap-2">
+              <label className={`${box} flex-1 min-w-0 basis-[12rem]`}>
                 <span className="sr-only">{t.amount}</span>
                 <span className="rounded-num text-body font-semibold text-pos" aria-hidden="true">+</span>
                 <input
@@ -277,22 +278,25 @@ export function StartFlow({ t, language, month, fixedNames, canIncome, canFixed,
           <>
             <ul className="mt-6 space-y-2">
               {fixed.map((f, i) => (
-                <li key={f.name} className="flex items-stretch gap-2">
-                  <label className={`${box} flex-1 min-w-0`}>
-                    <span className="min-w-0 flex-1 text-body text-fg wrap-compound">{f.name}</span>
-                    <input
-                      ref={i === 0 ? first : undefined}
-                      data-start={`fixed-${i}`}
-                      value={f.amount}
-                      onChange={e => setFixed(list => list.map((x, j) => (j === i ? { ...x, amount: normalizeDigits(e.target.value) } : x)))}
-                      inputMode="decimal"
-                      enterKeyHint="next"
-                      autoComplete="off"
-                      placeholder={amountToInput(0, t.locale)}
-                      aria-label={f.name}
-                      className="w-[5.5rem] shrink-0 bg-transparent py-3 text-body text-fg text-end tabular-nums placeholder:text-fg-faint outline-none"
-                    />
-                    <span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>
+                // Name, amount, day in a line; with large text the amount goes under the name and the day under both.
+                <li key={f.name} className="flex flex-wrap items-stretch gap-2">
+                  <label className={`${box} flex-wrap gap-y-0 flex-1 min-w-0 basis-[13rem]`}>
+                    <span className="min-w-0 flex-1 basis-[5.5rem] py-1 text-body text-fg wrap-compound">{f.name}</span>
+                    <span className="min-w-0 flex-1 basis-[7rem] flex items-center gap-2">
+                      <input
+                        ref={i === 0 ? first : undefined}
+                        data-start={`fixed-${i}`}
+                        value={f.amount}
+                        onChange={e => setFixed(list => list.map((x, j) => (j === i ? { ...x, amount: normalizeDigits(e.target.value) } : x)))}
+                        inputMode="decimal"
+                        enterKeyHint="next"
+                        autoComplete="off"
+                        placeholder={amountToInput(0, t.locale)}
+                        aria-label={f.name}
+                        className="min-w-0 flex-1 bg-transparent py-3 text-body text-fg text-end tabular-nums placeholder:text-fg-faint outline-none"
+                      />
+                      <span className="text-body text-fg-mute" aria-hidden="true">{currencySymbol()}</span>
+                    </span>
                   </label>
                   {dayField(f.day, v => setFixed(list => list.map((x, j) => (j === i ? { ...x, day: v } : x))), `${f.name}: ${t.startDay}`)}
                 </li>
