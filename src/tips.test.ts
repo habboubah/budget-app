@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AppData, Entry } from './types';
 import { defaultCategories } from './data/defaults';
-import { closeTip, knowGuide, nextTip, readTipState, TipContext, TipState } from './tips';
+import { closeTip, knowGestures, knowGuide, nextTip, readTipState, TipContext, TipState } from './tips';
 
 const today = new Date(2026, 10, 20, 12);
 const none: TipState = { done: [] };
@@ -14,6 +14,44 @@ const entry = (over: Partial<Entry>): Entry => ({
 });
 const book = (entries: Entry[], over: Partial<AppData> = {}): AppData =>
   ({ categories: defaultCategories(), months: [{ key: '2026-10', startedAt: 0 }, { key: '2026-11', startedAt: 0 }], entries, ...over });
+
+describe('the gestures, each at its moment (plan 39)', () => {
+  const page: TipContext = { ...web, gestures: true };
+  const five = [1, 2, 3, 4, 5].map(i => entry({ name: `Markt ${i}`, categoryId: ['groceries', 'car', 'fixed', 'extra', 'restaurants'][i - 1] }));
+
+  it('only where they are asked for', () => {
+    expect(nextTip(book([entry({ paid: false })]), none, web)).toBeNull();
+  });
+
+  it('an open entry this month: the circle; five entries: the swipe; two in a category: hold and drag', () => {
+    expect(nextTip(book([entry({ paid: false })]), none, page)).toEqual({ id: 'tick' });
+    // An open entry of an earlier month is not on this page.
+    expect(nextTip(book([entry({ paid: false, month: '2026-10', date: '2026-10-03' })]), none, page)).toBeNull();
+    expect(nextTip(book(five), none, page)).toEqual({ id: 'swipe' });
+    expect(nextTip(book([entry({}), entry({})]), none, page)).toEqual({ id: 'drag' });
+    expect(nextTip(book([entry({})]), none, page)).toBeNull();
+  });
+
+  it('one a day, in their order, and without starting the week’s pause', () => {
+    const all = [...five, entry({ paid: false }), entry({})];
+    expect(nextTip(book(all), none, page)).toEqual({ id: 'tick' });
+    const ticked = closeTip(none, 'tick', today);
+    expect(ticked).toEqual({ done: ['tick'], gesture: '2026-11-20' });
+    expect(nextTip(book(all), ticked, page)).toBeNull();
+    const next = new Date(2026, 10, 21, 12);
+    expect(nextTip(book(all), ticked, { ...page, today: next })).toEqual({ id: 'swipe' });
+    // The week's pause after another tip doesn't hold a gesture back.
+    expect(nextTip(book(all), { done: ['tick', 'guide'], last: '2026-11-20' }, { ...page, today: next })).toEqual({ id: 'swipe' });
+  });
+
+  it('whoever read the old card has all three done', () => {
+    const known = knowGestures({ done: ['guide'] });
+    expect(known.done.sort()).toEqual(['drag', 'guide', 'swipe', 'tick']);
+    expect(nextTip(book([...five, entry({ paid: false })]), known, page)).toBeNull();
+    expect(knowGestures(known)).toBe(known);
+    expect(readTipState({ done: ['tick'], gesture: '2026-11-20', last: 'x' })).toEqual({ done: ['tick'], gesture: '2026-11-20' });
+  });
+});
 
 describe('tips (plan 37)', () => {
   it('an empty or a quiet book gets none', () => {
@@ -83,7 +121,7 @@ describe('tips (plan 37)', () => {
     // Not where the app doesn't offer it, and not within a week of another tip.
     expect(nextTip(book(typed), none, phone)).toEqual({ id: 'capture' });
     expect(nextTip(book(typed), { done: ['reserve'], last: '2026-11-18' }, asked)).toBeNull();
-    // Met another way — Optionen, the tour, the gestures card: done, and no pause for the next tip.
+    // Met another way — Mehr, the tour, the gestures card: done, and no pause for the next tip.
     const known = knowGuide(none);
     expect(known).toEqual({ done: ['guide'] });
     expect(knowGuide(known)).toBe(known);

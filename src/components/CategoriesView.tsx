@@ -33,7 +33,7 @@ interface Props {
 }
 
 /**
- * Optionen → Kategorien und Budgets: every category in the order the month
+ * Mehr › Kategorien und Budgets: every category in the order the month
  * shows them, each with what sets it apart (an income, in every month or
  * not, its budget, how many entries). A tap opens its sheet — name, budget,
  * every-month, picture — and a swipe deletes it, as rows do on the month

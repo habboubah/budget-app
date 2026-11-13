@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
-import { CalendarCheck, Check, ChevronDown, ChevronRight, Eye, EyeOff, PiggyBank } from 'lucide-react';
+import { CalendarCheck, Check, ChevronDown, ChevronRight, ChevronUp, Eye, EyeOff, PiggyBank, Wallet } from 'lucide-react';
 import { MonthBalance } from '../logic';
 import { dateAt, dayLabel, formatMoney, formatMoneyApprox, leftPerDay, monthKeyOf, monthLabel, monthLeft, monthSettled, spoken } from '../logic';
 import { MonthTrack } from '../insights';
@@ -33,6 +33,20 @@ interface Props {
    * — with "Alle Konten" — to switch to.
    */
   account?: AccountSwitch;
+  /**
+   * Folded (plan 39): the balance and one row — what is left at the end of
+   * the month — which opens the rest: the line, the ring, the two panels and
+   * the workings. A new book starts folded; the choice is kept (store).
+   */
+  open?: boolean;
+  onOpen?: (open: boolean) => void;
+  /**
+   * The book knows what is on the account (`balanceGiven`). Without it the
+   * card claims no balance: it says what the month spent, and asks for the
+   * balance (`onBalanceNow`) — a coffee is not a negative account.
+   */
+  given?: boolean;
+  onBalanceNow?: () => void;
 }
 
 export interface AccountSwitch {
@@ -73,12 +87,17 @@ type Note = { text: string; tone: string };
  * With *Beträge verbergen* on, every amount reads "•••• €" (logic.ts) and an
  * eye beside the first caption shows them for a while.
  *
+ * Folded (plan 39, how a new book starts) it is the balance and one row:
+ * *Am Monatsende* with what it still waits for. The row opens everything
+ * above; a slim row at the card's end folds it again. Before the book knows
+ * a balance, the card says what the month spent and offers to enter one.
+ *
  * Swiping the card sideways turns the month, as in Calendar: it follows the
  * finger, slides out, and the next month's comes in from the other side (the
  * figures run to their new values). The ‹ › in the bar do the same for
  * everyone else; the list below keeps its own swipes (paid, delete).
  */
-export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconciledAt, peek, account }: Props) {
+export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconciledAt, peek, account, open = true, onOpen, given = true, onBalanceNow }: Props) {
   const money = (c: number, sign: 'auto' | 'exceptZero' = 'auto') => formatMoney(c, t.locale, sign);
   /** What VoiceOver reads for an amount: the amount, or "Betrag verborgen". */
   const say = (text: string) => spoken(text, t.amountHidden);
@@ -130,7 +149,7 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
               </button>
             )}
             <div className="flex items-center gap-0.5">
-              <p className="eyebrow text-on-hero-mute">{t.balanceNow}</p>
+              <p className="eyebrow text-on-hero-mute">{given ? t.balanceNow : t.spentThisMonth}</p>
               {peek && (
                 <button
                   type="button"
@@ -145,15 +164,62 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
                 </button>
               )}
             </div>
-            <BigMoney cents={b.now} money={money} say={say} />
+            <BigMoney cents={given ? b.now : b.expensePaid} money={money} say={say} />
           </div>
-          {b.expenseCount > 0 && (
+          {open && b.expenseCount > 0 && (
             <PaidRing paid={b.expensePaidCount} total={b.expenseCount} caption={capitalize(t.paidState)} label={fmt(t.paidProgress, { paid: b.expensePaidCount, total: b.expenseCount })} />
           )}
         </div>
       </div>
 
-      {b.started ? (
+      {b.started && !given ? (
+        <>
+          {b.incomePaid !== 0 && (
+            <p className="ps-5 pe-4 -mt-2 pb-3 text-label text-on-hero-mute wrap-prose">
+              {t.income} <span className="num font-semibold text-on-hero whitespace-nowrap">{money(b.incomePaid, 'exceptZero')}</span>
+            </p>
+          )}
+          <div className="mx-2.5 mb-2.5 rounded-[22px] hero-panel overflow-hidden">
+            {onBalanceNow && (
+              <button
+                type="button"
+                onClick={() => { tapLight(); onBalanceNow(); }}
+                className="w-full min-h-tap ps-3.5 pe-2.5 py-3 flex items-center gap-3 text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
+              >
+                <Wallet className="w-5 h-5 shrink-0 text-on-hero-soft" strokeWidth={2.2} aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-body font-semibold text-on-hero wrap-compound">{t.noBalanceAsk}</span>
+                  <span className="block text-caption text-on-hero-soft mt-0.5 wrap-prose">{t.noBalanceAskSub}</span>
+                </span>
+                <ChevronRight className="w-4 h-4 shrink-0 text-on-hero-soft rtl:rotate-180" strokeWidth={2.5} aria-hidden="true" />
+              </button>
+            )}
+            {open && <Workings balance={b} t={t} money={money} />}
+          </div>
+        </>
+      ) : b.started && !open ? (
+        <div className="mx-2.5 mb-2.5 rounded-[22px] hero-panel overflow-hidden">
+          <button
+            type="button"
+            aria-expanded={false}
+            onClick={() => { tapLight(); onOpen?.(true); }}
+            className="w-full min-h-tap ps-3.5 pe-3 pt-3 pb-2.5 flex items-center gap-2 text-start active:opacity-60 transition-opacity focus-visible:ring-focus"
+          >
+            <span className="min-w-0 flex-1">
+              <span className="flex items-start gap-1.5 text-caption font-medium text-on-hero-soft">
+                <CalendarCheck className="w-[15px] h-[15px] shrink-0 mt-[1.5px]" strokeWidth={2.2} aria-hidden="true" />
+                <span className="min-w-0 wrap-prose">{t.balanceEnd}</span>
+              </span>
+              <span className={`block rounded-num text-heading font-bold whitespace-nowrap mt-1 ${b.end < 0 ? 'text-on-hero-neg' : 'text-on-hero'}`}>
+                <span className="sr-only">{say(money(b.end))}</span>
+                <span aria-hidden="true"><CountingMoney cents={b.end} money={money} /></span>
+              </span>
+              <span className={`block text-caption font-medium wrap-prose ${endNote.tone}`}>{endNote.text}</span>
+            </span>
+            <ChevronDown className="w-5 h-5 shrink-0 text-on-hero-soft" strokeWidth={2.5} aria-hidden="true" />
+          </button>
+        </div>
+      ) : b.started ? (
         <>
           {track && <MonthLine track={track} t={t} money={money} say={say} />}
           {/* The two answers. Side by side while both fit; a large amount or
@@ -218,6 +284,18 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
                 </p>
               )}
             </motion.div>
+          )}
+          {/* Back to the balance and one row. */}
+          {onOpen && (
+            <button
+              type="button"
+              aria-expanded
+              onClick={() => { tapLight(); onOpen(false); }}
+              className="w-full min-h-tap -mt-2 ps-5 pe-4 pb-1 flex items-center justify-end gap-1 text-caption text-on-hero-mute active:opacity-60 transition-opacity focus-visible:ring-focus"
+            >
+              {t.less}
+              <ChevronUp className="w-4 h-4 shrink-0" strokeWidth={2.5} aria-hidden="true" />
+            </button>
           )}
         </>
       ) : (

@@ -1,7 +1,7 @@
 import { Strings, fmt } from './translations';
 
 /*
- * Where Optionen › Über Spartopf leads (plan 15). Each opens outside the app
+ * Where Mehr › Einstellungen › Über Spartopf leads (plan 15). Each opens outside the app
  * — the App Store, Mail, Safari — and only when tapped; nothing is fetched.
  * Every URL here is on the privacy check's allowlist.
  */

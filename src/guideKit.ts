@@ -22,18 +22,19 @@ export function guideLabels(t: Strings): Record<string, string> {
     // The tabs, and the two balances.
     month: t.tabMonth, stats: t.tabStats, plan: t.tabInsights, settings: t.tabSettings, now: t.balanceNow, end: t.balanceEnd,
     // On screen as symbols.
-    add: '+', actions: '⋯', save: '✓', info: 'ⓘ', arrows: '‹ ›',
+    add: '+', actions: '⋯', more: '⋯', save: '✓', info: 'ⓘ', arrows: '‹ ›',
     // The entry sheet.
     repeat: t.repeat, split: t.splitPayAction, refund: t.refund, receipt: t.receipt, tag: t.tag, note: t.note,
-    favorite: t.pinFavorite, tax: t.taxPill, undo: t.undo,
+    favorite: t.pinFavorite, tax: t.taxPill, undo: t.undo, calc: t.calcOpen, kindIncome: t.kindIncome,
     // The month page and its "⋯".
     today: t.toThisMonth, due: t.dueTitle, report: t.reportTitle, csv: t.importCsv, pdf: t.importPdf, photo: t.importPhoto,
-    invoice: t.scanInvoice, reconcile: t.reconcileMenuItem, transferNew: t.transferNew, budgetMenu: t.budgetMenu,
+    invoice: t.scanInvoice, reconcile: t.balanceCheck, transferNew: t.transferNew, budgetMenu: t.budgetMenu,
+    importMenu: t.importMenu,
     // Statistik and Planen.
     where: t.whereMoneyGoes, share: t.reportShare, budgets: t.budgetsTitle, budgetSet: t.budgetsAdd, goals: t.goalsTitle,
     goalNew: t.goalNew, runway: t.runwayTitle, outlook: t.outlookTitle, whatIf: t.whatIfTitle, contracts: t.contractsTitle,
-    // Optionen.
-    security: t.securitySection, hide: t.hideAmounts, reminders: t.remindersRow, nudge: t.nudgeRow, capture: t.captureRow,
+    // Mehr, and its Einstellungen.
+    prefs: t.prefsTitle, security: t.securitySection, hide: t.hideAmounts, reminders: t.remindersRow, nudge: t.nudgeRow, capture: t.captureRow,
     review: t.captureReview, display: t.displaySection, language: t.language, appearance: t.appearance, currency: t.currency,
     categories: t.categoriesTitle, favorites: t.favorites, accounts: t.accountsTitle, accountAdd: t.accountAddOther,
     debts: t.debtsTitle, debtAdd: t.debtAdd, projects: t.projectsTitle, projectAdd: t.projectAdd, taxList: t.taxTitle,
@@ -127,12 +128,15 @@ export const MARKS = {
   planRunway: at('plan-runway', 24, 'center'),
   planOutlook: at('plan-outlook', 24, 'center'),
   planGoals: at('plan-goals', 24, 'center'),
-  // Optionen.
-  setSecurity: at('set-security', 24, 'center'),
-  setDisplay: at('set-display', 24, 'center'),
+  // Mehr.
+  setSearch: at('set-search', 999, 'top'),
+  setTransfer: at('set-transfer', 24, 'center'),
   setBook: at('set-book', 24, 'center'),
   setMore: at('set-more', 24, 'center'),
-  setTransfer: at('set-transfer', 24, 'center'),
+  setPrefs: at('set-prefs', 24, 'center'),
+  // Mehr › Einstellungen: what *Zeigen* lights up there (no tour runs through it).
+  setSecurity: at('set-security', 24, 'center'),
+  setDisplay: at('set-display', 24, 'center'),
 } as const satisfies Record<string, TourMark>;
 export type MarkId = keyof typeof MARKS;
 
@@ -142,7 +146,7 @@ export const TOUR_STEPS: Record<TourId, readonly MarkId[]> = {
   entry: ['entryAmount', 'entryName', 'entryCategory', 'entryDetails', 'save'],
   stats: ['statsRange', 'statsHero', 'statsChart', 'statsWhere', 'statsRhythm'],
   plan: ['planPace', 'planBudgets', 'planRunway', 'planOutlook', 'planGoals'],
-  settings: ['setTransfer', 'setBook', 'setMore', 'setDisplay', 'setSecurity'],
+  settings: ['setSearch', 'setTransfer', 'setBook', 'setMore', 'setPrefs'],
 };
 
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);

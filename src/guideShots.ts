@@ -15,7 +15,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "add": [
       377,
-      298
+      299
     ],
     "backup": [
       377,
@@ -23,11 +23,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "balances": [
       377,
-      361
+      222
     ],
     "bank": [
       377,
-      462
+      392
     ],
     "budgets": [
       377,
@@ -67,11 +67,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "invoice": [
       377,
-      325
+      300
     ],
     "lock": [
       377,
-      361
+      345
     ],
     "look": [
       377,
@@ -127,11 +127,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "split": [
       377,
-      127
+      188
     ],
     "stats": [
       377,
-      417
+      392
     ],
     "tax": [
       377,
@@ -145,7 +145,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "add": [
       377,
-      298
+      299
     ],
     "backup": [
       377,
@@ -153,11 +153,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "balances": [
       377,
-      361
+      222
     ],
     "bank": [
       377,
-      462
+      392
     ],
     "budgets": [
       377,
@@ -197,11 +197,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "invoice": [
       377,
-      325
+      300
     ],
     "lock": [
       377,
-      361
+      345
     ],
     "look": [
       377,
@@ -257,11 +257,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "split": [
       377,
-      127
+      188
     ],
     "stats": [
       377,
-      417
+      392
     ],
     "tax": [
       377,
@@ -275,7 +275,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "add": [
       377,
-      298
+      299
     ],
     "backup": [
       377,
@@ -283,11 +283,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "balances": [
       377,
-      379
+      222
     ],
     "bank": [
       377,
-      462
+      370
     ],
     "budgets": [
       377,
@@ -315,11 +315,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "excel": [
       377,
-      263
+      245
     ],
     "favorites": [
       377,
-      266
+      275
     ],
     "goals": [
       377,
@@ -327,7 +327,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "invoice": [
       377,
-      303
+      318
     ],
     "lock": [
       377,
@@ -355,7 +355,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "private": [
       377,
-      222
+      202
     ],
     "projects": [
       377,
@@ -405,7 +405,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "add": [
       377,
-      298
+      299
     ],
     "backup": [
       377,
@@ -413,11 +413,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "balances": [
       377,
-      379
+      222
     ],
     "bank": [
       377,
-      462
+      370
     ],
     "budgets": [
       377,
@@ -445,11 +445,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "excel": [
       377,
-      263
+      245
     ],
     "favorites": [
       377,
-      266
+      275
     ],
     "goals": [
       377,
@@ -457,7 +457,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "invoice": [
       377,
-      303
+      318
     ],
     "lock": [
       377,
@@ -485,7 +485,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "private": [
       377,
-      222
+      202
     ],
     "projects": [
       377,
@@ -535,7 +535,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "add": [
       377,
-      298
+      299
     ],
     "backup": [
       377,
@@ -543,11 +543,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "balances": [
       377,
-      343
+      222
     ],
     "bank": [
       377,
-      360
+      352
     ],
     "budgets": [
       377,
@@ -579,7 +579,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "favorites": [
       377,
-      266
+      275
     ],
     "goals": [
       377,
@@ -587,7 +587,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "invoice": [
       377,
-      267
+      300
     ],
     "lock": [
       377,
@@ -623,7 +623,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "receipts": [
       377,
-      144
+      196
     ],
     "reconcile": [
       377,
@@ -651,7 +651,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "stats": [
       377,
-      392
+      375
     ],
     "tax": [
       377,
@@ -665,7 +665,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "add": [
       377,
-      298
+      299
     ],
     "backup": [
       377,
@@ -673,11 +673,11 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "balances": [
       377,
-      343
+      222
     ],
     "bank": [
       377,
-      360
+      352
     ],
     "budgets": [
       377,
@@ -709,7 +709,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "favorites": [
       377,
-      266
+      275
     ],
     "goals": [
       377,
@@ -717,7 +717,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "invoice": [
       377,
-      267
+      300
     ],
     "lock": [
       377,
@@ -753,7 +753,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "receipts": [
       377,
-      144
+      196
     ],
     "reconcile": [
       377,
@@ -781,7 +781,7 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     ],
     "stats": [
       377,
-      392
+      375
     ],
     "tax": [
       377,

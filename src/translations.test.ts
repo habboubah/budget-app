@@ -43,6 +43,13 @@ describe.each([...languages])('%s', lang => {
     expect(t.csvHeader.split(';')).toHaveLength(de.csvHeader.split(';').length);
   });
 
+  it('says the contracts in three parts, the year last: Planen’s headline shows the first two (plan 39)', () => {
+    const parts = t.contractsSub.split(' · ');
+    expect(parts).toHaveLength(3);
+    expect(parts[2]).toContain('{yearly}');
+    expect(parts.slice(0, 2).join(' ')).not.toContain('{yearly}');
+  });
+
   it('names every built-in category, and every suggestion that isn’t a brand', () => {
     for (const c of defaultCategories()) expect(c.names[lang], `${c.id}`).toBeTruthy();
     for (const [id, list] of Object.entries(NAME_SUGGESTIONS)) {

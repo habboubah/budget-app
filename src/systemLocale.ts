@@ -1,7 +1,7 @@
 /*
  * What the phone is set to, for the first start and after "Reset app":
  * its language, and its region for the currency. A choice made under
- * Optionen always wins after that; these are only the starting values.
+ * Einstellungen always wins after that; these are only the starting values.
  * Nothing found → German and US dollars (DEFAULT_LANGUAGE, FALLBACK_CURRENCY).
  */
 import { Language, isLanguage, DEFAULT_LANGUAGE } from './translations';

@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { motion } from 'motion/react';
-import { CircleMinus, Gauge, Plus } from 'lucide-react';
+import { ChevronDown, CircleMinus, Gauge, Plus } from 'lucide-react';
 import { Category } from '../types';
 import { displayName } from '../logic';
 import { Strings } from '../translations';
@@ -15,8 +15,12 @@ import { rise } from '../ui/stagger';
  * or take the category out of this month. It is a drop target like a card
  * (`data-drop-category`): an entry dragged onto it moves there, and the
  * category, no longer empty, comes back as a card in its place.
+ *
+ * `folded` (plan 39, a book that is still new): one chip — "Kategorien (8)"
+ * — instead of the row; a tap opens it. Eight empty names under the first
+ * entry read as eight things still to do.
  */
-export function EmptyCategories({ categories, language, t, dropOn, onAdd, onRemove, onBudget }: {
+export function EmptyCategories({ categories, language, t, dropOn, onAdd, onRemove, onBudget, folded, onUnfold }: {
   categories: Category[];
   language: string;
   t: Strings;
@@ -26,10 +30,27 @@ export function EmptyCategories({ categories, language, t, dropOn, onAdd, onRemo
   onRemove: (c: Category) => void;
   /** Give a spending category a monthly budget (it then gets its card back). */
   onBudget: (c: Category) => void;
+  folded?: boolean;
+  onUnfold?: () => void;
 }) {
   const [menu, setMenu] = useState<{ at: HTMLElement; category: Category } | null>(null);
   const headingId = useId();
   const open = menu?.category;
+  if (folded) {
+    return (
+      <motion.div variants={rise} className="px-1">
+        <button
+          type="button"
+          aria-expanded={false}
+          onClick={() => { tapLight(); onUnfold?.(); }}
+          className="min-h-tap rounded-full bg-surface card-edge ps-4 pe-3 py-1.5 inline-flex items-center gap-1.5 text-label text-fg-mute active:scale-[0.97] transition-transform focus-visible:ring-focus"
+        >
+          <span className="tabular-nums">{t.categories} ({categories.length})</span>
+          <ChevronDown className="w-4 h-4 shrink-0" strokeWidth={2.5} aria-hidden="true" />
+        </button>
+      </motion.div>
+    );
+  }
   return (
     <motion.section variants={rise} aria-labelledby={headingId} className="px-1">
       <h2 id={headingId} className="mb-2 text-caption font-semibold text-fg-mute">{t.emptyCategories}</h2>

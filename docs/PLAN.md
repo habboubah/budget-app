@@ -80,16 +80,17 @@ always did.
    budgets, *Ausblick* with *Kann ich mir das leisten?*, the reserve for
    yearly bills, savings pots, subscriptions and contracts, debts, trips and
    projects, *Finanz-Check*.
-5. **Optionen** – security and notifications (lock, hide amounts, reminders,
-   backup on the device), display (language, appearance, colour, currency),
-   the budget book (categories and budgets, accounts, debts, trips, tax list,
-   rules, favourites, month start, automatic capture, backup and transfer),
-   test data, about, reset.
+5. **Mehr** – what is done outside a month: the guide, backup and transfer,
+   the budget book (categories and budgets, accounts, favourites), the tools
+   (importing, debts, trips, tax list, rules, automatic capture) — and under
+   it **Einstellungen**, what is set once: display (language, appearance,
+   colour, currency), security and notifications (hide amounts, lock,
+   reminders, backup on the device), month start, test data, about, reset.
 
 ## How it was built
 
 The first version came in nine steps (project, data model, month screen,
-months, Statistik, Optionen, iOS and the release pipeline, polish, Excel
+months, Statistik, Optionen (now *Mehr*), iOS and the release pipeline, polish, Excel
 import). Since then every feature has been a numbered plan in
 [plans/](plans/README.md) — a finished plan's file is deleted, its result
 lives in [features.md](features.md) and [CLAUDE.md](CLAUDE.md) — plus two

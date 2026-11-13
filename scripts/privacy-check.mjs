@@ -32,11 +32,11 @@ const ALLOWED_URLS = [
   [/^https:\/\/cdn\.jsdelivr\.net\/npm\/(tesseract\.js|tesseract\.js-core|@tesseract\.js-data)\b/,
     "tesseract.js's default download paths; src/ocr.ts passes local ones (ocr/) — the OCR step below proves none is used"],
   [/^https:\/\/apps\.apple\.com\/app\/id\d+\?action=write-review$/,
-    'Optionen › Spartopf bewerten (src/links.ts): handed to the App Store when tapped, never fetched'],
+    'Mehr › Einstellungen › Spartopf bewerten (src/links.ts): handed to the App Store when tapped, never fetched'],
   [/^https:\/\/play\.google\.com\/store\/apps\/details\?id=com\.habboubah\.spartopf$/,
-    'Optionen › Spartopf bewerten in the Android app (src/links.ts): handed to Google Play when tapped, never fetched'],
+    'Mehr › Einstellungen › Spartopf bewerten in the Android app (src/links.ts): handed to Google Play when tapped, never fetched'],
   [/^https:\/\/habboubah\.github\.io\/privacy-policy\/spartopf\/(de\/)?$/,
-    'Optionen › Datenschutz (src/links.ts): opened in Safari when tapped, never fetched'],
+    'Mehr › Einstellungen › Datenschutz (src/links.ts): opened in Safari when tapped, never fetched'],
   // Only in pdf.js's own chunks (pdfjs-dist, legacy build): the third entry limits a rule to those files.
   [/^http:\/\/(www\.xfa\.org\/schema|ns\.adobe\.com|www\.w3\.org)\//,
     'pdf.js: XML namespaces it compares against while reading a PDF — never fetched', /assets[\\/]pdf[.-]/],
@@ -86,7 +86,7 @@ try {
     return route.abort();
   });
   // A fresh install starts in English whatever the device speaks; the steps below
-  // find their buttons by German labels. Pick German as a person would in Optionen —
+  // find their buttons by German labels. Pick German as a person would on the start —
   // only the language, so the first run is otherwise the untouched one.
   await ctx.addInitScript(() => {
     try { if (localStorage.getItem('spartopf-lang') == null) localStorage.setItem('spartopf-lang', 'de'); } catch { /* no storage */ }
@@ -101,8 +101,15 @@ try {
   console.log('Requests while using the app');
   await step('first run', async () => {
     await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
-    await page.locator('main section input[inputmode="decimal"]').first().fill('1234,56');
-    await page.locator('main section form button[type="submit"]').first().click();
+    // The start (plan 39), a chunk of its own: the welcome, the balance, the two
+    // other questions put off, and what it comes to.
+    await page.locator('[data-start="go"]').click();
+    await page.locator('[data-start="balance"]').fill('1234,56');
+    await page.locator('[data-start="next"]').click();
+    await page.locator('[data-start="later"]').click();
+    await page.locator('[data-start="later"]').click();
+    await page.locator('[data-start="finish"]').click();
+    await page.waitForSelector('nav button.hero');
     await page.waitForTimeout(300);
   });
   await step('an entry added and ticked off', async () => {
@@ -119,6 +126,10 @@ try {
   await step('the guide opened, searched, and the tour taken', async () => {
     // The guide's screen, its words and the tour are chunks loaded here for the first time: from this origin only.
     await tab(3);
+    // Mehr's own search reads the guide's words too (plan 39): the same chunks, a moment earlier.
+    await page.locator('[data-tour="set-search"] input').fill('pdf');
+    await page.waitForSelector('main section button', { timeout: 10000 });
+    await page.locator('[data-tour="set-search"] input').fill('');
     await page.locator('main button', { hasText: 'Anleitung' }).first().click();
     await page.waitForSelector('[data-guide-topic]', { timeout: 10000 });
     await page.locator('input[type="search"]').fill('pdf');
@@ -135,7 +146,7 @@ try {
       await page.keyboard.press('Escape').catch(() => {});
       await page.waitForTimeout(300);
     }
-    // Optionen still shows the guide (a tab keeps its place): back to its root for the steps below.
+    // Mehr still shows the guide (a tab keeps its place): back to its root for the steps below.
     await tab(3);
     await page.locator('header button').first().click();
     await page.waitForTimeout(400);
@@ -217,7 +228,10 @@ try {
     await page.locator('nav button.hero').click();
     await page.waitForSelector('[role="dialog"]');
     await page.locator('[role="dialog"] input[inputmode="decimal"]').first().fill('7,77');
-    await page.locator('[role="dialog"] button[aria-label="Beleg anhängen"]').click();
+    // On a new book the receipt pill waits behind the sheet's "⋯" (plan 39).
+    const receipt = page.locator('[role="dialog"] button[aria-label="Beleg anhängen"]');
+    if (!(await receipt.count())) await page.locator('[role="dialog"] [data-tour="entry-more"]').click();
+    await receipt.click();
     const chooser = page.waitForEvent('filechooser', { timeout: 5000 });
     await page.locator('[role="menuitem"]', { hasText: 'Foto oder PDF wählen' }).click();
     await (await chooser).setFiles({ name: 'Kassenbon.jpg', mimeType: 'image/jpeg', buffer: photo });

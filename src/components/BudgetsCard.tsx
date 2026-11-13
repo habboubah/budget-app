@@ -17,18 +17,61 @@ import { BudgetBar } from './BudgetBar';
  * what that leaves per day. A row opens its budget; "Budget festlegen" picks
  * a spending category that has none yet, with the average it would suggest.
  */
-export function BudgetsCard({ data, month, language, t, onBudget }: {
+export function BudgetsCard({ data, month, language, t, onBudget, invite }: {
   data: AppData;
   month: MonthKey;
   language: string;
   t: Strings;
   onBudget: (c: Category) => void;
+  /** Planen as headlines, and no budget yet (plan 39): the invitation alone — "Budget festlegen" as one row. */
+  invite?: boolean;
 }) {
   const money = (c: number) => formatMoney(c, t.locale);
   const short = (c: number) => formatMoneyShort(c, t.locale);
   const { items, within } = monthBudgets(data, month);
   const [pickAt, setPickAt] = useState<HTMLElement | null>(null);
   const without = data.categories.filter(c => c.kind === 'expense' && !c.limit);
+
+  const picker = (
+    <Menu
+      anchor={pickAt}
+      label={t.budgetsAdd}
+      groups={[without.map(c => {
+        const s = suggestLimit(data, c.id);
+        return {
+          key: c.id,
+          label: displayName(c.names, language),
+          sub: s ? fmt(s.months === 1 ? t.budgetSuggestOne : t.budgetSuggestMany, { amount: short(s.amount), n: s.months }) : undefined,
+          onSelect: () => onBudget(c),
+        };
+      })]}
+      onClose={() => setPickAt(null)}
+    />
+  );
+
+  if (invite && items.length === 0) {
+    if (!without.length) return null;
+    return (
+      <>
+        <button
+          type="button"
+          aria-haspopup="menu"
+          onClick={e => { tapLight(); setPickAt(e.currentTarget); }}
+          className="w-full rounded-md bg-surface card-edge px-[16px] py-3.5 flex items-center gap-3 text-start active:bg-surface-2 transition-colors focus-visible:ring-focus"
+        >
+          <span className="w-8 h-8 rounded-full bg-accent-dim text-accent inline-flex items-center justify-center shrink-0" aria-hidden="true">
+            <Plus className="w-5 h-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-body text-fg wrap-compound">{t.budgetsAdd}</span>
+            <span className="block text-caption text-fg-mute wrap-prose">{t.budgetsAddSub}</span>
+          </span>
+          <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
+        </button>
+        {picker}
+      </>
+    );
+  }
 
   return (
     <Card
@@ -96,20 +139,7 @@ export function BudgetsCard({ data, month, language, t, onBudget }: {
           </span>
         </button>
       )}
-      <Menu
-        anchor={pickAt}
-        label={t.budgetsAdd}
-        groups={[without.map(c => {
-          const s = suggestLimit(data, c.id);
-          return {
-            key: c.id,
-            label: displayName(c.names, language),
-            sub: s ? fmt(s.months === 1 ? t.budgetSuggestOne : t.budgetSuggestMany, { amount: short(s.amount), n: s.months }) : undefined,
-            onSelect: () => onBudget(c),
-          };
-        })]}
-        onClose={() => setPickAt(null)}
-      />
+      {picker}
     </Card>
   );
 }

@@ -34,13 +34,19 @@ export function paceHeadline(p: Pace, t: Strings): string {
  * and the three figures, then steps through the weeks; *Als Tabelle* has
  * every week's values.
  */
-export function PaceCard({ pace: p, categories, language, t, onReport, onExplain }: {
+export function PaceCard({ pace: p, categories, language, t, onReport, onExplain, lean }: {
   pace: Pace;
   categories: Category[];
   language: string;
   t: Strings;
   onReport: () => void;
   onExplain: (e: Explain) => void;
+  /**
+   * Planen as headlines (plan 39): while there is no usual month to compare
+   * with — a book's first — the card says what was spent, where, and when the
+   * comparison begins, and leaves out the chart of one line and its table.
+   */
+  lean?: boolean;
 }) {
   const monthName = monthLabel(p.month, t.locale, 'name');
   const money = (c: number) => formatMoney(c, t.locale);
@@ -78,6 +84,7 @@ export function PaceCard({ pace: p, categories, language, t, onReport, onExplain
     excluded: t.explainPaceOut,
   });
   const tone = p.verdict === 'above' || p.verdict === 'below' ? TONE[p.verdict] : 'text-on-hero';
+  const chart = !(lean && p.verdict === 'none');
   const whole = (c: number) => formatMoneyWhole(c, t.locale);
   // The chart's three figures, written out: up to today, a usual month by today, this month's end.
   const tiles = [
@@ -113,9 +120,11 @@ export function PaceCard({ pace: p, categories, language, t, onReport, onExplain
         {p.basis.length === 1 && ` · ${t.paceBasisOne}`}
       </p>
       <p className="sr-only">{summary}</p>
-      <div className="mt-3">
-        <PaceChart pace={p} now={monthName} t={t} groups={groups} />
-      </div>
+      {chart && (
+        <div className="mt-3">
+          <PaceChart pace={p} now={monthName} t={t} groups={groups} />
+        </div>
+      )}
       {p.verdict === 'none' && (
         <p className="text-caption text-fg-mute mt-2 wrap-prose">{fmt(t.paceNoneBody, { month: monthLabel(addMonths(p.month, 1), t.locale, 'name') })}</p>
       )}
@@ -129,6 +138,7 @@ export function PaceCard({ pace: p, categories, language, t, onReport, onExplain
           <p className="mt-1.5 text-caption text-fg-mute tabular-nums wrap-prose" aria-hidden="true">{shares.join(' · ')}</p>
         </div>
       )}
+      {chart && (
       <details className="mt-3 group">
         <summary className="min-h-tap -mx-1 px-1 flex items-center gap-2 text-label font-semibold text-accent cursor-pointer list-none focus-visible:ring-focus rounded-sm">
           <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90 rtl:rotate-180" aria-hidden="true" />
@@ -153,10 +163,11 @@ export function PaceCard({ pace: p, categories, language, t, onReport, onExplain
           </tbody>
         </table>
       </details>
+      )}
       <button
         type="button"
         onClick={() => { tapLight(); onReport(); }}
-        className="mt-1 -mb-2 -mx-1 px-1 h-tap w-[calc(100%+0.5rem)] flex items-center gap-1 text-label font-semibold text-accent active:opacity-60 focus-visible:ring-focus rounded-sm"
+        className={`${chart ? 'mt-1' : 'mt-2'} -mb-2 -mx-1 px-1 h-tap w-[calc(100%+0.5rem)] flex items-center gap-1 text-label font-semibold text-accent active:opacity-60 focus-visible:ring-focus rounded-sm`}
       >
         <span className="flex-1 text-start">{t.reportTitle}</span>
         <ChevronRight className="w-4 h-4 rtl:rotate-180" strokeWidth={2.4} aria-hidden="true" />

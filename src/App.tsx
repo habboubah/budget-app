@@ -2,13 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { motion, useTransform } from 'motion/react';
-import { AlertTriangle, BarChart3, CalendarDays, PiggyBank, Settings } from 'lucide-react';
+import { AlertTriangle, ArrowLeftRight, BarChart3, CalendarDays, Circle, CircleEllipsis, Hand, PiggyBank } from 'lucide-react';
 import { useAppStore } from './store';
 import { fmt, plural, stringsFor } from './translations';
 import { AccountKind, Category, Contract, Entry, EntryDraft, MonthKey } from './types';
 import {
-  ALL_ACCOUNTS, MAIN_ACCOUNT, REVIEW_RULE, ReviewMoment, accountName, accountTotals, accountView, accountsOf, addMonths, balanceFor, canDeleteAccount, carryCandidates,
-  computeBalances, displayName, formatMoneyShort, formatPercent, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
+  ALL_ACCOUNTS, MAIN_ACCOUNT, REVIEW_RULE, ReviewMoment, accountName, accountTotals, accountView, accountsOf, addMonths, balanceFor, balanceGiven, canDeleteAccount, carryCandidates,
+  computeBalances, displayName, formatMoney, formatMoneyShort, formatPercent, hasAccounts, intoAccount, monthCategories, monthKeyOf, monthLabel, monthTransfers, openBefore, setAmountsHidden,
   shouldAskForReview, transferPair, uid,
   changeMonthStart,
 } from './logic';
@@ -23,7 +23,10 @@ import { Explain, ExplainSheet } from './components/ExplainSheet';
 import { hintExplain } from './components/HintRows';
 import { ShareImage, renderShareImage } from './shareImage';
 import { shareImage } from './export';
-import { SetupCard, TipsCard } from './components/SetupCard';
+import { FirstStep, FirstStepsRow, FirstStepsSheet } from './components/FirstSteps';
+import { DemoPill } from './components/DemoPill';
+import { StartAnswers, startPlan } from './start';
+import { NAME_SUGGESTIONS } from './data/defaults';
 import { BudgetHow, BudgetSheet } from './components/BudgetSheet';
 import { DueSoonView } from './components/DueSoonView';
 import { ContractsView } from './components/ContractsView';
@@ -32,6 +35,7 @@ import { ContractItem, contractItems } from './contracts';
 import { MonthPickerSheet } from './components/MonthPickerSheet';
 import { EntrySheet, EntrySheetMode } from './components/EntrySheet';
 import { OpeningSheet } from './components/OpeningSheet';
+import { BalanceNowSheet } from './components/BalanceNowSheet';
 import { ReconcileSheet } from './components/ReconcileSheet';
 import { SplitSheet } from './components/SplitSheet';
 import { AccountsView } from './components/AccountsView';
@@ -42,6 +46,7 @@ import { TransfersCard } from './components/TransfersCard';
 import { DebtsCard, DebtsView } from './components/DebtsView';
 import { DebtSheet, DebtSheetMode } from './components/DebtSheet';
 import { MonthActionsMenu } from './components/MonthActionsMenu';
+import { ImportKind, ImportSheet } from './components/ImportSheet';
 import { StatsView } from './components/StatsView';
 import { InsightsView } from './components/InsightsView';
 import { WhatIfSheet } from './components/WhatIfSheet';
@@ -49,7 +54,8 @@ import { ProjectsCard, ProjectsView } from './components/ProjectsView';
 import { ProjectSheet, ProjectSheetMode } from './components/ProjectSheet';
 import { TaxView } from './components/TaxView';
 import { GuideBackPill } from './components/GuideBackPill';
-import { SettingsView } from './components/SettingsView';
+import { GuideHit, MoreView, PrefsSection } from './components/MoreView';
+import { PreferencesView } from './components/PreferencesView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
@@ -72,8 +78,8 @@ import { buildAmounts, buildSnapshot } from './native/snapshot';
 import { inboxReview, inboxToEntries } from './native/inbox';
 import { CaptureView } from './components/CaptureView';
 import { HintCard } from './components/HintCard';
-import { nextTip } from './tips';
-import { GuideTopic, GuideTopicId, GuideWords, topicText } from './guide';
+import { isGestureTip, nextTip } from './tips';
+import { GuideTopic, GuideTopicId, GuideWords, guideTopics, topicText } from './guide';
 import type { MarkId, TourId } from './guideKit';
 import { guidePages, loadGuidePages } from './guidePages';
 import { DeepLink, parseDeepLink } from './native/deepLink';
@@ -107,6 +113,11 @@ import { useEdgeSwipeBack } from './ui/useEdgeSwipeBack';
  */
 let GuideScreen: typeof import('./components/GuideView').GuideView | null = null;
 let TourOverlay: typeof import('./components/Tour').Tour | null = null;
+/** The start (plan 39): only a new book ever shows it, so it is a chunk of its own too. */
+let StartScreen: typeof import('./components/StartFlow').StartFlow | null = null;
+const loadStart = () => import('./components/StartFlow').then(m => { StartScreen = m.StartFlow; });
+/** The fixed costs the start asks about, by their German names in `NAME_SUGGESTIONS.fixed`. */
+const START_FIXED = ['Miete', 'Strom', 'Internet', 'Handy', 'Versicherung'];
 const loadGuide = () => import('./components/GuideView').then(m => { GuideScreen = m.GuideView; });
 /** The tours' marks and the labels a text names (src/guideKit.ts): loaded with the tour. */
 let guideKit: typeof import('./guideKit') | null = null;
@@ -128,7 +139,7 @@ type TourState = {
   guide?: boolean;
 } | null;
 
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'preferences';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -136,7 +147,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings', preferences: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -188,6 +199,10 @@ export default function App() {
   const [tab, setTab] = useState<TabId>('month');
   /** A screen the guide's *Zeigen* opened is shown: back leads to the guide again (see `under` below). */
   const [guideReturn, setGuideReturn] = useState(false);
+  /** A screen pushed from *Einstellungen* is shown (the reminders): back leads there again, not to *Mehr*. */
+  const [prefsReturn, setPrefsReturn] = useState(false);
+  /** The group of *Einstellungen* a search in *Mehr* led to. */
+  const [prefsSection, setPrefsSection] = useState<PrefsSection | undefined>(undefined);
   /** *Zeigen* or a tour led away from the guide to where no back button leads to it: the capsule above the tab bar does. */
   const [guideAway, setGuideAway] = useState(false);
   /** Per tab, the screen pushed over its root — each tab keeps its place, as on iOS. */
@@ -198,6 +213,7 @@ export default function App() {
     setStack(s => ({ ...s, [onTab]: to }));
     // Whatever is pushed, it isn't the guide's doing — unless guideGo says so right after.
     setGuideReturn(false);
+    setPrefsReturn(false);
   };
   const popTo = (onTab: TabId) => setStack(s => ({ ...s, [onTab]: undefined }));
   /** Every entry read once per change: what Statistik, Planen and the reports compute from. */
@@ -233,6 +249,8 @@ export default function App() {
   const [month, setMonth] = useState<MonthKey>(monthKeyOf);
   const [entrySheet, setEntrySheet] = useState<EntrySheetMode>(null);
   const [openingOpen, setOpeningOpen] = useState(false);
+  /** "How much is on your account right now?" — for a book without a balance yet (plan 39). */
+  const [balanceNowOpen, setBalanceNowOpen] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const [splitEntry, setSplitEntry] = useState<Entry | null>(null);
   const [goalSheet, setGoalSheet] = useState<GoalSheetMode>(null);
@@ -248,15 +266,12 @@ export default function App() {
   const [contractFor, setContractFor] = useState<ContractItem | null>(null);
   /** The month's "⋯" menu is open from this button. */
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
+  /** Every way to import, on one sheet (plan 39). */
+  const [importOpen, setImportOpen] = useState(false);
+  /** The guide's *Zeigen* points at a pill behind the entry sheet's *Mehr*: shown while that sheet is open. */
+  const [showMore, setShowMore] = useState(false);
   /** The category the round add button opens with: the one used last. */
   const [lastCategory, setLastCategory] = useState<string | null>(null);
-  /**
-   * The first run's "how much is on your account right now", while the setup
-   * runs: what is entered in it as already paid happened before that look at
-   * the bank, so it moves the month's opening instead of the balance now.
-   * Ends with the setup, a reload, or an opening set by hand.
-   */
-  const [setupNow, setSetupNow] = useState<{ month: MonthKey; now: number } | null>(null);
 
   // ---- The lock. Locked from the very first render of a cold start, so not
   // one frame of the book shows; while locked only the lock screen renders.
@@ -359,6 +374,30 @@ export default function App() {
   }, [native]);
 
   const balance = balanceFor(balances, month);
+  /**
+   * The book knows what is on the account (plan 39). A book with several
+   * accounts gave each one its balance when it was added.
+   */
+  const given = multi || balanceGiven(balances, month);
+  /**
+   * Past its first days: fifteen entries, or entries in a second month. Until
+   * then the month page keeps the search, the pending filter and the row of
+   * empty categories back (plan 39).
+   */
+  const grown = useMemo(() => entries.length >= 15 || new Set(entries.map(e => e.month)).size >= 2, [entries]);
+  /**
+   * The balance as the banking app shows it now, for a book that had none:
+   * it becomes the running month's opening — what is ticked there happened
+   * since the month began — or the shown month's when the running one isn't
+   * started.
+   */
+  const saveBalanceNow = (now: number) => {
+    const running = balances.find(b => b.key === monthKeyOf());
+    const b = running ?? balance;
+    store.setOpening(b.key, now - (b.incomePaid - b.expensePaid) - (b.transferPaid ?? 0), target);
+    notifySuccess();
+    show(t.openingSaved);
+  };
   // The balance card's line: the shown account's month, day by day.
   const track = useMemo(() => monthTrack(data, balance, account), [data, balance, account]);
   const prevBalance = balance.prevKey ? balances.find(b => b.key === balance.prevKey) : undefined;
@@ -401,13 +440,15 @@ export default function App() {
   /**
    * The guide's *Zeigen* (src/guide.ts) opens a screen in the guide's place —
    * a tab holds one pushed screen. From there, back leads to the guide again
-   * rather than to Optionen: `under` is what lies beneath the screen shown.
+   * rather than to Mehr: `under` is what lies beneath the screen shown.
    */
-  const under: ScreenId = guideReturn && tab === 'settings' && pushed && pushed !== 'guide' ? 'guide' : tab;
+  const under: ScreenId = guideReturn && tab === 'settings' && pushed && pushed !== 'guide' ? 'guide'
+    : prefsReturn && tab === 'settings' && pushed === 'reminders' ? 'preferences' : tab;
   /** Set for the one change that should slide though the depth stays the same (guide ⇄ what it showed). */
   const slide = useRef<0 | 1 | -1>(0);
   const back = () => {
     if (under === 'guide') { slide.current = -1; setGuideReturn(false); setStack(s => ({ ...s, settings: 'guide' })); }
+    else if (under === 'preferences') { slide.current = -1; setPrefsReturn(false); setStack(s => ({ ...s, settings: 'preferences' })); }
     else popTo(tab);
   };
   // The iOS back gesture on a pushed screen (touch, from the leading edge).
@@ -454,15 +495,6 @@ export default function App() {
     });
     return () => { void handle.then(h => h.remove()); };
   }, [pushed, tab, under]);
-
-  // While the setup runs: opening = the balance given − what the month has settled since.
-  useEffect(() => {
-    if (!setupNow || store.introDone) return;
-    const b = store.balances.find(x => x.key === setupNow.month);
-    if (!b || b.prevKey) return;
-    const want = setupNow.now - (b.incomePaid - b.expensePaid);
-    if (!b.overridden || b.openingNow !== want) store.setOpening(setupNow.month, want);
-  }, [setupNow, store.balances, store.introDone]);
 
   // Reminders: after a change settles, and on every return to the app, what is
   // pending on the device becomes the plan again (iPhone app only).
@@ -519,7 +551,9 @@ export default function App() {
     // A new entry in a folded category unfolds it, so it can be seen landing.
     store.expand(d.categoryId);
     setLastCategory(d.categoryId);
-    show(budgetNote([...data.entries, entry], d.categoryId, m) ?? fmt(t.entryAdded, { name: d.name }));
+    // The confirmation offers the next one (plan 39: one *Sichern* in the sheet).
+    show(budgetNote([...data.entries, entry], d.categoryId, m) ?? fmt(t.entryAdded, { name: d.name }),
+      { label: t.addAnother, run: () => setEntrySheet({ kind: 'new', month: m, categoryId: d.categoryId }) });
   };
 
   /**
@@ -598,7 +632,7 @@ export default function App() {
     if (n) show(fmt(t.monthStartedCarried, { month: monthLabel(month, t.locale), n }));
   }, [month, balance.started]);
 
-  /** Optionen → Testdaten: a year of test data beside the user's own, shown on the running month. Undoable. */
+  /** Mehr › Einstellungen › Testdaten: a year of test data beside the user's own, shown on the running month. Undoable. */
   const addDemo = () => {
     const before = store.addDemo();
     notifySuccess();
@@ -608,7 +642,7 @@ export default function App() {
     show(t.demoAdded, { label: t.undo, run: () => store.restoreData(before) });
   };
 
-  /** Take the test data out again (confirmed in Optionen); the user's own data stays. Undoable. */
+  /** Take the test data out again (confirmed in Einstellungen); the user's own data stays. Undoable. */
   const removeDemo = () => {
     const before = store.removeDemo();
     notifyWarning();
@@ -616,7 +650,7 @@ export default function App() {
     show(t.demoRemoved, { label: t.undo, run: () => store.restoreData(before) });
   };
 
-  /** Optionen › Monat beginnt am (plan 32): every dated entry to its new month, shown on the running one. Undoable. */
+  /** Mehr › Einstellungen › Monat beginnt am (plan 32): every dated entry to its new month, shown on the running one. Undoable. */
   const [monthStartOpen, setMonthStartOpen] = useState(false);
   const changeStart = (day: number) => {
     const before = store.changeStart(day);
@@ -632,6 +666,12 @@ export default function App() {
     show(fmt(t.monthDeleted, { month: monthLabel(month, t.locale) }), {
       label: t.undo, run: () => store.restoreMonth(removed),
     });
+  };
+
+  /** A way to import, picked on the sheet: its file picker opens in the same tap. */
+  const pickImport = (kind: ImportKind) => {
+    setImportOpen(false);
+    (kind === 'photo' ? photoInput : kind === 'csv' ? statementInput : kind === 'pdf' ? pdfInput : kind === 'invoice' ? invoiceInput : excelInput).current?.click();
   };
 
   const onExcelFile = async (f: File | undefined) => {
@@ -978,7 +1018,7 @@ export default function App() {
     }
     setPrinting(null);
   };
-  /** Optionen › Über Spartopf. */
+  /** Mehr › Einstellungen › Über Spartopf. */
   const sendFeedback = async () => { void openExternal(feedbackMail(t, __APP_VERSION__, await systemVersion())); };
 
   // ---- Statistik and Planen: hints, reports, the drill-down (STATISTICS_AND_INSIGHTS.md).
@@ -1050,21 +1090,90 @@ export default function App() {
     openMonthPage(now);
   };
 
-  // ---- First run: the setup card on the first month, then the tips.
-  const showSetup = !store.introDone && balance.started && !balance.prevKey;
-  const kindOf = new Map(categories.map(c => [c.id, c.kind]));
-  const monthEntries = entries.filter(e => e.month === month);
+  // ---- The start (plan 39): a new book opens on it — a welcome, three questions
+  // that can each be put off, and what they come to — instead of the month page.
   const salaryCategory = categories.find(c => c.id === 'income' && c.kind === 'income') ?? categories.find(c => c.kind === 'income');
   const fixedCategory = categories.find(c => c.id === 'fixed' && c.kind === 'expense')
     ?? categories.find(c => c.kind === 'expense' && c.repeat === 'monthly') ?? categories.find(c => c.kind === 'expense');
-  const finishSetup = () => { store.dismissIntro(); setSetupNow(null); };
-  /** Plan 37: at most one tip, on the running month, once the setup and the gestures card are gone. */
+  /** Nothing in the book yet: no entry, no balance, one month at most. */
+  const bookEmpty = entries.length === 0 && data.months.length <= 1 && !store.balances.some(b => b.overridden);
+  const [startOpen, setStartOpen] = useState(() => !store.introDone && bookEmpty);
+  const [, startReady] = useState(0);
+  useEffect(() => { if (startOpen && !StartScreen) void loadStart().then(() => startReady(n => n + 1), () => setStartOpen(false)); }, [startOpen]);
+  /** The answers as the running month's first entries, all monthly, and the opening that leads to the balance given. */
+  const applyStart = (answers: StartAnswers) => {
+    const m = monthKeyOf();
+    const plan = startPlan(answers, m, t.setupSalaryName);
+    const now = Date.now();
+    for (const e of plan.entries) {
+      const category = e.kind === 'income' ? salaryCategory : fixedCategory;
+      if (!category) continue;
+      const id = uid();
+      store.addEntry({
+        id, month: m, seriesId: id, createdAt: now, categoryId: category.id, name: e.name, amount: e.amount,
+        paid: e.paid, repeat: 'monthly', date: e.date, ...(e.paid ? { paidAt: now } : {}),
+      });
+      store.showCategory(m, category.id);
+    }
+    if (plan.opening !== undefined) store.setOpening(m, plan.opening);
+    store.dismissIntro();
+    // Whoever starts here needs no "new: a guide" (it is one tap from *Erste Schritte*).
+    store.knowGuide();
+    setMonth(m);
+    setTab('month');
+  };
+  /** *Ich habe schon Daten*: the screen with the backup and the Excel import. */
+  const startWithData = () => { store.dismissIntro(); store.knowGuide(); setStartOpen(false); push('transfer'); };
+  /** *Erst mit Testdaten ansehen*: a year of a household — and a capsule that says so until it is taken out again. */
+  const startWithDemo = () => {
+    store.dismissIntro();
+    store.knowGuide();
+    store.setDemoTrial(true);
+    store.addDemo();
+    notifySuccess();
+    setMonth(monthKeyOf());
+    setTab('month');
+    setStack({});
+    setStartOpen(false);
+  };
+  /** The capsule's ✕, confirmed: the test data goes — and a book that holds nothing else starts over. */
+  const [demoOut, setDemoOut] = useState(false);
+  const endDemoTrial = () => {
+    const own = entries.some(e => !isDemoEntry(e));
+    store.removeDemo();
+    store.setDemoTrial(false);
+    setMonth(monthKeyOf());
+    setTab('month');
+    setStack({});
+    if (!own) { store.restoreIntro(); setStartOpen(true); }
+  };
+
+  // ---- *Erste Schritte*: what is left of setting the book up, as one row on the running month.
+  const [stepsOpen, setStepsOpen] = useState(false);
+  const kindOf = new Map(categories.map(c => [c.id, c.kind]));
+  const runningMonth = monthKeyOf();
+  const firstSteps: FirstStep[] = [
+    { id: 'balance', label: t.noBalanceAsk, sub: t.noBalanceAskSub, done: multi || balanceGiven(balances, runningMonth),
+      run: () => setBalanceNowOpen(true) },
+    ...(salaryCategory ? [{ id: 'income' as const, label: t.setupSalary, sub: t.setupSalarySub, done: entries.some(e => kindOf.get(e.categoryId) === 'income'),
+      run: () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: salaryCategory.id, preset: { name: t.setupSalaryName, repeat: 'monthly' } }) }] : []),
+    ...(fixedCategory ? [{ id: 'fixed' as const, label: t.setupFixed, sub: t.setupFixedSub, done: entries.some(e => kindOf.get(e.categoryId) === 'expense' && e.repeat !== 'none'),
+      run: () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: fixedCategory.id, preset: { repeat: 'monthly' } }) }] : []),
+    ...(quickAddCategory ? [{ id: 'expense' as const, label: t.stepsFirstExpense, sub: t.stepsFirstExpenseSub, done: entries.some(e => kindOf.get(e.categoryId) === 'expense' && e.repeat === 'none'),
+      run: () => setEntrySheet({ kind: 'new', month: runningMonth, categoryId: quickAddCategory }) }] : []),
+  ];
+  const stepsLeft = firstSteps.some(s => !s.done);
+  // Every step done: the row has nothing more to say, on this device for good.
+  // (Not while the test data stands in for a book: its steps are nobody's.)
+  useEffect(() => { if (!stepsLeft && !store.stepsDone && entries.length > 0 && !store.hasDemo) store.dismissSteps(); }, [stepsLeft, store.stepsDone, entries.length, store.hasDemo]);
+  /** Plan 37: at most one tip, on the running month, once *Erste Schritte* is done or put away. */
   const tip = useMemo(() => nextTip(data, store.tipState, {
     native: native || devNative(),
     capture: isIos() || devNative(),
     inDeviceBackup: deviceBackup,
     daysSinceExport: store.lastExport ? Math.floor((Date.now() - new Date(`${store.lastExport}T00:00:00`).getTime()) / 86_400_000) : null,
     guide: true,
+    gestures: true,
   }), [data, store.tipState, deviceBackup, store.lastExport]);
 
   // ---- The guide and the tour (src/guide.ts): asked for, never in the way.
@@ -1137,14 +1246,14 @@ export default function App() {
   const guideGo = (topic: GuideTopic) => {
     const a = topic.action;
     if (!a) return;
-    // Only a screen of Optionen takes the guide's place (its back leads there),
+    // Only a screen of Mehr takes the guide's place (its back leads there),
     // and the month start is a sheet over the guide: everything else gets the capsule.
     if (HOME[a as PushedId] !== 'settings' && a !== 'monthStart' && !(a === 'report' && book.months.some(k => k < now))) setGuideAway(true);
     if (a === 'month') openMonthPage(monthKeyOf());
     else if (a === 'stats' || a === 'insights' || a === 'settings') root(a);
     else if (a === 'entry') {
       openMonthPage(month);
-      if (canAdd) setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory! });
+      if (canAdd) { setShowMore(topic.point === 'entryReceipt'); setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory! }); }
     } else if (a === 'monthStart') setMonthStartOpen(true);
     else if (a === 'report') {
       // The newest finished month's report; a book without one yet shows the statistics.
@@ -1155,8 +1264,10 @@ export default function App() {
       push('monthReport');
       setGuideReturn(tab === 'settings');
     } else {
-      // A screen of Optionen takes the guide's place: back returns to the guide.
+      // A screen of Mehr takes the guide's place: back returns to the guide.
       if (HOME[a] === 'settings') slide.current = 1;
+      // Einstellungen from its top: the mark brings its own group into view.
+      if (a === 'preferences') setPrefsSection(undefined);
       push(a);
       if (HOME[a] === 'settings') setGuideReturn(true);
     }
@@ -1173,40 +1284,61 @@ export default function App() {
     if (screen !== 'guide' || (GuideScreen && pages)) return;
     void Promise.all([loadGuide(), loadGuidePages(language)]).then(() => guideReady(n => n + 1), () => popTo('settings'));
   }, [screen, language]);
-  const setup = showSetup ? (
-    <SetupCard
-      t={t}
-      balance={balance.overridden ? balance.now : undefined}
-      salaryDone={monthEntries.some(e => kindOf.get(e.categoryId) === 'income')}
-      fixedCount={monthEntries.filter(e => kindOf.get(e.categoryId) === 'expense' && e.repeat === 'monthly').length}
-      canSalary={!!salaryCategory}
-      canFixed={!!fixedCategory}
-      // At once, in the same render as the anchor (the effect above keeps it so).
-      onBalance={now => { store.setOpening(month, now - (balance.incomePaid - balance.expensePaid)); setSetupNow({ month, now }); }}
-      onSalary={() => salaryCategory && setEntrySheet({ kind: 'new', month, categoryId: salaryCategory.id, preset: { name: t.setupSalaryName, repeat: 'monthly' } })}
-      onFixed={() => fixedCategory && setEntrySheet({ kind: 'new', month, categoryId: fixedCategory.id, preset: { repeat: 'monthly' } })}
-      onImportExcel={() => excelInput.current?.click()}
-      onFinish={finishSetup}
-    />
-  ) : store.introDone && !store.tipsDone && balance.started && monthEntries.length > 0 && month === monthKeyOf() ? (
-    <TipsCard t={t} onDismiss={() => { store.dismissTips(); store.knowGuide(); }} onTour={() => runTour('month')} onGuide={openGuide} />
-  ) : tip && store.introDone && store.tipsDone && balance.started && month === monthKeyOf() ? (
+  // ---- Mehr's search: its own rows, what Einstellungen holds, and the guide's topics.
+  /** What *Einstellungen* holds on this device: a label, and the group it is in. */
+  const prefsIndex: { label: string; sub?: string; section: PrefsSection }[] = [
+    { label: t.language, section: 'display' }, { label: t.appearance, section: 'display' },
+    { label: t.accent, section: 'display' }, { label: t.currency, section: 'display' },
+    { label: t.hideAmounts, sub: t.hideAmountsSub, section: 'security' },
+    ...(lockKind ? [{ label: lockKind === 'faceId' ? t.lockFaceId : lockKind === 'touchId' ? t.lockTouchId : t.lockCode, sub: t.lockSub, section: 'security' as const }] : []),
+    ...(remindersAvailable() ? [{ label: t.remindersRow, section: 'security' as const }] : []),
+    ...(deviceBackup !== null ? [{ label: t.deviceBackup, section: 'security' as const }] : []),
+    { label: t.monthStartRow, sub: t.monthStartRowSub, section: 'book' },
+    store.hasDemo ? { label: t.demoRemove, sub: t.demoRemoveSub, section: 'demo' } : { label: t.demoAdd, sub: t.demoAddSub, section: 'demo' },
+    ...(native || devNative() ? [{ label: t.rateApp, section: 'about' as const }] : []),
+    { label: t.sendFeedback, sub: t.sendFeedbackSub, section: 'about' }, { label: t.privacyPolicy, section: 'about' },
+    { label: t.deleteAll, section: 'reset' },
+  ];
+  /** The guide's words are a chunk of their own: they come when the search begins. */
+  const loadFind = () => { void Promise.all([loadTour(), loadGuidePages(language)]).then(() => guideReady(n => n + 1), () => undefined); };
+  const findGuide = (query: string): GuideHit[] | null => {
+    const kit = guideKit;
+    if (!kit || !pages) return null;
+    const words = { ...t, ...pages };
+    return kit.searchGuide(guideTopics({ ios: isIos() || devNative(), app: remindersAvailable() }), words, query)
+      .map(topic => ({ id: topic.id, title: kit.guideText(words, topic.title), sum: kit.guideText(words, topicText(topic).sum) }));
+  };
+  /** A topic the search found: the guide, open at it. */
+  const openGuideAt = (id: string) => { setGuideTopic(id as GuideTopicId); store.seeGuideTopic(id as GuideTopicId); openGuide(); };
+  const gestureTip = tip && isGestureTip(tip) ? tip : null;
+  const featureTip = tip && !isGestureTip(tip) ? tip : null;
+  const setup = !balance.started || month !== runningMonth ? null : !store.stepsDone && stepsLeft ? (
+    <FirstStepsRow steps={firstSteps} t={t} onOpen={() => setStepsOpen(true)} onHide={store.dismissSteps} />
+  ) : gestureTip ? (
+    // A gesture, the first time the page has something to try it on: its sentence, nothing to open.
     <HintCard
-      text={tip.id === 'guide' ? t.hintGuide : tip.id === 'capture' ? t.hintCapture : tip.id === 'favorite' ? fmt(t.hintFavorite, { name: tip.name })
-        : tip.id === 'reserve' ? t.hintReserve : tip.id === 'backup' ? t.hintBackup
-        : fmt(t.hintBudget, { category: displayName(tip.category.names, language), month: monthLabel(tip.month, t.locale, 'name') })}
-      action={tip.id === 'guide' ? t.hintGuideAction : tip.id === 'capture' ? t.hintCaptureAction : tip.id === 'favorite' ? t.hintFavoriteAction
-        : tip.id === 'reserve' ? t.hintReserveAction : tip.id === 'backup' ? t.hintBackupAction : t.hintBudgetAction}
+      text={gestureTip.id === 'tick' ? t.tipTick : gestureTip.id === 'swipe' ? t.tipSwipe : t.tipHold}
+      icon={gestureTip.id === 'tick' ? Circle : gestureTip.id === 'swipe' ? ArrowLeftRight : Hand}
       hideLabel={t.hintClose}
-      onHide={() => store.closeTip(tip.id)}
+      onHide={() => store.closeTip(gestureTip.id)}
+    />
+  ) : featureTip ? (
+    <HintCard
+      text={featureTip.id === 'guide' ? t.hintGuide : featureTip.id === 'capture' ? t.hintCapture : featureTip.id === 'favorite' ? fmt(t.hintFavorite, { name: featureTip.name })
+        : featureTip.id === 'reserve' ? t.hintReserve : featureTip.id === 'backup' ? t.hintBackup
+        : fmt(t.hintBudget, { category: displayName(featureTip.category.names, language), month: monthLabel(featureTip.month, t.locale, 'name') })}
+      action={featureTip.id === 'guide' ? t.hintGuideAction : featureTip.id === 'capture' ? t.hintCaptureAction : featureTip.id === 'favorite' ? t.hintFavoriteAction
+        : featureTip.id === 'reserve' ? t.hintReserveAction : featureTip.id === 'backup' ? t.hintBackupAction : t.hintBudgetAction}
+      hideLabel={t.hintClose}
+      onHide={() => store.closeTip(featureTip.id)}
       onAction={() => {
-        store.closeTip(tip.id);
-        if (tip.id === 'guide') openGuide();
-        else if (tip.id === 'capture') push('capture');
-        else if (tip.id === 'favorite') { if (store.addFavorite({ name: tip.name, categoryId: tip.categoryId, ...(tip.amount ? { amount: tip.amount } : {}) })) show(t.favoriteSaved); }
-        else if (tip.id === 'reserve') setTab('insights');
-        else if (tip.id === 'backup') push('transfer');
-        else setBudgetFor(tip.category);
+        store.closeTip(featureTip.id);
+        if (featureTip.id === 'guide') openGuide();
+        else if (featureTip.id === 'capture') push('capture');
+        else if (featureTip.id === 'favorite') { if (store.addFavorite({ name: featureTip.name, categoryId: featureTip.categoryId, ...(featureTip.amount ? { amount: featureTip.amount } : {}) })) show(t.favoriteSaved); }
+        else if (featureTip.id === 'reserve') setTab('insights');
+        else if (featureTip.id === 'backup') push('transfer');
+        else setBudgetFor(featureTip.category);
       }}
     />
   ) : null;
@@ -1294,7 +1426,8 @@ export default function App() {
             language={language}
             t={t}
             onBack={back}
-            onImport={d => { store.importData(d); setMonth(monthKeyOf()); }}
+            // Into a new book (a new phone): whoever kept this book elsewhere sees the app as it was there.
+            onImport={d => { if (!data.entries.length && d.entries.length) store.unfoldAll(); store.importData(d); setMonth(monthKeyOf()); }}
             onImportExcel={() => excelInput.current?.click()}
             toast={label => show(label)}
             onExported={store.markExported}
@@ -1362,7 +1495,33 @@ export default function App() {
             onBack={back}
           />
         ) : id === 'settings' ? (
-          <SettingsView
+          <MoreView
+            t={t}
+            categoryCount={categories.length}
+            onCategories={() => push('categories')}
+            accountCount={accounts.length}
+            onAccounts={() => push('accounts')}
+            favoriteCount={store.favorites.length}
+            onFavorites={() => push('favorites')}
+            onImport={() => setImportOpen(true)}
+            debtCount={store.debts.length}
+            onDebts={() => push('debts')}
+            projectCount={store.projects.length}
+            onProjects={() => push('projects')}
+            onTax={() => push('tax')}
+            ruleCount={store.rules.length}
+            onRules={() => push('rules')}
+            onCapture={isIos() || devNative() ? () => push('capture') : undefined}
+            onTransfer={() => push('transfer')}
+            onGuide={openGuide}
+            onPrefs={section => { setPrefsSection(section); push('preferences'); }}
+            prefs={prefsIndex}
+            onSearch={loadFind}
+            findGuide={findGuide}
+            onGuideTopic={openGuideAt}
+          />
+        ) : id === 'preferences' ? (
+          <PreferencesView
             language={language}
             themeMode={themeMode}
             accent={store.accent}
@@ -1370,30 +1529,18 @@ export default function App() {
             currency={store.currency}
             onCurrency={store.setCurrency}
             t={t}
+            onBack={back}
+            section={prefsSection}
             monthCount={data.months.length}
             entryCount={allView.entries.length}
-            categoryCount={categories.length}
             onLanguage={store.setLanguage}
             onTheme={store.setThemeMode}
-            onCategories={() => push('categories')}
-            favoriteCount={store.favorites.length}
-            onFavorites={() => push('favorites')}
-            ruleCount={store.rules.length}
-            onRules={() => push('rules')}
-            accountCount={accounts.length}
-            onAccounts={() => push('accounts')}
-            debtCount={store.debts.length}
-            onProjects={() => push('projects')}
-            projectCount={store.projects.length}
-            onTax={() => push('tax')}
-            onDebts={() => push('debts')}
             monthStart={store.monthStart}
             onMonthStart={() => setMonthStartOpen(true)}
-            onTransfer={() => push('transfer')}
             hasDemo={store.hasDemo}
             onAddDemo={addDemo}
             onRemoveDemo={removeDemo}
-            onDeleteAll={() => { setSetupNow(null); store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); }}
+            onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); setStartOpen(true); }}
             lockKind={lockKind}
             lockOn={store.lockOn}
             onLock={on => void setLock(on)}
@@ -1403,12 +1550,11 @@ export default function App() {
             onDeviceBackup={on => void switchDeviceBackup(on)}
             deviceBackupBusy={backupMoving}
             reminders={remindersAvailable() ? store.reminders : null}
-            onReminders={() => push('reminders')}
-            onCapture={isIos() || devNative() ? () => push('capture') : undefined}
+            // Back from the reminders leads here again, not to Mehr.
+            onReminders={() => { push('reminders'); setPrefsReturn(true); }}
             onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
             onFeedback={() => void sendFeedback()}
             onPrivacy={() => void openExternal(privacyUrl(language))}
-            onGuide={openGuide}
           />
         ) : id === 'stats' ? (
           <StatsView
@@ -1419,6 +1565,8 @@ export default function App() {
             language={language}
             t={t}
             highlights={hints}
+            open={store.statsOpen}
+            onOpen={store.setStatsOpen}
             yearCard={yearCard}
             onYear={openYear}
             onHideYear={hideReview}
@@ -1448,8 +1596,16 @@ export default function App() {
             onWhatIf={() => setWhatIfOpen(true)}
             onExplain={setExplain}
             wealth={multi ? { now: totals.now, count: accounts.length, onOpen: () => push('accounts') } : undefined}
-            debts={store.debts.length ? <DebtsCard overview={debts} t={t} onOpen={() => push('debts')} onEdit={editDebt} /> : null}
-            projects={store.projects.length ? <ProjectsCard overview={projects} t={t} onOpen={() => push('projects')} onEdit={editProject} /> : null}
+            debts={store.debts.length ? {
+              card: <DebtsCard overview={debts} t={t} onOpen={() => push('debts')} onEdit={editDebt} />,
+              headline: [debts.owe ? fmt(t.debtsOweTotal, { amount: formatMoney(debts.owe, t.locale) }) : '', debts.owed ? fmt(t.debtsOwedTotal, { amount: formatMoney(debts.owed, t.locale) }) : ''].filter(Boolean).join(' · ') || undefined,
+            } : undefined}
+            projects={store.projects.length ? {
+              card: <ProjectsCard overview={projects} t={t} onOpen={() => push('projects')} onEdit={editProject} />,
+              headline: projects.filter(s => !s.project.closed).map(s => s.project.name).join(', ') || undefined,
+            } : undefined}
+            open={store.planOpen}
+            onOpen={store.setPlanOpen}
           />
         ) : (
           <MonthView
@@ -1461,13 +1617,11 @@ export default function App() {
             candidates={candidates}
             openEarlier={openEarlier}
             setup={setup}
-            review={review && month === now && balance.started && !showSetup ? (
+            review={review && month === now && balance.started ? (
               <ReviewCard review={review} t={t} onOpen={() => openReport(review.month)} onHide={() => hideReview(review.month)} />
             ) : null}
             searchSeed={searchSeed}
             onSearchSeedUsed={() => setSearchSeed(null)}
-            // Nothing to show yet: the setup asks for the balance first.
-            hideBalance={showSetup && !balance.overridden && monthEntries.length === 0}
             language={language}
             t={t}
             onMonth={setMonth}
@@ -1494,6 +1648,11 @@ export default function App() {
             ) : null}
             reconciledAt={store.months.find(m => m.key === month)?.reconciledAt}
             peek={store.hideAmounts ? { shown: peek, onToggle: () => setPeek(v => !v) } : undefined}
+            balanceOpen={store.balanceOpen}
+            onBalanceOpen={store.setBalanceOpen}
+            balanceGiven={given}
+            onBalanceNow={account === ALL_ACCOUNTS ? undefined : () => setBalanceNowOpen(true)}
+            grown={grown}
             onCategories={() => push('categories')}
             collapsed={store.collapsed}
             onCollapse={store.toggleCollapsed}
@@ -1512,6 +1671,25 @@ export default function App() {
 
   // Locked: the lock screen instead of the app (after every hook, so their order holds).
   if (locked) return <LockScreen kind={lockKind} t={t} onUnlock={() => void unlock()} />;
+  // A new book: the start instead of the app, until it is finished or put off (plan 39).
+  if (startOpen) {
+    const names = START_FIXED.map(de => NAME_SUGGESTIONS.fixed?.find(n => n.de === de)).filter(n => !!n).map(n => displayName(n, language));
+    return StartScreen ? (
+      <StartScreen
+        t={t}
+        language={language}
+        month={monthKeyOf()}
+        fixedNames={names}
+        canIncome={!!salaryCategory}
+        canFixed={!!fixedCategory}
+        onLanguage={store.setLanguage}
+        onApply={applyStart}
+        onFinish={() => { store.dismissIntro(); setStartOpen(false); }}
+        onHaveData={startWithData}
+        onDemo={startWithDemo}
+      />
+    ) : <div className="min-h-screen bg-bg" />;
+  }
 
   return (
     <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
@@ -1568,12 +1746,12 @@ export default function App() {
         label={t.appName}
         active={tab}
         // Tapping the active tab again pops back to its root, as on iOS.
-        onChange={id => { if (id === tab) { popTo(id); if (id === 'settings') setGuideReturn(false); } setTab(id); }}
+        onChange={id => { if (id === tab) { popTo(id); if (id === 'settings') { setGuideReturn(false); setPrefsReturn(false); } } setTab(id); }}
         tabs={[
           { id: 'month', label: t.tabMonth, icon: CalendarDays },
           { id: 'stats', label: t.tabStats, icon: BarChart3 },
           { id: 'insights', label: t.tabInsights, icon: PiggyBank },
-          { id: 'settings', label: t.tabSettings, icon: Settings },
+          { id: 'settings', label: t.tabSettings, icon: CircleEllipsis },
         ]}
         // On every tab: a receipt can be noted down from anywhere, into the month shown.
         add={quickAddCategory && balance.started
@@ -1598,7 +1776,7 @@ export default function App() {
         entries={entries}
         language={language}
         t={t}
-        onClose={() => setEntrySheet(null)}
+        onClose={() => { setEntrySheet(null); setShowMore(false); }}
         onCreate={createEntry}
         onSave={(id, d) => {
           const was = data.entries.find(e => e.id === id);
@@ -1623,6 +1801,12 @@ export default function App() {
         projects={activeProjects}
         taxMarks={store.taxMarks || anyTaxMark}
         onNotice={text => show(text)}
+        // *Zeigen* on a pill behind *Mehr* opens it for that visit.
+        more={store.entryMore || showMore}
+        onMore={open => { setShowMore(false); store.setEntryMore(open); }}
+        calcKeys={store.calcKeys}
+        onCalcKeys={() => store.setCalcKeys(true)}
+        hintPaid={entries.length < 10 && entries.every(e => e.paid)}
       />
 
       <ProjectSheet
@@ -1718,14 +1902,14 @@ export default function App() {
         t={t}
         onClose={() => setOpeningOpen(false)}
         onSave={v => {
-          // Set by hand: the setup's balance doesn't steer the opening any more.
-          setSetupNow(null);
           store.setOpening(month, v, target);
           show(v === undefined && balance.prevKey
             ? fmt(t.openingReset, { month: monthLabel(balance.prevKey, t.locale) })
             : t.openingSaved);
         }}
       />
+
+      <BalanceNowSheet open={balanceNowOpen} t={t} onClose={() => setBalanceNowOpen(false)} onSave={saveBalanceNow} />
 
       <ReportPdfSheet open={pdfFor !== null} t={t} onClose={() => setPdfFor(null)} onMake={entries => { if (pdfFor) void makeReport({ ...pdfFor, entries }); }} />
       {printing && (
@@ -1758,7 +1942,6 @@ export default function App() {
           const record = store.months.find(m => m.key === month);
           const prevOpening = target === MAIN_ACCOUNT ? record?.opening : record?.openings?.[target];
           const prevRec = store.setReconciled(month, Date.now());
-          setSetupNow(null);
           store.setOpening(month, opening, target);
           show(t.reconcileDone, { label: t.undo, run: () => { store.setOpening(month, prevOpening, target); store.setReconciled(month, prevRec); } });
         }}
@@ -1766,6 +1949,7 @@ export default function App() {
           const prevRec = store.setReconciled(month, Date.now());
           show(t.reconcileDone, { label: t.undo, run: () => store.setReconciled(month, prevRec) });
         }}
+        onOpening={() => setOpeningOpen(true)}
       />
 
       <GoalSheet
@@ -1861,18 +2045,19 @@ export default function App() {
         allCollapsed={categories.length > 0 && categories.every(c => store.collapsed.includes(c.id))}
         t={t}
         onClose={() => setActionsAnchor(null)}
+        given={given}
         onOpening={account === ALL_ACCOUNTS ? undefined : () => setOpeningOpen(true)}
         onReconcile={account === ALL_ACCOUNTS ? undefined : () => setReconcileOpen(true)}
+        onBalanceNow={account === ALL_ACCOUNTS ? undefined : () => setBalanceNowOpen(true)}
         onTransfer={multi ? newTransfer : undefined}
         onPull={() => { const n = store.pullRecurring(month); show(fmt(t.pulled, { n })); }}
         onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
-        onImportCsv={() => statementInput.current?.click()}
-        onImportPhoto={() => photoInput.current?.click()}
-        onScanInvoice={() => invoiceInput.current?.click()}
-        onImportPdf={() => pdfInput.current?.click()}
+        onImport={() => setImportOpen(true)}
         onDelete={deleteMonth}
         onReport={() => openReport(month)}
       />
+
+      <ImportSheet open={importOpen} t={t} onClose={() => setImportOpen(false)} onPick={pickImport} />
 
       <CategorySheet
         mode={categorySheet}
@@ -1987,6 +2172,20 @@ export default function App() {
           onGuide={tour.guide ? backToGuide : undefined}
         />
       )}
+
+      <FirstStepsSheet open={stepsOpen} steps={firstSteps} t={t} onClose={() => setStepsOpen(false)} onGuide={openGuide} />
+
+      {/* Looking around with the test data: a capsule says so, and takes it out again. */}
+      <DemoPill show={store.demoTrial && store.hasDemo && !guideAway && !tour} title={t.demoPill} label={t.demoPillAction} onRemove={() => setDemoOut(true)} />
+      <Confirm
+        open={demoOut}
+        title={t.demoRemoveTitle}
+        body={t.demoRemoveBody}
+        confirmLabel={t.demoPillAction}
+        cancelLabel={t.cancel}
+        onCancel={() => setDemoOut(false)}
+        onConfirm={() => { setDemoOut(false); endDemoTrial(); }}
+      />
 
       <GuideBackPill
         show={guideAway && screen !== 'guide' && !tour}

@@ -1,7 +1,7 @@
 import { CSSProperties, ComponentType, Fragment, useEffect, useId, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  ArrowRight, BarChart3, Bell, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck,
+  ArrowRight, BarChart3, Bell, Calculator, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleEllipsis,
   Compass, Download, EyeOff, FileSpreadsheet, FileText, FlaskConical, HandCoins, Hash, Info, Landmark, Lightbulb, Luggage,
   MoreHorizontal, Palette, Paperclip, PenLine, PiggyBank, Play, Plus, QrCode, Repeat, Scale, ScrollText, Search, Settings, Share,
   ShieldCheck, Split, Star, Tags, Target, TrendingUp, Undo2, Wallet, WalletCards, Zap,
@@ -20,7 +20,7 @@ import { GUIDE_SHOTS, GUIDE_SHOT_LANGS } from '../guideShots';
 
 type Icon = ComponentType<{ className?: string; strokeWidth?: number }>;
 
-/** Each topic's symbol and colour — the ones its row in Optionen or its card wears, where it has one. */
+/** Each topic's symbol and colour — the ones its row in Mehr or its card wears, where it has one. */
 const LOOK: Record<GuideTopicId, [Icon, Hue]> = {
   balances: [WalletCards, 'sky'],
   paid: [CircleCheck, 'leaf'],
@@ -62,13 +62,14 @@ const TOUR_LOOK: Record<TourId, [Icon, Hue]> = {
   entry: [PenLine, 'mint'],
   stats: [BarChart3, 'sky'],
   plan: [PiggyBank, 'berry'],
-  settings: [Settings, 'stone'],
+  settings: [CircleEllipsis, 'stone'],
 };
 
 /** The symbol a named button wears on screen, drawn beside its label in the text. */
 const CHIP_ICON: Partial<Record<string, Icon>> = {
-  month: CalendarDays, stats: BarChart3, plan: PiggyBank, settings: Settings,
+  month: CalendarDays, stats: BarChart3, plan: PiggyBank, settings: CircleEllipsis, prefs: Settings,
   repeat: Repeat, split: Split, refund: Undo2, receipt: Paperclip, tag: Hash, favorite: Star, tax: Landmark, share: Share,
+  calc: Calculator, importMenu: Download,
 };
 
 /**
@@ -86,6 +87,9 @@ function Chip({ part, t }: { part: { label: string; key: string }; t: Strings })
       return <span role="img" aria-label={t.save} className={`${round} w-[1.45em] h-[1.45em] bg-accent-fill text-accent-fill-ink`}><Check className="w-[0.9em] h-[0.9em]" strokeWidth={3} /></span>;
     case 'actions':
       return <span role="img" aria-label={t.monthActions} className={`${round} w-[1.45em] h-[1.45em] glass-chrome text-fg`}><MoreHorizontal className="w-[1em] h-[1em]" strokeWidth={2.4} /></span>;
+    case 'more':
+      // The entry sheet's round pill for its further details.
+      return <span role="img" aria-label={t.more} className={`${round} w-[1.45em] h-[1.45em] bg-accent-dim text-accent`}><MoreHorizontal className="w-[1em] h-[1em]" strokeWidth={2.4} /></span>;
     case 'info':
       return <span role="img" aria-label={t.explainTitle} className={`${round} w-[1.3em] h-[1.3em] text-accent`}><Info className="w-[1.05em] h-[1.05em]" strokeWidth={2.4} /></span>;
     case 'arrows':
@@ -126,13 +130,13 @@ interface Props {
   /** The tours this book can take (the entry sheet's needs a started month, Statistik's entries). */
   tours: TourId[];
   onTour: (id: TourId) => void;
-  /** Adds the test data (Optionen › Ausprobieren); absent once the book has it. */
+  /** Adds the test data (Mehr › Einstellungen › Ausprobieren); absent once the book has it. */
   onDemo?: () => void;
   onShow: (topic: GuideTopic) => void;
 }
 
 /**
- * Optionen › Anleitung: the place to look things up. The tours on top, then
+ * Mehr › Anleitung: the place to look things up. The tours on top, then
  * every feature by chapter — a row opens to a picture of its screen, one
  * sentence of what it is, numbered steps with the buttons drawn in, a tip,
  * *Zeigen* (which goes there and lights up the thing to tap) and its tour. A

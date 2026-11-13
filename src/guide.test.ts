@@ -100,7 +100,7 @@ describe('the guide’s pages (src/i18n/guide/), in every language', () => {
     expect(guideText(de, 'guideSplitSteps')).toContain(de.splitPayAction);
     expect(guideText(de, 'guideSplitSteps')).toContain(de.refund);
     expect(guideText(de, 'guideAddSteps')).toMatch(/^Tippe unten rechts auf \+\./);
-    expect(guideText(words('en'), 'tourTabs')).toBe('“Statistics” looks back, “Plan” looks ahead. Under “Settings” you’ll find the whole guide.');
+    expect(guideText(words('en'), 'tourTabs')).toBe('“Statistics” looks back, “Plan” looks ahead. Under “More” you’ll find the whole guide.');
     expect(Object.values(guideLabels(translations.ar)).every(Boolean)).toBe(true);
   });
 
@@ -160,7 +160,9 @@ describe('the buttons a text names', () => {
     expect(guideParts(de, 'guideSplitSteps')).toEqual([
       'Aufteilen: Öffne den Eintrag und tippe unten auf ', { label: de.splitPayAction, key: 'split' }, '.\n'
         + 'Verteile den Betrag auf die Kategorien – die Teile müssen genau aufgehen.\n'
-        + 'Erstattung: Trag das Geld in der Kategorie ein, in der du gekauft hast, und tippe auf ', { label: de.refund, key: 'refund' }, '.',
+        + 'Erstattung: Trag das Geld in der Kategorie ein, in der du gekauft hast, und tippe auf ',
+      // The pills past date, status and repeat wait behind the entry sheet's "⋯" (plan 39).
+      { label: '⋯', key: 'more' }, ' › ', { label: de.refund, key: 'refund' }, '.',
     ]);
     // A symbol on screen: its character in plain text, its key for the drawing.
     expect(guideParts(de, 'guideAddSteps')[1]).toEqual({ label: '+', key: 'add' });

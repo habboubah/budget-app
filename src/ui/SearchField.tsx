@@ -65,7 +65,7 @@ export function SearchField({ value, onChange, placeholder, clearLabel, cancelLa
             // Keep the keyboard up: clearing is for typing something else.
             onPointerDown={ev => ev.preventDefault()}
             onClick={() => { onChange(''); input.current?.focus(); }}
-            className="shrink-0 w-8 h-8 rounded-full inline-flex items-center justify-center active:opacity-60 focus-visible:ring-focus"
+            className="hit-44 shrink-0 w-8 h-8 rounded-full inline-flex items-center justify-center active:opacity-60 focus-visible:ring-focus"
           >
             <span className="w-[18px] h-[18px] rounded-full bg-fg-mute text-surface inline-flex items-center justify-center" aria-hidden="true">
               <X className="w-3 h-3" strokeWidth={3.5} />

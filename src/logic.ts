@@ -384,7 +384,7 @@ export const MAX_MONTH_START = 28;
 
 /**
  * The day the book's months start on — 1 unless the user set another
- * (*Optionen › Monat beginnt am*). A module-level switch like the currency:
+ * (*Mehr › Einstellungen › Monat beginnt am*). A module-level switch like the currency:
  * the store sets it from the book, every month rule reads it, tests set it.
  */
 let monthStart = 1;
@@ -953,6 +953,17 @@ export function balanceFor(balances: MonthBalance[], key: MonthKey): MonthBalanc
     openingNow: prev?.now ?? 0, openingEnd: prev?.end ?? 0, ...empty,
     now: prev?.now ?? 0, end: prev?.end ?? 0,
   };
+}
+
+/**
+ * Whether the book knows what is on the account in `key`: some month up to
+ * it had its opening set by hand — the first run's balance, a bank match, an
+ * Excel sheet's "Before". Until then *Kontostand jetzt* would only be what
+ * was entered, added up from nothing, so the balance card says what the
+ * month spent instead (plan 39).
+ */
+export function balanceGiven(balances: MonthBalance[], key: MonthKey): boolean {
+  return balances.some(b => b.key <= key && b.overridden);
 }
 
 /** The latest started month strictly before `key`. */

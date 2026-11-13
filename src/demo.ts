@@ -3,7 +3,7 @@ import { MAX_FAVORITES, addMonths, carryOver, dayInMonth, daysInMonth, monthKeyO
 import { defaultCategories } from './data/defaults';
 
 /*
- * Test data (Optionen → Testdaten): a year of a family's household book, so
+ * Test data (Mehr › Einstellungen › Testdaten, and the start's *Erst umsehen*): a year of a family's household book, so
  * every screen has something to show — the balances, Statistik, Planen,
  * budgets, contracts, savings pots, favourites, search and tags.
  *

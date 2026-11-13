@@ -42,8 +42,18 @@ const origin = `http://127.0.0.1:${PORT}`;
  *     its screens, sheets and three-language strings; the other eleven languages
  *     stay in their own chunks); month switch 42–123 ms, Statistik 36–50 ms,
  *     Planen 35–65 ms, no long task.
+ *   - plan 39, November 2026: 381 kB (+39 kB). The bundle stood at 374 kB when the
+ *     plan began — 9 % over the record, inside the allowance, from the work since
+ *     plan 37 — and the first five minutes added 7 kB: the folds of the balance
+ *     card, the entry sheet and the two pages (src/fold.ts, FoldCard), the sheets
+ *     for importing and for the balance, *Erste Schritte*, Mehr with its search and
+ *     the screen for Einstellungen, and their strings in three languages. The start
+ *     itself is a chunk of its own (3 kB) that only a new book loads. Measured in a
+ *     two-core Linux container, not on the Mac: month switch 44–141 ms, Statistik
+ *     57–87 ms, Planen 42–56 ms, no long task while typing — record the Mac's
+ *     figures here at the next run.
  */
-const BUNDLE_GZIP_BASELINE = 342_000;
+const BUNDLE_GZIP_BASELINE = 381_000;
 const BUNDLE_GROWTH = 1.10;
 const MONTH_SWITCH_MS = 150;
 const LONG_TASK_MS = 50;

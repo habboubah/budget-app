@@ -18,7 +18,7 @@ function Steps({ title, steps }: { title: string; steps: string[] }) {
 }
 
 /**
- * Optionen → Automatisch erfassen (plan 19, iPhone): how to set up the two
+ * Mehr › Werkzeuge › Automatisch erfassen (plan 19, iPhone): how to set up the two
  * Shortcuts automations — after an Apple Pay payment, and on a banking app's
  * notification — and whether what they capture is booked at once or waits
  * under *Neu* to be looked through. Nothing happens until an automation

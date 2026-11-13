@@ -3,7 +3,7 @@ import type { GuidePages } from './i18n/guide/de';
 import type { MarkId, TourId } from './guideKit';
 
 /*
- * The guide (Optionen › Anleitung), the tours, and what *Zeigen* points at.
+ * The guide (Mehr › Anleitung), the tours, and what *Zeigen* points at.
  *
  * How other apps teach, and what was taken from it: Apple's guidelines ask
  * for onboarding that is fast, optional and found again later in a help or
@@ -11,8 +11,10 @@ import type { MarkId, TourId } from './guideKit';
  * by doing; the apps people cite as the best let the first action be the
  * product itself and reveal the rest step by step, and help pages that work
  * show the real button inside the sentence and a picture of the screen. So
- * nothing here stands before the first screen. The setup card and the tips
- * (plan 37) stay as they are; this adds the place to look things up — every
+ * nothing here runs by itself. Before the first screen stands only the start
+ * (plan 39: three questions, each skippable, whose answer is the app's first
+ * screen), and the tips (plan 37) come one at a time; this is the place to
+ * look things up — every
  * feature as one sentence, numbered steps and a tip, the buttons drawn as
  * they look, a small picture of the screen — with *Zeigen*, which goes there
  * and lights up the thing to tap, and five short tours of the real screens,
@@ -32,7 +34,7 @@ export type GuideChapter = (typeof GUIDE_CHAPTERS)[number];
 /** Where *Zeigen* leads: a tab, a pushed screen, the entry sheet or the month start's sheet. */
 export type GuideAction =
   | 'month' | 'stats' | 'insights' | 'settings'
-  | 'entry' | 'monthStart' | 'report'
+  | 'entry' | 'monthStart' | 'report' | 'preferences'
   | 'categories' | 'dueSoon' | 'favorites' | 'capture' | 'goals' | 'contracts' | 'debts'
   | 'transfer' | 'accounts' | 'projects' | 'tax' | 'reminders';
 
@@ -89,9 +91,9 @@ export const GUIDE_TOPICS = [
 
   { id: 'private', chapter: 'safe', title: 'guidePrivate' },
   { id: 'backup', chapter: 'safe', title: 'transferTitle', action: 'transfer', tour: 'settings' },
-  { id: 'lock', chapter: 'safe', title: 'guideLock', action: 'settings', point: 'setSecurity', tour: 'settings' },
+  { id: 'lock', chapter: 'safe', title: 'guideLock', action: 'preferences', point: 'setSecurity' },
   { id: 'reminders', chapter: 'safe', title: 'remindersTitle', action: 'reminders', only: 'app' },
-  { id: 'look', chapter: 'safe', title: 'displaySection', action: 'settings', point: 'setDisplay', tour: 'settings' },
+  { id: 'look', chapter: 'safe', title: 'displaySection', action: 'preferences', point: 'setDisplay' },
 ] as const satisfies readonly GuideTopic[];
 
 export type GuideTopicId = (typeof GUIDE_TOPICS)[number]['id'];

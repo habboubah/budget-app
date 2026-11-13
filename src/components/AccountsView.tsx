@@ -6,7 +6,7 @@ import { Screen, Group, Row } from '../ui/Screen';
 import { Picture } from '../ui/Picture';
 
 /**
- * Optionen → Haushaltsbuch → Konten (pushed, plan 30). Every book has its
+ * Mehr › Haushaltsbuch › Konten (pushed, plan 30). Every book has its
  * main account; cash, a savings account or any other come in here, and only
  * then does anything about accounts show elsewhere. Each account with what
  * is on it now; with more than one, *Vermögen* — all of them together.

@@ -1,15 +1,19 @@
-import { ArrowLeftRight, BarChart3, Camera, ChevronsDownUp, ChevronsUpDown, FileSpreadsheet, FileText, QrCode, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ArrowLeftRight, BarChart3, ChevronsDownUp, ChevronsUpDown, Download, MoreHorizontal, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
 import { MonthKey } from '../types';
 import { monthLabel } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Menu, MenuItem } from '../ui/Menu';
 
 /**
- * The month's "⋯", as an iOS pull-down menu: correct the opening balance,
- * fetch missing recurring entries, fold all categories; move money between
- * accounts (plan 30); import bank transactions; delete the month.
+ * The month's "⋯", as an iOS pull-down menu — four rows (plan 39): the
+ * month's report, the balance (match it against the bank; or, before the
+ * book has one, enter it), everything that imports on one sheet, and *Mehr*
+ * for what is needed now and then: fetch missing recurring entries, fold all
+ * categories, delete the month. *Umbuchen* joins them once the book has a
+ * second account (plan 30).
  */
-export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, t, onClose, onOpening, onReconcile, onPull, onCollapseAll, onImportCsv, onImportPdf, onImportPhoto, onScanInvoice, onDelete, onReport, onTransfer }: {
+export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, given, t, onClose, onOpening, onReconcile, onBalanceNow, onPull, onCollapseAll, onImport, onDelete, onReport, onTransfer }: {
   /** The "⋯" button it opens from; null while closed. */
   anchor: HTMLElement | null;
   month: MonthKey;
@@ -19,34 +23,48 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
   missing: number;
   /** Every category is folded down — the item offers to unfold them all. */
   allCollapsed: boolean;
+  /** The book knows what is on the account (`balanceGiven`): there is something to check. */
+  given: boolean;
   t: Strings;
   onClose: () => void;
   /** The opening balance and the bank match are one account's: not offered for "Alle Konten" (plan 30). */
   onOpening?: () => void;
   onReconcile?: () => void;
+  /** No balance yet: the row asks for it instead. */
+  onBalanceNow?: () => void;
   onPull: () => void;
   onCollapseAll: (collapse: boolean) => void;
-  /** Bank transactions from a CSV export, or from a photo / screenshot. */
-  onImportCsv: () => void;
-  onImportPhoto: () => void;
-  /** The statement itself, as the PDF the bank offers. */
-  onImportPdf: () => void;
-  /** An invoice's QR code (GiroCode) from a photo: it becomes an open entry. */
-  onScanInvoice: () => void;
+  /** The sheet with every way to import (ImportSheet). */
+  onImport: () => void;
   onDelete: () => void;
   /** The month's report (plan 13); only for a started month. */
   onReport?: () => void;
   /** Umbuchen (plan 30): once there is more than one account. */
   onTransfer?: () => void;
 }) {
-  const month1: MenuItem[] = [
+  // *Mehr* opens a second menu from the same button; the first has closed by then.
+  const button = useRef<HTMLElement | null>(null);
+  if (anchor) button.current = anchor;
+  const [more, setMore] = useState<HTMLElement | null>(null);
+
+  const balance: MenuItem[] = started && !given && onBalanceNow
+    ? [{ key: 'balanceNow', label: t.noBalanceAsk, icon: Wallet, onSelect: onBalanceNow }]
+    : started && onReconcile
+      ? [{ key: 'reconcile', label: t.balanceCheck, icon: Scale, onSelect: onReconcile }]
+      : onOpening
+        ? [{ key: 'opening', label: prevKey ? t.openingTitle : t.startingBalance, icon: Wallet, onSelect: onOpening }]
+        : [];
+  const main: MenuItem[] = [
     ...(started && onReport ? [{ key: 'report', label: t.reportTitle, sub: t.monthReportSub, icon: BarChart3, onSelect: onReport }] : []),
-    ...(onOpening ? [{ key: 'opening', label: prevKey ? t.openingTitle : t.startingBalance, icon: Wallet, onSelect: onOpening }] : []),
-    ...(started && onReconcile ? [{ key: 'reconcile', label: t.reconcileMenuItem, icon: Scale, onSelect: onReconcile }] : []),
+    ...balance,
     ...(started && onTransfer ? [{ key: 'transfer', label: t.transferNew, sub: t.transferNewSub, icon: ArrowLeftRight, onSelect: onTransfer }] : []),
+    { key: 'import', label: t.importMenu, sub: t.importMenuSub, icon: Download, onSelect: onImport },
+    ...(started ? [{ key: 'more', label: t.more, icon: MoreHorizontal, onSelect: () => setMore(button.current) }] : []),
   ];
+
+  const rest: MenuItem[] = [];
   if (started && prevKey) {
-    month1.push({
+    rest.push({
       key: 'pull',
       label: fmt(t.pullRecurring, { month: monthLabel(prevKey, t.locale, 'long') }),
       sub: missing ? fmt(t.pullRecurringSub, { n: missing }) : t.nothingToPull,
@@ -56,21 +74,21 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
     });
   }
   if (started) {
-    month1.push({
+    rest.push({
       key: 'fold',
       label: allCollapsed ? t.expandAll : t.collapseAll,
       icon: allCollapsed ? ChevronsUpDown : ChevronsDownUp,
       onSelect: () => onCollapseAll(!allCollapsed),
     });
   }
-  const imports: MenuItem[] = [
-    { key: 'photo', label: t.importPhoto, sub: t.importPhotoSub, icon: Camera, onSelect: onImportPhoto },
-    { key: 'csv', label: t.importCsv, sub: t.importCsvSub, icon: FileSpreadsheet, onSelect: onImportCsv },
-    { key: 'pdf', label: t.importPdf, sub: t.importPdfSub, icon: FileText, onSelect: onImportPdf },
-    { key: 'invoice', label: t.scanInvoice, sub: t.scanInvoiceSub, icon: QrCode, onSelect: onScanInvoice },
-  ];
   const danger: MenuItem[] = started
     ? [{ key: 'delete', label: t.deleteMonth, sub: t.deleteMonthSub, icon: Trash2, destructive: true, onSelect: onDelete }]
     : [];
-  return <Menu anchor={anchor} label={fmt(t.monthActionsOf, { month: monthLabel(month, t.locale) })} groups={[month1, imports, danger]} onClose={onClose} />;
+  const label = fmt(t.monthActionsOf, { month: monthLabel(month, t.locale) });
+  return (
+    <>
+      <Menu anchor={anchor} label={label} groups={[main]} onClose={onClose} />
+      <Menu anchor={more} label={`${label} – ${t.more}`} groups={[rest, danger]} onClose={() => setMore(null)} />
+    </>
+  );
 }

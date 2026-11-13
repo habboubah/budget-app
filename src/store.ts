@@ -6,7 +6,8 @@ import {
   computeBalances, laterCopies, laterTransferCopies, mainAccount, makeTransfer, monthKeyOf, moveEntry as move, normalizeState,
   restoreDefaultCategories, setActiveCurrency, standardCategoryIds, uid, isIsoDay, isoDay, changeMonthStart, setMonthStart, validMonthStart,
 } from './logic';
-import { TipId, TipState, closeTip, knowGuide, readTipState } from './tips';
+import { TipId, TipState, closeTip, knowGestures, knowGuide, readTipState } from './tips';
+import { CardsOpen, readCardsOpen, storeCardsOpen } from './fold';
 import { GuideTopicId, readGuideSeen } from './guide';
 import { Currency, DEFAULT_CURRENCY, isSupportedCurrency } from './currency';
 import { systemCurrency, systemLanguage } from './systemLocale';
@@ -40,6 +41,13 @@ const K = {
   tipState: 'spartopf-tip-state',
   guideSeen: 'spartopf-guide-seen',
   account: 'spartopf-account',
+  balanceOpen: 'spartopf-balance-open',
+  entryMore: 'spartopf-entry-more',
+  calcKeys: 'spartopf-calc-keys',
+  steps: 'spartopf-steps-done',
+  demoTrial: 'spartopf-demo-trial',
+  planOpen: 'spartopf-plan-open',
+  statsOpen: 'spartopf-stats-open',
 } as const;
 
 /** Dismissed hints and seen reviews are kept as their last 200 ids — no amounts in them. */
@@ -142,13 +150,33 @@ export function useAppStore() {
     document.documentElement.setAttribute('data-accent', value);
     return value;
   });
-  /** The setup card on the first month — gone for good once finished or put off. */
+  /**
+   * What a new book keeps folded and one that is already in use shows as it
+   * always did (plan 39): the balance card's line, ring and panels, the entry
+   * sheet's further pills, the calculator keys. Unset = decided here, once,
+   * by whether the book held anything when this version first opened it;
+   * from then on it is whatever the user left it at.
+   */
+  const [inUse] = useState(() => initial.entries.length > 0);
+  const startOpen = (key: string) => { const v = readString(key); return v === null ? inUse : v === '1'; };
+  const [balanceOpen, setBalanceOpen] = useState(() => startOpen(K.balanceOpen));
+  const [entryMore, setEntryMore] = useState(() => startOpen(K.entryMore));
+  const [calcKeys, setCalcKeys] = useState(() => startOpen(K.calcKeys));
+  /** Planen's and Statistik's cards: whole, or headlines with these opened (src/fold.ts) — the same rule. */
+  const [planOpen, setPlanOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.planOpen), inUse));
+  const [statsOpen, setStatsOpen] = useState<CardsOpen>(() => readCardsOpen(readJson(K.statsOpen), inUse));
+  /** The start (plan 39; before it, the setup card on the first month) — done for good once finished or put off. */
   const [introDone, setIntroDone] = useState(() => readString(K.intro) === '1');
   /**
-   * The gestures card shown after the setup — gone once dismissed. Whoever
-   * dismissed the old intro card has read these already (it carried them).
+   * Whoever put the old card with the three gestures away (`spartopf-tips-done`,
+   * or the intro card before it, which carried them) has read them: their tips
+   * are done, and the *Erste Schritte* row doesn't come up for them.
    */
-  const [tipsDone, setTipsDone] = useState(() => (readString(K.tips) ?? readString(K.intro)) === '1');
+  const [readGestures] = useState(() => (readString(K.tips) ?? readString(K.intro)) === '1');
+  /** The *Erste Schritte* row on the month page — gone once every step is done, or put away. */
+  const [stepsDone, setStepsDone] = useState(() => { const v = readString(K.steps); return v === null ? readGestures : v === '1'; });
+  /** The test data was started with from the welcome screen: a capsule says so until it is taken out again. */
+  const [demoTrial, setDemoTrial] = useState(() => readString(K.demoTrial) === '1');
   /** Reminders and the lock: settings of this device, not data — not in a backup, kept by "delete all". */
   const [reminders, setReminders] = useState<ReminderPrefs>(() => normalizeReminderPrefs(readJson(K.reminders)));
   const [lockOn, setLockOn] = useState(() => readString(K.lock) === '1');
@@ -184,8 +212,16 @@ export function useAppStore() {
     try { localStorage.setItem(key, value); } catch { /* a preference */ }
   };
 
+  useEffect(() => { persist(K.balanceOpen, balanceOpen ? '1' : '0'); }, [balanceOpen]);
+  useEffect(() => { persist(K.entryMore, entryMore ? '1' : '0'); }, [entryMore]);
+  useEffect(() => { persist(K.calcKeys, calcKeys ? '1' : '0'); }, [calcKeys]);
+  useEffect(() => { persist(K.planOpen, storeCardsOpen(planOpen)); }, [planOpen]);
+  useEffect(() => { persist(K.statsOpen, storeCardsOpen(statsOpen)); }, [statsOpen]);
   useEffect(() => { persist(K.intro, introDone ? '1' : '0'); }, [introDone]);
-  useEffect(() => { persist(K.tips, tipsDone ? '1' : '0'); }, [tipsDone]);
+  // Written once more, so a later launch never falls back to the intro's flag for it.
+  useEffect(() => { persist(K.tips, readGestures ? '1' : '0'); }, [readGestures]);
+  useEffect(() => { persist(K.steps, stepsDone ? '1' : '0'); }, [stepsDone]);
+  useEffect(() => { persist(K.demoTrial, demoTrial ? '1' : '0'); }, [demoTrial]);
   useEffect(() => { persist(K.reminders, JSON.stringify(reminders)); }, [reminders]);
   useEffect(() => { persist(K.lock, lockOn ? '1' : '0'); }, [lockOn]);
   useEffect(() => { persist(K.hideAmounts, hideAmounts ? '1' : '0'); }, [hideAmounts]);
@@ -194,7 +230,7 @@ export function useAppStore() {
   useEffect(() => { persist(K.autoCategory, autoCategory ? '1' : '0'); }, [autoCategory]);
   useEffect(() => { persist(K.budgetNotes, budgetNotes ? '1' : '0'); }, [budgetNotes]);
   /** Plan 37: which tips are done, and when the last one was put away. */
-  const [tipState, setTipState] = useState<TipState>(() => readTipState(readJson(K.tipState)));
+  const [tipState, setTipState] = useState<TipState>(() => { const read = readTipState(readJson(K.tipState)); return readGestures ? knowGestures(read) : read; });
   useEffect(() => { persist(K.tipState, JSON.stringify(tipState)); }, [tipState]);
   /** The guide's topics opened so far (src/guide.ts): a tick beside each. */
   const [guideSeen, setGuideSeen] = useState<GuideTopicId[]>(() => readGuideSeen(readJson(K.guideSeen)));
@@ -202,7 +238,7 @@ export function useAppStore() {
   /** Plan 19: captured payments wait under *Neu* instead of being booked at once. */
   const [captureReview, setCaptureReview] = useState(() => readString(K.captureReview) === '1');
   useEffect(() => { persist(K.captureReview, captureReview ? '1' : '0'); }, [captureReview]);
-  /** The entry sheet offers the tax mark (schema 29) — off until switched on under Optionen › Steuerliste. A view preference. */
+  /** The entry sheet offers the tax mark (schema 29) — off until switched on under Mehr › Steuerliste. A view preference. */
   const [taxMarks, setTaxMarks] = useState(() => readString(K.taxMarks) === '1');
   useEffect(() => { persist(K.taxMarks, taxMarks ? '1' : '0'); }, [taxMarks]);
   useEffect(() => { persist(K.account, accountView); }, [accountView]);
@@ -258,7 +294,7 @@ export function useAppStore() {
     }),
     [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts, monthStart, projects],
   );
-  /** Whether the book holds test data: Optionen offers to remove it instead of adding it. */
+  /** Whether the book holds test data: Einstellungen offers to remove it instead of adding it. */
   const hasDemo = useMemo(() => hasDemoData(data), [data]);
   // Every change to the book goes to storage (debounced, written atomically; storage.ts).
   useEffect(() => { saver.save(data); }, [data]);
@@ -697,7 +733,19 @@ export function useAppStore() {
   };
 
   /**
-   * Optionen → Testdaten: a year of test data beside the user's own (src/demo.ts),
+   * A backup brought into a new book — a new phone, usually: the app looks as
+   * it did where the book was kept, every fold of plan 39 open.
+   */
+  const unfoldAll = () => {
+    setBalanceOpen(true);
+    setEntryMore(true);
+    setCalcKeys(true);
+    setPlanOpen(null);
+    setStatsOpen(null);
+  };
+
+  /**
+   * Mehr › Einstellungen › Testdaten: a year of test data beside the user's own (src/demo.ts),
    * named in German when the app is in German, else in English. Returns the book as it was, for undo.
    */
   const addDemo = (): AppData => restoreData(addDemoData(data, { today: new Date(), language }));
@@ -706,7 +754,7 @@ export function useAppStore() {
   const removeDemo = (): AppData => restoreData(removeDemoData(data));
 
   /**
-   * Optionen › Monat beginnt am (plan 32): every dated entry moves to the
+   * Mehr › Einstellungen › Monat beginnt am (plan 32): every dated entry moves to the
    * month it now belongs to. Returns the book as it was, for undo.
    */
   const changeStart = (day: number): AppData => restoreData(changeMonthStart(data, day).data);
@@ -737,7 +785,14 @@ export function useAppStore() {
     chooseLanguage(systemLanguage());
     setThemeMode('system');
     setIntroDone(false);
-    setTipsDone(false);
+    setStepsDone(false);
+    setDemoTrial(false);
+    // A new book starts folded again (plan 39).
+    setBalanceOpen(false);
+    setEntryMore(false);
+    setCalcKeys(false);
+    setPlanOpen([]);
+    setStatsOpen([]);
     setLastExport('');
     setCopyCardDismissed(false);
     // A fresh start shows the month reviews and hints again (opening a review
@@ -943,7 +998,10 @@ export function useAppStore() {
   return {
     language, setLanguage: chooseLanguage, themeMode, setThemeMode, accent, setAccent, storageError: saveFailed,
     introDone, dismissIntro: () => setIntroDone(true), restoreIntro: () => setIntroDone(false),
-    tipsDone, dismissTips: () => setTipsDone(true),
+    stepsDone, dismissSteps: () => setStepsDone(true),
+    demoTrial, setDemoTrial,
+    balanceOpen, setBalanceOpen, entryMore, setEntryMore, calcKeys, setCalcKeys,
+    planOpen, setPlanOpen, statsOpen, setStatsOpen, unfoldAll,
     reminders, setReminders: (patch: Partial<ReminderPrefs>) => setReminders(r => normalizeReminderPrefs({ ...r, ...patch })),
     lockOn, setLockOn,
     hideAmounts, setHideAmounts,

@@ -4,8 +4,14 @@ import { LANGUAGE_NAMES, languages, loadAllLanguages, stringsFor } from './trans
 
 const TERMS: [string, string][] = [
   ['balanceNow', 'what is in the account now'], ['balanceEnd', 'the balance expected at the end of the month'], ['leftOverNow', 'income minus spending this month'],
-  ['carryShort', 'balance carried over from last month'], ['income', ''], ['expenses', ''], ['open', 'not paid yet'], ['paidState', ''], ['expected', 'income not received yet'],
+  ['startingBalance', 'what the book\'s first month opened with'], ['carryShort', 'balance carried over from last month'], ['income', ''], ['expenses', ''],
+  ['kindExpense', 'one entry of money going out (the entry sheet\'s switch)'], ['kindIncome', 'one entry of money coming in'],
+  ['open', 'not paid yet'], ['paidState', ''], ['expected', 'income not received yet'], ['receivedState', 'income that has arrived'],
   ['overdue', ''], ['dueTitle', 'open entries due soon'], ['repeatNone', 'an entry that does not repeat'], ['repeatMonthly', ''], ['repeatYearly', ''],
+  // The first five minutes (plan 39): what a new book says before anything else.
+  ['spentThisMonth', 'the balance card before a balance is known'], ['noBalanceAsk', 'the row that asks for the bank balance'], ['balanceCheck', 'matching the book with the bank, and the opening balance'],
+  ['emptyCategories', 'categories without an entry this month'], ['stepsTitle', 'what is left of setting the book up'], ['importMenu', 'every way to bring entries in'],
+  ['reserveTitle', 'what to set aside a month for yearly bills'], ['more', 'what a menu or a sheet keeps one tap away'], ['less', 'folds an opened card again'], ['prefsTitle', 'what is set once (under the fourth tab)'],
   ['category', ''], ['categories', ''], ['budgetsTitle', 'a monthly limit per category'], ['goalsTitle', 'savings pots — the app is named after one'], ['outlookTitle', 'the forecast (never "forecast")'],
   ['favorites', 'entries saved for one tap'], ['rulesTitle', 'import rules'], ['accountsTitle', ''], ['transferNew', 'money moved between two accounts'], ['debtsTitle', ''],
   ['receipt', 'a photo or PDF on an entry'], ['splitPayAction', 'one payment across categories'], ['exportData', ''], ['bookSection', 'the budget book itself'],

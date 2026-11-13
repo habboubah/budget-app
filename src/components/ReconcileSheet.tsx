@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Wallet } from 'lucide-react';
 import { EntryDraft, MonthKey } from '../types';
 import { amountToInput, formatMoney, isoDay, monthLabel, normalizeDigits, parseAmount, reconcile, withAmounts, currencySymbol } from '../logic';
 import { Strings, fmt } from '../translations';
@@ -12,8 +12,10 @@ import { Segmented } from '../ui/Field';
  * Match the app's "Kontostand jetzt" against what the bank shows (plan 10).
  * One field, one difference, two ways to fix it: book a "Kontoabgleich" entry
  * (the default) or move the month's opening balance. Both are undoable.
+ * Under it, the way to the month's opening balance itself (plan 39: the
+ * month's "⋯" has one row for the balance, this sheet).
  */
-export function ReconcileSheet({ open, month, now, currentOpening, extraId, incomeId, t, onClose, onBook, onAdjustOpening, onAgree }: {
+export function ReconcileSheet({ open, month, now, currentOpening, extraId, incomeId, t, onClose, onBook, onAdjustOpening, onAgree, onOpening }: {
   open: boolean;
   month: MonthKey;
   /** The app's current account balance (cents). */
@@ -30,6 +32,8 @@ export function ReconcileSheet({ open, month, now, currentOpening, extraId, inco
   onAdjustOpening: (opening: number) => void;
   /** No difference: just record that it was matched today. */
   onAgree: () => void;
+  /** Opens the opening-balance sheet instead. */
+  onOpening?: () => void;
 }) {
   const [text, setText] = useState('');
   const [how, setHow] = useState<'entry' | 'opening'>('entry');
@@ -60,7 +64,7 @@ export function ReconcileSheet({ open, month, now, currentOpening, extraId, inco
   };
 
   return (
-    <Sheet open={open} title={t.reconcileTitle} closeLabel={t.cancel} onClose={onClose}
+    <Sheet open={open} title={t.balanceCheck} closeLabel={t.cancel} onClose={onClose}
       action={{ label: t.save, onClick: save, disabled: bank === null }}>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-5">
         <p className="text-label text-fg-mute wrap-prose">{monthLabel(month, t.locale)} — {t.reconcileBody}</p>
@@ -86,9 +90,14 @@ export function ReconcileSheet({ open, month, now, currentOpening, extraId, inco
             ]}
           />
         )}
-        <Button type="submit" full size="lg" icon={result?.diff === 0 ? Check : undefined} disabled={bank === null}>
-          {result?.diff === 0 ? t.reconcileConfirmAgree : t.save}
-        </Button>
+        <div className="grid gap-2">
+          <Button type="submit" full size="lg" icon={result?.diff === 0 ? Check : undefined} disabled={bank === null}>
+            {result?.diff === 0 ? t.reconcileConfirmAgree : t.save}
+          </Button>
+          {onOpening && (
+            <Button variant="ghost" full icon={Wallet} onClick={() => { onClose(); onOpening(); }}>{t.openingTitle}</Button>
+          )}
+        </div>
       </form>
     </Sheet>
   );

@@ -5,6 +5,7 @@
 - **Size:** L — four phases, each shippable by itself
 - **Native:** none
 - **Schema:** no change. Every feature stays. Only where a feature first appears changes; new state is view preferences only.
+- **Status:** built in November 2026, all four phases, with the proposed answer to each of the five decisions — see [What was built](#what-was-built). Open: the test with five people, the App Review recording, the device checks (`docs/TODO.md`).
 
 ## The problem, measured
 
@@ -175,15 +176,74 @@ Nothing is removed. Only these change place:
 | *Optionen*: seven groups | *Mehr*: search, *Haushaltsbuch*, *Werkzeuge*, *Einstellungen* |
 | The cards of *Planen* and *Statistik*, all open | Headlines that open (open stays open) |
 
-## Decisions to confirm before starting
+## The decisions, as taken
 
-| # | Decision | Proposed | The alternative |
+Each with its proposed answer (November 2026); they are in `README.md`'s table now.
+
+| # | Decision | Taken | The alternative, not taken |
 |---|---|---|---|
-| 1 | May something come before the month page? CLAUDE.md and plan 37 say no. | Yes: the welcome and three skippable questions. | Keep the rule: the same three questions as the only card on the month page — search, chips and "⋯" wait until it is done or put off — with small fields in the card instead of the entry sheet. |
-| 2 | The large figure on the closed card | *Kontostand jetzt* — it can be checked against the banking app; *Am Monatsende* is the line under it. | *Am Monatsende* large: it is what only Spartopf knows. |
+| 1 | May something come before the month page? CLAUDE.md and plan 37 said no. | Yes: the welcome and three skippable questions. | The same three questions as the only card on the month page. |
+| 2 | The large figure on the closed card | *Kontostand jetzt* — it can be checked against the banking app; *Am Monatsende* is the row under it. | *Am Monatsende* large. |
 | 3 | A book that exists at the update | Everything starts open: nothing looks different. | The new, closed defaults for everyone. |
-| 4 | The fourth tab's name | *Mehr* (features live there, not only settings) | Keep *Optionen* and only reorder. |
-| 5 | Phase 3, step 2 (headlines) | Build it: *Planen* is 6.3 screens. | Leave the cards open and do only the first-month states. |
+| 4 | The fourth tab's name | *Mehr* | Keep *Optionen* and only reorder. |
+| 5 | Phase 3, step 2 (headlines) | Built. | Leave the cards open and do only the first-month states. |
+
+## What was built
+
+On the branch `plan-39-first-five-minutes`, one commit a step. How each part works is in `docs/CLAUDE.md` under *The first five minutes*; what a user sees, in `docs/features.md`.
+
+**Phase 1 — the month page and the entry sheet.** The balance card in three states (no balance given, closed, open), the search and the pending filter from 15 entries or the second month, the empty categories as one chip, the four-row "⋯" with *Importieren* and *Kontostand prüfen* as sheets, and the entry sheet with *Ausgabe | Einnahme*, three pills and the rest behind a "⋯".
+
+**Phase 2 — the start.** `StartFlow` (a chunk of its own): the welcome, the three questions, what is left; `startPlan()` turns the answers into the month's first entries. The test data from the first screen as a trial with a capsule that takes it out again. *Erste Schritte* in place of the setup card, the three gestures as tips at their moment in place of *Gut zu wissen*.
+
+**Phase 3 — the places.** *Mehr* with its search, *Haushaltsbuch*, *Werkzeuge* and the row to *Einstellungen* (a pushed screen). *Planen* and *Statistik* as headlines that open, with one button in the bar for all of them. The first-month states of both.
+
+**Phase 4 — words and the guardrail.** The words a newcomer reads, checked in German, English and Arabic and against the other eleven languages (below); `scripts/simplicity-check.mjs` in `npm run check`; the guide's pages, pictures and tours, `ui-review`, `guide-shots` and the privacy check on the new flows.
+
+### Where it differs from the plan above
+
+- **The ring** on the balance card shows only on the open card (the plan: from the first open entry). The closed card is one figure and one row; a ring beside them was a third thing to read.
+- **The entry sheet's *Mehr* is a round "⋯"**, not a pill with the word. As a fourth pill it wrapped onto a line of its own in German and lost the accent's colour; the guide draws it as it looks.
+- ***Umbuchen* stays in the "⋯"'s first group** once there are accounts (five rows then). It is what a book with a cash account does most; a new book never sees it.
+- **The start asks about five fixed costs by name** and has no *＋ weitere*: a sixth is an entry like any other, and the last screen says so by leading to the month page.
+- **The start's link reads *Erst mit Testdaten ansehen*** — the app says *Testdaten* everywhere else — and the banner is a capsule above the tab bar, not a bar across every tab.
+- **Name ideas the book has never used** show once the name field has the focus, not with the sheet: they were three more buttons before the first letter.
+- **The search of *Mehr*** finds its own rows, what *Einstellungen* holds and the guide's topics (it loads the guide's words when it begins).
+- **On *Planen* the bar's button appears from three cards**; with fewer, each opens on its own and a button for all of them is one more thing on a new screen.
+- **A backup restored into a new book opens every fold** — whoever kept that book elsewhere finds the app as it was there. The plan only covered the update.
+- **The pace card** on a new book leaves out its chart until there is a usual month to compare with (it was one line going up).
+- **Phase 4's twelve words** needed two corrections, not a rewrite: *Kontostand prüfen* is now also the title of the sheet it opens (it read *Mit Bank abgleichen*; the guide's topic keeps that name for the task), and English and Arabic say "bank balance" there as on the card. *Weniger* got a string of its own — it had borrowed "Fewer" from the categories, which is wrong for a card in four languages.
+
+### The budget, as recorded
+
+Counted by `scripts/simplicity-check.mjs` on the production build, from a fresh install, in German at 393 × 852: what can be tapped in the first viewport, the four tabs and the add button included (five of every count on a tab's page); with a sheet or a menu open, only what is in it.
+
+| State | Before | Aimed for | Reached | Budget |
+|---|---|---|---|---|
+| First screen after install | 21–23 | ≤ 6 | 4 | 6 |
+| Month page of a new book, everything put off | 16–23, 4–5 amounts | ≤ 12, at most 2 amounts | 13, 1 amount | 13, 2 amounts |
+| Entry sheet, new entry | 25 | ≤ 12 | 16 | 16 |
+| The month's "⋯" | 9–10 rows | ≤ 4 rows | 4 | 4 |
+| *Mehr* (it was *Optionen*) | 17–22 rows, 2.5 screens | ≤ 13 rows, about one screen | 11 rows on the web, 12 in the iPhone app, 1.4 screens | 13 |
+| *Planen* in the first month | 12 | ≤ 8 | 9 | 9 |
+| *Statistik* in the first month | 16 | — | 8 | 8 |
+
+Three aims were missed, and the budgets say what is there rather than what was hoped:
+
+- **The month page: 13, not 12.** The thirteenth is the ✕ on *Erste Schritte*. Without it the row could only be put away from inside its sheet.
+- **The entry sheet: 16, not 12.** Close, save, the switch's two halves, the calculator key, amount and name, three categories and *Alle*, three pills, the "⋯", *Sichern*. Twelve would have meant hiding the categories or the date, and the plan itself draws all of these.
+- ***Planen*: 9, not 8.** Four things on the page — the budget invitation, *Nächste 30 Tage*, *Abos & Verträge*, *Für etwas sparen?* — and the tab bar's five.
+
+With the test data (a year), as headlines: *Planen* 1.9 screens instead of 6.4, *Statistik* 2.1 instead of 4.2. The month page with the start answered has no budget: it holds the book's first entries and grows with them.
+
+**Bundle.** The main chunk was 373.9 kB gzip when this plan began (9 % over the recorded 342 kB) and is 380.7 kB with it; `scripts/perf-check.mjs` records 381 kB, with what the 7 kB are. The start is a chunk of its own (3 kB) that only a new book loads. The timings there were measured in a two-core Linux container, not on the Mac.
+
+### What is left
+
+- [ ] **The five-minute test** (phase 4, step 2), once with five people on a fresh install. There is no baseline from before phase 1 — the plan was built in one go — so the walk through 1.2.18 at the top of this file stands in for it.
+- [ ] **The App Review recording.** `ios/AppReviewRecorder/scenes.json` was not touched. Its scenes pass through the setup card, *Optionen* and the old "⋯"; `docs/TODO.md` lists what each scene needs.
+- [ ] **On the iPhone:** the start with the keyboard, the folds with VoiceOver and at the largest text size, *Mehr*'s search (`docs/TODO.md`).
+- [ ] **The guide's pictures on the Mac.** They were taken again in a Linux container, like the ones before them; `npm run guide-shots` on the Mac gives Apple's type and emoji.
 
 ## What every phase carries along
 
@@ -201,11 +261,11 @@ Nothing is removed. Only these change place:
 
 ## Done when
 
-- [ ] The five decisions are taken and written into `README.md`.
-- [ ] The baseline test is done and its notes are in this file.
-- [ ] Phase 1: the closed balance card, the card without a balance, the waiting search and chips, the four-row "⋯", the entry sheet with *Ausgabe | Einnahme* and *Mehr*.
-- [ ] Phase 2: the start, the example data from the first screen, *Erste Schritte*, the three gesture tips.
-- [ ] Phase 3: *Mehr*, the headlines, the first-month states.
-- [ ] Phase 4: the twelve words, `simplicity-check` in `npm run check` with every budget met.
+- [x] The five decisions are taken and written into `README.md`.
+- [ ] The baseline test is done and its notes are in this file. — Not done: built in one go; the measured walk above is the baseline.
+- [x] Phase 1: the closed balance card, the card without a balance, the waiting search and chips, the four-row "⋯", the entry sheet with *Ausgabe | Einnahme* and *Mehr*.
+- [x] Phase 2: the start, the example data from the first screen, *Erste Schritte*, the three gesture tips.
+- [x] Phase 3: *Mehr*, the headlines, the first-month states.
+- [x] Phase 4: the twelve words, `simplicity-check` in `npm run check` with every budget met — the budgets as recorded above, three of them looser than first aimed for.
 - [ ] In the last test, four of five people finish tasks 1 to 4 without help, the first expense takes under 30 seconds, and all five can say what the large number means.
-- [ ] A book from 1.2.18 opens after the update looking as it did.
+- [x] A book from 1.2.18 opens after the update looking as it did — but for the fourth tab's name and order, one row under the open balance card (*Weniger*), one button in the bar of *Planen* and *Statistik*, and the "⋯" menu's four rows.
