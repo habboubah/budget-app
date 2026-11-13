@@ -4,7 +4,7 @@ import { ArrowDownRight, ArrowUpRight, ChevronRight, X } from 'lucide-react';
 import { Category, MonthKey } from '../types';
 import {
   NameTotal, dayLabel, displayName, formatMoney, formatMoneyApprox, formatMoneyShort, formatPercent, monthKeyOf, monthLabel, monthSpanLabel, monthsEnding,
-  normalizeName, parseMonthKey, spoken, topNames,
+  normalizeName, spoken, topNames,
 } from '../logic';
 import { Book, Fraction, Insight, MonthPoint, TagTotal, WhereRow, balanceChange, bookYears, compareYears, firstWeekday, monthDays, nearFraction, periodChange, periodSeries, savings, tagTotals, upToNow, weekdayPattern, whereRows } from '../insights';
 import { Strings, capitalize, fmt } from '../translations';
@@ -111,15 +111,14 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
     () => (compare && /^\d{4}$/.test(range) ? compareYears(book, range) : null),
     [compare, range, book],
   );
-  // Averages over the finished months in view: the running month is half entered and would pull them down.
+  // The finished months in view: the running month is half entered and would pull averages down.
   const done = useMemo(() => points.filter(p => p.key < now), [points, now]);
-  const doneKeys = useMemo(() => done.map(p => p.key), [done]);
   const anyInvested = points.some(p => p.invested > 0);
   const categories = book.data.categories;
   // Fewer than two months with entries: nothing to compare yet.
   const young = all.filter(p => p.income || p.expense).length < 2;
-  const averageOver = doneKeys.length ? doneKeys : keys;
-  const where = useMemo(() => whereRows(book, averageOver), [book, averageOver]);
+  // The folded card's headline previews what it opens on: this month.
+  const where = useMemo(() => whereRows(book, book.months.filter(k => k === now)), [book, now]);
   const pattern = useMemo(() => weekdayPattern(book, keys), [book, keys]);
   /** A card's fold, by its id; nothing folds while every card shows whole. */
   const fold = (id: string): Fold | undefined => (open === null ? undefined : { open: cardOpen(open, id), toggle: () => onOpen(toggleCard(open, id)), less: t.less });
@@ -147,7 +146,7 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
         <HighlightsCard items={highlights} categories={categories} language={language} t={t} onAction={onHint} onHide={onHideHint} onHow={onHowHint} />
         {/* The one month there is: where its money goes is the answer, so it stays whole. */}
         <div data-tour="stats-where">
-          <WhereCard book={book} where={where} averageOver={averageOver} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />
+          <WhereCard book={book} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />
         </div>
         {rhythm}
         <p className="px-2 text-label text-fg-mute wrap-prose">{t.needMoreMonths}</p>
@@ -223,7 +222,7 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
           tour="stats-where" fold={fold('where')} title={t.whereMoneyGoes}
           headline={where.rows.slice(0, 2).map(r => `${displayName(r.category.names, language)} ${formatPercent(Math.round(r.share * 100), t.locale)}`).join(' · ') || undefined}
         >
-          {() => <WhereCard book={book} where={where} averageOver={averageOver} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />}
+          {() => <WhereCard book={book} language={language} t={t} onCategory={onCategory} onPayee={onPayee} />}
         </FoldCard>
 
         {rhythm}
@@ -446,16 +445,6 @@ function RhythmCard({ book, pattern, months, month, t, onExplain }: { book: Book
   );
 }
 
-/** A span of months in a few signs, for the period menu beside a card's title: "Juni – Okt.", across years "Nov. 25 – Okt. 26". */
-function shortSpan(keys: MonthKey[], locale: string): string {
-  if (!keys.length) return '';
-  const first = parseMonthKey(keys[0]);
-  const last = parseMonthKey(keys[keys.length - 1]);
-  const f = new Intl.DateTimeFormat(locale, first.year === last.year ? { month: 'short' } : { month: 'short', year: '2-digit' });
-  const of = (k: { year: number; month: number }) => f.format(new Date(k.year, k.month - 1, 1));
-  return keys.length === 1 ? of(first) : `${of(first)} – ${of(last)}`;
-}
-
 /** Rows shown before "Alle n Kategorien". */
 const WHERE_ROWS = 8;
 
@@ -463,22 +452,16 @@ const WHERE_ROWS = 8;
  * Where the money goes, two ways in one card: by category — the average
  * month over the finished months in view, its share, how it moved against
  * as many months before, its budget as a tick on the bar; a row opens the
- * category's screen — or by payee ("Lidl" 6× · 12 %) over this month or the
- * last 2, 3, 6 or 12, a row opening that payee's sheet.
+ * category's screen — or by payee ("Lidl" 6× · 12 %), a row opening that
+ * payee's sheet.
  *
- * One period for all of it, in the card's corner. Until one is picked each
- * view keeps its own: the categories the page's months (their first option,
- * named by its span in short — the line under the title has it in full),
- * payees and tags this month. A period picked for the
- * categories gives the average month over the started months in it — this
- * month alone is what it has cost so far.
+ * One period for all of it, in the card's corner, the same choices in every
+ * view: this month (where it starts) or the last 2, 3, 6 or 12. For the
+ * categories it gives the average month over the started months in it —
+ * this month alone is what it has cost so far.
  */
-function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee }: {
+function WhereCard({ book, language, t, onCategory, onPayee }: {
   book: Book;
-  /** `whereRows` over `averageOver` (the view computes it once, for the headline too). */
-  where: ReturnType<typeof whereRows>;
-  /** The months the averages run over. */
-  averageOver: MonthKey[];
   language: string;
   t: Strings;
   onCategory: (id: string) => void;
@@ -486,14 +469,12 @@ function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee 
 }) {
   const { entries, categories } = book.data;
   const [chosenView, setView] = useState<'categories' | 'payees' | 'tags'>('categories');
-  // 0: nothing picked yet — the page's months for the categories, this month for payees and tags.
-  const [picked, setPeriod] = useState(0);
+  // How many months, ending with this one: 1 is this month.
+  const [period, setPeriod] = useState(1);
   const [expanded, setExpanded] = useState(false);
   const [allRows, setAllRows] = useState(false);
   const now = monthKeyOf();
-  // The page's months are just this month (a first month): "Dieser Monat" says it.
-  const pageIsNow = averageOver.length === 1 && averageOver[0] === now;
-  const periodMonths = useMemo(() => monthsEnding(now, picked || 1), [now, picked]);
+  const periodMonths = useMemo(() => monthsEnding(now, period), [now, period]);
   const payeeMonths = periodMonths;
   const payees = useMemo(() => topNames(entries, categories, payeeMonths), [entries, categories, payeeMonths]);
   // The Tags breakdown appears only once any entry has a tag (plan 26).
@@ -501,12 +482,11 @@ function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee 
   const tags = useMemo(() => tagTotals(entries, categories, periodMonths), [entries, categories, periodMonths]);
   // Fall back to categories if the tags view was open but tags are gone.
   const view = chosenView === 'tags' && !hasTags ? 'categories' : chosenView;
-  const period = view === 'categories' && !pageIsNow ? picked : picked || 1;
-  // The categories over a picked period: the started months in it (an average over months without a page would be too low).
+  // The categories over the period: the started months in it (an average over months without a page would be too low).
   const ownMonths = useMemo(() => periodMonths.filter(k => book.months.includes(k)), [periodMonths, book]);
   const ownWhere = useMemo(() => whereRows(book, ownMonths), [book, ownMonths]);
-  const shown = period === 0 ? where : ownWhere;
-  const shownOver = period === 0 ? averageOver : ownMonths;
+  const shown = ownWhere;
+  const shownOver = ownMonths;
   const shownTotal = shown.rows.reduce((sum, r) => sum + r.average, 0);
   const total = payees.reduce((sum, p) => sum + p.total, 0);
   const tagTotal = tags.reduce((sum, x) => sum + x.amount, 0);
@@ -520,7 +500,7 @@ function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee 
       title={t.whereMoneyGoes}
       sub={view === 'categories'
         // One month is what it has cost; several are their average month.
-        ? (shownOver.length === 1 && period !== 0
+        ? (shownOver.length === 1
           ? (shownTotal ? fmt(t.whereSub, { span: monthSpanLabel(shownOver, t.locale), total: formatMoney(shownTotal, t.locale) }) : monthSpanLabel(shownOver, t.locale))
           : shownOver.length ? fmt(t.averageFrom, { span: monthSpanLabel(shownOver, t.locale) }) : payeeSpan)
         : view === 'tags'
@@ -531,7 +511,7 @@ function WhereCard({ book, where, averageOver, language, t, onCategory, onPayee 
           label={t.wherePeriod}
           value={period}
           onChange={n => { setPeriod(n); setExpanded(false); setAllRows(false); }}
-          options={view === 'categories' && !pageIsNow ? [{ value: 0, label: shortSpan(averageOver, t.locale) }, ...periods] : periods}
+          options={periods}
         />
       )}
     >
