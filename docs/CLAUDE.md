@@ -272,7 +272,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     month; a picked period averages the categories over the started months
     in it), `RhythmCard`
     (*Wann du Geld ausgibst*: `WeekdayBars`, and the picked month as a
-    `HeatCalendar` — a day tapped is written out above it), the table (an
+    `HeatCalendar` — each day's sum in its square, whole units without a
+    sign, in fixed px since the square doesn't grow with the text; a day
+    tapped is written out above it), the table (an
     *Angelegt* column when any; a month → its report).
   - **`InsightsView`** (Planen, id `insights`): `PaceCard` (*November bis
     heute*: the finding and its three figures on a hero header — today's
@@ -1085,7 +1087,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   card payment. Swipe actions come from `ui/SwipeRow` (touch only — the mouse
   drags to sort); everything a swipe does must also be reachable without it.
 - Navigation: tapping the month's name opens `MonthPickerSheet`; ‹ › sit in
-  one floating capsule. The add button lives in the tab bar (`TabBar add`).
+  one floating capsule. The add button lives in the tab bar (`TabBar add`),
+  in its middle slot — not beside the capsule, where a 62 px button crowded a
+  small phone. Scripts find it as `nav button.hero`, the tabs as
+  `nav button:not(.hero)`.
 - Money colours mean one thing each: `text-pos` income / plus, `text-neg`
   a negative balance or overdue, `text-warn` (+ `bg-warn-dim`) *open*. Expenses
   themselves are plain `text-fg` — a bill is not an error.
