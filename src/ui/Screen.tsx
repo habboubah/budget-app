@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronsUpDown } from 'lucide-react';
 import { tapLight } from './haptics';
@@ -263,6 +263,7 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions }: 
  * otherwise capture `position: fixed` and carry the bar along with it.
  */
 export function Dock({ children }: { children: React.ReactNode }) {
+  useEffect(() => { countDocks(1); return () => countDocks(-1); }, []);
   return createPortal(
     <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none">
       {/* Above the tab bar, which stays on every screen: the button used to lie half under it. */}
@@ -271,5 +272,17 @@ export function Dock({ children }: { children: React.ReactNode }) {
       </div>
     </div>,
     document.body,
+  );
+}
+
+/* How many docked buttons are up: the floating add button (ui/TabBar) steps
+   aside while one is, so the two never sit on each other. */
+let docks = 0;
+const dockListeners = new Set<() => void>();
+function countDocks(d: number) { docks += d; dockListeners.forEach(f => f()); }
+export function useDockShown(): boolean {
+  return useSyncExternalStore(
+    f => { dockListeners.add(f); return () => { dockListeners.delete(f); }; },
+    () => docks > 0,
   );
 }

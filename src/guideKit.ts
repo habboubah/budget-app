@@ -104,7 +104,7 @@ export const MARKS = {
   tick: { anchor: '[data-entry-row]', radius: 18, scroll: 'center' },
   month: at('month', 18, 'top'),
   tabs: at('tabs', 999, 'none'),
-  add: at('add', 999, 'none'),
+  add: at('add', 20, 'top'),
   search: at('search', 999, 'top'),
   actions: at('actions', 999, 'top'),
   due: at('due', 24, 'center'),
