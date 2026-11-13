@@ -39,7 +39,8 @@ const L = {
       ins: 'Haftpflicht', gym: 'Fitnessstudio', fuel: 'Tanken', carIns: 'Kfz-Versicherung', carTax: 'Kfz-Steuer',
       shops: ['Lidl', 'Rewe', 'dm', 'Aldi', 'Edeka'], extras: ['Amazon', 'Apotheke', 'Restaurant', 'Kleidung'], kita: 'Kita',
     },
-    addTo: /^Zu .+ hinzufügen$/,
+    sectionMenu: /^Mehr — /,
+    addEntry: 'Eintrag hinzufügen',
     amount: '47,85',
     chip: 'Lidl',
     suggestions: 'Vorschläge',
@@ -57,7 +58,8 @@ const L = {
       ins: 'Liability insurance', gym: 'Gym', fuel: 'Fuel', carIns: 'Car insurance', carTax: 'Car tax',
       shops: ['Lidl', 'Tesco', 'Boots', 'Aldi', 'Sainsbury’s'], extras: ['Amazon', 'Pharmacy', 'Restaurant', 'Clothes'], kita: 'Daycare',
     },
-    addTo: /^Add to /,
+    sectionMenu: /^More — /,
+    addEntry: 'Add entry',
     amount: '47.85',
     chip: 'Lidl',
     suggestions: 'Suggestions',
@@ -142,9 +144,10 @@ const scrollTo = (locator) => locator.first().evaluate(el => { el.scrollIntoView
 const SCREENS = [
   // The two balances: what is in the bank now, what is left at month end.
   { name: '01-month' },
-  // Groceries' add row → 47,85 → the "Lidl" suggestion.
+  // Groceries' "⋯" → Add entry → 47,85 → the "Lidl" suggestion.
   { name: '02-entry', run: async (page, l) => {
-    await page.locator('main section[data-drop-category="groceries"]').getByRole('button', { name: l.addTo }).last().click();
+    await page.locator('main section[data-drop-category="groceries"]').getByRole('button', { name: l.sectionMenu }).first().click();
+    await page.getByRole('menuitem', { name: l.addEntry }).first().click();
     const dialog = page.locator('[role="dialog"]');
     await dialog.waitFor();
     await pause(page, 600);
