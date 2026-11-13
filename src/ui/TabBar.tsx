@@ -24,9 +24,10 @@ export interface Tab<T extends string> {
  */
 
 /**
- * The add button: the hero as a small lit dome (`add-orb`) in a ring of the
- * accent's tint. It answers the finger the moment it lands — the dome gives,
- * the ring swells out from under the fingertip, the plus begins to turn — and
+ * The add button: the hero as a lit dome (`add-orb`), 58 px, raised half
+ * out of the capsule and set in a ring of the page's own colour
+ * (the 5 px ring in `add-orb`), so it reads as cut into the bar — the one primary action. It answers the finger the moment it lands — the dome gives,
+ * the plus begins to turn — and
  * says what it did: while the sheet it opened is up the plus stays a cross,
  * and turns back with a little spring when the sheet goes. A tap also sends
  * one ring of light out of it, like a paid tick's. All springs, so a second
@@ -53,14 +54,8 @@ function AddButton({ label, open, onClick }: { label: string; open: boolean; onC
         down: { scale: 0.88, transition: { type: 'spring', duration: 0.16, bounce: 0 } },
       }}
       transition={{ type: 'spring', duration: 0.45, bounce: 0.45 }}
-      className="relative place-self-center w-[48px] h-[48px] rounded-full hero add-orb text-on-hero inline-flex items-center justify-center focus-visible:ring-focus"
+      className="relative place-self-center -translate-y-[14px] w-[58px] h-[58px] rounded-full hero add-orb text-on-hero inline-flex items-center justify-center focus-visible:ring-focus"
     >
-      <motion.span
-        aria-hidden="true"
-        className="absolute -inset-[3px] rounded-full add-halo pointer-events-none"
-        variants={{ away: { scale: 1, opacity: 0 }, rest: { scale: 1, opacity: 1 }, open: { scale: 1, opacity: 1 }, down: { scale: 1.22, opacity: 0.55 } }}
-        transition={{ type: 'spring', duration: 0.4, bounce: 0.3 }}
-      />
       {taps > 0 && !calm && (
         <motion.span
           key={taps}
@@ -76,7 +71,7 @@ function AddButton({ label, open, onClick }: { label: string; open: boolean; onC
         variants={{ away: { rotate: -90 }, rest: { rotate: 0 }, open: { rotate: 45 }, down: { rotate: 45 } }}
         transition={{ type: 'spring', duration: 0.5, bounce: 0.4 }}
       >
-        <Plus className="w-[24px] h-[24px]" strokeWidth={2.75} />
+        <Plus className="w-[28px] h-[28px]" strokeWidth={2.6} />
       </motion.span>
     </motion.button>
   );
