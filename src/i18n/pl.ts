@@ -76,6 +76,8 @@ const pl: Strings = {
   showOpenOnly: 'Pokaż tylko oczekujące',
   showAllEntries: 'Pokaż wszystkie',
   showPendingEverywhere: 'Pokaż tylko oczekujące pozycje we wszystkich kategoriach',
+  showRecurringOnly: 'Pokaż tylko pozycje cykliczne, we wszystkich kategoriach',
+  noRecurring: 'Brak pozycji cyklicznych w tym miesiącu',
   nothingOpen: 'Nic nie oczekuje',
   balanceEnd: 'Na koniec miesiąca',
   spentThisMonth: 'Wydano w tym miesiącu',

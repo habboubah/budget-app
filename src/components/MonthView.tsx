@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ListFilter, MoreHorizontal, Plus } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ListFilter, MoreHorizontal, Plus, Repeat as RepeatIcon } from 'lucide-react';
 import { Category, Entry, MonthKey } from '../types';
 import {
   MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, parseMonthKey, searchByMonth, searchEntries, searchTerms,
@@ -131,7 +131,12 @@ export function MonthView(p: Props) {
   const { year, month: mm } = parseMonthKey(month);
   const monthName = new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(year, mm - 1, 1));
 
-  const inCategory = (categoryId: string) => sortEntries(mine.filter(e => e.categoryId === categoryId));
+  // The recurring filter (beside the pending one): only entries that repeat —
+  // monthly, yearly, every few months. The cards then add up those alone.
+  const [recurringOnly, setRecurringOnly] = useState(false);
+  const recurring = (e: Entry) => e.repeat !== 'none';
+  const recurringCount = mine.filter(recurring).length;
+  const inCategory = (categoryId: string) => sortEntries(mine.filter(e => e.categoryId === categoryId && (!recurringOnly || recurring(e))));
   // Categories showing only what is still open (kept while switching months),
   // or the whole page at once.
   const [openOnly, setOpenOnly] = useState<string[]>([]);
@@ -149,10 +154,11 @@ export function MonthView(p: Props) {
   // A category with a budget always has something to say (what is left of it), so it keeps its card.
   const used = new Set(mine.map(e => e.categoryId));
   const hasCard = (c: Category) => used.has(c.id) || (p.budgetCards !== false && c.kind === 'expense' && !!c.limit);
-  const shownCategories = allOpen
-    ? categories.filter(c => mine.some(e => e.categoryId === c.id && !e.paid))
+  const pageFiltered = allOpen || recurringOnly;
+  const shownCategories = pageFiltered
+    ? categories.filter(c => mine.some(e => e.categoryId === c.id && (!allOpen || !e.paid) && (!recurringOnly || recurring(e))))
     : categories.filter(hasCard);
-  const emptyCategories = allOpen ? [] : categories.filter(c => !hasCard(c));
+  const emptyCategories = pageFiltered ? [] : categories.filter(c => !hasCard(c));
 
   const grown = p.grown !== false;
   /** The empty categories' chip, opened in a book that is still new. */
@@ -172,17 +178,19 @@ export function MonthView(p: Props) {
     if (!e) return;
     // With the filter on, the drop spot counts only the open rows shown:
     // land before the same row in the full list.
+    // (and, with the recurring filter, only the recurring ones).
+    const whole = (categoryId: string) => sortEntries(mine.filter(x => x.categoryId === categoryId));
     let index = to.index;
-    if (filtered(to.categoryId)) {
-      const others = inCategory(to.categoryId).filter(x => x.id !== id);
-      const shown = others.filter(x => !x.paid);
+    if (filtered(to.categoryId) || recurringOnly) {
+      const others = whole(to.categoryId).filter(x => x.id !== id);
+      const shown = others.filter(x => (!filtered(to.categoryId) || !x.paid) && (!recurringOnly || recurring(x)));
       index = index < shown.length ? others.indexOf(shown[index]) : others.length;
     }
-    if (e.categoryId === to.categoryId && inCategory(e.categoryId).findIndex(x => x.id === id) === index) return;
+    if (e.categoryId === to.categoryId && whole(e.categoryId).findIndex(x => x.id === id) === index) return;
     p.onMoveEntry(id, to.categoryId, index);
   });
   const moveBy = (e: Entry, delta: -1 | 1) => {
-    const list = inCategory(e.categoryId);
+    const list = sortEntries(mine.filter(x => x.categoryId === e.categoryId));
     const to = list.findIndex(x => x.id === e.id) + delta;
     if (to < 0 || to >= list.length) return;
     tapLight();
@@ -197,7 +205,7 @@ export function MonthView(p: Props) {
   // What is due next, on the running month only (and not while the page is
   // filtered to the open entries anyway). It lists earlier months' open
   // entries too, overdue — so their banner steps aside while it shows.
-  const due = month === current && balance.started && !allOpen ? dueSoon(entries, today) : [];
+  const due = month === current && balance.started && !pageFiltered ? dueSoon(entries, today) : [];
   const oldestOpen = due.length ? undefined : p.openEarlier.reduce<Entry | undefined>((a, e) => (!a || e.month < a.month ? e : a), undefined);
   const openSum = p.openEarlier.reduce((s, e) => s + e.amount, 0);
 
@@ -257,6 +265,21 @@ export function MonthView(p: Props) {
             >
               <ListFilter className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
               {openCount}
+            </button>
+          )}
+          {/* Only what repeats (rent, contracts, subscriptions), across the page. */}
+          {!searching && balance.started && (recurringCount > 0 || recurringOnly) && (
+            <button
+              type="button"
+              aria-pressed={recurringOnly}
+              aria-label={recurringOnly ? t.showAllEntries : t.showRecurringOnly}
+              title={recurringOnly ? t.showAllEntries : t.showRecurringOnly}
+              onClick={() => { tapLight(); setFoldedInFilter([]); setRecurringOnly(v => !v); }}
+              className={`shrink-0 h-11 ps-3 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label font-semibold tabular-nums transition-colors focus-visible:ring-focus ${
+                recurringOnly ? 'bg-accent-dim text-accent' : 'bg-surface card-edge text-fg-mute active:bg-surface-2'}`}
+            >
+              <RepeatIcon className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
+              {recurringCount}
             </button>
           )}
         </div>
@@ -370,9 +393,9 @@ export function MonthView(p: Props) {
             />
           )}
 
-          {allOpen && shownCategories.length === 0 && (
+          {pageFiltered && shownCategories.length === 0 && (
             <motion.div variants={rise}>
-              <Empty emoji="✅" title={t.nothingOpen} />
+              {allOpen ? <Empty emoji="✅" title={t.nothingOpen} /> : <Empty emoji="🔁" title={t.noRecurring} />}
             </motion.div>
           )}
 
@@ -384,8 +407,8 @@ export function MonthView(p: Props) {
               language={p.language}
               t={t}
               today={today}
-              collapsed={allOpen ? foldedInFilter.includes(c.id) : p.collapsed.includes(c.id)}
-              onCollapse={() => (allOpen
+              collapsed={pageFiltered ? foldedInFilter.includes(c.id) : p.collapsed.includes(c.id)}
+              onCollapse={() => (pageFiltered
                 ? setFoldedInFilter(xs => (xs.includes(c.id) ? xs.filter(x => x !== c.id) : [...xs, c.id]))
                 : p.onCollapse(c.id))}
               onRemove={() => p.onRemoveCategory(c)}

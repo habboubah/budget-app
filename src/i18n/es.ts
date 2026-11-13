@@ -73,6 +73,8 @@ const es: Strings = {
   showOpenOnly: 'Mostrar solo pendientes',
   showAllEntries: 'Mostrar todo',
   showPendingEverywhere: 'Mostrar solo los apuntes pendientes, en todas las categorías',
+  showRecurringOnly: 'Mostrar solo los apuntes recurrentes, en todas las categorías',
+  noRecurring: 'No hay apuntes recurrentes este mes',
   nothingOpen: 'Nada pendiente',
   balanceEnd: 'A fin de mes',
   spentThisMonth: 'Gastado este mes',

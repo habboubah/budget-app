@@ -73,6 +73,8 @@ const da: Strings = {
   showOpenOnly: 'Vis kun afventende',
   showAllEntries: 'Vis alle',
   showPendingEverywhere: 'Vis kun afventende poster, i alle kategorier',
+  showRecurringOnly: 'Vis kun tilbagevendende poster, i alle kategorier',
+  noRecurring: 'Ingen tilbagevendende poster denne måned',
   nothingOpen: 'Intet afventer',
   balanceEnd: 'Ved månedens slutning',
   spentThisMonth: 'Brugt denne måned',

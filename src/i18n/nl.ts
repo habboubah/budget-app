@@ -73,6 +73,8 @@ const nl: Strings = {
   showOpenOnly: 'Alleen open tonen',
   showAllEntries: 'Alles tonen',
   showPendingEverywhere: 'Alleen openstaande posten tonen, in alle categorieën',
+  showRecurringOnly: 'Alleen terugkerende posten tonen, in alle categorieën',
+  noRecurring: 'Geen terugkerende posten deze maand',
   nothingOpen: 'Niets open',
   balanceEnd: 'Aan het einde van de maand',
   spentThisMonth: 'Deze maand uitgegeven',
