@@ -20,7 +20,7 @@ export function DemoPill({ show, title, label, onRemove }: {
 }) {
   return createPortal(
     <div
-      className="fixed inset-x-0 z-[35] flex justify-center px-4 pointer-events-none"
+      className="fixed inset-x-0 z-[35] flex justify-center px-[84px] pointer-events-none"
       style={{ bottom: 'calc(92px + env(safe-area-inset-bottom))' }}
     >
       <AnimatePresence>
