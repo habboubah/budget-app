@@ -100,6 +100,38 @@ async function must(labels, nth, timeout, roles) {
   return el;
 }
 
+// Of the elements named exactly so, the one closest (up and down) to the
+// anchor – as the iPhone runner's `near` does: the balance card's "More" row
+// and the "More" tab share a name.
+async function nearest(labels, anchor, timeout, roles) {
+  await must(labels, 0, timeout, roles);
+  // The anchor may be plain text (a card's title), as the iPhone finds it.
+  let anchorEl = await find(anchor, 0, 0);
+  for (const label of [].concat(anchor)) {
+    if (anchorEl) break;
+    const text = (await scopes()).at(-1).getByText(label, { exact: true }).filter({ visible: true });
+    if (await text.count()) anchorEl = text.first();
+  }
+  if (!anchorEl) throw new Error(`not found: ${JSON.stringify(anchor)} (near)`);
+  const mark = await anchorEl.boundingBox();
+  let best = null, distance = Infinity;
+  for (const label of [].concat(labels)) {
+    for (const scope of await scopes()) {
+      let loc = null;
+      for (const r of roles) { const l = scope.getByRole(r, { name: label, exact: true }); loc = loc ? loc.or(l) : l; }
+      const vis = loc.filter({ visible: true });
+      for (let k = 0; k < await vis.count(); k++) {
+        const box = await vis.nth(k).boundingBox();
+        if (!box || !mark) continue;
+        const d = Math.abs(box.y + box.height / 2 - (mark.y + mark.height / 2));
+        if (d < distance) { best = vis.nth(k); distance = d; }
+      }
+    }
+    if (best) return best;
+  }
+  return must(labels, 0, timeout, roles);
+}
+
 const rolesFor = role => role === 'textbox' ? FIELDS : role === 'switch' ? ['switch', 'checkbox'] : role ? [role] : ROLES;
 
 // Chromium's emulated touches don't reach the row's pointer handlers, so a
@@ -165,7 +197,9 @@ async function run(step) {
   if (step.terminate) return page.reload({ waitUntil: 'networkidle' });
   if (NATIVE.some(k => k in step)) return;
   if ('tap' in step) {
-    const el = await must(step.tap, step.nth, (step.timeout ?? 8) * 1000, rolesFor(step.role));
+    const el = step.near
+      ? await nearest(step.tap, step.near, (step.timeout ?? 8) * 1000, rolesFor(step.role))
+      : await must(step.tap, step.nth, (step.timeout ?? 8) * 1000, rolesFor(step.role));
     await el.scrollIntoViewIfNeeded();
     if (step.pickFile) {
       const chooser = page.waitForEvent('filechooser', { timeout: 8000 });

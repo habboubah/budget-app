@@ -142,11 +142,13 @@ counts from 0 in screen order.
 | Step | Does |
 |---|---|
 | `{"tap": "Save"}` | Taps it (scrolls to it first). `nth`, `role` (`button`, `switch`, `textbox`), `timeout` |
+| `{"tap": "More", "near": "Bank balance now"}` | Two with one name on screen: taps the exact match closest (up and down) to the `near` text |
 | `{"tap": "Import bank transactions", "pickFile": "x.csv"}` | Taps, then picks the file in the Files picker (searches its name) |
 | `{"fill": "What for?", "text": "Lidl"}` | Replaces a field's text, typed in one go |
 | `{"amount": "12.50", "into": "Amount"}` | An amount, typed digit by digit with the iPhone's decimal separator |
 | `{"placeholderMinus": 20, "into": "…"}` | Types the field's placeholder minus 20 (the app's own figure) |
 | `{"select": "English", "in": "Language"}` | Opens a `<select>` and taps the option |
+| `{"select": "Last 12 months", "in": "Period", "near": "Where the money goes"}` | Two controls with one name: takes the one closest to the `near` text |
 | `{"pickDay": 3, "on": "Date:"}` | The system date picker of that field: that day of the shown month |
 | `{"pickYearAhead": 1, "on": "Ends:"}` | A month field (`<input type=month>`): turns the year wheel that many years on |
 | `{"swipe": "left", "on": "Edit Bakery"}` | Swipes across that row |

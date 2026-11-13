@@ -227,7 +227,8 @@ final class SceneRunner {
         let timeout = step.number("timeout") ?? 8
 
         if let labels = step.strings("tap") {
-            let el = try element(labels, nth: nth, role: step.string("role"), timeout: timeout)
+            let el = try step.strings("near").map { try nearest(labels, to: $0, role: step.string("role"), timeout: timeout) }
+                ?? element(labels, nth: nth, role: step.string("role"), timeout: timeout)
             try tap(el)
             if let file = step.string("pickFile") { try pickFile(file) }
             settle(); return
@@ -281,7 +282,7 @@ final class SceneRunner {
         if let day = step.int("pickDay") { try pickDay(day, opener: step.strings("on") ?? ["Date:"]); settle(); return }
         if let years = step.int("pickYearAhead") { try pickYearAhead(years, opener: step.strings("on") ?? ["Ends:"]); settle(); return }
         if let option = step.string("select"), let box = step.strings("in") {
-            try select(option, in: box, nth: nth)
+            try select(option, in: box, nth: nth, near: step.strings("near"))
             settle(); return
         }
         if let direction = step.string("scroll") { scroll(down: direction != "up"); settle(); return }
@@ -368,6 +369,24 @@ final class SceneRunner {
             rest(0.4)
         } while Date() < deadline
         throw StepFailure("not found: \(labels.joined(separator: " | "))\(nth > 0 ? " #\(nth)" : "")")
+    }
+
+    /// Of the elements named exactly so, the one closest (up and down) to the
+    /// anchor: two buttons with one name on a screen – the balance card's "More"
+    /// row and the "More" tab – told apart by what sits beside them
+    /// (`"near": "Bank balance now"`).
+    func nearest(_ labels: [String], to anchor: [String], role: String?, timeout: Double) throws -> XCUIElement {
+        let first = try element(labels, nth: 0, role: role, timeout: timeout, modes: [.exact])
+        let mark = try element(anchor, nth: 0, role: nil, timeout: timeout).frame
+        var best = first, distance = CGFloat.greatestFiniteMagnitude
+        for k in 0..<8 {
+            guard let el = try? element(labels, nth: k, role: role, timeout: 0, modes: [.exact]) else { break }
+            let f = el.frame
+            guard !f.isEmpty else { continue }
+            let d = abs(f.midY - mark.midY)
+            if d < distance { best = el; distance = d }
+        }
+        return best
     }
 
     /// The open web dialog (a sheet or a confirmation), the newest if several:
@@ -792,8 +811,11 @@ final class SceneRunner {
 
     // MARK: System UI
 
-    func select(_ option: String, in labels: [String], nth: Int) throws {
-        let box = try element(labels, nth: nth, role: "select", timeout: 6)
+    func select(_ option: String, in labels: [String], nth: Int, near anchor: [String]? = nil) throws {
+        // Two controls with one name ("Period": Statistics' range buttons and a
+        // card's menu) are told apart by what sits beside them, as for `tap`.
+        let box = try anchor.map { try nearest(labels, to: $0, role: "select", timeout: 6) }
+            ?? element(labels, nth: nth, role: "select", timeout: 6)
         try tap(box)
         rest(0.8)
         // Older iOS: a picker wheel with Done.

@@ -11,7 +11,7 @@
    {"optional": [{"see": ["Mit Face ID entsperren", "Unlock with Face ID", "فتح القفل بـ Face ID", "Odemknout pomocí Face ID", "Lås op med Face ID", "Desbloquear con Face ID", "Déverrouiller avec Face ID", "Sblocca con Face ID", "Lås opp med Face ID", "Ontgrendelen met Face ID", "Odblokuj za pomocą Face ID", "Desbloquear com Face ID", "Lås upp med Face ID", "Face ID ile aç"], "timeout": 2.5}, {"faceID": true}, {"pause": 1}]},
    {"see": ["Get started", "Los geht’s", "لنبدأ", "Začít", "Kom i gang", "Empezar", "C’est parti", "Iniziamo", "Aan de slag", "Zaczynamy", "Começar", "Kom igång", "Başlayalım", "More", "Mehr", "المزيد", "Více", "Mere", "Más", "Plus", "Altro", "Mer", "Meer", "Więcej", "Mais", "Daha fazla"], "timeout": 15, "soft": true},
    {"optional": [{"tap": ["Look around with test data first", "Erst mit Testdaten ansehen", "جرّب أولًا ببيانات تجريبية", "Nejdřív si to prohlédnout s testovacími daty", "Se dig omkring med testdata først", "Primero echar un vistazo con datos de prueba", "abord découvrir avec des données de test", "occhiata con dati di prova", "Se deg rundt med testdata først", "Eerst rondkijken met testgegevens", "Najpierw obejrzyj z danymi testowymi", "Primeiro ver com dados de teste", "Titta runt med testdata först", "Önce test verileriyle göz at"], "timeout": 1.5}, {"pause": 1.5}]},
-   {"tap": ["More", "Mehr", "المزيد", "Více", "Mere", "Más", "Plus", "Altro", "Mer", "Meer", "Więcej", "Mais", "Daha fazla"], "role": "button", "timeout": 10},
+   {"tap": ["More", "Mehr", "المزيد", "Více", "Mere", "Más", "Plus", "Altro", "Mer", "Meer", "Więcej", "Mais", "Daha fazla"], "near": ["Statistics", "Statistik", "الإحصاءات", "Statistika", "Análisis", "Stats", "Statistiche", "Statistikk", "Statistiek", "Statystyki", "Análise", "İstatistik"], "role": "button", "timeout": 10},
    {"pause": 0.5},
    {"tap": ["Settings", "Einstellungen", "الإعدادات", "Nastavení", "Indstillinger", "Ajustes", "Réglages", "Impostazioni", "Innstillinger", "Instellingen", "Ustawienia", "Definições", "Inställningar", "Ayarlar"]},
    {"pause": 0.5},
@@ -62,7 +62,7 @@
     {"pause": 2},
     {"tap": "Open my budget book"},
     {"pause": 1.5},
-    {"tap": "More"},
+    {"tap": "More", "near": "Statistics"},
     {"pause": 1},
     {"tap": "Settings"},
     {"pause": 1},
@@ -122,7 +122,7 @@
     {"pause": 1},
     {"tap": "Undo"},
     {"pause": 1.5},
-    {"tap": "At the end of the month"},
+    {"tap": "More", "near": "Bank balance now"},
     {"pause": 2}
   ]},
   { "name": "Checking the balance and the month report", "steps": [
@@ -144,7 +144,7 @@
     {"pause": 1.5}
   ]},
   { "name": "A year of test data and Statistics", "steps": [
-    {"tap": "More"},
+    {"tap": "More", "near": "Statistics"},
     {"pause": 1.5},
     {"tap": "Settings"},
     {"pause": 1},
@@ -156,6 +156,8 @@
     {"pause": 2},
     {"optional": [{"tap": "Expand all"}, {"pause": 1.5}]},
     {"tap": "12 months"},
+    {"pause": 1.5},
+    {"select": "Last 12 months", "in": "Period", "near": "Where the money goes"},
     {"pause": 1.5},
     {"scrollTo": "Restaurants, avg."},
     {"pause": 1.5},
@@ -186,7 +188,7 @@
     {"pause": 2}
   ]},
   { "name": "More: the guide and categories", "steps": [
-    {"tap": "More"},
+    {"tap": "More", "near": "Statistics"},
     {"pause": 1.5},
     {"tap": "Guide"},
     {"pause": 1.5},
