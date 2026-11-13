@@ -30,6 +30,8 @@ import { NAME_SUGGESTIONS } from './data/defaults';
 import { BudgetHow, BudgetSheet } from './components/BudgetSheet';
 import { DueSoonView } from './components/DueSoonView';
 import { ContractsView } from './components/ContractsView';
+import { RecurringView } from './components/RecurringView';
+import { activeSeries } from './recurring';
 import { ContractSheet } from './components/ContractSheet';
 import { ContractItem, contractItems } from './contracts';
 import { MonthPickerSheet } from './components/MonthPickerSheet';
@@ -139,7 +141,7 @@ type TourState = {
   guide?: boolean;
 } | null;
 
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'preferences';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'preferences' | 'recurring';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -1040,6 +1042,8 @@ export default function App() {
     if (m === addMonths(monthKeyOf(), -1) && (book.points.find(p => p.key === m)?.saved ?? 0) > 0) goodMoment('monthSaved');
   };
   const openYear = (y: string) => { setReviewYear(y); store.seeReview(y); push('yearReview'); };
+  /** Mehr › Wiederkehrende Posten: every recurring series still running. */
+  const recurringSeries = useMemo(() => activeSeries(entries), [entries]);
   const openMonthPage = (m: MonthKey) => { setMonth(m); setTab('month'); setStack(s => ({ ...s, month: undefined })); };
   /** A regular payment still missing: the entry sheet with its name, usual amount and category, open. */
   const addMissing = (i: Insight) => {
@@ -1398,6 +1402,15 @@ export default function App() {
             onDemo={store.hasDemo ? undefined : addDemo}
             onShow={guideGo}
           />
+        ) : id === 'recurring' ? (
+          <RecurringView
+            items={recurringSeries}
+            categories={data.categories}
+            t={t}
+            onBack={back}
+            // The month it last happened, with the entry open in it.
+            onOpen={s => { openMonthPage(s.last.month); setEntrySheet({ kind: 'edit', entry: s.last }); }}
+          />
         ) : id === 'contracts' ? (
           <ContractsView items={contracts} categories={categories} t={t} onBack={back} onOpen={setContractFor} />
         ) : id === 'category' ? (
@@ -1540,6 +1553,8 @@ export default function App() {
             onAccounts={() => push('accounts')}
             favoriteCount={store.favorites.length}
             onFavorites={() => push('favorites')}
+            recurringCount={recurringSeries.length}
+            onRecurring={() => push('recurring')}
             onImport={() => setImportOpen(true)}
             debtCount={store.debts.length}
             onDebts={() => push('debts')}

@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react';
-import { ChevronRight, Compass, Download, Filter, HandCoins, Landmark, Luggage, Settings, Star, Tags, Wallet, Zap } from 'lucide-react';
+import { ChevronRight, Compass, Download, Filter, HandCoins, Landmark, Luggage, Repeat, Settings, Star, Tags, Wallet, Zap } from 'lucide-react';
 import { Strings, fmt } from '../translations';
 import { foldForSearch, searchTerms } from '../logic';
 import { Empty, Screen, Group, IconTile, Row } from '../ui/Screen';
@@ -21,6 +21,9 @@ interface Props {
   onAccounts: () => void;
   favoriteCount: number;
   onFavorites: () => void;
+  /** The recurring entries still running, and their list. */
+  recurringCount: number;
+  onRecurring: () => void;
   /** The sheet that asks what to import: a photo, a statement, an invoice, Excel (plan 39). */
   onImport: () => void;
   debtCount: number;
@@ -136,6 +139,7 @@ export function MoreView(p: Props) {
     { id: 'categories', label: t.categoriesTitle, icon: Tags, hue: 'lavender', value: p.categoryCount, onClick: p.onCategories },
     { id: 'accounts', label: t.accountsTitle, sub: t.accountsRowSub, icon: Wallet, hue: 'leaf', value: p.accountCount > 1 ? p.accountCount : undefined, onClick: p.onAccounts },
     { id: 'favorites', label: t.favorites, sub: t.favoritesSub, icon: Star, hue: 'lemon', value: p.favoriteCount || undefined, onClick: p.onFavorites },
+    { id: 'recurring', label: t.recurringTitle, sub: t.recurringRowSub, icon: Repeat, hue: 'sky', value: p.recurringCount || undefined, onClick: p.onRecurring },
   ];
   const tools: Feature[] = [
     { id: 'import', label: t.importMenu, sub: t.importMenuSub, icon: Download, hue: 'blue', onClick: p.onImport },
