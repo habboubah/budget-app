@@ -301,17 +301,33 @@ export function CategorySection({
               </button>
             )}
 
-            {!search && <button
-              type="button"
-              onClick={() => { tapLight(); onAdd(); }}
-              aria-label={fmt(t.addTo, { name })}
-              className={`w-full min-h-[52px] ps-[21px] pe-4 flex items-center gap-[21px] text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus`}
-            >
-              <span className="w-[26px] h-[26px] rounded-full bg-accent-dim text-accent inline-flex items-center justify-center shrink-0" aria-hidden="true">
-                <Plus className="w-4 h-4" strokeWidth={2.8} />
-              </span>
-              <span className="min-w-0 text-body font-medium text-start wrap-prose">{all.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
-            </button>}
+            {/* The card's own row of actions: add an entry — and, on a spending
+                category, its budget: set one, or change the one it has (also in
+                the "⋯" above, which a folded card keeps). */}
+            {!search && <div className="flex items-stretch">
+              <button
+                type="button"
+                onClick={() => { tapLight(); onAdd(); }}
+                aria-label={fmt(t.addTo, { name })}
+                className={`flex-1 min-w-0 min-h-[52px] ps-[21px] pe-3 flex items-center gap-[21px] text-accent active:bg-surface-2 transition-colors focus-visible:ring-focus`}
+              >
+                <span className="w-[26px] h-[26px] rounded-full bg-accent-dim text-accent inline-flex items-center justify-center shrink-0" aria-hidden="true">
+                  <Plus className="w-4 h-4" strokeWidth={2.8} />
+                </span>
+                <span className="min-w-0 text-body font-medium text-start wrap-prose">{all.length ? t.add : `${t.add} · ${t.sectionEmpty}`}</span>
+              </button>
+              {onBudget && (
+                <button
+                  type="button"
+                  onClick={() => { tapLight(); onBudget(); }}
+                  aria-label={`${t.budgetMenu} — ${name}${budget ? ` (${budgetLine(t, budget)})` : ''}`}
+                  className="shrink-0 max-w-[55%] min-h-[52px] ps-3 pe-4 inline-flex items-center gap-1.5 text-label font-medium text-fg-mute active:bg-surface-2 transition-colors focus-visible:ring-focus"
+                >
+                  <Gauge className="w-[18px] h-[18px] shrink-0" strokeWidth={2.2} aria-hidden="true" />
+                  <span className="min-w-0 tabular-nums text-end wrap-prose">{budget ? budgetLine(t, budget) : t.budgetMenu}</span>
+                </button>
+              )}
+            </div>}
           </motion.div>
       )}
     </motion.section>

@@ -286,7 +286,9 @@ when it is wanted:
 - **Monthly budgets.** Give a spending category a budget (with a suggestion
   from what it cost on average): its card shows paid and open against it, a
   tick for today, "noch 212,88 €" or "50,04 € drüber", and how much is left
-  per day.
+  per day. The budget is set and changed on the month page itself: at the
+  foot of the card, beside *Hinzufügen* (*Monatsbudget …*, or the budget it
+  has), and in the card's "⋯".
 - **Per year, or with the rest carried on.** A budget can run **per year**
   (*Pro Jahr*: clothes, holidays, presents — the calendar year's months count
   together, "Jahresbudget 600 € · noch 212 €"), or stay monthly and **take

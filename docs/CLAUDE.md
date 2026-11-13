@@ -525,6 +525,12 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   remembered in `store.collapsed`: a fold made there lives in MonthView
   (`foldedInFilter`) and ends with the filter, and the remembered folds are
   back when it is switched off.
+- **A category's budget from its card:** a spending category's card has the
+  budget beside *Hinzufügen*, in the row at its foot (`CategorySection
+  onBudget`): *Monatsbudget …* while it has none, the budget itself
+  ("Budget 300 €") once it has — both open `BudgetSheet`. The card's "⋯"
+  has the same row, which a folded card and the chips of the empty
+  categories rely on.
 - **Bank import** (month "⋯" → *Kontoumsätze importieren (CSV)* / *Umsätze aus
   Foto übernehmen*): `src/statementImport.ts` is pure and tested —
   `parseBankCsv()` (finds the header row by column titles: Sparkasse
