@@ -475,7 +475,8 @@ when it is wanted:
   sichern* does the same for Google's backup.
 - **App zurücksetzen** (*Mehr › Einstellungen*) erases every month, entry, category and
   automatic backup on this device; the app then begins again with the start,
-  in the phone's language and currency.
+  in the phone's language and currency, and light (*Darstellung › Hell*)
+  whatever the phone is set to.
 
 ## Backup and transfer
 
