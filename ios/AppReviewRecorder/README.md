@@ -2,8 +2,26 @@
 
 Records the screen recording App Review asks for (Guideline 2.1: "captured
 on a physical device … beginning with launching the app"): a UI test taps
-through every feature of the Spartopf installed on your iPhone while iOS
-records the screen. About 25–30 minutes; the video ends up in Photos.
+through the main features of the Spartopf installed on your iPhone while iOS
+records the screen. About 8 minutes; the video ends up in Photos.
+
+It films what a new user does, in ten scenes — not every feature (decided on
+13 November 2026: the recording of everything ran close to half an hour):
+
+| Scene | Shows |
+|---|---|
+| 1 Launch and the start | The icon, English on the welcome, the three questions, what is left at the end of the month, US dollars |
+| 2 Entering, paid and pending | An expense with its category guessed, a pending monthly bill, an income; the circle, swipe to delete → Undo, the balance card opened |
+| 3 Bank import | The bank's CSV (already entered, will be ticked off, a category corrected for next time), then a photo of a banking app |
+| 4 Checking the balance and the month report | Check the bank balance with a difference booked, the month report |
+| 5 A year of test data and Statistics | Add test data, Statistics (Expand all if it opens as headlines), 12 months, a category's screen |
+| 6 Plan | The month so far, budgets and a new one, the outlook, the savings pots |
+| 7 More | The guide, categories and budgets |
+| 8 Settings | Dark, light, automatic; reminders (the permission); Lock with Face ID |
+| 9 Backup | Export backup with a password |
+| 10 The lock | The app switcher's cover, a relaunch, Face ID |
+
+What it leaves out is listed at the end, for the Review Notes.
 
 | File | What it is |
 |---|---|
@@ -11,7 +29,7 @@ records the screen. About 25–30 minutes; the video ends up in Photos.
 | `RecorderUITests/SceneRunner.swift` | Plays a scene file on the iPhone (knows nothing about Spartopf) |
 | `RecorderUITests/AppReviewRecordingTests.swift` | The test: preflight, scenes, stop the recording |
 | `RecorderHost/` | An empty app the UI test belongs to (a UI test needs one) |
-| `demo-files/` | Invented demo files the scenes import — no real finances |
+| `demo-files/` | Invented demo files the scenes import — no real finances (two are in use) |
 | `make-project.rb` | Generates the Xcode project (`gem install xcodeproj`, only to change its structure) |
 | `../../scripts/rehearse-app-review.mjs` | Plays `scenes.json` against the web app first |
 | `../../scripts/record-app-review.sh` | Runs the UI test on the connected iPhone |
@@ -39,21 +57,23 @@ records the screen. About 25–30 minutes; the video ends up in Photos.
 1. **Save your own data:** Spartopf › Settings › Back up and transfer ›
    Export backup, to iCloud Drive.
 2. `npm run rehearse:app-review` — checks every step against the current
-   code in about 10 minutes. It also writes
-   `demo-files/spartopf-demo-backup.spartopf` fresh.
-3. **AirDrop the seven demo files** to the iPhone and save them in Files
+   code in about 3 minutes.
+3. **AirDrop the two demo files** to the iPhone and save them in Files
    (Downloads), so the picker finds them by name:
-   `spartopf-demo-bank.csv` (in US dollars, like the recording),
-   `spartopf-demo-banking-app.png`, `spartopf-demo-statement.pdf`,
-   `spartopf-demo-other-app.csv`, `spartopf-demo-invoice.png` (the GiroCode),
-   `spartopf-demo-receipt.png`, and the fresh `spartopf-demo-backup.spartopf`.
-   Replace older copies. The earlier months come from Settings › Add test
-   data, not from Excel.
+   `spartopf-demo-bank.csv` (in US dollars, like the recording; its dates
+   are November 2026 — for another month change them in
+   `demo-files/make-demo-files.py`) and `spartopf-demo-banking-app.png`.
+   Replace older copies. The other files in `demo-files/` belong to scenes
+   that are no longer filmed. The earlier months come from More › Settings ›
+   Add test data.
 4. Make sure the build you submit is the one installed from **TestFlight**
-   (install it once when there is a new build). No need to delete it before
-   each run: every full run resets it in the app (Settings › Reset app)
-   before the screen recording starts, without asking (`RESET=0` skips the
-   reset and stops if the app isn't empty). Back up your own data first.
+   (install it once when there is a new build). It has to be a build with
+   the start — the welcome and its three questions, after 1.2.19: the scenes
+   don't fit an older one, and the run stops before anything is recorded.
+   No need to delete the app before each run: every full run resets it in
+   the app (More › Settings › Reset app) before the screen recording starts,
+   without asking (`RESET=0` skips the reset and stops if the app isn't
+   empty). Back up your own data first.
 5. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
 6. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
    screen recording. The real run resets what the dry run filled.
@@ -83,6 +103,15 @@ The recording is stopped, so what was filmed so far is in Photos.
   (`pickFile`: the file must be in Files, findable by search), the select
   menus (`select`), the share sheet's Close (`systemTap`), an element under
   the keyboard. Fix it in `SceneRunner.swift`, then `FROM=n DRY_RUN=1`.
+- **"can't reach … on screen"** — the page didn't scroll to it. Once that was
+  the app: a menu that opened a sheet left the page's scroll locked, and no
+  finger could reach a row further down. The rehearsal now fails on that
+  ("the page no longer scrolls"); if it passes, look at the screenshot for
+  what covers the row.
+- **"Next" or "Back" on the start goes to the wrong place** (iPhone in
+  English): the bar above the keyboard has buttons with the same names. The
+  page's own come first in the tree; if a run shows otherwise, give those
+  steps `"role": "button"` and say so.
 - **"… is greyed out"** — an earlier step didn't do what it should (an amount
   that isn't a number keeps Save disabled). Look at the screenshot for what
   went in.
@@ -125,11 +154,25 @@ Any step with `"soft": true` may fail without stopping the recording.
 `saveDownloadAs` on a tap is for the rehearsal only (it keeps the web
 download); the iPhone shows a share sheet there instead.
 
-## What the video can't show
+## What the video doesn't show
 
-Write these into the Review Notes, one sentence each — the recorder can't
-play them: the Siri phrases and the Shortcuts automations behind automatic
-capture (the guide screen is shown), `spartopf://` links, the + − × ÷ keys
-above the keyboard, the weekly tip card, the rating prompt, a notification
-arriving (the reminders for open bills, a return or a warranty are shown
-under Coming up), and Year in review outside 15 December to January.
+**Left out to keep it short.** Each of these had a scene until 13 November
+2026 (`git log -- ios/AppReviewRecorder/scenes.json`); the Review Notes
+describe the app beyond the video (`store/listing.md`, their point 3):
+splitting an entry, refunds, tags, favourites, receipts with return and
+warranty dates, repeats other than monthly, drag to another category,
+folding and the filter, the search, moving between months, the month's
+opening balance and deleting a month, the month's start day, the PDF
+statement, another app's CSV, the invoice QR code, import rules, a report as
+PDF, payees and tags in Statistics, Can I afford it?, yearly and
+carried-over budgets, the reserve, contracts' notice periods, the money
+check, accounts and transfers, debts and loans, trips and projects, the tax
+list, hiding amounts, the colour, Arabic, a new category, automatic capture,
+the daily reminder, the iPhone backup switch, CSV export, automatic backups,
+and reset with restore. (The Excel import was left out before that.)
+
+**Can't be played by the recorder at all:** the Siri phrases and the
+Shortcuts automations behind automatic capture, `spartopf://` links, the
+calculator keys (+ − × ÷) above the keyboard, the weekly tip card, the
+rating prompt, a notification arriving, and Year in review outside
+15 December to January.

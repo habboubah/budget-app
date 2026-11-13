@@ -161,14 +161,14 @@ final class SceneRunner {
                     throw StepFailure("Resetting the app, step \(n + 1) (\(step.summary)): \(error). Nothing was recorded.")
                 }
             }
-            // Reset app lands on the month page with the setup card: check it there
+            // Reset app lands on the start, its welcome: check it there
             // (a relaunch here cost ~6 s; the recording starts with one anyway).
             guard spec.mustSeeFirst.isEmpty || (try? seen(spec.mustSeeFirst, timeout: 12)) != nil else {
-                throw StepFailure("After Reset app the first setup question doesn't show – the screenshot in the .xcresult shows where it stopped. Nothing was recorded.")
+                throw StepFailure("After Reset app the welcome (Get started) doesn't show – the screenshot in the .xcresult shows where it stopped. Is the installed build one with the start, after 1.2.19? Nothing was recorded.")
             }
             log("App reset – it's empty now.")
         } else if !spec.mustSeeFirst.isEmpty && (try? seen(spec.mustSeeFirst, timeout: 12)) == nil {
-            throw StepFailure("The app isn't empty on this iPhone (the first setup question doesn't show). Run it without RESET=0 to reset it, or delete the app and install it again from TestFlight. Nothing was recorded.")
+            throw StepFailure("The app isn't empty on this iPhone (the welcome with Get started doesn't show). Run it without RESET=0 to reset it, or delete the app and install it again from TestFlight. Nothing was recorded.")
         }
         app.terminate() // the recording starts with a cold launch from the home screen
     }

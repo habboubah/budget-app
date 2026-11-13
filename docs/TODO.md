@@ -23,10 +23,20 @@ items off, or delete them once done. The details are in each plan's notes.
 
 - [ ] **The 2.1 resubmission, if it isn't sent yet:** the screen recording
   and the App Review note in `store/listing.md` (plan 16). The recording
-  can now play itself: `ios/AppReviewRecorder/README.md`, "Once" and "Every
-  recording". The recorder hasn't run on an iPhone yet — expect a round of
-  fixes in `SceneRunner.swift` on the first dry run (`DRY_RUN=1 npm run
-  record:app-review`); tell Claude where it stops.
+  plays itself and shows the main features only — ten scenes, about 8
+  minutes (`ios/AppReviewRecorder/README.md`). In this order:
+  1. A build with the start on the iPhone, from TestFlight: 1.2.20
+     (build 24) is the first. On 13 Nov the iPhone still had 1.2.17 — the
+     new scenes stop in its preflight, before anything is recorded.
+  2. AirDrop `spartopf-demo-bank.csv` and `spartopf-demo-banking-app.png`
+     into Files › Downloads.
+  3. `DRY_RUN=1 npm run record:app-review`, then `npm run
+     record:app-review`; tell Claude where it stops. New on the iPhone and
+     only rehearsed in Chromium so far: the start's three questions with the
+     keyboard up, the row *Settings* at the end of *More*, *Import* as a
+     sheet.
+  4. Paste the note from `store/listing.md` — it now says the video shows
+     the typical use, with the new paths (*More › Settings*, *Import*).
 - [ ] **Once the app is live:** *Mehr › Einstellungen › Spartopf bewerten* opens the
   review page (plan 15, app id 6829541731).
 - [ ] **Accessibility Nutrition Labels:** check the app on a device and
@@ -227,39 +237,11 @@ and Arabic, light and dark, SE to Pro Max, once at 200 % text).
   as one figure and "Am Monatsende … – aufklappen"; a headline on *Planen*
   reads its finding and says it opens; *Weniger* is reachable under each
   open card; the entry sheet's "⋯" reads *Mehr* / *Weniger*.
-- [ ] **The App Review recording must be rewritten before it runs again.**
-  `ios/AppReviewRecorder/scenes.json` was left alone (it had changes of
-  yours). `npm run rehearse:app-review` shows each step that no longer
-  finds its label; from the committed file these are:
-  - **Scene 1** (*Launch and language*): a fresh install opens on the start,
-    not on the tab bar. Pick English with the chip on the welcome; the
-    currency is under *More › Settings › Currency*, after the start.
-  - **Scene 2** (*Setup*): the setup card is gone. The start asks the same
-    three things — *How much is in your account right now?*, then the
-    income with its day, then *Rent*, *Electricity*, *Internet*, *Mobile
-    phone*, *Insurance* as fields with a day each — and ends on *Open my
-    budget book*. No *Use this*, *Add your salary*, *Add your fixed costs*,
-    *Done*; *Paid* isn't asked (a day up to today is paid).
-  - **Scenes 3, 8, 11** (entries): *Tag*, *Refund*, *Receipt*, *Note*,
-    *Save as favourite*, *Save & next* and the *Tax* pill are behind the
-    sheet's round "⋯" (accessibility label *More*) — one tap, and it stays
-    open for good. The search field shows from 15 entries or the second
-    month.
-  - **Scenes 4, 5, 6** (the month's "⋯"): the imports are one row,
-    *Import*, then its sheet (*Import a bank statement (PDF)*, *Take
-    transactions from a photo* …); *Collapse / Expand all categories* and
-    *Delete month* are under the menu's *More*; *Balance at the start of
-    the month* is a button in *Check the bank balance*.
-  - **Scenes 4, 10, 12, 13** (*Settings*): the tab is *More*. *Add / Remove
-    test data*, *Month starts on*, *Hide amounts*, *Appearance*, *Currency*,
-    *Language*, the reminders, *Include in iPhone backup*, *Lock with Face
-    ID* and *Reset app* are one tap further, under *More › Settings*.
-    Debts, accounts, trips, the tax list, rules and *Back up and transfer*
-    are rows of *More* itself.
-  - **Scenes 8, 9** (*Statistics*, *Plan*): on the book the recording builds
-    they open as headlines. *Expand all* in the bar (one tap, remembered)
-    shows the cards the scenes expect.
-  - **Scene 13:** after *Reset app* the start comes again.
+- [x] **The App Review recording** follows the new screens (13 Nov): the
+  start instead of the setup card, the entry sheet as it opens, *Import* as
+  one row and a sheet, *More › Settings*. It was cut to the main features on
+  the way; `npm run rehearse:app-review` passes. What is left is the run on
+  the iPhone — under *App Store* above.
 - [ ] **Store screenshots and the guide's pictures:** `npm run screenshots`
   still passes on the seeded book (it counts as a book in use). The guide's
   pictures were taken again in Chromium on Linux, as before — the item under
@@ -337,8 +319,8 @@ before they go into a release:
   pill showing (repeat + end, refund, a project, tax, an account).
 - [ ] **Languages:** the new strings are written by Claude in all fourteen; the
   eleven newer ones want the same native-speaker pass as the rest.
-- [ ] **App Review recording:** `npm run rehearse:app-review` still passes; the
-  scenes don't show the new features yet. Say if the recording should.
+- [x] **App Review recording:** main features only (13 Nov) — these stay out
+  of it.
 
 **The second redesign** (the cloud machine had Chromium and Inter only)
 - [ ] The type on the iPhone: SF Pro and SF Rounded, not Inter.
@@ -375,9 +357,8 @@ Before it goes into a release:
 - [ ] **Languages:** the guide's pages (`src/i18n/guide/`) are written by
   Claude in all fourteen; German, English and Arabic are yours to read, the
   eleven others want the same native-speaker pass as the rest.
-- [ ] **App Review recording:** see *The first five minutes* above — plan 39
-  changed the screens it passes through. Say if the recording should show a
-  tour.
+- [x] **App Review recording:** main features only (13 Nov): it opens the
+  guide in *More* and shows no tour.
 
 ## Decide
 

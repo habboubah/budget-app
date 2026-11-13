@@ -2,7 +2,7 @@
 // iPhone plays it: every step of ios/AppReviewRecorder/scenes.json, found the
 // same way the iPhone UI test finds it (by accessibility label: exact, then
 // "starts with", then "contains"). A label that changed in the app fails
-// here in a minute instead of halfway through a 20-minute recording.
+// here in a minute instead of halfway through the recording.
 //
 //   npm run rehearse:app-review              all scenes, from an empty app
 //   npm run rehearse:app-review -- 5 8       scenes 5 to 8 (5 > 1 continues from the last run)
@@ -11,8 +11,9 @@
 // It starts a Vite dev server (the native-only settings show there with
 // spartopf-dev-native). Native steps — Control Center, the home screen, Face
 // ID, system alerts — are skipped; file pickers get the files in
-// ios/AppReviewRecorder/demo-files. The step that exports the backup saves
-// it there as spartopf-demo-backup.spartopf, which the iPhone imports later.
+// ios/AppReviewRecorder/demo-files. A tap with "saveDownloadAs" keeps what it
+// downloads there under that name (for a scene that imports it again later).
+// After every step the page must still scroll once no sheet is open.
 // Screenshots of each scene end up in build/rehearsal/.
 import { createRequire } from 'node:module';
 import { readFileSync, rmSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
@@ -245,6 +246,20 @@ async function run(step) {
   throw new Error(`unknown step ${JSON.stringify(step)}`);
 }
 
+// A sheet or menu that closed must give the page its scroll back. The iPhone
+// scrolls with a finger and can't reach a row below the fold of a locked page;
+// Chromium's scrollIntoView still can, so without this check the rehearsal
+// passed where the iPhone stopped ("can't reach … on screen").
+const OPEN = '[role="dialog"]:visible, [role="alertdialog"]:visible, [role="menu"]:visible';
+async function scrollLocked() {
+  for (let i = 0; i < 3; i++) {
+    if (await page.locator(OPEN).count()) return false;
+    if (!(await page.evaluate(() => getComputedStyle(document.body).overflowY === 'hidden'))) return false;
+    await page.waitForTimeout(400); // a sheet on its way out
+  }
+  return true;
+}
+
 let failed = false;
 const started = Date.now();
 const downloads = [];
@@ -254,6 +269,7 @@ for (let s = from; s <= to; s++) {
   for (const [i, step] of scene.steps.entries()) {
     try {
       await run(step);
+      if (await scrollLocked()) throw new Error('the page no longer scrolls: its scroll lock stayed on after a sheet or menu closed (src/ui/useDialog.ts)');
     } catch (e) {
       if (step.soft) { console.log(`  ~ step ${i + 1} skipped (soft): ${e.message.split('\n')[0]}`); continue; }
       console.log(`  ✗ step ${i + 1} ${JSON.stringify(step)}\n    ${e.message.split('\n')[0]}`);

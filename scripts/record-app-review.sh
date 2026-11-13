@@ -13,7 +13,7 @@
 #   DEVICE=<udid> npm run record:app-review         if several iPhones are connected
 #   RESET=0 npm run record:app-review               don't reset: stop if the app isn't empty
 #
-# The app must start empty: a full run resets it in the app (Settings › Reset
+# The app must start empty: a full run resets it in the app (More › Settings › Reset
 # app) before the screen recording starts – every time, without asking.
 #
 # Before: ios/AppReviewRecorder/README.md, "Once" and "Every recording".

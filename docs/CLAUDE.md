@@ -1308,7 +1308,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 
 A change to a screen, a label or a flow that the App Review recording passes
 through means a change to `ios/AppReviewRecorder/scenes.json`; run
-`npm run rehearse:app-review` after it.
+`npm run rehearse:app-review` after it. The recording shows the main
+features only (13 November 2026; its README lists the ten scenes and what is
+left out): a new feature gets a scene only when it is one of them, and
+otherwise at most a word in the Review Notes.
 
 ## Releasing (only when explicitly asked)
 Same pipeline as pizza-driver-log: `scripts/release.js` ships **both stores
