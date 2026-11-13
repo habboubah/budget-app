@@ -3,10 +3,9 @@
 Regenerate for another month: change the dates below, then
   python3 make-demo-files.py .   (needs Pillow, reportlab and segno)
 spartopf-demo-backup.spartopf comes from npm run rehearse:app-review instead.
-The recording shows the main features only (13 Nov 2026): it imports the bank
-CSV and the banking-app picture. The other files belong to scenes that are no
-longer filmed; they are kept for trying those imports by hand. The earlier
-months come from More > Settings > Add test data.
+The recording shows the main features only (13 Nov 2026) and imports none of
+these files any more; they are kept for trying the imports by hand. The
+earlier months come from More > Settings > Add test data.
 
 All names, IBANs and amounts are invented. Writes into the folder given as argv[1]:
   spartopf-demo-bank.csv        - Sparkasse CSV-CAMT export, November 2026

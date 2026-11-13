@@ -41,7 +41,7 @@ npm run store-screenshots                            # framed store set → scre
 iPhone on the cable, unlocked, Do Not Disturb on.
 
 ```bash
-npm run rehearse:app-review                        # checks every step against the code (3 min)
+npm run rehearse:app-review                        # checks every step against the code (2 min)
 DRY_RUN=1 npm run record:app-review                # full run on the iPhone, without recording
 npm run record:app-review                          # the real recording → video in Photos
 FROM=5 TO=8 DRY_RUN=1 npm run record:app-review    # only scenes 5–8

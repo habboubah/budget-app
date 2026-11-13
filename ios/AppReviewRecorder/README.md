@@ -3,23 +3,22 @@
 Records the screen recording App Review asks for (Guideline 2.1: "captured
 on a physical device … beginning with launching the app"): a UI test taps
 through the main features of the Spartopf installed on your iPhone while iOS
-records the screen. About 8 minutes; the video ends up in Photos.
+records the screen. About 6 minutes; the video ends up in Photos.
 
-It films what a new user does, in ten scenes — not every feature (decided on
-13 November 2026: the recording of everything ran close to half an hour):
+It films what a new user does, in seven scenes — not every feature (decided
+on 13 November 2026: the recording of everything ran close to half an hour;
+the bank import, the backup and the lock at reopening went out the same
+day):
 
 | Scene | Shows |
 |---|---|
 | 1 Launch and the start | The icon, English on the welcome, the three questions, what is left at the end of the month, US dollars |
 | 2 Entering, paid and pending | An expense with its category guessed, a pending monthly bill, an income; the circle, swipe to delete → Undo, the balance card opened |
-| 3 Bank import | The bank's CSV (already entered, will be ticked off, a category corrected for next time), then a photo of a banking app |
-| 4 Checking the balance and the month report | Check the bank balance with a difference booked, the month report |
-| 5 A year of test data and Statistics | Add test data, Statistics (Expand all if it opens as headlines), 12 months, a category's screen |
-| 6 Plan | The month so far, budgets and a new one, the outlook, the savings pots |
-| 7 More | The guide, categories and budgets |
-| 8 Settings | Dark, light, automatic; reminders (the permission); Lock with Face ID |
-| 9 Backup | Export backup with a password |
-| 10 The lock | The app switcher's cover, a relaunch, Face ID |
+| 3 Checking the balance and the month report | Check the bank balance with a difference booked, the month report |
+| 4 A year of test data and Statistics | Add test data, Statistics (Expand all if it opens as headlines), 12 months, a category's screen |
+| 5 Plan | The month so far, budgets and a new one, the outlook, the savings pots |
+| 6 More | The guide, categories and budgets |
+| 7 Settings | Dark, light, automatic; reminders (the permission); Lock with Face ID switched on |
 
 What it leaves out is listed at the end, for the Review Notes.
 
@@ -29,7 +28,7 @@ What it leaves out is listed at the end, for the Review Notes.
 | `RecorderUITests/SceneRunner.swift` | Plays a scene file on the iPhone (knows nothing about Spartopf) |
 | `RecorderUITests/AppReviewRecordingTests.swift` | The test: preflight, scenes, stop the recording |
 | `RecorderHost/` | An empty app the UI test belongs to (a UI test needs one) |
-| `demo-files/` | Invented demo files the scenes import — no real finances (two are in use) |
+| `demo-files/` | Invented demo files the scenes import — no real finances (none is in use now) |
 | `make-project.rb` | Generates the Xcode project (`gem install xcodeproj`, only to change its structure) |
 | `../../scripts/rehearse-app-review.mjs` | Plays `scenes.json` against the web app first |
 | `../../scripts/record-app-review.sh` | Runs the UI test on the connected iPhone |
@@ -57,15 +56,10 @@ What it leaves out is listed at the end, for the Review Notes.
 1. **Save your own data:** Spartopf › Settings › Back up and transfer ›
    Export backup, to iCloud Drive.
 2. `npm run rehearse:app-review` — checks every step against the current
-   code in about 3 minutes.
-3. **AirDrop the two demo files** to the iPhone and save them in Files
-   (Downloads), so the picker finds them by name:
-   `spartopf-demo-bank.csv` (in US dollars, like the recording; its dates
-   are November 2026 — for another month change them in
-   `demo-files/make-demo-files.py`) and `spartopf-demo-banking-app.png`.
-   Replace older copies. The other files in `demo-files/` belong to scenes
-   that are no longer filmed. The earlier months come from More › Settings ›
-   Add test data.
+   code in about 2 minutes.
+3. **No demo files to AirDrop:** the imports are no longer filmed. The
+   files in `demo-files/` are kept for trying an import by hand. The earlier
+   months come from More › Settings › Add test data.
 4. Make sure the build you submit is the one installed from **TestFlight**
    (install it once when there is a new build). It has to be a build with
    the start — the welcome and its three questions, after 1.2.19: the scenes
@@ -78,8 +72,9 @@ What it leaves out is listed at the end, for the Review Notes.
 6. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
    screen recording. The real run resets what the dry run filled.
 7. **Record:** `npm run record:app-review`. Keep the phone unlocked, on a
-   stand facing you: Face ID is needed twice (turning the lock on, and the
-   last scene). Don't touch it.
+   stand facing you: Face ID is needed once, when the last scene turns the
+   lock on (and once before the recording starts, if an earlier run left
+   the lock on). Don't touch it.
 8. **Afterwards:** the video is in Photos. Trim it, AirDrop it to the Mac,
    upload it in App Store Connect › App Review Information › Attachment.
    Then Settings › Back up and transfer › Import backup with your own file.
@@ -159,7 +154,8 @@ download); the iPhone shows a share sheet there instead.
 **Left out to keep it short.** Each of these had a scene until 13 November
 2026 (`git log -- ios/AppReviewRecorder/scenes.json`); the Review Notes
 describe the app beyond the video (`store/listing.md`, their point 3):
-splitting an entry, refunds, tags, favourites, receipts with return and
+the bank's CSV and the photo of a banking app, exporting a backup, the
+lock when the app is reopened, splitting an entry, refunds, tags, favourites, receipts with return and
 warranty dates, repeats other than monthly, drag to another category,
 folding and the filter, the search, moving between months, the month's
 opening balance and deleting a month, the month's start day, the PDF
