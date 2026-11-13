@@ -266,7 +266,11 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     berechnet?* / *Ausblenden*, undoable); then under the heading *Verlauf*
     (`#history-title` — the store screenshot scrolls to it): income vs.
     spending (Angelegt in the tooltip), balance, *Wofür* (a `ShareBar` of the
-    whole split, rows → `CategoryView`, payees → `PayeeSheet`), `RhythmCard`
+    whole split, rows → `CategoryView`, payees → `PayeeSheet`; one period
+    menu in the card's corner for categories, payees and tags — the
+    categories start on the page's months, option 0, payees and tags on this
+    month; a picked period averages the categories over the started months
+    in it), `RhythmCard`
     (*Wann du Geld ausgibst*: `WeekdayBars`, and the picked month as a
     `HeatCalendar` — a day tapped is written out above it), the table (an
     *Angelegt* column when any; a month → its report).
