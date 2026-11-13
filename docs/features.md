@@ -43,8 +43,10 @@ server, no ads; everything stays on the device.
   each a card in its own colour with what is paid so far and, below it, the
   total including what is still open. Each month has its own set: a new
   month gets the ones switched on under *Mehr › Kategorien und Budgets ›
-  (a category) › In jedem neuen Monat*; empty ones sit in a *Noch leer* row
-  (on a new book one chip, "Kategorien (8)", that opens it),
+  (a category) › In jedem neuen Monat* — as shipped only **Einkommen** and
+  **Wohnen**, what comes and goes every month; every other category joins a
+  month with its first entry there. Empty ones sit in a *Noch leer* row
+  (on a new book one chip, "Kategorien (2)", that opens it),
   can be removed from the month (undoable), and *Kategorie hinzufügen*
   brings any category in — as does picking it when entering something. A
   category with entries always stays.
@@ -539,8 +541,8 @@ categories, 3 favourites) sit in a small pill at the row's end.
   real checkbox, never colour alone), larger text up to 200 %, 44-point tap
   targets, contrast checked for every colour in both themes, reduced motion.
 - **Categories to choose from.** Besides the eight above, the usual
-  categories of a German banking app are built in, switched off for new
-  months until you want them: *Bekleidung, Einkäufe, Telekommunikation,
+  categories of a German banking app are built in — like six of those eight
+  switched off for new months until you want them: *Bekleidung, Einkäufe, Telekommunikation,
   Mobilität, Reisen, Freizeit und Unterhaltung, Sport und Hobby, Gesundheit
   und Wellness, Bildung und Erziehung, Geldanlage, Versicherungen, Bargeld,
   Steuern und Gebühren*, each with its own name suggestions. Create your own

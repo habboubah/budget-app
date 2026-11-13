@@ -343,10 +343,14 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   shows; `monthCategories()` adds anything with entries, so money never
   vanishes. Unset (months from before, Excel imports) = the standard ones. New
   months take `standardCategoryIds()` (categories with `standard !== false`).
-  Of the 21 built-ins eight are standard — the six from the Excel sheet plus
-  `restaurants` (after `groceries`) and `children` (after `family`); the banking-app ones (`clothing` …
-  `taxes`) ship with `standard: false` — keep it that way, or every month
-  fills up with empty cards. Only an empty category can be taken
+  Of the 21 built-ins two are standard, `income` and `fixed` (Wohnen): what
+  comes and goes every month. The other six main ones (`car`, `extra`,
+  `groceries`, `restaurants`, `children`, `family`) and the banking-app ones
+  (`clothing` … `taxes`) ship with `standard: false` (November 2026, Ahmad:
+  a new month opens on two cards) — keep it that way, or every month fills
+  up with empty cards. A book from before keeps what it stored (no schema
+  change), and `restaurants` / `children` still arrive in an older book as
+  standard, as they did (`upgradeData` drops the shipped `standard`). Only an empty category can be taken
   out of a month (`canRemoveFromMonth`).
 - **Schema 2** added those built-ins; **schema 3** gives built-ins still named
   as shipped their Arabic names; **schema 4** (`upgradeData`, `MERGED_V4` /

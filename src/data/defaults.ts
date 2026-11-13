@@ -6,8 +6,11 @@ import { CATEGORY_NAMES, withLanguages } from './names';
  * reads: income first, then home (rent and what goes out every month), the
  * car, others, groceries and the family — the columns of My_expense.xlsx —
  * with restaurants (schema 5) beside the groceries and the children's
- * expenses (schema 8) beside the family. These eight are part of every new
- * month.
+ * expenses (schema 8) beside the family. Of these eight, only the income and
+ * the home are part of every new month: what comes and goes every month
+ * anyway. The others join a month with their first entry in it (or from
+ * "Kategorie hinzufügen"), and every new month once it is switched on in
+ * Settings — a new month opens on two cards, not on eight empty ones.
  *
  * Ids are history: `fixed` is "Wohnen / Home" and `extra` is "Sonstiges /
  * Others" (schema 4 merged the former "Wohnen und Garten" and "Sonstiges"
@@ -15,8 +18,7 @@ import { CATEGORY_NAMES, withLanguages } from './names';
  *
  * After them, the usual categories of a German banking app (Bekleidung,
  * Mobilität, Geldanlage …): there to pick when entering something, or to
- * switch on for every month in Settings, but not in a new month by default —
- * a page of fifteen empty cards is not simple. Their colours stay off the
+ * switch on for every month in Settings, likewise not in a new month by default. Their colours stay off the
  * main ones above (two or three share each of the other hues; only telecom
  * shares mint with the restaurants), so a chart rarely paints one of them
  * like a main category.
@@ -30,12 +32,12 @@ import { CATEGORY_NAMES, withLanguages } from './names';
 const SHIPPED: Category[] = [
   { id: 'income', names: { de: 'Einkommen', en: 'Income', ar: 'الدخل' }, emoji: '💰', hue: 'leaf', kind: 'income', repeat: 'monthly', builtin: true },
   { id: 'fixed', names: { de: 'Wohnen', en: 'Home', ar: 'المنزل' }, emoji: '🏠', hue: 'sky', kind: 'expense', repeat: 'monthly', budget: 'need', builtin: true },
-  { id: 'car', names: { de: 'Auto', en: 'Car', ar: 'السيارة' }, emoji: '🚗', hue: 'carrot', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
-  { id: 'extra', names: { de: 'Sonstiges', en: 'Others', ar: 'أخرى' }, emoji: '📦', hue: 'lavender', kind: 'expense', repeat: 'none', budget: 'want', builtin: true },
-  { id: 'groceries', names: { de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore', ar: 'البقالة والعناية الشخصية' }, emoji: '🛒', hue: 'lime', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
-  { id: 'restaurants', names: { de: 'Restaurants', en: 'Restaurants', ar: 'المطاعم' }, emoji: '🍽️', hue: 'mint', kind: 'expense', repeat: 'none', budget: 'want', builtin: true },
-  { id: 'family', names: { de: 'Familie', en: 'Family', ar: 'العائلة' }, emoji: '👨‍👩‍👦', hue: 'berry', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
-  { id: 'children', names: { de: 'Kinder', en: 'Children', ar: 'الأطفال' }, emoji: '🧸', hue: 'lemon', kind: 'expense', repeat: 'none', budget: 'need', builtin: true },
+  { id: 'car', names: { de: 'Auto', en: 'Car', ar: 'السيارة' }, emoji: '🚗', hue: 'carrot', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
+  { id: 'extra', names: { de: 'Sonstiges', en: 'Others', ar: 'أخرى' }, emoji: '📦', hue: 'lavender', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
+  { id: 'groceries', names: { de: 'Lebensmittel und Drogerie', en: 'Groceries & drugstore', ar: 'البقالة والعناية الشخصية' }, emoji: '🛒', hue: 'lime', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
+  { id: 'restaurants', names: { de: 'Restaurants', en: 'Restaurants', ar: 'المطاعم' }, emoji: '🍽️', hue: 'mint', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
+  { id: 'family', names: { de: 'Familie', en: 'Family', ar: 'العائلة' }, emoji: '👨‍👩‍👦', hue: 'berry', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
+  { id: 'children', names: { de: 'Kinder', en: 'Children', ar: 'الأطفال' }, emoji: '🧸', hue: 'lemon', kind: 'expense', repeat: 'none', budget: 'need', standard: false, builtin: true },
 
   { id: 'clothing', names: { de: 'Bekleidung', en: 'Clothing', ar: 'الملابس' }, emoji: '👕', hue: 'plum', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },
   { id: 'shopping', names: { de: 'Einkäufe', en: 'Shopping', ar: 'المشتريات' }, emoji: '🛍️', hue: 'stone', kind: 'expense', repeat: 'none', budget: 'want', standard: false, builtin: true },

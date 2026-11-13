@@ -2151,7 +2151,8 @@ export function upgradeData(data: AppData, from = 1, today = new Date()): AppDat
       if (categories.some(c => Object.values(c.names).some(n => known.has(normalizeName(n))))) continue;
       const before = standardCategoryIds(categories);
       const at = categories.findIndex(c => c.id === anchor);
-      const fresh = shipped.get(id)!;
+      // As it arrived then: part of every new month (a new book now starts with it switched off).
+      const { standard: _standard, ...fresh } = shipped.get(id)!;
       categories = at < 0 ? [...categories, fresh] : [...categories.slice(0, at + 1), fresh, ...categories.slice(at + 1)];
       months = months.map(m => {
         if (m.key >= current) return m.categories && !m.categories.includes(id) ? { ...m, categories: after(m.categories, id, anchor) } : m;
