@@ -137,6 +137,11 @@ export function MonthView(p: Props) {
   const [openOnly, setOpenOnly] = useState<string[]>([]);
   const [allOpen, setAllOpen] = useState(false);
   const filtered = (categoryId: string) => allOpen || openOnly.includes(categoryId);
+  // Under the page filter every card shows unfolded: what is pending is what
+  // was asked for, and a folded card would hide it. A card folded there is
+  // folded for the filter's time only — the folds that are remembered
+  // (`p.collapsed`) are as they were once the filter is off.
+  const [foldedInFilter, setFoldedInFilter] = useState<string[]>([]);
   const openCount = mine.filter(e => !e.paid).length;
   // With the page filtered, only categories with something pending show.
   // Otherwise every category with entries gets its card, and the empty ones
@@ -246,7 +251,7 @@ export function MonthView(p: Props) {
               aria-pressed={allOpen}
               aria-label={allOpen ? t.showAllEntries : t.showPendingEverywhere}
               title={allOpen ? t.showAllEntries : t.showPendingEverywhere}
-              onClick={() => { tapLight(); setAllOpen(v => !v); }}
+              onClick={() => { tapLight(); setFoldedInFilter([]); setAllOpen(v => !v); }}
               className={`shrink-0 h-11 ps-3 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label font-semibold tabular-nums transition-colors focus-visible:ring-focus ${
                 allOpen ? 'bg-warn-dim text-warn' : 'bg-surface card-edge text-fg-mute active:bg-surface-2'}`}
             >
@@ -379,8 +384,10 @@ export function MonthView(p: Props) {
               language={p.language}
               t={t}
               today={today}
-              collapsed={p.collapsed.includes(c.id)}
-              onCollapse={() => p.onCollapse(c.id)}
+              collapsed={allOpen ? foldedInFilter.includes(c.id) : p.collapsed.includes(c.id)}
+              onCollapse={() => (allOpen
+                ? setFoldedInFilter(xs => (xs.includes(c.id) ? xs.filter(x => x !== c.id) : [...xs, c.id]))
+                : p.onCollapse(c.id))}
               onRemove={() => p.onRemoveCategory(c)}
               onAdd={() => p.onAdd(c.id)}
               onEdit={p.onEdit}

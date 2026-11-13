@@ -53,6 +53,8 @@ server, no ads; everything stays on the device.
 - **Fold and filter.** Tap a card's header to fold it down to one line
   (remembered per category, in every month); the month's "⋯" folds or
   unfolds them all. A card's "⋯" can show only what is still open there.
+  The filter beside the search field does that for the whole page — and
+  unfolds every card while it is on; the folds are back when it is off.
 - **Paid or open.** Every entry has a circle in front: empty = still open
   (rent not paid yet, salary expected), filled = paid. One tap toggles it —
   or swipe the entry to the right. Swipe left to delete (undoable). Every

@@ -521,7 +521,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   the search field, one for the whole page (`allOpen` in MonthView): every
   card shows only its pending entries and cards without any are hidden.
   Turning one card's filter off while the page filter is on keeps the others
-  filtered.
+  filtered. Under the page filter every card is unfolded, whatever is
+  remembered in `store.collapsed`: a fold made there lives in MonthView
+  (`foldedInFilter`) and ends with the filter, and the remembered folds are
+  back when it is switched off.
 - **Bank import** (month "⋯" → *Kontoumsätze importieren (CSV)* / *Umsätze aus
   Foto übernehmen*): `src/statementImport.ts` is pure and tested —
   `parseBankCsv()` (finds the header row by column titles: Sparkasse
