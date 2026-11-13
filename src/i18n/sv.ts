@@ -74,6 +74,8 @@ const sv: Strings = {
   showOpenOnly: 'Visa bara väntande',
   showAllEntries: 'Visa alla',
   showPendingEverywhere: 'Visa bara väntande poster, i alla kategorier',
+  showRecurringOnly: 'Visa bara återkommande poster, i alla kategorier',
+  noRecurring: 'Inga återkommande poster den här månaden',
   nothingOpen: 'Inget väntar',
   balanceEnd: 'Vid månadens slut',
   spentThisMonth: 'Spenderat den här månaden',

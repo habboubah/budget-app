@@ -73,6 +73,8 @@ const it: Strings = {
   showOpenOnly: 'Mostra solo in sospeso',
   showAllEntries: 'Mostra tutto',
   showPendingEverywhere: 'Mostra solo le voci in sospeso, in tutte le categorie',
+  showRecurringOnly: 'Mostra solo le voci ricorrenti, in tutte le categorie',
+  noRecurring: 'Nessuna voce ricorrente questo mese',
   nothingOpen: 'Niente in sospeso',
   balanceEnd: 'A fine mese',
   spentThisMonth: 'Speso questo mese',

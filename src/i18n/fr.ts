@@ -74,6 +74,8 @@ const fr: Strings = {
   showOpenOnly: 'Afficher seulement en attente',
   showAllEntries: 'Tout afficher',
   showPendingEverywhere: 'Afficher seulement les écritures en attente, dans toutes les catégories',
+  showRecurringOnly: 'Afficher seulement les opérations récurrentes, dans toutes les catégories',
+  noRecurring: 'Aucune opération récurrente ce mois-ci',
   nothingOpen: 'Rien en attente',
   balanceEnd: 'En fin de mois',
   spentThisMonth: 'Dépensé ce mois-ci',

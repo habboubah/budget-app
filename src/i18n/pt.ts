@@ -74,6 +74,8 @@ const pt: Strings = {
   showOpenOnly: 'Mostrar só pendentes',
   showAllEntries: 'Mostrar tudo',
   showPendingEverywhere: 'Mostrar só os registos pendentes, em todas as categorias',
+  showRecurringOnly: 'Mostrar só os lançamentos recorrentes, em todas as categorias',
+  noRecurring: 'Sem lançamentos recorrentes este mês',
   nothingOpen: 'Nada pendente',
   balanceEnd: 'No fim do mês',
   spentThisMonth: 'Gasto este mês',

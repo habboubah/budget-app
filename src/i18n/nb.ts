@@ -74,6 +74,8 @@ const nb: Strings = {
   showOpenOnly: 'Vis bare ventende',
   showAllEntries: 'Vis alle',
   showPendingEverywhere: 'Vis bare ventende poster, i alle kategorier',
+  showRecurringOnly: 'Vis bare gjentakende poster, i alle kategorier',
+  noRecurring: 'Ingen gjentakende poster denne måneden',
   nothingOpen: 'Ingenting venter',
   balanceEnd: 'Ved slutten av måneden',
   spentThisMonth: 'Brukt denne måneden',

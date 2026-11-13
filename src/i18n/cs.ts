@@ -77,6 +77,8 @@ const cs: Strings = {
   showOpenOnly: 'Jen čekající',
   showAllEntries: 'Zobrazit vše',
   showPendingEverywhere: 'Zobrazit jen čekající položky ve všech kategoriích',
+  showRecurringOnly: 'Zobrazit jen opakované položky ve všech kategoriích',
+  noRecurring: 'Tento měsíc žádné opakované položky',
   nothingOpen: 'Nic nečeká',
   balanceEnd: 'Na konci měsíce',
   spentThisMonth: 'Utraceno tento měsíc',

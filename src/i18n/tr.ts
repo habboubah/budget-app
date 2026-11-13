@@ -76,6 +76,8 @@ const tr: Strings = {
   showOpenOnly: 'Yalnızca bekleyenleri göster',
   showAllEntries: 'Tümünü göster',
   showPendingEverywhere: 'Tüm kategorilerde yalnızca bekleyen kalemleri göster',
+  showRecurringOnly: 'Yalnızca tekrarlayan kayıtları göster, tüm kategorilerde',
+  noRecurring: 'Bu ay tekrarlayan kayıt yok',
   nothingOpen: 'Bekleyen yok',
   balanceEnd: 'Ay sonunda',
   spentThisMonth: 'Bu ay harcanan',

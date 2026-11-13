@@ -525,6 +525,12 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   remembered in `store.collapsed`: a fold made there lives in MonthView
   (`foldedInFilter`) and ends with the filter, and the remembered folds are
   back when it is switched off.
+- **Recurring filter** (`recurringOnly` in MonthView, the 🔁 button beside
+  the pending one): only entries with `repeat !== 'none'` are handed to the
+  cards (so a card's totals are the recurring ones), cards without any are
+  hidden, folds work as under the pending filter, and the two combine.
+  A drop or Alt + ↑ / ↓ under either filter is mapped back to the place in
+  the whole list.
 - **A category's budget from its card:** a spending category's card has the
   budget beside *Hinzufügen*, in the row at its foot (`CategorySection
   onBudget`): *Monatsbudget …* while it has none, the budget itself
