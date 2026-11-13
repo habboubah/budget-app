@@ -1087,9 +1087,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 - **The hero** (`hero` + `hero-glow`): the accent's gradient with a sheen, a
   rim of light and a glow of its own colour. It carries the balance card, the
   statistics' month summary, the add button and primary `Button`s. The add
-  button wears it as a small lit dome (`add-orb`: light on the upper rim,
-  shade inside the lower edge, its own glow on the glass) in a ring of the
-  accent's tint (`add-halo`). The big
+  button wears it as a lit dome (`add-orb`: a highlight across its top,
+  light on the upper rim, shade inside the lower edge, its own glow), 58 px,
+  raised half out of the capsule (`-translate-y-[14px]`) in a 5 px ring of
+  `--t-bg`, so it reads as cut into the bar. The big
   hero cards add `hero-art` (fine rings in the far corner) and the balance
   card `hero-shine` (one band of light when it appears); both stay under
   `--hero-sheen`, which the audit reads — keep it that way. The balance card
@@ -1152,8 +1153,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   bar slides in from empty (a transform under the track's round mask), the balance card's line is drawn in once per month (its svg is keyed by the month) and its meters run out when the details open, a paid tick pops with a ring spreading out of it, the chosen tab's
   symbol lands with a bounce. The add button (`AddButton` in `ui/TabBar.tsx`)
   answers on touch-down, not on release: the dome gives (0.88, no bounce on
-  the way in), its ring swells out from under the fingertip and the plus
-  turns towards a cross; a tap sends one ring of light out of it; the plus
+  the way in) and the plus turns towards a cross; a tap sends one ring of light out of it; the plus
   stays a cross while the new-entry sheet is up (`add.open`) and springs back
   when it goes — the sheet covers the bar on a phone, so what the eye gets is
   the press and the return. Springs throughout, so a touch can take over
