@@ -2,19 +2,32 @@
  "about": "The App Review screen recording for Spartopf, one step per line: the main features, in the order a new user meets them. The iPhone UI test (RecorderUITests) plays it on a real iPhone; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
  "app": {
   "bundleId": "com.habboubah.spartopf",
-  "iconName": "Spartopf"
+  "iconName": "Spartopf",
+  "minVersion": "1.2.20"
  },
  "preflight": {
   "mustSee": ["Get started", "Los geht’s", "لنبدأ", "Začít", "Kom i gang", "Empezar", "C’est parti", "Iniziamo", "Aan de slag", "Zaczynamy", "Começar", "Kom igång", "Başlayalım"],
   "reset": [
-   {"optional": [{"see": ["Mit Face ID entsperren", "Unlock with Face ID", "فتح القفل بـ Face ID", "Odemknout pomocí Face ID", "Lås op med Face ID", "Desbloquear con Face ID", "Déverrouiller avec Face ID", "Sblocca con Face ID", "Lås opp med Face ID", "Ontgrendelen met Face ID", "Odblokuj za pomocą Face ID", "Desbloquear com Face ID", "Lås upp med Face ID", "Face ID ile aç"], "timeout": 1}, {"faceID": true}, {"pause": 1}]},
-   {"optional": [{"tap": ["More", "Mehr", "المزيد", "Více", "Mere", "Más", "Plus", "Altro", "Mer", "Meer", "Więcej", "Mais", "Daha fazla"], "role": "button", "timeout": 8}, {"pause": 0.5}, {"tap": ["Settings", "Einstellungen", "الإعدادات", "Nastavení", "Indstillinger", "Ajustes", "Réglages", "Impostazioni", "Innstillinger", "Instellingen", "Ustawienia", "Definições", "Inställningar", "Ayarlar"]}, {"pause": 0.5}, {"scrollTo": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla"]}, {"tap": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla"]}, {"pause": 1}, {"tap": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla"]}, {"pause": 0.5}]}
+   {"optional": [{"see": ["Mit Face ID entsperren", "Unlock with Face ID", "فتح القفل بـ Face ID", "Odemknout pomocí Face ID", "Lås op med Face ID", "Desbloquear con Face ID", "Déverrouiller avec Face ID", "Sblocca con Face ID", "Lås opp med Face ID", "Ontgrendelen met Face ID", "Odblokuj za pomocą Face ID", "Desbloquear com Face ID", "Lås upp med Face ID", "Face ID ile aç"], "timeout": 2.5}, {"faceID": true}, {"pause": 1}]},
+   {"see": ["Get started", "Los geht’s", "لنبدأ", "Začít", "Kom i gang", "Empezar", "C’est parti", "Iniziamo", "Aan de slag", "Zaczynamy", "Começar", "Kom igång", "Başlayalım", "More", "Mehr", "المزيد", "Více", "Mere", "Más", "Plus", "Altro", "Mer", "Meer", "Więcej", "Mais", "Daha fazla"], "timeout": 15, "soft": true},
+   {"optional": [{"tap": ["Look around with test data first", "Erst mit Testdaten ansehen", "جرّب أولًا ببيانات تجريبية", "Nejdřív si to prohlédnout s testovacími daty", "Se dig omkring med testdata først", "Primero echar un vistazo con datos de prueba", "abord découvrir avec des données de test", "occhiata con dati di prova", "Se deg rundt med testdata først", "Eerst rondkijken met testgegevens", "Najpierw obejrzyj z danymi testowymi", "Primeiro ver com dados de teste", "Titta runt med testdata först", "Önce test verileriyle göz at"], "timeout": 1.5}, {"pause": 1.5}]},
+   {"tap": ["More", "Mehr", "المزيد", "Více", "Mere", "Más", "Plus", "Altro", "Mer", "Meer", "Więcej", "Mais", "Daha fazla"], "role": "button", "timeout": 10},
+   {"pause": 0.5},
+   {"tap": ["Settings", "Einstellungen", "الإعدادات", "Nastavení", "Indstillinger", "Ajustes", "Réglages", "Impostazioni", "Innstillinger", "Instellingen", "Ustawienia", "Definições", "Inställningar", "Ayarlar"]},
+   {"pause": 0.5},
+   {"scrollTo": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla"]},
+   {"tap": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla"]},
+   {"pause": 1},
+   {"tap": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla"]},
+   {"pause": 0.5}
   ]
  },
  "system": {
   "screenRecording": ["Screen Recording", "Bildschirmaufnahme", "Stop Recording", "Aufnahme stoppen"],
   "chooseFile": ["Choose File", "Datei auswählen", "Browse", "Durchsuchen"],
-  "done": ["Done", "Fertig"]
+  "done": ["Done", "Fertig"],
+  "update": ["Update", "Aktualisieren"],
+  "open": ["Open", "Öffnen"]
  },
  "rehearsal": {
   "locale": "en-GB",
@@ -178,7 +191,7 @@
     {"tap": "Back"},
     {"pause": 1}
   ]},
-  { "name": "Settings: appearance, reminders and Face ID", "steps": [
+  { "name": "Settings: appearance and reminders", "steps": [
     {"tap": "Settings"},
     {"pause": 1.5},
     {"select": "Dark", "in": "Appearance"},
@@ -191,15 +204,10 @@
     {"pause": 1.5},
     {"tap": "Remind me of open bills", "role": "switch"},
     {"pause": 1},
-    {"systemAlert": ["Allow", "Erlauben", "سماح"], "soft": true},
+    {"systemAlert": ["Allow", "Erlauben", "سماح"], "soft": true, "timeout": 3},
     {"pause": 2.5},
     {"tap": "Back"},
     {"pause": 1},
-    {"tap": "Lock with Face ID", "role": "switch"},
-    {"pause": 1},
-    {"systemAlert": ["OK"], "soft": true},
-    {"faceID": true},
-    {"pause": 1.5},
     {"tap": "Back"},
     {"tap": "Month"},
     {"see": "Bank balance now"},

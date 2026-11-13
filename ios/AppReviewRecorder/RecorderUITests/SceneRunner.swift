@@ -74,7 +74,7 @@ struct RecordingSpec {
     let scenes: [SceneSpec]
     let system: [String: [String]]
     let mustSeeFirst: [String]
-    /// preflight.reset: steps that empty the app when it isn't (never filmed).
+    /// preflight.reset: steps that reset the app before every full run (never filmed).
     let resetSteps: [Step]
 
     init(json data: Data) throws {
@@ -113,7 +113,7 @@ final class SceneRunner {
     let pace: Double
     /// Skip starting and stopping the screen recording (a dry run).
     let noVideo: Bool
-    /// Empty the app with preflight.reset when it isn't (the script asked first).
+    /// Reset the app with preflight.reset before the recording starts (every full run).
     let reset: Bool
     private(set) var recording = false
 
@@ -138,33 +138,33 @@ final class SceneRunner {
 
     // MARK: Running
 
-    /// Before recording: the app must be empty (its welcome card showing), so
-    /// the video starts from scratch. When it isn't and resetting is allowed,
-    /// preflight.reset empties it first — before the screen recording starts.
+    /// Before recording: the app is reset, so the video starts from scratch.
+    /// preflight.reset empties it in the app itself – every full run, before the
+    /// screen recording starts, whatever state the last run left: a book (More ›
+    /// Settings › Reset app), the lock (Face ID first), or the welcome of a run
+    /// that stopped early (test data first, so there is a book to reset – its
+    /// language and settings go back to the iPhone's own that way). A reset that
+    /// can't be played stops the run: nothing is filmed on an app that isn't empty.
     func preflight() throws {
-        log("Preflight: is \(spec.bundleId) installed and empty?")
+        log("Preflight: is \(spec.bundleId) installed, and can it be reset?")
         app.terminate()
         app.activate()
         guard app.wait(for: .runningForeground, timeout: 20) else {
             throw StepFailure("\(spec.bundleId) didn't start. Is it installed from TestFlight on this iPhone?")
         }
         rest(0.6)
-        // With reset on, every full run starts from a freshly reset app: what
-        // shows on screen doesn't prove it's empty (a run that stopped in scene 2
-        // left the balance and the salary behind the welcome card), and changed
-        // settings don't show at all.
         if reset && !spec.resetSteps.isEmpty {
-            log("Resetting the app (not recorded) …")
+            log("Resetting the app (before the recording starts – not in the video) …")
             for (n, step) in spec.resetSteps.enumerated() {
                 do { try perform(step) } catch {
                     if step.bool("soft") { continue }
-                    throw StepFailure("Resetting the app, step \(n + 1) (\(step.summary)): \(error). Nothing was recorded.")
+                    throw StepFailure("Couldn't reset the app before the recording: reset step \(n + 1) (\(step.summary)): \(error). The screenshot in the .xcresult shows what was on screen. Nothing was recorded.")
                 }
             }
             // Reset app lands on the start, its welcome: check it there
             // (a relaunch here cost ~6 s; the recording starts with one anyway).
             guard spec.mustSeeFirst.isEmpty || (try? seen(spec.mustSeeFirst, timeout: 12)) != nil else {
-                throw StepFailure("After Reset app the welcome (Get started) doesn't show – the screenshot in the .xcresult shows where it stopped. Is the installed build one with the start, after 1.2.19? Nothing was recorded.")
+                throw StepFailure("After Reset app the welcome (Get started) doesn't show – the screenshot in the .xcresult shows where it stopped. Nothing was recorded.")
             }
             log("App reset – it's empty now.")
         } else if !spec.mustSeeFirst.isEmpty && (try? seen(spec.mustSeeFirst, timeout: 12)) == nil {
@@ -190,10 +190,16 @@ final class SceneRunner {
         }
     }
 
+    /// An error for the log: a label list in every language cut to its first two.
+    private func brief(_ error: Error) -> String {
+        let parts = "\(error)".components(separatedBy: " | ")
+        return parts.count > 2 ? parts.prefix(2).joined(separator: " | ") + " | … (\(parts.count - 2) more)" : "\(error)"
+    }
+
     func perform(_ step: Step) throws {
         if let group = step.steps("optional") {
             guard let first = group.first else { return }
-            do { try perform(first.with("timeout", default: 2)) } catch { log("  ~ optional steps skipped: \(error)"); return }
+            do { try perform(first.with("timeout", default: 2)) } catch { log("  ~ optional steps skipped: \(brief(error))"); return }
             for s in group.dropFirst() { try perform(s) }
             return
         }
@@ -205,7 +211,7 @@ final class SceneRunner {
         if step.bool("terminate") { app.terminate(); rest(1); return }
         if step.bool("appSwitcher") { openAppSwitcher(); return }
         if step.bool("faceID") { waitForFaceID(); return }
-        if let labels = step.strings("systemAlert") { try tapSystemAlert(labels); return }
+        if let labels = step.strings("systemAlert") { try tapSystemAlert(labels, timeout: step.number("timeout") ?? 4); return }
         if let labels = step.strings("systemTap") { try tapSystemButton(labels); return }
         if let note = step.string("note") { log(note); return }
 
@@ -733,12 +739,25 @@ final class SceneRunner {
         typeByHand(text)
     }
 
+    /// Whether the caret is in this field. XCTest knows it (its snapshots carry
+    /// hasKeyboardFocus) but has no public property for it on iOS: read by key,
+    /// only where the element answers to it.
+    private func hasKeyboardFocus(_ el: XCUIElement) -> Bool {
+        guard el.exists, el.responds(to: NSSelectorFromString("hasKeyboardFocus")) else { return false }
+        return (el.value(forKey: "hasKeyboardFocus") as? Bool) ?? false
+    }
+
     /// Focuses the field with the caret at its end, deletes what is there, types the text
     /// in one go. `check`: for words – if autocorrection changed them, type them again.
     func replaceText(in el: XCUIElement, with text: String, check: Bool = false) throws {
         try reach(el, dx: 0.96)
-        el.coordinate(withNormalizedOffset: CGVector(dx: 0.96, dy: 0.5)).tap()
-        if !waitForKeyboard(2) { el.tap() }
+        // A field the app focused itself (the amount of a sheet that just opened)
+        // is typed into as it is: a tap on a field that already has the caret
+        // brings up the Paste | AutoFill bubble, which then sits in the video.
+        if !(hasKeyboardFocus(el) && app.keyboards.firstMatch.exists) {
+            el.coordinate(withNormalizedOffset: CGVector(dx: 0.96, dy: 0.5)).tap()
+            if !waitForKeyboard(2) { el.tap() }
+        }
         guard waitForKeyboard() else { throw StepFailure("the field “\(el.label)” didn't take focus") }
         let current = (el.value as? String) ?? ""
         if !current.isEmpty && current != el.placeholderValue {
@@ -955,10 +974,13 @@ final class SceneRunner {
         }
     }
 
-    func tapSystemAlert(_ labels: [String]) throws {
+    /// A permission alert (notifications, Face ID): the first of the buttons that
+    /// it has. iOS asks only once per install, so the step is usually soft, with
+    /// a short `timeout` – the wait for an alert that doesn't come is in the video.
+    func tapSystemAlert(_ labels: [String], timeout: Double = 4) throws {
         for root in [springboard, app] {
             let alert = root.alerts.firstMatch
-            if alert.waitForExistence(timeout: root === springboard ? 4 : 1) {
+            if alert.waitForExistence(timeout: root === springboard ? timeout : 1) {
                 for l in labels where alert.buttons[l].exists { alert.buttons[l].tap(); rest(0.8); return }
                 throw StepFailure("alert without \(labels)")
             }
@@ -1000,15 +1022,43 @@ final class SceneRunner {
     func launchFromHomeScreen() {
         XCUIDevice.shared.press(.home)
         rest(0.8)
-        let icon = springboard.icons[spec.iconName]
-        if !spec.iconName.isEmpty && appears(icon, within: 3) && icon.isHittable {
+        if let icon = homeScreenIcon() {
             icon.tap()
         } else {
-            log("  the \(spec.iconName) icon isn't on this home screen page – starting the app directly")
+            log("  the \(spec.iconName) icon isn't on the home screen's pages – starting the app directly")
             app.activate()
         }
         _ = app.wait(for: .runningForeground, timeout: 20)
         rest(1.2)
+    }
+
+    /// The app's icon on the home screen: on the page showing, or on a later
+    /// one – then swiped to, page by page (an icon on another page is in the
+    /// tree, a screen's width or more to the side). Named like the app; a
+    /// TestFlight build's icon can carry more after the name. Nil when it is
+    /// only in a folder or the App Library.
+    private func homeScreenIcon() -> XCUIElement? {
+        guard !spec.iconName.isEmpty else { return nil }
+        let named = springboard.icons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", spec.iconName, spec.iconName + " "))
+        guard named.firstMatch.waitForExistence(timeout: 3) else {
+            let similar = springboard.icons.matching(NSPredicate(format: "label CONTAINS[c] %@", String(spec.iconName.prefix(5))))
+                .allElementsBoundByIndex.filter { $0.exists }.map { $0.label }
+            if !similar.isEmpty { log("  icons with a similar name: \(similar.joined(separator: " | "))") }
+            return nil
+        }
+        let screen = springboard.frame
+        for _ in 0..<6 {
+            let icons = named.allElementsBoundByIndex.filter { $0.exists && !$0.frame.isEmpty }
+            if let here = icons.first(where: { screen.contains(CGPoint(x: $0.frame.midX, y: $0.frame.midY)) && $0.isHittable }) { return here }
+            // On a later page (to the right; to the left in a right-to-left language)?
+            guard let other = icons.first(where: { $0.frame.midY > screen.minY && $0.frame.midY < screen.maxY && !screen.contains(CGPoint(x: $0.frame.midX, y: $0.frame.midY)) }) else { return nil }
+            let toRight = other.frame.midX > screen.maxX
+            let from = springboard.coordinate(withNormalizedOffset: CGVector(dx: toRight ? 0.85 : 0.15, dy: 0.45))
+            let to = springboard.coordinate(withNormalizedOffset: CGVector(dx: toRight ? 0.15 : 0.85, dy: 0.45))
+            from.press(forDuration: 0.05, thenDragTo: to, withVelocity: .fast, thenHoldForDuration: 0)
+            rest(0.9)
+        }
+        return nil
     }
 
     func openAppSwitcher() {
@@ -1022,6 +1072,88 @@ final class SceneRunner {
     func waitForFaceID() {
         log("  Face ID – look at the iPhone")
         rest(3.5)
+    }
+
+    // MARK: TestFlight
+
+    /// Updates the app from TestFlight when the iPhone has an older build than
+    /// the scenes need (scripts/record-app-review.sh checks that and runs this
+    /// before the recording): opens TestFlight, finds the app in its list and
+    /// taps Update in that row – never another app's – then waits until the row
+    /// says Open. Throws when TestFlight offers no update.
+    func updateFromTestFlight(timeout: Double = 300) throws {
+        let testFlight = XCUIApplication(bundleIdentifier: "com.apple.TestFlight")
+        let name = spec.iconName
+        guard !name.isEmpty else { throw StepFailure("scenes.json needs app.iconName to find the app in TestFlight") }
+        let updateWords = Set(system("update", ["Update", "Aktualisieren"]).map { $0.lowercased() })
+        let openWords = Set(system("open", ["Open", "Öffnen"]).map { $0.lowercased() })
+        testFlight.terminate()
+        testFlight.activate()
+        guard testFlight.wait(for: .runningForeground, timeout: 20) else {
+            throw StepFailure("TestFlight didn't open on the iPhone – is it installed?")
+        }
+        log("TestFlight: looking for \(name) …")
+
+        /// The app's name in the list, and the buttons in its row (same height on screen).
+        func row() -> (title: XCUIElement, update: XCUIElement?, open: XCUIElement?)? {
+            // TestFlight lists the App Store name, which starts with the icon's ("Spartopf – Budget Book").
+            let titles = testFlight.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", name)).allElementsBoundByIndex
+                .filter { $0.exists && !$0.frame.isEmpty }
+            guard let title = titles.first else { return nil }
+            let buttons = testFlight.buttons.allElementsBoundByIndex.filter { $0.exists && !$0.frame.isEmpty }
+            let inRow = { (b: XCUIElement) in abs(b.frame.midY - title.frame.midY) < 60 }
+            let update = buttons.first { updateWords.contains($0.label.lowercased()) && inRow($0) }
+            let open = buttons.first { openWords.contains($0.label.lowercased()) && inRow($0) }
+            return (title, update, open)
+        }
+        /// What TestFlight shows, for the log when the row isn't as expected.
+        func onScreen() -> String {
+            let texts = testFlight.staticTexts.allElementsBoundByIndex.filter { $0.exists }.map { $0.label }
+            let buttons = testFlight.buttons.allElementsBoundByIndex.filter { $0.exists }.map { $0.label }
+            return "texts: \(texts.prefix(40).joined(separator: " | ")) — buttons: \(buttons.prefix(40).joined(separator: " | "))"
+        }
+
+        // The list loads and asks the server for new builds: give it a while.
+        var found = row()
+        let listDeadline = Date().addingTimeInterval(25)
+        while (found == nil || (found!.update == nil && found!.open == nil)) && Date() < listDeadline {
+            rest(1)
+            found = row()
+        }
+        // A build that came in since TestFlight last looked: wait a little for Open to turn into Update.
+        let offerDeadline = Date().addingTimeInterval(12)
+        while let f = found, f.update == nil, Date() < offerDeadline {
+            rest(1.5)
+            found = row()
+            if f.open == nil && found?.open == nil { break }
+        }
+        guard let r = found else {
+            log("  TestFlight shows: \(onScreen())")
+            throw StepFailure("\(name) isn't in TestFlight's list on the iPhone")
+        }
+        guard let update = r.update else {
+            log("  TestFlight shows: \(onScreen())")
+            throw StepFailure(r.open != nil
+                ? "TestFlight offers no update for \(name) (its row says Open) – the new build isn't available to this tester yet"
+                : "no Update button in \(name)'s row in TestFlight")
+        }
+        log("TestFlight: updating \(name) …")
+        update.tap()
+        let deadline = Date().addingTimeInterval(timeout)
+        var last = Date()
+        while Date() < deadline {
+            rest(2)
+            if let now = row(), now.update == nil, now.open != nil {
+                log("TestFlight: \(name) is updated.")
+                rest(1)
+                XCUIDevice.shared.press(.home)
+                rest(1)
+                return
+            }
+            if Date().timeIntervalSince(last) > 30 { log("  … still downloading"); last = Date() }
+        }
+        log("  TestFlight shows: \(onScreen())")
+        throw StepFailure("the update of \(name) in TestFlight didn't finish within \(Int(timeout)) s")
     }
 
     // MARK: Screen recording

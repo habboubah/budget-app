@@ -369,7 +369,7 @@ Write 1–3 short lines per release, e.g.
 
 ```
 1) Screen recording
-Attached: a screen recording from an iPhone [model] on iOS [version]. It starts with launching the app and shows the typical use: the three questions of the first start, adding entries and ticking them off, checking the bank balance, the month report, statistics, budgets and the outlook, and the settings with reminders and the Face ID lock. All names and amounts in it are invented.
+Attached: a screen recording from an iPhone [model] on iOS [version]. It starts with launching the app and shows the typical use: the three questions of the first start, adding entries and ticking them off, checking the bank balance, the month report, statistics, budgets and the outlook, and the settings with appearance and reminders. All names and amounts in it are invented.
 
 2) Purpose and target audience
 Spartopf is a household budget book for private individuals and families who keep track of their monthly income and expenses, as a replacement for a monthly spreadsheet. Every entry is either paid or still open, and the app shows two balances: what is in the account now, and what will be left at the end of the month once everything open is paid.

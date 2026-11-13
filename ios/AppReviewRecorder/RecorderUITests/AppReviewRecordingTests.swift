@@ -11,18 +11,42 @@ import XCTest
 ///   RECORDER_PACE      1 = normal, 1.5 = slower, 0.5 = faster
 ///   RECORDER_FROM / RECORDER_TO   only these scenes (no preflight)
 ///   RECORDER_NO_VIDEO  1 = a dry run without the screen recording
-///   RECORDER_RESET     1 = reset the app first when it isn't empty (preflight.reset)
+///   RECORDER_RESET     1 = reset the app before the recording starts (preflight.reset)
+///   RECORDER_UPDATE    1 = only update the app from TestFlight (testUpdateFromTestFlight)
 final class AppReviewRecordingTests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
     }
 
-    func testRecordAppReview() throws {
+    private func loadSpec() throws -> RecordingSpec? {
         let bundle = Bundle(for: AppReviewRecordingTests.self)
         guard let url = bundle.url(forResource: "scenes", withExtension: "json") else {
-            return XCTFail("scenes.json isn't in the test bundle")
+            XCTFail("scenes.json isn't in the test bundle")
+            return nil
         }
-        let spec = try RecordingSpec(json: Data(contentsOf: url))
+        return try RecordingSpec(json: Data(contentsOf: url))
+    }
+
+    /// Not part of the recording: the script runs this alone (RECORDER_UPDATE=1)
+    /// when the iPhone has an older build than scenes.json › app.minVersion, to
+    /// update the app from TestFlight before anything is filmed.
+    func testUpdateFromTestFlight() throws {
+        guard ProcessInfo.processInfo.environment["RECORDER_UPDATE"] == "1" else {
+            throw XCTSkip("Only when the script asks for it (RECORDER_UPDATE=1).")
+        }
+        guard let spec = try loadSpec() else { return }
+        let runner = SceneRunner(spec: spec, pace: 1, noVideo: true)
+        do {
+            try runner.updateFromTestFlight()
+        } catch {
+            runner.attachScreenshot(named: "TestFlight – where it stopped")
+            XCUIDevice.shared.press(.home)
+            XCTFail("\(error)")
+        }
+    }
+
+    func testRecordAppReview() throws {
+        guard let spec = try loadSpec() else { return }
         let env = ProcessInfo.processInfo.environment
         let pace = Double(env["RECORDER_PACE"] ?? "") ?? 1
         let from = max(1, Int(env["RECORDER_FROM"] ?? "") ?? 1)

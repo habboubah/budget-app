@@ -14,6 +14,8 @@
 // ios/AppReviewRecorder/demo-files. A tap with "saveDownloadAs" keeps what it
 // downloads there under that name (for a scene that imports it again later).
 // After every step the page must still scroll once no sheet is open.
+// A full rehearsal ends with the reset every recording starts with
+// (preflight.reset), from a filled app and from the welcome.
 // Screenshots of each scene end up in build/rehearsal/.
 import { createRequire } from 'node:module';
 import { readFileSync, rmSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
@@ -149,10 +151,13 @@ async function typeInto(el, text) {
 // Steps that happen outside the app: the iPhone runner does them, the rehearsal skips them.
 const NATIVE = ['systemTap', 'startRecording', 'stopRecording', 'systemAlert', 'faceID', 'home', 'appSwitcher', 'note', 'launch'];
 
+// For the log: a label list in every language, cut short.
+const brief = text => text.length > 120 ? text.slice(0, 117) + '…' : text;
+
 async function run(step) {
   if (step.optional) {
     try { await run({ ...step.optional[0], timeout: step.optional[0].timeout ?? 2 }); }
-    catch (e) { console.log(`  ~ optional steps skipped: ${e.message.split('\n')[0]}`); return; }
+    catch (e) { console.log(`  ~ optional steps skipped: ${brief(e.message.split('\n')[0])}`); return; }
     for (const s of step.optional.slice(1)) await run(s);
     return;
   }
@@ -285,6 +290,35 @@ for (let s = from; s <= to; s++) {
   if (failed) break;
   await page.screenshot({ path: join(out, `scene${String(s).padStart(2, '0')}.png`) });
   console.log(`  ✓ ${scene.steps.length} steps`);
+}
+// The reset every recording starts with (preflight.reset; the iPhone plays it
+// before the screen recording starts): once on the app the scenes just filled,
+// then on the welcome it leaves – a run that stopped early leaves the iPhone
+// there. Both must end on the welcome again. Only after a full rehearsal.
+if (!failed && from === 1 && to === spec.scenes.length && spec.preflight?.reset?.length) {
+  for (const state of ['the app the scenes filled', 'the welcome']) {
+    console.log(`Preflight reset, from ${state}`);
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.waitForTimeout(800);
+    let at = null;
+    try {
+      for (const [i, step] of spec.preflight.reset.entries()) {
+        at = `reset step ${i + 1} ${JSON.stringify(step).slice(0, 160)}`;
+        try { await run(step); } catch (e) { if (!step.soft) throw e; }
+      }
+      at = 'after the reset: the welcome (preflight.mustSee)';
+      await run({ see: spec.preflight.mustSee ?? [], timeout: 12 });
+      console.log('  ✓ the app is empty again, on its welcome');
+    } catch (e) {
+      console.log(`  ✗ ${at}\n    ${e.message.split('\n')[0]}`);
+      await page.screenshot({ path: join(out, 'fail-preflight-reset.png') });
+      const snap = await page.locator('body').ariaSnapshot();
+      writeFileSync(join(out, 'fail-snapshot.txt'), snap);
+      console.log('    What is on screen (build/rehearsal/fail-snapshot.txt):\n' + snap.split('\n').slice(0, 60).map(l => '    ' + l).join('\n'));
+      failed = true;
+      break;
+    }
+  }
 }
 if (process.env.SNAP && !failed) {
   const open = page.locator('[role="dialog"]:visible, [role="alertdialog"]:visible, [role="menu"]:visible').last();

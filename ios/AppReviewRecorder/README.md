@@ -7,8 +7,8 @@ records the screen. About 6 minutes; the video ends up in Photos.
 
 It films what a new user does, in seven scenes — not every feature (decided
 on 13 November 2026: the recording of everything ran close to half an hour;
-the bank import, the backup and the lock at reopening went out the same
-day):
+the bank import, the backup, the lock at reopening and the Face ID switch
+went out the same day):
 
 | Scene | Shows |
 |---|---|
@@ -18,7 +18,7 @@ day):
 | 4 A year of test data and Statistics | Add test data, Statistics (Expand all if it opens as headlines), 12 months, a category's screen |
 | 5 Plan | The month so far, budgets and a new one, the outlook, the savings pots |
 | 6 More | The guide, categories and budgets |
-| 7 Settings | Dark, light, automatic; reminders (the permission); Lock with Face ID switched on |
+| 7 Settings | Dark, light, automatic; reminders (the permission, the first time iOS asks) |
 
 What it leaves out is listed at the end, for the Review Notes.
 
@@ -60,21 +60,27 @@ What it leaves out is listed at the end, for the Review Notes.
 3. **No demo files to AirDrop:** the imports are no longer filmed. The
    files in `demo-files/` are kept for trying an import by hand. The earlier
    months come from More › Settings › Add test data.
-4. Make sure the build you submit is the one installed from **TestFlight**
-   (install it once when there is a new build). It has to be a build with
-   the start — the welcome and its three questions, after 1.2.19: the scenes
-   don't fit an older one, and the run stops before anything is recorded.
-   No need to delete the app before each run: every full run resets it in
-   the app (More › Settings › Reset app) before the screen recording starts,
-   without asking (`RESET=0` skips the reset and stops if the app isn't
+4. The build you submit has to be the one installed from **TestFlight**,
+   and a build the scenes fit: `scenes.json` › `app.minVersion` (1.2.20, the
+   first with the start — the welcome and its three questions). The run
+   prints which build the iPhone has; an older one it **updates from
+   TestFlight by itself** (it opens TestFlight and taps Update in the app's
+   row) before anything is reset or filmed. `UPDATE=0` only says so and
+   stops. A newer build than `minVersion` you install yourself.
+   No need to delete the app before each run: every full run **resets it in
+   the app before the screen recording starts**, without asking — from a
+   book (More › Settings › Reset app), and from the welcome a stopped run
+   left (test data first, then the same reset, so the language goes back to
+   the iPhone's too). If the reset can't be played the run stops there and
+   records nothing (`RESET=0` skips the reset and stops if the app isn't
    empty). Back up your own data first.
 5. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
 6. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
    screen recording. The real run resets what the dry run filled.
-7. **Record:** `npm run record:app-review`. Keep the phone unlocked, on a
-   stand facing you: Face ID is needed once, when the last scene turns the
-   lock on (and once before the recording starts, if an earlier run left
-   the lock on). Don't touch it.
+7. **Record:** `npm run record:app-review`. Keep the phone unlocked and
+   don't touch it. Face ID isn't part of the recording; it is only asked
+   for before the recording starts if the app's lock is on from before —
+   then look at the phone.
 8. **Afterwards:** the video is in Photos. Trim it, AirDrop it to the Mac,
    upload it in App Store Connect › App Review Information › Attachment.
    Then Settings › Back up and transfer › Import backup with your own file.
@@ -83,6 +89,16 @@ Options: `PACE` scales every pause (0.65 unless set; `PACE=1` slower,
 `PACE=0.5` faster); `FROM=5 TO=8` only those
 scenes (no preflight, for trying a fix — the app must be in the state the
 scene before leaves it); `DEVICE=<udid>` with several iPhones.
+
+`npm run record:watch`, left open in a Terminal window, lets Claude start
+runs while the iPhone stays on its stand: a run is asked for by writing its
+settings (`DRY_RUN=1`, `FROM=n`, `TO=n`, `PACE=x`) to `build/record-request`;
+its output is in `build/record-last.log`, its state in `build/record-status`.
+
+Xcode films every test run on its own, into the `.xcresult` (a video of
+about 1 GB for a full run): handy for looking at a dry run frame by frame,
+but `build/` fills up — delete old `app-review-recording-*.xcresult` now and
+then.
 
 ## When it stops
 
@@ -138,9 +154,9 @@ counts from 0 in screen order.
 | `{"see": "Garage", "timeout": 10}` | Waits until the text is on screen |
 | `{"scrollTo": "…"}`, `{"scroll": "down"}` | Scrolls |
 | `{"pause": 1.5}` | Waits (times `PACE`) |
-| `{"systemAlert": ["Allow", "Erlauben"]}` | Taps a button in a permission alert |
+| `{"systemAlert": ["Allow", "Erlauben"], "timeout": 3}` | Taps a button in a permission alert; waits `timeout` seconds for it (4). iOS asks once per install: make it `soft` |
 | `{"systemTap": ["Close"]}` | Taps a button in system UI over the app (the share sheet) |
-| `{"faceID": true}` | Waits while Face ID looks at you |
+| `{"faceID": true}` | Waits while Face ID looks at you (only the reset uses it, for a lock left on) |
 | `{"startRecording": true}`, `{"stopRecording": true}` | Control Center's Screen Recording |
 | `{"launch": true}`, `{"home": true}`, `{"terminate": true}`, `{"appSwitcher": true}` | Home screen and app life cycle |
 | `{"optional": [ … ]}` | Runs the steps only if the first one works |
@@ -154,8 +170,8 @@ download); the iPhone shows a share sheet there instead.
 **Left out to keep it short.** Each of these had a scene until 13 November
 2026 (`git log -- ios/AppReviewRecorder/scenes.json`); the Review Notes
 describe the app beyond the video (`store/listing.md`, their point 3):
-the bank's CSV and the photo of a banking app, exporting a backup, the
-lock when the app is reopened, splitting an entry, refunds, tags, favourites, receipts with return and
+the bank's CSV and the photo of a banking app, exporting a backup, Lock
+with Face ID and the lock when the app is reopened, splitting an entry, refunds, tags, favourites, receipts with return and
 warranty dates, repeats other than monthly, drag to another category,
 folding and the filter, the search, moving between months, the month's
 opening balance and deleting a month, the month's start day, the PDF
