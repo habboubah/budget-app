@@ -36,12 +36,17 @@ const list = process.argv.includes('--list');
  *     chart), so Planen's first viewport holds the 30-day chart's four weeks
  *     (9 → 13); and *Wofür das Geld geht* has its period menu on the
  *     categories too (Statistik 8 → 9).
+ *   - 13 November 2026, on Ahmad's word: the month's "⋯" is one level —
+ *     no *Mehr* row with a second menu behind it; only the imports keep
+ *     their sheet. In a first month that is the report, the balance, the
+ *     imports, folding all and deleting the month (4 → 5; a second month
+ *     adds the recurring entries, a second account *Umbuchen*).
  */
 const BUDGET = {
   'the first screen after install': { taps: 6 },
   'the month page, everything put off': { taps: 13, figures: 2 },
   'the entry sheet, a new entry': { taps: 16 },
-  'the month’s “⋯”': { rows: 4 },
+  'the month’s “⋯”': { rows: 5 },
   'Mehr': { rows: 13 },
   'Planen in the first month': { taps: 13 },
   'Statistik in the first month': { taps: 9 },

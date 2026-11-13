@@ -1,17 +1,19 @@
-import { useRef, useState } from 'react';
-import { ArrowLeftRight, BarChart3, ChevronsDownUp, ChevronsUpDown, Download, MoreHorizontal, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, ChevronsDownUp, ChevronsUpDown, Download, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
 import { MonthKey } from '../types';
 import { monthLabel } from '../logic';
 import { Strings, fmt } from '../translations';
 import { Menu, MenuItem } from '../ui/Menu';
 
 /**
- * The month's "⋯", as an iOS pull-down menu — four rows (plan 39): the
+ * The month's "⋯", as an iOS pull-down menu, all of it on one level: the
  * month's report, the balance (match it against the bank; or, before the
- * book has one, enter it), everything that imports on one sheet, and *Mehr*
- * for what is needed now and then: fetch missing recurring entries, fold all
- * categories, delete the month. *Umbuchen* joins them once the book has a
- * second account (plan 30).
+ * book has one, enter it) and everything that imports — one row, its ways
+ * are on the sheet it opens; then what is needed now and then: fetch missing
+ * recurring entries, fold all categories; and, set apart, delete the month.
+ * *Umbuchen* joins the first group once the book has a second account
+ * (plan 30). (Plan 39 had put the second half behind a *Mehr* row; on
+ * Ahmad's word, 13 November 2026, nothing is a second tap away any more —
+ * only the imports keep their sheet.)
  */
 export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, given, t, onClose, onOpening, onReconcile, onBalanceNow, onPull, onCollapseAll, onImport, onDelete, onReport, onTransfer }: {
   /** The "⋯" button it opens from; null while closed. */
@@ -42,11 +44,6 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
   /** Umbuchen (plan 30): once there is more than one account. */
   onTransfer?: () => void;
 }) {
-  // *Mehr* opens a second menu from the same button; the first has closed by then.
-  const button = useRef<HTMLElement | null>(null);
-  if (anchor) button.current = anchor;
-  const [more, setMore] = useState<HTMLElement | null>(null);
-
   const balance: MenuItem[] = started && !given && onBalanceNow
     ? [{ key: 'balanceNow', label: t.noBalanceAsk, icon: Wallet, onSelect: onBalanceNow }]
     : started && onReconcile
@@ -59,7 +56,6 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
     ...balance,
     ...(started && onTransfer ? [{ key: 'transfer', label: t.transferNew, sub: t.transferNewSub, icon: ArrowLeftRight, onSelect: onTransfer }] : []),
     { key: 'import', label: t.importMenu, sub: t.importMenuSub, icon: Download, onSelect: onImport },
-    ...(started ? [{ key: 'more', label: t.more, icon: MoreHorizontal, onSelect: () => setMore(button.current) }] : []),
   ];
 
   const rest: MenuItem[] = [];
@@ -85,10 +81,5 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
     ? [{ key: 'delete', label: t.deleteMonth, sub: t.deleteMonthSub, icon: Trash2, destructive: true, onSelect: onDelete }]
     : [];
   const label = fmt(t.monthActionsOf, { month: monthLabel(month, t.locale) });
-  return (
-    <>
-      <Menu anchor={anchor} label={label} groups={[main]} onClose={onClose} />
-      <Menu anchor={more} label={`${label} – ${t.more}`} groups={[rest, danger]} onClose={() => setMore(null)} />
-    </>
-  );
+  return <Menu anchor={anchor} label={label} groups={[main, rest, danger]} onClose={onClose} />;
 }

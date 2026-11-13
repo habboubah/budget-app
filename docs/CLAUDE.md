@@ -706,13 +706,16 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     the category's `[data-drop-category]` card or chip, else the folded row
     `[data-empty-categories]`), lights it with `data-step-here` (index.css)
     and then opens its sheet — ticked steps too.
-  - **The month's "⋯" has four rows** (`MonthActionsMenu`): the report, the
-    balance (*Kontostand eintragen*, then *Kontostand prüfen* — the match
-    with the bank, with the opening balance behind a button in the same
-    sheet), *Importieren* (`ImportSheet`: photo, CSV, PDF, invoice QR, Excel,
-    each with its sentence), and *Mehr* (fetch recurring entries, fold all,
-    delete the month). *Umbuchen* joins the four once there are accounts.
-    A new action joins *Mehr* or a sheet — the four have a budget.
+  - **The month's "⋯" is one level** (`MonthActionsMenu`; plan 39 had a
+    *Mehr* row with a second menu behind it — gone on Ahmad's word, 13
+    November 2026): the report, the balance (*Kontostand eintragen*, then
+    *Kontostand prüfen* — the match with the bank, with the opening balance
+    behind a button in the same sheet) and *Importieren* (`ImportSheet`:
+    photo, CSV, PDF, invoice QR, Excel, each with its sentence — the one
+    thing that stays a sheet); then fetch recurring entries and fold all;
+    then, apart, delete the month. *Umbuchen* joins the first group once
+    there are accounts. The rows have a budget (`check:simplicity`): a new
+    action goes onto a sheet, or the budget is raised with a note.
   - **The entry sheet** opens with *Ausgabe | Einnahme* (it picks a category
     of that kind; nothing new in the data), the amount, the name, the
     category, three pills — date, paid, repeat — and a round "⋯" that opens
