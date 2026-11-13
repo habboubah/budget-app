@@ -194,6 +194,13 @@ when it is wanted:
   out is carried up to that month and no further. Quarterly and half-yearly
   bills count like yearly ones everywhere — in the reserve, the contracts
   ("viertelj.") and the outlook — spread over the year by how often they come.
+- **Wiederkehrende Posten** (*Mehr*): every recurring entry still running, in
+  one group per interval — *Monatlich*, *Alle 2 Monate*, *Alle 3 Monate*,
+  *Halbjährlich*, *Jährlich* — with its amount, when it last happened and when
+  it comes next. A tap changes it right there (its newest entry, the one the
+  next months copy), without going to its month; its "⋯" also opens that
+  month, or **removes** it (a swipe does too): it stops coming, its open
+  entries from the running month on are deleted, paid ones stay — with an undo.
 - **Favourites.** Pin the small daily entries (Bäcker, Tanken, Kantine) with
   *Als Favorit merken*; they appear as chips at the top of a new entry. A tap
   fills the sheet in — name, category, amount, repeat — with the amount

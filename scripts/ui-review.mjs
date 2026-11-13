@@ -70,6 +70,7 @@ const LANGS = {
     reminders: 'An offene Posten erinnern',
     capture: 'Automatisch erfassen',
     contracts: 'Abos & Verträge',
+    recurring: 'Wiederkehrende Posten',
     explain: 'So berechnet',
     names: {
       salary: 'Gehalt', child: 'Kindergeld', rent: 'Miete', power: 'Strom', net: 'Internet', phone: 'Handy',
@@ -89,6 +90,7 @@ const LANGS = {
     reminders: 'التذكير بالبنود المعلّقة',
     capture: 'التسجيل التلقائي',
     contracts: 'الاشتراكات والعقود',
+    recurring: 'البنود المتكررة',
     explain: 'كيف يُحسب',
     // Shop names stay Latin, as on a German receipt: mixed direction on purpose.
     names: {
@@ -191,6 +193,12 @@ const DEBTS = l => {
 const openDebts = async (page, l) => {
   await tab(3)(page);
   await page.locator('main button', { hasText: l.debts.title }).first().click();
+  await page.waitForTimeout(500);
+};
+/** Mehr → Wiederkehrende Posten. */
+const openRecurring = async (page, l) => {
+  await tab(3)(page);
+  await page.locator('main button', { hasText: l.recurring }).first().click();
   await page.waitForTimeout(500);
 };
 /** Mehr → Konten. */
@@ -451,6 +459,11 @@ const SCREENS = [
     const all = contractsCard(page, l).locator(':scope > div:first-child > button');
     if (await all.count()) { await all.click(); await page.waitForTimeout(600); }
   }, audit: 'page' },
+  // Mehr → Wiederkehrende Posten: one group per interval; a row's "⋯" (edit, its month, remove); a tap edits in place.
+  { name: 'recurring', run: openRecurring, audit: 'page' },
+  { name: 'recurring-menu', run: async (page, l) => { await openRecurring(page, l); await page.locator('main li button[aria-haspopup="menu"]').last().click(); await page.waitForTimeout(400); }, audit: 'dialog' },
+  { name: 'recurring-removed', run: async (page, l) => { await openRecurring(page, l); await page.locator('main li button[aria-haspopup="menu"]').last().click(); await page.waitForTimeout(400); await page.locator('[role="menuitem"]').last().click(); await page.waitForTimeout(700); }, audit: 'page' },
+  { name: 'recurring-edit', run: async (page, l) => { await openRecurring(page, l); await page.locator('main li button.text-start').nth(1).click(); }, wait: dialog, audit: 'dialog' },
   // Mehr (it was Optionen): the root, its search, and Einstellungen pushed over it.
   { name: 'settings', run: tab(3), audit: 'page' },
   { name: 'settings-full', run: tab(3), full: true },

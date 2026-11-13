@@ -154,6 +154,12 @@ Write 1–3 short lines per release, e.g.
 
 ### Next release (after 1.2.0)
 
+**DE:** Wiederkehrende Posten unter „Mehr“: Ändere oder entferne einen Posten direkt in der Liste, ohne erst seinen Monat zu suchen. Die Liste ist jetzt nach „Monatlich“, „Alle 2 Monate“, „Alle 3 Monate“, „Halbjährlich“ und „Jährlich“ geordnet.
+
+**EN:** Recurring entries under "More": change or remove one right in the list, without finding its month first. The list is now grouped by "Monthly", "Every 2 months", "Every 3 months", "Every 6 months" and "Yearly".
+
+**AR:** البنود المتكررة في «المزيد»: عدّل بندًا أو احذفه مباشرة من القائمة دون البحث عن شهره أولًا. والقائمة مرتبة الآن حسب «شهريًا» و«كل شهرين» و«كل 3 أشهر» و«كل ستة أشهر» و«سنويًا».
+
 **DE:** Neue Kategorie „Verliehenes Geld“: für Geld, das du jemandem leihst. Was zurückkommt, trägst du dort als Rückzahlung ein – so siehst du, was noch aussteht.
 
 **EN:** New category "Money lent": for money you lend someone. Enter what comes back there as money back, and you see what is still owed.
