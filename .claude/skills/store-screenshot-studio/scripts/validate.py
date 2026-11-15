@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Checks every exported file against the Apple and Google Play rules in
-reference/store-specs.md, plus the headline rules in reference/copywriting.md.
+reference/store-specs.md, the headline rules in reference/copywriting.md, and
+the composition rules in reference/composition.md that can be checked from the
+config (layouts, call-outs, stickers).
 
 Exits non-zero on the first category of failure, printing file, actual and
 expected. Standard library only -- reading a width out of a PNG header or a JPEG
@@ -15,6 +17,7 @@ SKILL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.abspath(os.path.join(SKILL, "..", "..", ".."))
 
 CFG = json.load(open(os.path.join(SKILL, "config/screenshots.config.json")))
+THEME = json.load(open(os.path.join(SKILL, "config/theme.json")))
 OUT = os.path.join(ROOT, CFG["outDir"])
 
 # Play: JPEG or 24-bit PNG, no alpha, 320-3840 per side, longest <= 2x shortest,
@@ -28,6 +31,16 @@ MAX_HEADLINE_WORDS = 5
 MAX_RIBBON_CHARS = 12
 MAX_POINT_CHARS = 28
 MAX_POINTS = 5
+# Composition (reference/composition.md).
+LAYOUTS = ("top", "bottom")
+MAX_CALLOUTS = 3
+MIN_SCALE, MAX_SCALE = 1.0, 2.0
+# How far a lifted piece may be blown up past the capture's own pixels before
+# it looks soft next to the rest of the screen.
+MAX_UPSCALE = 1.3
+# The phone's default width, in percent of the canvas height, and how much of
+# that the screen takes (templates/slide.css: --dw and the bezel).
+PHONE_WIDTH_VH, SCREEN_SHARE = 39, 0.966
 
 rows = []
 errors = []
@@ -148,7 +161,8 @@ for locale in CFG["locales"]:
         entries.append(("featureGraphic", copy["featureGraphic"]))
     for slide_id, text in entries:
         head = text["headline"]
-        words = len(head.split())
+        # A dash or "&" on its own is not a word ("Haushaltsbuch & Finanzplaner" is 2).
+        words = sum(1 for w in head.split() if any(c.isalnum() for c in w))
         if words > MAX_HEADLINE_WORDS:
             errors.append(f"copy.{locale}.json[{slide_id}]: headline is {words} words, "
                           f"max {MAX_HEADLINE_WORDS} -- \"{head}\"")
@@ -185,6 +199,91 @@ for locale in CFG["locales"]:
         elif len(word) > MAX_RIBBON_CHARS:
             errors.append(f"copy.{locale}.json: ribbon \"{word}\" is {len(word)} characters, "
                           f"max {MAX_RIBBON_CHARS} -- the band is cut off at the edges")
+
+# ---- composition ---------------------------------------------------------------
+
+slide_ids = [sl["id"] for sl in CFG["slides"]]
+stickers_dir = os.path.join(SKILL, "assets", "stickers")
+
+
+def raw_file(name, locale):
+    return os.path.join(ROOT, CFG["rawDir"].replace("{locale}", locale), name)
+
+
+def marks_of(name, locale):
+    """The marks `npm run screenshots` wrote next to a capture, or None."""
+    path = os.path.splitext(raw_file(name, locale))[0] + ".marks.json"
+    if not os.path.exists(path):
+        return None
+    return json.load(open(path)).get("marks", {})
+
+
+for i, sl in enumerate(CFG["slides"]):
+    sid = sl["id"]
+    if sl.get("layout") not in LAYOUTS:
+        errors.append(f"slide {sid}: layout {sl.get('layout')!r}; use {' or '.join(LAYOUTS)}")
+    if sl.get("background") not in THEME["backgrounds"]:
+        errors.append(f"slide {sid}: background {sl.get('background')!r} is not in theme.json")
+
+    callouts = sl.get("callouts", [])
+    if len(callouts) > MAX_CALLOUTS:
+        warnings.append(f"slide {sid}: {len(callouts)} call-outs. Past {MAX_CALLOUTS} nothing stands out "
+                        f"any more -- see reference/composition.md")
+    for n, c in enumerate(callouts):
+        where = f"slide {sid}, call-out {n + 1}"
+        scale = c.get("scale", 1.25)
+        if not isinstance(scale, (int, float)) or not MIN_SCALE <= scale <= MAX_SCALE:
+            errors.append(f"{where}: scale {scale!r}; use {MIN_SCALE}-{MAX_SCALE}")
+            continue
+        if "mark" in c:
+            for locale in CFG["locales"]:
+                marks = marks_of(sl["raw"], locale)
+                if marks is None:
+                    errors.append(f"{where}: no marks next to {locale}/{sl['raw']} -- run `npm run screenshots`")
+                elif c["mark"] not in marks:
+                    errors.append(f"{where}: mark {c['mark']!r} is not in {locale}/{sl['raw']}'s marks "
+                                  f"({', '.join(sorted(marks)) or 'none'})")
+        elif not (isinstance(c.get("crop"), list) and len(c["crop"]) == 4):
+            errors.append(f"{where}: needs a \"mark\" or a \"crop\" of [x, y, w, h]")
+        elif len(CFG["locales"]) > 1:
+            warnings.append(f"{where}: a fixed \"crop\" is the same spot in every language, and the screens "
+                            f"differ. Name a mark in scripts/screenshots.mjs instead")
+
+        # A lifted piece is the capture's own pixels, enlarged. Too far and it
+        # goes soft beside the screen it was lifted from.
+        raw = raw_file(sl["raw"], CFG["locales"][0])
+        if os.path.exists(raw):
+            raw_w = png_info(raw)[0]
+            width_vh = (sl.get("phone") or {}).get("width", PHONE_WIDTH_VH)
+            for target in CFG["targets"]:
+                shown = target["height"] * width_vh / 100 * SCREEN_SHARE * scale
+                if shown / raw_w > MAX_UPSCALE:
+                    warnings.append(f"{where}: on {target['id']} it is drawn at {shown / raw_w:.2f}x the capture's "
+                                    f"pixels and will look soft. Lower its scale (now {scale})")
+
+    # Copy on top, then below, then on top: three in a row in the same place
+    # and the set reads as a template.
+    if i >= 2 and all(CFG["slides"][j].get("layout") == sl.get("layout") for j in (i - 1, i - 2)):
+        warnings.append(f"slides {slide_ids[i - 2]}, {slide_ids[i - 1]}, {sid}: three in a row with the copy "
+                        f"on the same side ({sl.get('layout')}). Alternate -- see reference/composition.md")
+
+# One colour for the set. A preset marked "night" in theme.json is the canvas
+# for a screen shown in dark mode and does not count as a second colour.
+used = {sl.get("background") for sl in CFG["slides"]}
+night = {name for name, preset in THEME["backgrounds"].items() if preset.get("night")}
+if len(used - night) > 1:
+    warnings.append(f"the set uses {len(used)} backgrounds ({', '.join(sorted(used))}). One colour makes it "
+                    f"read as one strip; a night preset is for a dark screen only")
+
+for n, st in enumerate(CFG.get("stickers", []) + (fg or {}).get("stickers", [])):
+    where = f"sticker {n + 1} ({st.get('art')})"
+    if not os.path.exists(os.path.join(stickers_dir, f"{st.get('art')}.svg")):
+        errors.append(f"{where}: no assets/stickers/{st.get('art')}.svg")
+    if "slide" in st and st["slide"] not in slide_ids:
+        errors.append(f"{where}: slide {st['slide']!r} is not a slide id")
+    for key in ("x", "y", "size"):
+        if not isinstance(st.get(key), (int, float)):
+            errors.append(f"{where}: \"{key}\" has to be a number")
 
 # ---- the ribbon and the stores ---------------------------------------------------
 

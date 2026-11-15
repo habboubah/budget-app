@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <!-- Household book — an original drawing for the store screenshots (store-screenshot-studio).
+       The paper edge is the filter below, so the art itself stays plain shapes. -->
+  <defs>
+    <filter id="cut" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="fat"/>
+      <feGaussianBlur in="fat" stdDeviation="2.6" result="soft"/>
+      <feComponentTransfer in="soft" result="edge"><feFuncA type="linear" slope="12" intercept="-5.5"/></feComponentTransfer>
+      <feFlood flood-color="#FFF8F1" result="paper"/>
+      <feComposite in="paper" in2="edge" operator="in" result="outline"/>
+      <feMerge><feMergeNode in="outline"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#cut)">
+    <g transform="rotate(9 120 120)">
+      <rect x="60" y="40" width="140" height="176" rx="14" fill="#CFCABB"/>
+      <rect x="64" y="34" width="132" height="176" rx="10" fill="#FFFFFF"/>
+      <rect x="48" y="26" width="140" height="178" rx="14" fill="#F1EBDB"/>
+      <path d="M62 26H74V204H62Q48 204 48 190V40Q48 26 62 26Z" fill="#0A6D80"/>
+      <circle cx="131" cy="104" r="40" fill="#D9A030"/>
+      <circle cx="129" cy="101" r="40" fill="#F0C050"/>
+      <g fill="none" stroke="#8A5E0E" stroke-width="8" stroke-linecap="round"><path d="M142.4 88.2A16.4 16.4 0 1 0 142.4 113.8"/><path d="M110.0 95.8H133.6"/><path d="M110.0 106.2H133.6"/></g>
+      <rect x="100" y="164" width="60" height="9" rx="4.5" fill="#CFC8B4"/>
+    </g>
+  </g>
+</svg>

@@ -19,7 +19,8 @@ Everything `scripts/validate.py` enforces. Change a number here and change it in
 - The Asset Library's header / search artwork (3840 × 1646, 5244 × 2950) is a
   different asset, not a screenshot.
 - Every slide must show real app UI inside a device frame. Pure-text marketing
-  slides get flagged in review.
+  slides get flagged in review. A call-out is that same UI, enlarged — the
+  capture's own pixels — never a control drawn for the slide.
 
 This app is **iPhone-only**, so the iPad row is listed for completeness and is
 not exported.
@@ -66,6 +67,5 @@ it; Play Console Help → *Add preview assets to showcase your app* (both read
 | Target | Pixels | Format | Reason |
 |---|---|---|---|
 | `iphone-6.3` | 1206 × 2622 | PNG | The required iPhone slot; App Store Connect scales it for other iPhones |
-
-Google Play (not configured yet): phone screenshots 1080 × 1920 JPEG (1.78:1,
-inside Play's 2:1 limit; JPEG for the alpha rule) and the 1024 × 500 feature graphic.
+| `play-phone` | 1080 × 1920 | JPEG | 9 : 16 at 1080 wide is what Play asks of screenshots it features; inside the 2:1 limit; JPEG for the alpha rule |
+| `play-feature` | 1024 × 500 | JPEG | The feature graphic's one size |

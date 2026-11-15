@@ -186,9 +186,13 @@ checked against Apple's character limits).
 
 ```bash
 npx playwright install chromium      # once per Mac
-npm run screenshots                  # raw app captures → screenshots/de, screenshots/en
-npm run store-screenshots            # framed, captioned set → screenshots/store/iphone-6.3/
+npm run screenshots                  # raw app captures and their marks → screenshots/de, screenshots/en
+npm run store-screenshots            # composed, captioned set → screenshots/store/iphone-6.3/
 ```
+
+Both on the Mac, in this order: the store set lifts a piece of each screen out
+of the phone and finds it by the marks the capture run writes next to each
+capture (`<screen>.marks.json`).
 
 Upload `screenshots/store/iphone-6.3/de/` and `…/en/`: 10 images each (the
 most a slot takes) at **1206 × 2622**, the size of the required *iPhone with
@@ -318,7 +322,7 @@ the skill `.claude/skills/app-store-release` knows these steps.
 | `scripts/release.js` | One version for both stores: bump, build, upload (`--ios`: the App Store only), commit |
 | `ios/App/ExportOptions.plist` | Tells `xcodebuild` to upload straight to App Store Connect |
 | `.env.release` (not in git) | `ASC_KEY_ID`, `ASC_ISSUER_ID` |
-| `scripts/screenshots.mjs` | Raw screenshots (DE + EN); `npm run store-screenshots` frames them |
+| `scripts/screenshots.mjs` | Raw screenshots (DE + EN) and where their parts are; `npm run store-screenshots` composes them |
 | `ios/AppReviewRecorder/` | Records the screen video App Review asks for (Guideline 2.1) |
 | `store/listing.md` | All store texts, ready to copy (`store/listing-languages.md` for the eleven other languages) |
 | `store/privacy/` | Privacy policy (EN + DE) for GitHub Pages |

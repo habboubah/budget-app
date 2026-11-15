@@ -6,15 +6,20 @@
 // screens per language — the most App Store Connect takes per slot. Every
 // screen starts from a fresh page with the same data, so a screen that can't
 // be reached fails under its own name and the others are still taken. Run it
-// on the Mac so the emoji are Apple's own.
+// on the Mac so the emoji and the system font are Apple's own.
 //
-// These are the raw captures. `npm run store-screenshots` frames and captions
-// them at the size App Store Connect asks for (.claude/skills/store-screenshot-studio).
+// Next to each capture, <screen>.marks.json says where its parts are (the
+// amount field, a category's card, the month report's summary …): the store
+// set lifts pieces of a screen out of the phone (store-screenshot-studio's
+// call-outs) and finds them by name there.
+//
+// These are the raw captures. `npm run store-screenshots` composes and captions
+// them at the sizes the stores ask for (.claude/skills/store-screenshot-studio).
 //
 // Usage:  npm run screenshots                     all ten, both languages
 //         npm run screenshots -- --only 08-category,10-plan
 // Once per machine:  npx playwright install chromium
-// Output: screenshots/<de|en>/01-month.png … 10-plan.png (1290 x 2796)
+// Output: screenshots/<de|en>/01-month.png, 01-month.marks.json … 10-plan.png (1290 x 2796)
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -140,10 +145,32 @@ const toTop = page => page.evaluate(() => window.scrollTo(0, 0));
 /** Scrolls a heading or card to just under the sticky header; fails loudly if it is gone. */
 const scrollTo = (locator) => locator.first().evaluate(el => { el.scrollIntoView({ block: 'start' }); window.scrollBy(0, -70); });
 
+/* ----------------------------------------------------------------- the marks */
+
+// What the store set may lift out of a screen, by name → selector. The names
+// are what store-screenshot-studio's config refers to ("mark": "amount"), so
+// keep them when a screen changes and only mend the selector. The selectors
+// are the app's own handles (`data-tour`, a category's id, the page's
+// structure), never its words, so one selector is right in every language. A
+// mark has to be wholly on the screen when the capture is taken; one that is
+// not stops that screen with a message, like a button that can't be clicked.
+// A list of selectors marks the box around all of them — for a part that has
+// no element of its own (a card's heading with the first row under it).
+const sheet = '[role="dialog"]';
+/** A category's card on the month, by the category's id. */
+const categoryCard = id => `main section[data-drop-category="${id}"]`;
+/** The balance card and the two figures in it (month end, left this month). */
+const balanceMarks = {
+  balance: '[data-tour="balance"]',
+  'month-end': '[data-tour="balance"] dl > div:nth-child(1)',
+  left: '[data-tour="balance"] dl > div:nth-child(2)',
+};
+
 // The store order. Each one starts from a fresh page on the running month.
+// `marks` names the parts of the screen the studio may lift (see above).
 const SCREENS = [
   // The two balances: what is in the bank now, what is left at month end.
-  { name: '01-month' },
+  { name: '01-month', marks: { ...balanceMarks, search: '[data-tour="search"]' } },
   // Groceries' "⋯" → Add entry → 47,85 → the "Lidl" suggestion.
   { name: '02-entry', run: async (page, l) => {
     await page.locator('main section[data-drop-category="groceries"]').getByRole('button', { name: l.sectionMenu }).first().click();
@@ -158,6 +185,11 @@ const SCREENS = [
     const chip = group.locator(`button:text-is("${l.chip}")`);
     if (!(await chip.isVisible())) await group.locator('button[aria-expanded="false"]').click();
     await chip.click();
+  }, marks: {
+    amount: `${sheet} [data-tour="entry-amount"]`,
+    name: `${sheet} [data-tour="entry-name"]`,
+    category: `${sheet} [data-tour="entry-category"]`,
+    details: `${sheet} [data-tour="entry-details"]`,
   } },
   // Einstellungen → Sichern und übertragen: "Alles bleibt auf diesem Gerät, es gibt keine Cloud."
   { name: '03-backup', run: async (page, l) => {
@@ -165,14 +197,37 @@ const SCREENS = [
     await page.locator('main button', { hasText: l.transfer }).first().click();
     await pause(page, 600);
     await toTop(page);
+  }, marks: {
+    // The backup card alone, and with the sentence under it ("Alles bleibt auf
+    // diesem Gerät, es gibt keine Cloud") — without the heading above the card.
+    backup: 'main > section:nth-of-type(1) > div',
+    'backup-note': ['main > section:nth-of-type(1) > div', 'main > section:nth-of-type(1) > p'],
+    excel: 'main > section:nth-of-type(2) > div',
   } },
   // The month further down: Auto, Sonstiges and Lebensmittel with their budgets.
-  { name: '04-budgets', run: page => scrollTo(page.locator('main section[data-drop-category="car"]')) },
+  { name: '04-budgets', run: page => scrollTo(page.locator(categoryCard('car'))), marks: {
+    'budget-car': categoryCard('car'),
+    'budget-extra': categoryCard('extra'),
+    // Groceries' card runs on under the tab bar: its head (name, bar, budget) is the part in view.
+    'budget-groceries-head': `${categoryCard('groceries')} > h2`,
+  } },
   // The month after: not started yet, with what starting it carries over.
-  { name: '05-next-month', run: (page, l) => page.click(`button[aria-label="${l.next}"]`) },
+  { name: '05-next-month', run: (page, l) => page.click(`button[aria-label="${l.next}"]`), marks: {
+    // The toast: "Dezember 2026 gestartet – 10 Posten übernommen".
+    started: '[role="status"]',
+    ...balanceMarks,
+  } },
   // Statistik: what stands out, then Verlauf.
-  { name: '06-stats', run: page => tab(page, 1) },
-  { name: '07-history', run: async page => { await tab(page, 1); await scrollTo(page.locator('#history-title')); } },
+  { name: '06-stats', run: page => tab(page, 1), marks: {
+    range: '[data-tour="stats-range"] > div',
+    summary: '[data-tour="stats-hero"] > section',
+    // "Das fällt auf" with its first hint: the heading and that row's text and bars.
+    'stands-out': ['[data-tour="stats-hero"] + section h3', '[data-tour="stats-hero"] + section li:first-child > div'],
+  } },
+  { name: '07-history', run: async page => { await tab(page, 1); await scrollTo(page.locator('#history-title')); }, marks: {
+    'income-expenses': '[data-tour="stats-chart"] > section',
+    'balance-trend': '[data-tour="stats-chart"] + div > section',
+  } },
   // Statistik → "Wofür das Geld geht" → Lebensmittel's own page.
   { name: '08-category', run: async (page, l) => {
     await tab(page, 1);
@@ -183,6 +238,14 @@ const SCREENS = [
     await row.click();
     await pause(page, 600);
     await toTop(page);
+  }, marks: {
+    average: 'main > section:nth-of-type(1)',
+    // The three figures side by side (so far this month, a month's average, the year so far).
+    figures: 'main > section:nth-of-type(2) dl',
+    'figure-1': 'main > section:nth-of-type(2) dl > div:nth-child(1)',
+    'figure-2': 'main > section:nth-of-type(2) dl > div:nth-child(2)',
+    'figure-3': 'main > section:nth-of-type(2) dl > div:nth-child(3)',
+    budget: 'main > button',
   } },
   // Last month (finished) → "⋯" → Monatsbericht.
   { name: '09-report', run: async (page, l) => {
@@ -192,10 +255,63 @@ const SCREENS = [
     await page.getByRole('menuitem', { name: l.report }).click();
     await pause(page, 600);
     await toTop(page);
+  }, marks: {
+    summary: 'main > section:nth-of-type(1)',
+    income: 'main > dl > div:nth-child(1)',
+    spending: 'main > dl > div:nth-child(2)',
+    saved: 'main > dl > div:nth-child(3)',
+    rate: 'main > dl > div:nth-child(4)',
+    budgets: 'main > section:nth-of-type(2)',
+    changes: 'main > section:nth-of-type(3)',
   } },
   // Planen: "November bis heute" — spending so far against a usual month — and the budgets.
-  { name: '10-plan', run: page => tab(page, 2) },
+  { name: '10-plan', run: page => tab(page, 2), marks: {
+    // The card's head: "32 € weniger als sonst bis zum 15. Nov." with today, usual and month end.
+    pace: '[data-tour="plan-pace"] > section > div:nth-child(1)',
+  } },
 ];
+
+/**
+ * Where each of a screen's marks is, right now: its box in fractions of the
+ * viewport (so of the capture) and its corner radius in fractions of the
+ * viewport's width. A mark that is missing or off the screen is an error —
+ * the store set would lift thin air.
+ */
+async function measure(page, wanted) {
+  const { width: vw, height: vh } = page.viewportSize();
+  const marks = {};
+  const f = v => Math.round(v * 1e5) / 1e5;
+  for (const [name, selector] of Object.entries(wanted)) {
+    const parts = [];
+    for (const one of [].concat(selector)) {
+      const el = page.locator(one).first();
+      if (!(await el.count())) throw new Error(`mark "${name}" is not on the screen (${one})`);
+      parts.push(await el.evaluate(node => {
+        const r = node.getBoundingClientRect();
+        // The corner is the element's own, or — when it has none — that of the
+        // first thing in it (a wrapper around a card carries no corner itself).
+        let radius = 0;
+        for (let n = node, depth = 0; n && depth < 3 && !radius; n = n.firstElementChild, depth += 1) {
+          radius = parseFloat(getComputedStyle(n).borderTopLeftRadius) || 0;
+        }
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, radius: Math.min(radius, r.width / 2, r.height / 2) };
+      }));
+    }
+    // One element: its own box and corner. Several: the box around them all,
+    // which has no corner of its own (the call-out gives it one).
+    const left = Math.min(...parts.map(b => b.left)), top = Math.min(...parts.map(b => b.top));
+    const right = Math.max(...parts.map(b => b.right)), bottom = Math.max(...parts.map(b => b.bottom));
+    const box = {
+      x: f(left / vw), y: f(top / vh), w: f((right - left) / vw), h: f((bottom - top) / vh),
+      radius: parts.length === 1 ? f(parts[0].radius / vw) : 0,
+    };
+    if (box.w <= 0 || box.h <= 0 || box.x < -0.001 || box.y < -0.001 || box.x + box.w > 1.001 || box.y + box.h > 1.001) {
+      throw new Error(`mark "${name}" is not fully on the screen (${selector})`);
+    }
+    marks[name] = box;
+  }
+  return marks;
+}
 
 // Vite's own preview server, in-process, so it closes cleanly at the end.
 const serve = () => preview({ root, logLevel: 'silent', preview: { port: PORT, strictPort: true, host: '127.0.0.1' } });
@@ -234,8 +350,12 @@ async function shoot(browser, lang, demo) {
       await page.evaluate(() => document.fonts.ready);
       if (s.run) await s.run(page, l);
       await pause(page, 700);
+      // Measured before the file is written: a screen whose marks are gone
+      // must not leave a fresh capture behind with stale marks.
+      const found = s.marks ? await measure(page, s.marks) : null;
       await page.screenshot({ path: path.join(dir, `${s.name}.png`) });
-      console.log(`  ${lang}/${s.name}.png`);
+      if (found) fs.writeFileSync(path.join(dir, `${s.name}.marks.json`), `${JSON.stringify({ capture: `${s.name}.png`, marks: found }, null, 2)}\n`);
+      console.log(`  ${lang}/${s.name}.png${found ? `  (${Object.keys(found).length} marks)` : ''}`);
     } catch (e) {
       failed.push(`${lang}/${s.name}`);
       console.error(`  ✗ ${lang}/${s.name}: ${String(e.message).split('\n')[0]}`);
@@ -263,4 +383,4 @@ if (failed.length) {
   console.error(`\n✗ ${failed.length} screen(s) not captured: ${failed.join(', ')}`);
   process.exit(1);
 }
-console.log(`\nDone → ${path.relative(root, outDir)}/<de|en>/  (${SCREENS.length} per language, 1290 × 2796)`);
+console.log(`\nDone → ${path.relative(root, outDir)}/<de|en>/  (${SCREENS.length} per language, 1290 × 2796). Next: npm run store-screenshots`);

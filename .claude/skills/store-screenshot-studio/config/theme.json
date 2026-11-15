@@ -1,52 +1,59 @@
 {
-  "//": "Colours are lifted from src/index.css (the shipped petrol accent, light theme) so the marketing set cannot drift from the app.",
+  "//": "Colours are lifted from src/index.css (the shipped petrol accent, light theme) and from the icon (public/icon.svg: the hero teal, the gold of its coin), so the marketing set cannot drift from the app.",
   "colors": {
     "accent": "#0A6D80",
-    "accentBright": "#5AC8D8",
-    "bg": "#F2F2F7",
+    "gold": "#F0C050",
+    "bg": "#F2F4F8",
     "surface": "#FFFFFF",
-    "fg": "#111114",
-    "fgMute": "#626267",
-    "hairline": "#E2E2E7",
-    "blob1": "#5AC8D8",
-    "blob2": "#0A6D80",
-    "blob3": "#0A625D"
+    "fg": "#0D1017",
+    "fgMute": "#5A606D"
   },
+  "//font": "The app's own bundled typeface, loaded from the app's file (assets/fonts/fonts.css points at src/assets/fonts/): `display` sets the headline and the ribbon at `displayWeight`, `text` the subline and the points.",
   "font": {
-    "family": "Space Grotesk",
-    "css": "assets/fonts/space-grotesk.css",
-    "//license": "SIL Open Font License 1.1 — assets/fonts/OFL.txt"
+    "display": "Nunito",
+    "text": "Nunito",
+    "displayWeight": 900,
+    "css": "assets/fonts/fonts.css"
   },
-  "//backgrounds": "Presets referenced by slide.background. `panoramic` stretches one gradient across the whole set and offsets it per slide, so the deck reads as a strip when swiped.",
+  "//backgrounds": "Presets referenced by slide.background: one flat colour and what stands on it. fill = the canvas; ink = the headline; inkSoft = the subline; shade = the colour every shadow is mixed from (a darker tone of the fill, never grey); chip / chipInk / tick = a point's pill, its text and its tick; ribbon / ribbonInk = the corner ribbon. petrol is the icon's own colour and the app's accent (--acc-l) with white type and the coin's gold for the ribbon; mist is the same hue as a light canvas with petrol ink, the quieter alternative; night is the app's dark page as a canvas, for a screen shown in dark mode (`night: true` — validate.py does not count it as a second colour). One preset for the whole set; night only for a dark screen.",
   "backgrounds": {
     "petrol": {
-      "from": "#F3F9FA",
-      "to": "#E1EEF0",
-      "blobs": [
-        "blob1",
-        "blob2",
-        "blob3"
-      ],
-      "panoramic": true
-    }
-  },
-  "//ribbon": "The corner ribbon (\"Kostenlos\"), switched on per target in screenshots.config.json. bg is the app's own delete red (--t-swipe-delete in src/index.css); white on it is 4.4:1, and the ribbon's type is large and bold.",
-  "ribbon": {
-    "bg": "#E5302A",
-    "fg": "#FFFFFF"
-  },
-  "//device": "The frame is drawn in CSS, not composited from a PNG. See assets/frames/README.md. bezel/radius are in template px at 1x; the screen box is derived from the raw capture's own aspect ratio so the app pixels are never stretched.",
-  "device": {
-    "iphone": {
-      "bezel": 4,
-      "radius": 13,
-      "island": true
+      "fill": "#0A6D80",
+      "ink": "#FFFFFF",
+      "inkSoft": "#D6F0F4",
+      "shade": "#02272E",
+      "chip": "#FFFFFF",
+      "chipInk": "#0D1017",
+      "tick": "#0A6D80",
+      "ribbon": "#F5C04A",
+      "ribbonInk": "#3A2800"
     },
-    "pixel": {
-      "bezel": 4,
-      "radius": 8,
-      "island": false,
-      "punchHole": true
+    "mist": {
+      "fill": "#CFEAEE",
+      "ink": "#06323B",
+      "inkSoft": "#2B5963",
+      "shade": "#0A5563",
+      "chip": "#FFFFFF",
+      "chipInk": "#0D1017",
+      "tick": "#0A6D80",
+      "ribbon": "#0A6D80",
+      "ribbonInk": "#FFFFFF"
+    },
+    "night": {
+      "night": true,
+      "fill": "#07262D",
+      "ink": "#EAF7F9",
+      "inkSoft": "#A9C9CF",
+      "shade": "#00080A",
+      "chip": "#EAF7F9",
+      "chipInk": "#06323B",
+      "tick": "#0A6D80",
+      "ribbon": "#F5C04A",
+      "ribbonInk": "#3A2800"
     }
+  },
+  "//device": "The frame is drawn in CSS, not composited from a PNG (assets/frames/README.md); its proportions are in templates/slide.css. bezel is its colour: near black with a little of the petrol in it, so it sits on the canvas instead of cutting a hole in it.",
+  "device": {
+    "bezel": "#0B1417"
   }
 }
