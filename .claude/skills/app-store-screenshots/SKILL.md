@@ -1,15 +1,17 @@
 ---
 name: app-store-screenshots
-description: Regenerate the raw App Store screenshots of Spartopf (npm run screenshots → screenshots/<de|en>/, ten screens per language). Use when asked to update, refresh or regenerate store screenshots, or to add, drop or reorder a screen in the set. The framed, captioned upload set is the store-screenshot-studio skill.
+description: Regenerate the raw store screenshots of Spartopf (npm run screenshots → screenshots/<de|en>/, ten screens per language, each with its marks). Use when asked to update, refresh or regenerate store screenshots, to add, drop or reorder a screen in the set, or to mark a part of a screen for a call-out. The composed, captioned upload set is the store-screenshot-studio skill.
 ---
 
-# App Store screenshots (raw captures)
+# Store screenshots (raw captures)
 
 `scripts/screenshots.mjs` builds the app, seeds it with demo data and captures
 **ten screens per language** — the most App Store Connect takes per slot — as
-plain app screens. `store-screenshot-studio` (`npm run store-screenshots`) then
-frames and captions them at the size App Store Connect asks for. Upload those,
-not these: the raw size (1290 × 2796) fits no required slot.
+plain app screens, and next to each one where its parts are
+(`<screen>.marks.json`). `store-screenshot-studio`
+(`npm run store-screenshots`) then composes and captions them at the sizes the
+App Store and Google Play ask for, and lifts the marked parts out of the phone.
+Upload those, not these: the raw size (1290 × 2796) fits no required slot.
 
 ## Run it
 
@@ -17,10 +19,13 @@ not these: the raw size (1290 × 2796) fits no required slot.
 npx playwright install chromium        # once per Mac
 npm run screenshots                    # all ten, DE and EN
 npm run screenshots -- --only 08-category,10-plan    # just these, e.g. after a fix
-npm run store-screenshots              # the framed upload set from these
+npm run store-screenshots              # the composed upload set from these
 ```
 
-Run it on the Mac, so the emoji and system font are Apple's own.
+Run it on the Mac, so the emoji and system font are Apple's own. The marks are
+measured in the same run, so they always belong to the capture beside them: a
+capture taken on one machine and marks from another do not fit (the system
+font sets where a line breaks).
 
 ## What comes out
 
@@ -42,6 +47,48 @@ Run it on the Mac, so the emoji and system font are Apple's own.
 A full run empties both folders first, so a screen dropped from the list can't
 linger. A screen that can't be reached is reported by name (`✗ de/08-category: …`),
 the others are still taken, and the run exits non-zero.
+
+## The marks
+
+The store set lifts pieces of a screen out of the phone — the amount field, a
+category's card, the month report's summary (the studio's call-outs). It finds
+them by name in `screenshots/<de|en>/<screen>.marks.json`, which this run
+writes with each capture: every mark's box in fractions of the screen, and its
+corner radius, measured in the running app in that language.
+
+Each screen names its marks in `SCREENS` (`scripts/screenshots.mjs`):
+
+```js
+marks: { amount: `${sheet} [data-tour="entry-amount"]`, name: `${sheet} [data-tour="entry-name"]` },
+```
+
+a name and a selector. The selectors are the app's own handles — `data-tour`
+(the guide's marks), a category's id, the page's structure — never its words,
+so one selector is right in German and in English.
+
+| screen | marks |
+|---|---|
+| `01-month` | `balance`, `month-end`, `left`, `search` |
+| `02-entry` | `amount`, `name`, `category`, `details` |
+| `03-backup` | `backup`, `backup-note` (the card with the sentence under it), `excel` |
+| `04-budgets` | `budget-car`, `budget-extra`, `budget-groceries-head` |
+| `05-next-month` | `started` (the toast), `balance`, `month-end`, `left` |
+| `06-stats` | `range`, `summary`, `stands-out` (*Das fällt auf* with its first hint) |
+| `07-history` | `income-expenses`, `balance-trend` |
+| `08-category` | `average`, `figures`, `figure-1` … `figure-3`, `budget` |
+| `09-report` | `summary`, `income`, `spending`, `saved`, `rate`, `budgets`, `changes` |
+| `10-plan` | `pace` |
+
+- **The names are the contract** with the studio's config (`"mark": "amount"`).
+  When a screen changes, mend the selector and keep the name.
+- A mark has to be wholly on the screen when the capture is taken. One that is
+  missing or cut off stops that screen (`✗ de/04-budgets: mark "budget-car" is
+  not on the screen …`) — no capture is written with stale marks.
+- The corner radius is the element's own, or that of the first thing in it when
+  it has none.
+- **A list of selectors** marks the box around all of them, for a part that
+  has no element of its own (`stands-out`: the card's heading and the first
+  hint under it). Such a mark has no corner; the call-out gives it one.
 
 ## The demo data
 
@@ -72,9 +119,11 @@ in `L`. Handles that have proved stable (also used by `scripts/ui-review.mjs`):
 
 Find a card by its category **id**, not its display name: names change (a
 rename of "Einkaufen" once broke this script). Ten is App Store Connect's
-maximum per slot — to add one, drop one. Every screen also needs a slide in
-`store-screenshot-studio` (its `config/screenshots.config.json` and both
-`config/copy.*.json`), and its headline may only claim what the capture shows.
+maximum per slot — to add one, drop one; Google Play takes eight (the Play
+target lists its eight in the studio's config). Every screen also needs a
+slide in `store-screenshot-studio` (its `config/screenshots.config.json` and
+both `config/copy.*.json`), its headline may only claim what the capture shows,
+and the part the slide lifts needs a mark (above).
 
 ## Leftovers
 
