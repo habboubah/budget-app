@@ -169,25 +169,31 @@ Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إ
 | Asset | What Google wants | Where it is |
 |---|---|---|
 | App icon | 512 × 512, 32-bit PNG, at most 1024 KB | `screenshots/store/play-icon-512.png` (from `assets/icon-only.png`) |
-| Feature graphic | 1024 × 500, JPEG or 24-bit PNG without alpha | `screenshots/store/play-feature/<language>/feature-graphic.jpg` (`npm run store-screenshots`), with the *Kostenlos* / *Free* ribbon and the four points |
-| Phone screenshots | 2 to 8; JPEG or 24-bit PNG without alpha; each side 320–3840 px; the long side at most twice the short one (1080 × 1920 is the usual size) | `screenshots/store/play-phone/<language>/` — eight slides, 1080 × 1920 JPEG, Android frame, the *Kostenlos* / *Free* ribbon on each (`npm run store-screenshots`; the `play-phone` target in the studio's config) |
+| Feature graphic | 1024 × 500, JPEG or 24-bit PNG without alpha | `screenshots/store/play-feature/<language>/feature-graphic.jpg` (`npm run store-screenshots`): *Haushaltsbuch & Finanzplaner*, the *Kostenlos* / *Free* ribbon and the four points |
+| Phone screenshots | 2 to 8; JPEG or 24-bit PNG without alpha; each side 320–3840 px; the long side at most twice the short one (1080 × 1920 is the usual size) | `screenshots/store/play-phone/<language>/` — eight slides, 1080 × 1920 JPEG, Android frame, the *Kostenlos* / *Free* ribbon on the first (`npm run store-screenshots`; the `play-phone` target in the studio's config) |
 | Tablet screenshots, video | Optional | Leave empty |
 
 The ten screens, in store order: month · new entry · backup · budgets · next
 month · statistics · history · category · month report · Planen. Play takes
-eight: history and category drop out, and backup comes second.
+eight: history and category drop out.
 
-The backup slide is the promise: *Deine Daten bleiben bei dir* — no account,
-no cloud, shared with no one — with the points *Keine Werbung · Keine
-In-App-Käufe · Kein Abo · Nichts verlässt dein Handy*. The feature graphic
-carries the same four points. On Play every slide also has the *Kostenlos* /
-*Free* ribbon in the corner. Google's guidelines ask to avoid "Free" on
-preview assets: the listing stays up, but Play promotes and recommends such
-assets less readily. The App Store set has neither the ribbon nor the points
-about the price (Apple rejects price words on screenshots, guideline 2.3.7);
-it keeps *Keine Werbung* and *Nichts verlässt dein Handy*. All of it is only
+Since 15 November 2026 the set is composed like shopping-list's: the icon's
+petrol as one flat colour, a big headline, a large phone that runs off the
+canvas, one piece of the screen lifted out of it, and drawings (the coin, a
+padlock, a piggy bank …) across the seams, so the row reads as one strip.
+
+The first slide says what the app is — *Haushaltsbuch & Finanzplaner*, with
+what it does in a line under it — and carries the promise as points: *Keine
+Werbung · Sicher, Privatsphäre zuerst · Daten bleiben auf dem Gerät*, on Play
+also *Kein Abo* and the *Kostenlos* / *Free* ribbon in its corner. The feature
+graphic carries the same headline, points and ribbon. The backup slide shows
+the screen that says so (*Deine Daten bleiben bei dir*). Google's guidelines
+ask to avoid "Free" on preview assets: the listing stays up, but Play promotes
+and recommends such assets less readily. The App Store set has neither the
+ribbon nor the point about the price (Apple rejects price words on
+screenshots, guideline 2.3.7); it keeps the other three. All of it is only
 true while Spartopf costs nothing: with a paid Plus the ribbon and the price
-points come off (`.claude/skills/store-screenshot-studio/reference/store-specs.md`).
+point come off (`.claude/skills/store-screenshot-studio/reference/store-specs.md`).
 
 ### 2.4 Store settings
 
@@ -491,6 +497,13 @@ biggest markets.
 - [ ] **Play icon** 512 × 512 (2.3).
 - [ ] **Play feature graphic** 1024 × 500 (2.3).
 - [ ] **Play phone screenshots**, 2 to 8 (2.3).
+- [ ] **The new store set** (2.3; composed anew on 15 November 2026). On the
+  Mac: `npm run screenshots`, then `npm run store-screenshots`, then look at
+  both contact sheets in `screenshots/store/` in German and English — the
+  compositions were set on captures taken without Apple's font and emoji and
+  checked by measurement, not by eye. The captures from before that day have
+  no marks, so the store run stops until the first command has run. Then
+  replace the screenshots in App Store Connect and in the Play Console.
 - [ ] **Closed test.** A personal developer account created after November
   2023 has to run a closed test with 12 testers for 14 days before Play lets
   it publish to production (`docs/ANDROID_RELEASE.md`).
