@@ -2,71 +2,127 @@
 <html>
 <head>
 <meta charset="utf-8">
-<link rel="stylesheet" href="../assets/fonts/space-grotesk.css">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
 <link rel="stylesheet" href="slide.css">
 </head>
 <body>
-  <div class="bg">
-    <div class="pano"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
-  </div>
+  <!-- Stickers that sit behind the phone. -->
+  <div class="stickers back"></div>
+
   <section class="copy">
     <h1 class="headline"></h1>
     <p class="subline"></p>
     <ul class="points"></ul>
   </section>
+
   <div class="stage">
-    <div class="device">
-      <div class="screen">
-        <div class="statusbar"><span class="island"></span></div>
-        <div class="shot"><img alt=""></div>
+    <!-- A second phone behind the first (slide.second). Removed when unused. -->
+    <div class="device second">
+      <div class="frame">
+        <div class="screen">
+          <div class="statusbar"><span class="island"></span></div>
+          <div class="shot"><img alt=""></div>
+        </div>
+      </div>
+    </div>
+    <div class="device main">
+      <div class="frame">
+        <div class="screen">
+          <div class="statusbar"><span class="island"></span></div>
+          <div class="shot"><img alt=""></div>
+        </div>
+        <!-- Call-outs: pieces of this same capture, lifted out of the screen. -->
+        <div class="lift"></div>
       </div>
     </div>
   </div>
+
+  <!-- Stickers in front of everything but the ribbon. -->
+  <div class="stickers front"></div>
+
   <!-- The corner ribbon ("Kostenlos"). Hidden unless the target asks for it. -->
   <div class="ribbon" hidden><span></span></div>
 
 <script>
 // window.__DATA__ is injected by scripts/render.mjs before this page loads.
-// Everything here is plain assignment — no layout maths in JS, so the CSS stays
-// the single description of a layout.
+// Everything here is plain assignment: where a thing sits is decided in
+// slide.css, from the custom properties set below. The one measurement is the
+// headline fit at the end (a headline has to fit its lines in every language).
 (() => {
   const d = window.__DATA__;
   const root = document.documentElement;
+  const body = document.body;
   root.dir = d.dir;
   root.lang = d.locale;
-  document.body.dataset.layout = d.layout;
-  document.body.dataset.device = d.device;
+  body.dataset.layout = d.layout;
+  body.dataset.align = d.align || 'center';
 
-  const c = d.colors;
-  const set = (k, v) => root.style.setProperty(k, v);
-  set('--accent', c.accent);
-  set('--fg', c.fg);
-  set('--fg-mute', c.fgMute);
-  set('--bezel-fill', '#14161A');
-  set('--app-bg', c.bg);
-  set('--bg-from', d.background.from);
-  set('--bg-to', d.background.to);
-  d.background.blobs.forEach((name, i) => set(`--blob-${i + 1}`, c[name]));
+  const set = (k, v, el = root) => el.style.setProperty(k, v);
+  const bg = d.background;
+  set('--fill', bg.fill);
+  set('--ink', bg.ink);
+  set('--ink-soft', bg.inkSoft || bg.ink);
+  set('--shade', bg.shade);
+  set('--chip', bg.chip || '#FFFFFF');
+  set('--chip-ink', bg.chipInk || d.colors.fg);
+  set('--tick', bg.tick || d.colors.accent);
+  set('--bezel', d.bezel);
+  set('--font-display', `"${d.font.display}"`);
+  set('--font-text', `"${d.font.text}"`);
+  if (d.font.displayWeight) set('--display-weight', d.font.displayWeight);
 
-  // Panoramic: one gradient the width of the whole set, slid one slide per index.
-  // RTL listings are swiped the other way, so the strip has to run the other way.
-  set('--pano-count', d.panoramaCount);
-  set('--pano-index', d.panoramaIndex);
-  set('--pano-sign', d.dir === 'rtl' ? -1 : 1);
+  // ---- the phones ----
+  const fill = (el, phone) => {
+    el.dataset.device = phone.device;
+    // The screen box takes the capture's own aspect ratio, so the app pixels
+    // are placed, never stretched and never cropped by a mismatched frame.
+    set('--screen-aspect', phone.rawAspect, el);
+    // The status-bar band repeats the capture's first pixel row (slide.css),
+    // and a call-out paints a piece of the same file.
+    set('--raw-url', `url("${phone.rawUrl}")`, el);
+    set('--raw-rows', phone.rawRows, el);
+    set('--app-bg', phone.appBg, el);
+    if (phone.width != null) set('--dw', phone.width, el);
+    if (phone.tilt != null) set('--tilt', phone.tilt, el);
+    if (phone.nudge) { set('--nx', phone.nudge[0], el); set('--ny', phone.nudge[1], el); }
+    if (phone.front) el.dataset.front = '';
+    const img = el.querySelector('.shot img');
+    img.src = phone.rawUrl;
+    img.alt = d.headline;
+  };
+  fill(document.querySelector('.device.main'), d.phone);
+  const second = document.querySelector('.device.second');
+  if (d.second) fill(second, d.second); else second.remove();
 
-  // The screen box takes the capture's own aspect ratio, so the app pixels are
-  // placed, never stretched and never cropped by a mismatched frame.
-  set('--screen-aspect', d.rawAspect);
-  // The status-bar band repeats the capture's first pixel row (slide.css).
-  set('--raw-url', `url("${d.rawUrl}")`);
-  set('--raw-rows', d.rawRows);
-
-  if (d.focus) {
-    set('--focus-x', `${d.focus.x * 100}%`);
-    set('--focus-y', `${d.focus.y * 100}%`);
-    set('--focus-scale', d.focus.scale);
+  // ---- call-outs ----
+  // x/y/w/h are fractions of the capture, radius a fraction of its width,
+  // shift a fraction of the screen's width. Nothing is redrawn: each one is a
+  // window onto the capture, scaled up about its own centre.
+  const lift = document.querySelector('.lift');
+  for (const c of d.callouts || []) {
+    const el = document.createElement('div');
+    el.className = 'callout';
+    set('--x', c.x, el); set('--y', c.y, el); set('--w', c.w, el); set('--h', c.h, el);
+    set('--rad', c.radius, el);
+    set('--s', c.scale, el);
+    set('--rot', c.tilt, el);
+    set('--dx', c.shift[0], el); set('--dy', c.shift[1], el);
+    // What stays put while it grows: the centre, or the edge it is anchored to.
+    el.style.transformOrigin = `${c.origin[0] * 100}% ${c.origin[1] * 100}%`;
+    lift.append(el);
   }
 
+  // ---- stickers ----
+  for (const s of d.stickers || []) {
+    const img = document.createElement('img');
+    img.className = 'sticker';
+    img.alt = '';
+    img.src = s.url;
+    set('--x', s.x, img); set('--y', s.y, img); set('--size', s.size, img); set('--rot', s.rotate, img);
+    document.querySelector(`.stickers.${s.layer}`).append(img);
+  }
+
+  // ---- ribbon ----
   if (d.ribbon) {
     set('--ribbon-bg', d.ribbon.bg);
     set('--ribbon-fg', d.ribbon.fg);
@@ -74,19 +130,75 @@
     ribbon.firstElementChild.textContent = d.ribbon.text;
     ribbon.hidden = false;
     // The headline keeps clear of the corner (slide.css).
-    document.body.dataset.ribbon = 'on';
+    body.dataset.ribbon = 'on';
   }
 
-  document.querySelector('.headline').textContent = d.headline;
-  document.querySelector('.subline').textContent = d.subline || '';
+  // ---- copy ----
+  const headline = document.querySelector('.headline');
+  // A dash stays with the word before it: no line starts with "– ganz einfach".
+  headline.textContent = d.headline.replace(/ ([–—-]) /g, '\u00a0$1 ');
+  const subline = document.querySelector('.subline');
+  if (d.subline) subline.textContent = d.subline; else subline.remove();
   for (const text of d.points || []) {
     const li = document.createElement('li');
     li.textContent = text;
     document.querySelector('.points').append(li);
   }
-  const img = document.querySelector('.screen img');
-  img.src = d.rawUrl;
-  img.alt = d.headline;
+
+  // The headline is as big as the slide allows and never more than maxLines
+  // lines: a long German compound steps the size down instead of wrapping to a
+  // fourth line or running off the canvas. scripts/render.mjs waits for this.
+  const fit = () => {
+    const lineHeight = () => parseFloat(getComputedStyle(headline).lineHeight);
+    const lines = () => Math.round(headline.getBoundingClientRect().height / lineHeight());
+    const tooWide = () => headline.scrollWidth > headline.clientWidth + 1;
+    let f = 1;
+    while (f > 0.6 && (lines() > d.maxLines || tooWide())) {
+      f = Math.round((f - 0.02) * 100) / 100;
+      set('--fit', f);
+    }
+    return { fit: f, lines: lines() };
+  };
+
+  // On the feature graphic the copy is centred on the height, so a tall block
+  // (three rows of points) climbs into the corner where the ribbon is. It is
+  // moved down by what is missing to clear the band, as far as the room under
+  // it allows. The band's far edge is the line where the distance from the
+  // leading edge plus the distance from the top equals `reach`.
+  const clearRibbon = () => {
+    const band = document.querySelector('.ribbon span');
+    if (!d.ribbon || d.layout !== 'feature') return 0;
+    const box = band.getBoundingClientRect();
+    const reach = (box.top + box.bottom) + band.offsetHeight / Math.SQRT2;
+    const range = document.createRange();
+    range.selectNodeContents(headline);
+    const first = range.getClientRects()[0];
+    const lead = d.dir === 'rtl' ? innerWidth - first.right : first.left;
+    const missing = reach + 0.03 * innerHeight - (lead + first.top);
+    const room = innerHeight * 0.93 - document.querySelector('.copy').getBoundingClientRect().bottom;
+    const shift = Math.round(Math.max(0, Math.min(missing, room)));
+    if (shift) set('--ribbon-clear', `${shift}px`);
+    return shift;
+  };
+
+  window.__READY__ = (async () => {
+    await document.fonts.ready;
+    // A font file that did not load falls back silently; say so instead.
+    const faces = [...document.fonts];
+    const family = f => f.family.replace(/["']/g, '');
+    const missing = faces.filter(f => f.status === 'error').map(family);
+    if (!faces.some(f => family(f) === d.font.display && f.status === 'loaded')) missing.push(d.font.display);
+    await Promise.all([...document.images].map(img =>
+      img.complete ? img.decode().catch(() => {}) : new Promise(r => { img.onload = img.onerror = r; })));
+    const broken = [...document.images].filter(img => !img.naturalWidth).map(img => img.src);
+    const fitted = fit();
+    clearRibbon();
+    // Two frames, so the capture is of the settled picture: the first paint of
+    // a turned layer (a tilted phone, a sticker) can differ from the next one
+    // in single pixels, and then two runs would not give the same file.
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return { ...fitted, missing: [...new Set(missing)], broken };
+  })();
 })();
 </script>
 </body>

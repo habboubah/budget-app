@@ -1,66 +1,95 @@
 ---
 name: store-screenshot-studio
-description: Turn the raw app captures in screenshots/<locale>/ into polished, store-ready marketing screenshots — device mockup frames, branded backgrounds, benefit headlines — plus the Google Play feature graphic. Use when asked to refresh, restyle or regenerate marketing screenshots, store listing images, App Store or Play Store artwork, headlines on screenshots, or the feature graphic.
+description: Turn the raw app captures in screenshots/<locale>/ into polished, store-ready marketing screenshots — one bold colour, a big headline, a large phone, pieces of the screen lifted out of it (call-outs), stickers that run from slide to slide — plus the Google Play feature graphic. Use when asked to refresh, restyle, improve or regenerate marketing screenshots, store listing images, App Store or Play Store artwork, headlines, call-outs or stickers on screenshots, or the feature graphic.
 ---
 
-> Adapted from pizza-driver-log (Fahrtwerk) for Spartopf: the ten captures of
-> `scripts/screenshots.mjs` per language, the petrol theme, DE / EN copy. App
-> Store only so far — the Play targets and feature graphic come back through
-> the config (see its `//targets` note) once there is an Android app.
+> Spartopf's store set. Since 15 November 2026 it is composed the way
+> shopping-list's is (Ahmad pointed at Bring!'s listing there and asked for the
+> same here): the ten captures of `scripts/screenshots.mjs` per language, the
+> icon's petrol, DE / EN copy, an App Store target and a Google Play target
+> with its feature graphic. The skill came from pizza-driver-log (Fahrtwerk).
 
 
 # Store screenshot studio
 
 Raw capture in → marketing slide out. The raw captures come from the
 `app-store-screenshots` skill (`npm run screenshots`), which writes plain,
-unstyled app screens to `screenshots/de/` and `screenshots/en/`. This skill frames, brands and
-captions them.
+unstyled app screens to `screenshots/de/` and `screenshots/en/` and, next to
+each, where its parts are (`<capture>.marks.json`). This skill composes them:
+colour, headline, phone, call-outs, stickers.
 
-**Never edit the pixels inside the device frame.** The app UI in a slide must be
-the untouched capture — that is both an Apple review rule and the reason the set
-can be trusted.
+**Never edit the pixels of the app.** What is inside the phone is the untouched
+capture, and a call-out is a window onto that same capture, enlarged — never a
+redrawn button, never a screen that does not exist. That is both an Apple
+review rule and the reason the set can be trusted.
+
+## What a slide is made of
+
+Six things, each for a reason (`reference/composition.md` has the reasons and
+the numbers — read it before changing a composition):
+
+1. **One flat colour** for the whole set, the icon's own, so the row of slides
+   reads as one brand block next to the icon.
+2. **A headline you can read in a search result**: Nunito Black, as big as the
+   slide allows, two or three short lines. No subline by default (the opening
+   slide shows its own: what the app does, in one line).
+3. **A phone big enough to read**, running off the canvas. The copy is on top
+   on one slide and below on the next (`layout`: `top` / `bottom`).
+4. **A call-out**: the one piece of the screen the headline is about, lifted
+   out of the phone and enlarged past its frame.
+5. **Stickers on the seams**: a drawing placed on the border between two slides
+   shows half on each, so the listing reads as one strip when swiped.
+6. **The opening slide says what the app is** and carries the promise (the
+   points); most people never swipe past it.
 
 ## Run it
 
 ```bash
-npm run store-screenshots
+npm run screenshots          # only when the app's screens changed: captures + marks
+npm run store-screenshots    # export → feature graphic → contact sheets → validate
 ```
 
-Export → feature graphic → contact sheet → validate, in that order. The run fails
-loudly if any exported file misses its store spec.
+The run fails loudly if any exported file misses its store spec, a call-out
+names a mark its capture does not have, or a font or picture did not load.
 
 ## Workflow (follow this, in order)
 
-### 1. Propose copy — approval gate
+### 1. Look, then plan the set
 
-Read `config/theme.json`, the slides in `config/screenshots.config.json`, and the
-raw captures they point at. **Look at each raw capture before writing its
-headline** — rule 3 in `reference/copywriting.md` is that a headline may only
-claim what its own screenshot shows.
+Read `config/screenshots.config.json` and **look at every raw capture** it
+points at. For each slide decide, in this order: what the one message is; which
+piece of the screen proves it (that is the call-out); whether that piece is in
+the upper or the lower part of the screen (that decides `top` or `bottom` — the
+phone is cut at the far end). Alternate `top` and `bottom` where the screens
+allow it.
 
-Present the proposed headline + subline per slide as a table and **wait for the
-user to confirm or edit** before rendering anything. Write the agreed text to
-`config/copy.<locale>.json`.
+### 2. Propose copy — approval gate
 
-### 2. Render one slide — approval gate
+Rule 3 in `reference/copywriting.md`: a headline may only claim what its own
+screenshot shows. Present the proposed headline per slide as a table and
+**wait for the user to confirm or edit** before rendering anything. Write the
+agreed text to `config/copy.<locale>.json`.
+
+### 3. Render one slide — approval gate
 
 ```bash
-node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide month --locale de --out /tmp/proof.png --scale 1
+node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide budgets --locale de --out /tmp/proof.png --scale 1
 ```
 
 Add `--target play-phone` to see the slide as that target exports it (Android
-frame, ribbon, price points). `--scale 1` renders at a third of export size, which is fast and enough to judge.
-**Show the user the image and wait for approval.** Iterate on
-`templates/slide.css` and `config/theme.json` here, not later.
+frame, ribbon, price points, Play's canvas). `--scale 1` renders at a third of
+export size, which is fast and enough to judge. **Show the user the image and
+wait for approval.** Iterate on `templates/slide.css` and `config/theme.json`
+here, not later.
 
-### 3. That slide is the style template
+### 4. That slide is the style template
 
-Once approved, the background, type scale, frame and spacing are settled for the
-whole set. Do not restyle individual slides afterwards — a set that drifts slide
-to slide looks unfinished. Per-slide variation is limited to `layout`
-(`standard` / `full-bleed` / `angled` / `zoom`).
+Once approved, the colour, the type, the frame and the shadows are settled for
+the whole set. Do not restyle individual slides afterwards — a set that drifts
+slide to slide looks unfinished. What varies per slide is composition only:
+`layout`, the phone's placement, its call-outs, and the stickers.
 
-### 4. Render everything
+### 5. Render everything and look at it
 
 ```bash
 node .claude/skills/store-screenshot-studio/scripts/export.mjs
@@ -68,28 +97,121 @@ node .claude/skills/store-screenshot-studio/scripts/feature_graphic.mjs
 node .claude/skills/store-screenshot-studio/scripts/preview.mjs
 ```
 
-### 5. Validate and report
+Open **both** contact sheets (`screenshots/store/contact-sheet.png` and
+`…-play-phone.png`) and go through the checklist at the end of
+`reference/composition.md`, in every language: no text cut in half by a
+call-out's edge, no sticker on a headline or on the thing a slide is about,
+every call-out sharp and wider than the phone. A composition is right when it
+is right in German *and* English, on the App Store canvas *and* on Play's.
+
+### 6. Validate and report
 
 ```bash
 python3 .claude/skills/store-screenshot-studio/scripts/validate.py
 ```
 
-Then show the user the contact sheet **and** the validator's summary table (file,
-size, bytes, store, status). If validation fails, fix and rerun — never hand over
-files that did not pass.
+Then show the user the contact sheets **and** the validator's summary table
+(file, size, bytes, store, status) with its warnings. If validation fails, fix
+and rerun — never hand over files that did not pass.
 
-## Layouts
+## Layouts and the phone
 
-| layout | what it does | when |
+| `layout` | what it does | when |
 |---|---|---|
-| `standard` | Headline above, device centred below | Default; most slides |
-| `full-bleed` | Larger device, cropped by the bottom edge | Busy screens that reward a closer look |
-| `angled` | Device in perspective, rotated | Break up a run of identical slides |
-| `zoom` | Magnifies one region of the capture; needs `focus` | Call out a single control or figure |
+| `top` | Headline on top, the phone below it, running off the bottom edge | What matters is in the upper part of the screen |
+| `bottom` | The phone on top, running off the top edge, headline below it | What matters is in the lower part: a dock, a sheet's content |
 
-`zoom` crops horizontally at any scale above 1. Aim `focus` at a band whose content
-is centred, keep `scale` near 1.2, and check the result — full-width body text gets
-cut at the edges above roughly 1.3.
+A slide may place its phone: `"phone": { "width": 39, "tilt": 4, "nudge": [0.1, 0] }`
+— width in percent of the canvas height (39 fills the App Store canvas with a
+small margin), tilt in degrees, nudge in canvas widths / heights. `"second"`
+puts another capture behind it as a second phone (the opening slide: the month
+in front, the categories with their budgets behind). Keep both for a reason: a tilted phone on every slide
+is noise.
+
+## Call-outs
+
+```json
+"callouts": [ { "mark": "amount", "scale": 1.2 } ]
+```
+
+A call-out lifts one piece of the slide's own capture out of the phone: it
+starts exactly where that piece is on the screen, grows about its centre (or
+the edge named by `anchor`) and may reach past the frame. **It names a mark,
+not coordinates**: the marks are measured from the running app by
+`npm run screenshots` (`marks` in `scripts/screenshots.mjs`) and stored next to
+each capture, so a call-out is right in every language and still right after
+the screen has changed. Listing them:
+
+```bash
+cat screenshots/de/04-budgets.marks.json
+```
+
+- **One per slide**, the piece the headline is about; two small ones (tiles)
+  at most three. `validate.py` warns past that.
+- `scale` 1.1–1.2 for a card as wide as the screen, up to 1.5 for a small tile.
+  `validate.py` warns when a piece is blown up past the capture's own pixels.
+- `tilt` (degrees) and `shift` (in screen widths) only for small pieces — a
+  full-width card stays straight.
+- `anchor: "bottom"` keeps what is under the piece whole (the next hint under
+  *Das fällt auf*), `"top"` what is above it; then check what its other edge
+  now covers. Text half under an
+  edge is the one thing that makes a call-out look like a mistake: cover the
+  line whole (`shift`, `scale`) or not at all.
+- A piece with no card of its own (the backup card with the sentence under it,
+  a card's heading with its first row) takes `pad` and a `radius` and becomes
+  a panel.
+- **Light pieces.** The canvas is the petrol of the app's own hero cards, so a
+  lifted hero has only its shadow to stand off it. Lift the white card, the
+  panel, the near-black toast, and leave a hero in the phone. Where the hero
+  is the slide's whole subject (*Planen*), nothing is lifted and the phone
+  leans instead.
+- **Not half the screen.** A chart card is 40 % of the screen: lifted, it hides
+  the phone and leaves no clear height on its seams for a sticker. One slide
+  may (the history's balance chart); on the others lift the sentence about the
+  chart — the first hint, the three figures.
+- **Edges in the gaps.** A full-width card grows over its neighbours. Between
+  two cards that is fine (16 px of gap, then the neighbour's own padding); next
+  to a bare heading it is not — the heading is cut in half. Choose the scale,
+  `anchor` and `shift` so each edge lands in a gap, or covers the heading
+  whole (the backup slide does both).
+- **A part that is not marked yet**: add it to that screen's `marks` in
+  `scripts/screenshots.mjs` (a name and a selector built from the app's own
+  handles — `data-tour`, a category's id; a list of selectors marks the box
+  around them all), rerun `npm run screenshots -- --only <screen>`, then use the name.
+  Never fall back to a hand-measured `"crop"` for a set with two languages.
+
+## Stickers
+
+```json
+{ "art": "coin", "slide": "month", "x": 1.0, "y": 0.47, "size": 0.32, "rotate": -8 }
+```
+
+Twelve drawings in `assets/stickers/` (coin, coins, banknote, piggy, wallet,
+receipt, calculator, calendar, chart, padlock, book, pencil): original, flat,
+with a paper edge, so they stand on any background. The coin and the book are
+the icon's own. A sticker is anchored to a slide;
+`x: 1.0` is the seam to the next one. Rules of thumb: one per seam; alternate
+high and low; keep `y` roughly between 0.3 and 0.7 (clear of the copy on both
+layouts); never on a call-out or on the control a slide is about; never two of
+the same in a row. Pick the drawing by what the slide says: the padlock next
+to the slide about the data, the calendar next to the new month. On the App
+Store canvas the phone and its call-out fill the width, so a seam has only a
+few clear heights — where neither neighbour has copy or a call-out at that
+edge; beside a headline that is narrower than the slide is fine. To add one, draw it in the same manner (see the
+comment in any of the files) — no emoji (the platforms' are not ours to ship),
+no downloaded clip-art.
+
+## Colour and type
+
+`config/theme.json`. Three backgrounds: **petrol** (the icon's colour and the
+app's accent, with white type and the coin's gold for the ribbon — the set's
+colour), **mist** (the same hue as a light canvas with petrol ink, quieter)
+and **night** (the app's dark page as a canvas — only for a screen shown in
+dark mode; the set has none today). Change the set's colour by changing every
+slide's `background`; do not mix petrol and mist. Type is the app's own
+bundled face, loaded from the app's file (`assets/fonts/fonts.css` →
+`src/assets/fonts/`): Nunito — Black for headlines and the ribbon
+(`font.displayWeight`), ExtraBold for points and sublines.
 
 ## Ribbon and points
 
@@ -98,8 +220,9 @@ Two things say what the app costs and promises, beside the headline:
 - **The ribbon** — the band across the top corner with the copy file's `ribbon`
   word (*Kostenlos* / *Free*). Switched on per target and on the feature graphic
   in `config/screenshots.config.json`: `"ribbon": true` (every slide), `"first"`
-  (the first slide only) or `false`. Its colours are `ribbon` in `theme.json`.
-- **Points** — the pills with a tick under a slide's subline, from `points` in
+  (the first slide only) or `false`. Its colours come with the background
+  (`ribbon` / `ribbonInk` in `theme.json`).
+- **Points** — the pills with a tick under a slide's headline, from `points` in
   the copy file (a slide's, or the feature graphic's). A point is a string, or
   `{ "text": "Kein Abo", "price": true }` for one that speaks about the price.
   Price points appear only on targets that have the ribbon on.
@@ -109,32 +232,40 @@ and rejects the version for it, so the `iphone-6.3` target has the ribbon off
 and shows only the plain points. `validate.py` warns when an App Store target
 turns it on. On Play it is allowed, at the cost of being picked for Play's
 promotion surfaces less readily. And every one of these words has to be true:
-they come off the day a paid Plus is sold. The rules, with their sources, are
+they come off the day a paid Plus is sold (`docs/MONETIZATION.md`). The rules, with their sources, are
 in `reference/store-specs.md` › *The ribbon and the price words*.
 
 ## Adding things
 
 - **A slide** — add an entry to `slides` in `config/screenshots.config.json` and a
-  matching entry in every `config/copy.<locale>.json`. Order in the array is the
-  store order and drives the filename index.
-- **A language** — add `config/copy.<locale>.json` and the code to `locales`. Set
-  `"dir": "rtl"` for RTL; the template uses logical properties, so it just works.
+  matching entry in every `config/copy.<locale>.json` (ten is App Store
+  Connect's maximum, and the set has ten: drop one first). Order in the array is the
+  store order and drives the filename index. Give it a call-out (mark the part
+  first if it has no mark) and move the stickers on its seams.
+- **A language** — add `config/copy.<locale>.json` and the code to `locales`,
+  and capture it (`L` in `scripts/screenshots.mjs`). Set `"dir": "rtl"`
+  for RTL: the copy, the ribbon, the phones' lean and the strip of stickers all
+  turn round.
 - **A device size** — add an entry to `targets`. `validate.py` picks it up from the
-  same config, so the new size is checked automatically.
+  same config, so the new size is checked automatically. Every length hangs on
+  the canvas height, so a new shape gets the same composition with more or
+  less margin — look at its contact sheet all the same.
 
 None of these need a script change.
 
 ## Reference
 
+- `reference/composition.md` — what makes a set look designed, the numbers, and
+  the checklist for the contact sheet.
 - `reference/store-specs.md` — the exact sizes and formats both stores accept.
 - `reference/copywriting.md` — headline rules, banned phrases, good/bad examples.
 - `assets/frames/README.md` — why the device frame is CSS and not a PNG.
 
 ## Determinism
 
-Same config + same raw captures = same output. The renderer waits for
-`document.fonts.ready` and image decode rather than sleeping, the font is vendored
-(`assets/fonts/`, SIL OFL 1.1) instead of fetched, and Chromium runs with pinned
-rasterisation flags. There is no AI generation step anywhere in the pipeline: an
-image model cannot produce the same pixels twice, and it would alter the app UI it
-was asked to preserve.
+Same config + same raw captures = same output. The renderer waits for the page
+to say it is done (fonts loaded, pictures decoded, headline fitted) rather than
+sleeping, the fonts are the repo's own files instead of fetched, the stickers
+are SVG, and Chromium runs with pinned rasterisation flags. There is no AI
+generation step anywhere in the pipeline: an image model cannot produce the
+same pixels twice, and it would alter the app UI it was asked to preserve.

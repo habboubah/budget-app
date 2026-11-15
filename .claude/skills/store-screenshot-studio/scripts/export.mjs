@@ -4,7 +4,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync, rmSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { cfg, root, theme, launchArgs, slideData, ribbonFor, shoot, die } from './render.mjs';
+import { cfg, root, launchArgs, slidesFor, targetSlideData, shoot, die } from './render.mjs';
 
 const outDir = path.join(root, cfg.outDir);
 
@@ -24,25 +24,15 @@ const written = [];
 
 try {
   for (const target of cfg.targets) {
+    // A target may pick its own slides (Play takes eight) and its own frame.
+    // It is its own strip: a sticker on a seam spills into whichever slide
+    // comes next in this target.
+    const slides = slidesFor(target);
     for (const locale of cfg.locales) {
       const dir = path.join(outDir, target.id, locale);
       mkdirSync(dir, { recursive: true });
-
-      // A target may pick its own slides (Play takes eight) and its own frame.
-      const slides = target.slides
-        ? target.slides.map(id => cfg.slides.find(s => s.id === id) || die(`target "${target.id}" lists slide "${id}", which is not in slides.`))
-        : cfg.slides;
-      for (const [i, base] of slides.entries()) {
-        const slide = target.device ? { ...base, device: target.device } : base;
-        // A target with its own slide list is its own strip: the panorama runs
-        // across those slides in that order, not across the ten of the full set.
-        const strip = target.slides && theme.backgrounds[slide.background]?.panoramic
-          ? { panoramaCount: slides.length, panoramaIndex: i }
-          : {};
-        const ribbon = ribbonFor(target, locale, i);
-        // The ribbon's targets are the ones that may speak about the price at all.
-        const data = slideData(slide, locale, { ...strip, ribbon, priceWords: Boolean(target.ribbon) });
-        const buf = await shoot(browser, data, target);
+      for (const [i, slide] of slides.entries()) {
+        const buf = await shoot(browser, targetSlideData(target, locale, i), target);
         const ext = target.format === 'jpeg' ? 'jpg' : 'png';
         const file = path.join(dir, `${String(i + 1).padStart(2, '0')}-${slide.id}.${ext}`);
         writeFileSync(file, buf);

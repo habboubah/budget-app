@@ -3,7 +3,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { cfg, root, launchArgs, slideData, ribbonFor, pointsFor, shoot, copyFor, die } from './render.mjs';
+import { cfg, root, launchArgs, slideData, ribbonFor, pointsFor, placedStickers, shoot, copyFor, die } from './render.mjs';
 
 const fg = cfg.featureGraphic;
 // Google Play only: without a featureGraphic block there is nothing to make.
@@ -20,15 +20,24 @@ try {
     const copy = copyFor(locale);
     if (!copy.featureGraphic) die(`config/copy.${locale}.json has no "featureGraphic" block.`);
 
-    const data = slideData({ ...slide, background: fg.background, device: fg.device || slide.device }, locale, {
+    // The slide lends its screen and nothing else: the graphic has its own
+    // frame, placement, copy, points and stickers, and no call-outs.
+    const borrowed = {
+      ...slide,
+      background: fg.background,
+      device: fg.device || slide.device,
+      phone: fg.phone || {},
+      second: null,
+      callouts: [],
+    };
+    const data = slideData(borrowed, locale, {
       layout: 'feature',
+      align: 'start',
       headline: copy.featureGraphic.headline,
-      subline: copy.featureGraphic.subline,
-      // Its own points, never the slide's it borrows the screen from.
+      subline: (fg.subline ?? cfg.style?.sublines ?? false) ? copy.featureGraphic.subline : null,
+      maxLines: fg.maxLines ?? 2,
       points: pointsFor(copy.featureGraphic.points, Boolean(fg.ribbon), `config/copy.${locale}.json[featureGraphic]`),
-      // The feature graphic stands alone, so it never takes a panorama offset.
-      panoramaCount: 1,
-      panoramaIndex: 0,
+      stickers: placedStickers(fg.stickers, copy.dir === 'rtl', 'featureGraphic.stickers'),
       ribbon: ribbonFor(fg, locale),
     });
 

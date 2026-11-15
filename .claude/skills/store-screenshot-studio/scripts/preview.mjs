@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 // Contact sheets: every exported slide side by side, one row per locale, so a
 // set can be judged as a set — one sheet per target, because each target has
-// its own frame, its own choice of slides and, on Play, the ribbon. The first
-// target's sheet is `previewFile`; the others add their id to that name.
+// its own frame, its own choice of slides and, on Play, the ribbon. The slides
+// stand almost edge to edge, the way a listing shows them, so a sticker that
+// runs across a seam can be checked. The first target's sheet is
+// `previewFile`; the others add their id to that name, and Play's sheet ends
+// with the feature graphics.
 // Rendered as HTML for the same reason everything else is — no image library
 // needed to lay out a grid.
 import { chromium } from 'playwright';
@@ -10,43 +13,53 @@ import { mkdirSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { cfg, root, theme, launchArgs, die } from './render.mjs';
+import { cfg, root, skillDir, theme, launchArgs, slidesFor, die } from './render.mjs';
 
-const THUMB = 260;
+const THUMB = 250;
+const GAP = 6;
 
 const sheetFor = target => {
   const ext = target.format === 'jpeg' ? 'jpg' : 'png';
-  // A target may pick and order its own slides (Play takes eight).
-  const slides = target.slides ? target.slides.map(id => cfg.slides.find(s => s.id === id)) : cfg.slides;
+  const slides = slidesFor(target);
   const rows = cfg.locales.map(locale => {
     const cells = slides.map((slide, i) => {
       const file = path.join(root, cfg.outDir, target.id, locale,
         `${String(i + 1).padStart(2, '0')}-${slide.id}.${ext}`);
       if (!existsSync(file)) die(`contact sheet needs ${path.relative(root, file)} — run export.mjs first.`);
-      return `<figure><img src="${pathToFileURL(file).href}"><figcaption>${String(i + 1).padStart(2, '0')} ${slide.id} · ${slide.layout}</figcaption></figure>`;
+      return `<figure><img src="${pathToFileURL(file).href}"><figcaption>${String(i + 1).padStart(2, '0')} ${slide.id}</figcaption></figure>`;
     }).join('');
     return `<section><h2>${locale} · ${target.id} · ${target.width}×${target.height}</h2><div class="row">${cells}</div></section>`;
   }).join('');
 
+  // Google Play's sheet also shows the feature graphic, which is judged with the set.
+  const fg = cfg.featureGraphic && target.store === 'play'
+    ? `<section><h2>feature graphic · ${cfg.featureGraphic.width}×${cfg.featureGraphic.height}</h2><div class="row wide">${cfg.locales.map(locale => {
+      const file = path.join(root, cfg.outDir, 'play-feature', locale, 'feature-graphic.jpg');
+      if (!existsSync(file)) die(`contact sheet needs ${path.relative(root, file)} — run feature_graphic.mjs first.`);
+      return `<figure><img src="${pathToFileURL(file).href}"><figcaption>${locale}</figcaption></figure>`;
+    }).join('')}</div></section>`
+    : '';
+
   const html = `<!doctype html><meta charset="utf-8">
-<link rel="stylesheet" href="${pathToFileURL(path.join(root, '.claude/skills/store-screenshot-studio/assets/fonts/space-grotesk.css')).href}">
+<link rel="stylesheet" href="${pathToFileURL(path.join(skillDir, theme.font.css)).href}">
 <style>
-  body { margin:0; padding:28px; background:${theme.colors.bg}; font-family:"Space Grotesk",system-ui,sans-serif; }
-  h2 { font-size:15px; font-weight:600; color:${theme.colors.fgMute}; margin:0 0 12px; letter-spacing:.02em; }
+  body { margin:0; padding:28px; background:${theme.colors.bg}; font-family:"${theme.font.text}",system-ui,sans-serif; }
+  h2 { font-size:15px; font-weight:800; color:${theme.colors.fgMute}; margin:0 0 12px; }
   section { margin-bottom:34px; }
-  .row { display:flex; gap:16px; }
+  .row { display:flex; gap:${GAP}px; }
   figure { margin:0; width:${THUMB}px; }
-  img { width:100%; display:block; border-radius:10px; box-shadow:0 2px 14px rgba(20,22,26,.16); }
-  figcaption { margin-top:8px; font-size:12px; color:${theme.colors.fgMute}; }
-</style>${rows}`;
-  return { html, width: slides.length * (THUMB + 16) + 40 };
+  .wide { gap:16px; } .wide figure { width:${Math.round(THUMB * 2.4)}px; }
+  img { width:100%; display:block; border-radius:8px; }
+  figcaption { margin-top:8px; font-size:12px; font-weight:700; color:${theme.colors.fgMute}; }
+</style>${rows}${fg}`;
+  return { html, width: Math.max(slides.length * (THUMB + GAP), fg ? cfg.locales.length * (THUMB * 2.4 + 16) : 0) + 56 };
 };
 
 const browser = await chromium.launch({ args: launchArgs });
 try {
   for (const [n, target] of cfg.targets.entries()) {
     const { html, width } = sheetFor(target);
-    const page = await browser.newPage({ viewport: { width, height: 900 } });
+    const page = await browser.newPage({ viewport: { width: Math.ceil(width), height: 900 } });
     // The sheet has to be a real file:// page — Chromium refuses to load file://
     // images into a document served from about:blank.
     const scratch = path.join(tmpdir(), `store-studio-contact-sheet-${target.id}.html`);

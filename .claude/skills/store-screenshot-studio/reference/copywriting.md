@@ -5,7 +5,10 @@ they may only half-read. Every rule below exists for that reader.
 
 ## Rules
 
-1. **Max 5 words per headline.** `validate.py` fails the run past that.
+1. **Max 5 words per headline.** `validate.py` fails the run past that. The
+   type is big (`reference/composition.md`): five short words are three lines.
+   A headline that does not fit three lines is stepped down in size — if the
+   contact sheet shows one visibly smaller than its neighbours, shorten it.
 2. **Name the benefit, not the feature.** "See what you actually earn" beats
    "Statistics screen with charts".
 3. **Only claim what the screenshot shows.** If the slide does not show fuel
@@ -18,8 +21,12 @@ they may only half-read. Every rule below exists for that reader.
    competitor complaint and a review flag.
 6. **Slide 1 carries the single strongest value proposition.** Most people never
    swipe past it.
-7. **Subline is optional and secondary.** One line, ~8 words, no full stop needed.
-   It qualifies the headline; it never introduces a new claim.
+7. **The headline stands alone.** Sublines are off for the set (`style.sublines`
+   in `config/screenshots.config.json`): nobody reads a second line on a
+   thumbnail, and the slide's call-out says the rest. Keep a subline in the copy
+   file all the same — one line, ~8 words, no full stop, qualifying the
+   headline, never a new claim — for the opening slide (which shows its
+   own), or a set that turns them on.
 8. **Write each locale, do not translate word for word.** German compounds run
    long — a headline that fits in English can wrap to three lines in German. Check
    the contact sheet, not the JSON.

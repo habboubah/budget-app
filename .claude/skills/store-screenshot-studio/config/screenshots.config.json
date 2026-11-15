@@ -1,5 +1,5 @@
 {
-  "//rawDir": "Where scripts/screenshots.mjs writes its captures; {locale} is replaced per language.",
+  "//rawDir": "Where scripts/screenshots.mjs writes its captures and, next to each, <capture>.marks.json; {locale} is replaced per language.",
   "rawDir": "screenshots/{locale}",
   "outDir": "screenshots/store",
   "previewFile": "screenshots/store/contact-sheet.png",
@@ -8,80 +8,147 @@
     "de",
     "en"
   ],
-  "//slides": "Order is the store order. `raw` is a filename in rawDir. `layout`: standard | full-bleed | angled | zoom. `zoom` needs `focus` (fractions of the raw image: x/y are the centre, scale is the magnification). `device`: iphone | pixel.",
+  "//style": "For the whole set. sublines: show each slide's subline under its headline (off: a thumbnail has room for one message; a slide can still ask for its own with \"subline\": true). maxLines: a headline that needs more lines than this is stepped down in size until it fits.",
+  "style": {
+    "sublines": false,
+    "maxLines": 3
+  },
+  "//slides": "Order is the store order. raw: a capture in rawDir. layout: where the copy is — top (the phone runs off the bottom edge) or bottom (it runs off the top). Alternate them. background: a preset in theme.json. device: iphone | pixel. phone: { width (percent of the canvas height, 39 by default), tilt (degrees), nudge [x, y] (x in App Store canvas widths, y in canvas heights) }. second: another capture as a phone behind the first (raw, width, tilt, nudge; \"front\": true puts it in front). callouts: pieces of the capture lifted out of the phone — see //callouts. The whole model, with the reasons: reference/composition.md.",
+  "//callouts": "Each lifts one piece of the slide's own capture: { mark, scale, tilt, shift, anchor, pad, radius }. mark: a name from <capture>.marks.json (named in scripts/screenshots.mjs, written by `npm run screenshots`), so the piece is found in every language and follows the app when a screen changes. scale: how much bigger than in the phone (1.1–1.5). tilt: degrees. shift: [x, y] in screen widths. anchor: the edge that stays put while it grows (center, top, bottom, start, end, top-start …). pad: grow the piece on every side, in capture widths (for a piece that has no card of its own). radius: its corner, in capture widths, when the mark's own is not wanted. A fixed \"crop\": [x, y, w, h] (fractions of the capture) works too, but is the same spot in every language.",
   "slides": [
     {
+      "//": "The opening slide says what the app is: the month with its two balances in front, the categories with their budgets behind it. It shows its subline (what the app does). No call-out: two phones are enough.",
       "id": "month",
       "raw": "01-month.png",
-      "layout": "standard",
+      "layout": "top",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "subline": true,
+      "phone": {
+        "width": 34,
+        "nudge": [0.14, 0.105],
+        "tilt": 3
+      },
+      "second": {
+        "raw": "04-budgets.png",
+        "width": 32,
+        "nudge": [-0.13, 0.005],
+        "tilt": -5
+      }
     },
     {
+      "//": "The amount, as typed.",
       "id": "entry",
       "raw": "02-entry.png",
-      "layout": "full-bleed",
+      "layout": "bottom",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "callouts": [
+        { "mark": "amount", "scale": 1.2 }
+      ]
     },
     {
+      "//": "The backup card with the sentence under it (\"Alles bleibt auf diesem Gerät, es gibt keine Cloud\") — the screen's own words for the headline's promise. The two have no card of their own, so the piece is padded and given a corner. Scale and shift are chosen so that its top edge lies between the page title and the card's own heading (which it covers whole) and its bottom edge between the sentence and the next heading (\"Excel\"): no line is cut in half.",
       "id": "backup",
       "raw": "03-backup.png",
-      "layout": "standard",
+      "layout": "top",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "callouts": [
+        { "mark": "backup-note", "pad": 0.015, "radius": 0.07, "scale": 1.153, "shift": [0, -0.0236] }
+      ]
     },
     {
+      "//": "One category's card: its budget, what is left of it, its entries. Pinned at its top and moved up a little, so it ends above the next card and clear of the header.",
       "id": "budgets",
       "raw": "04-budgets.png",
-      "layout": "standard",
+      "layout": "top",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "callouts": [
+        { "mark": "budget-car", "scale": 1.134, "anchor": "top", "shift": [0, -0.026] }
+      ]
     },
     {
+      "//": "The toast that says it: \"Dezember 2026 gestartet – 10 Posten übernommen\".",
       "id": "next-month",
       "raw": "05-next-month.png",
-      "layout": "angled",
+      "layout": "bottom",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "callouts": [
+        { "mark": "started", "scale": 1.2 }
+      ]
     },
     {
+      "//": "\"Das fällt auf\" with its first hint. They have no card of their own, so the piece is padded and given the card's corner; pinned at its bottom, so the next hint under it stays whole.",
       "id": "stats",
       "raw": "06-stats.png",
-      "layout": "standard",
+      "layout": "top",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "callouts": [
+        { "mark": "stands-out", "pad": 0.024, "radius": 0.056, "scale": 1.2, "anchor": "bottom" }
+      ]
     },
     {
+      "//": "The one slide that lifts a whole chart: the balance at each month's end.",
       "id": "history",
       "raw": "07-history.png",
-      "layout": "standard",
+      "layout": "bottom",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "callouts": [
+        { "mark": "balance-trend", "scale": 1.16 }
+      ]
     },
     {
+      "//": "The three figures under the chart (so far this month, a month's average, the year so far), as one strip.",
       "id": "category",
       "raw": "08-category.png",
-      "layout": "full-bleed",
+      "layout": "top",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "callouts": [
+        { "mark": "figures", "pad": 0.025, "radius": 0.07, "scale": 1.12 }
+      ]
     },
     {
+      "//": "The report's first card: the month in one sentence.",
       "id": "report",
       "raw": "09-report.png",
-      "layout": "standard",
+      "layout": "bottom",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "callouts": [
+        { "mark": "summary", "scale": 1.16 }
+      ]
     },
     {
+      "//": "Nothing lifted: the slide's subject is the pace card's head, which is the canvas's own petrol and would sink into it. The phone leans instead.",
       "id": "plan",
       "raw": "10-plan.png",
-      "layout": "angled",
+      "layout": "top",
       "device": "iphone",
-      "background": "petrol"
+      "background": "petrol",
+      "phone": {
+        "tilt": 4
+      }
     }
   ],
-  "//targets": "Exact export pixels. App Store Connect requires the \"iPhone with Dynamic Island (medium display)\" slot (iPhone 6.1\"/6.3\"), which accepts only 1206x2622 or 1179x2556 portrait; the large 6.9\"/6.5\" slots are optional and scaled from it. So one target, one folder: screenshots/store/iphone-6.3/<locale>/. For Google Play add { \"id\": \"play-phone\", \"store\": \"play\", \"width\": 1080, \"height\": 1920, \"scale\": 3, \"format\": \"jpeg\", \"quality\": 92 } and a featureGraphic block (1024x500 JPEG, plus featureGraphic copy in every copy file).",
+  "//stickers": "Drawings from assets/stickers/, anchored to a slide by id, chosen by what the slide says (the padlock after the slide about the data, the calendar after the new month). x: in slide widths from that slide's leading edge to the sticker's centre — 1 is the seam to the next slide, so the sticker shows half on each and the listing reads as one strip. y: in slide heights from the top. size: its width, in App Store canvas widths. rotate: degrees. layer: front (default) or back (behind the phone). Keep them out of the copy: y roughly between 0.3 and 0.7 is clear on both layouts. A target with its own slide list keeps each sticker on its slide; the spill goes to whichever slide comes next there.",
+  "stickers": [
+    { "art": "coin", "slide": "month", "x": 1.0, "y": 0.47, "size": 0.32, "rotate": -8 },
+    { "art": "receipt", "slide": "entry", "x": 1.0, "y": 0.68, "size": 0.3, "rotate": 8 },
+    { "art": "padlock", "slide": "backup", "x": 1.0, "y": 0.78, "size": 0.3, "rotate": 6 },
+    { "art": "piggy", "slide": "budgets", "x": 1.0, "y": 0.215, "size": 0.29, "rotate": -6 },
+    { "art": "calendar", "slide": "next-month", "x": 1.0, "y": 0.45, "size": 0.3, "rotate": 8 },
+    { "art": "chart", "slide": "stats", "x": 1.0, "y": 0.26, "size": 0.3, "rotate": -6 },
+    { "art": "banknote", "slide": "history", "x": 1.0, "y": 0.29, "size": 0.3, "rotate": 8 },
+    { "art": "wallet", "slide": "category", "x": 1.0, "y": 0.5, "size": 0.3, "rotate": -8 },
+    { "art": "coins", "slide": "report", "x": 1.0, "y": 0.68, "size": 0.3, "rotate": 6 }
+  ],
+  "//targets": "Exact export pixels. App Store Connect requires the \"iPhone with Dynamic Island (medium display)\" slot (iPhone 6.1\"/6.3\"), which accepts only 1206x2622 or 1179x2556 portrait; the large 6.9\"/6.5\" slots are optional and scaled from it. So one target, one folder: screenshots/store/iphone-6.3/<locale>/. Google Play is the second target.",
   "//ribbon": "The corner ribbon with the copy file's `ribbon` word (\"Kostenlos\" / \"Free\"), per target and on the feature graphic: true = every slide, \"first\" = the first slide only, false or absent = none. The same switch lets a target show the price points of the copy files (`{ \"text\": \"Kein Abo\", \"price\": true }`); without it only the plain points appear. Google Play only. Apple treats \"free\" on a screenshot as a price reference and rejects the version for it (guideline 2.3.7), so the iPhone target stays false. The price words are only true while the app costs nothing at all: they come off the day a paid Plus is sold. See reference/store-specs.md.",
   "targets": [
     {
@@ -103,11 +170,20 @@
       "format": "jpeg",
       "quality": 92,
       "device": "pixel",
-      "slides": ["month", "entry", "backup", "budgets", "next-month", "stats", "report", "plan"],
+      "slides": [
+        "month",
+        "entry",
+        "backup",
+        "budgets",
+        "next-month",
+        "stats",
+        "report",
+        "plan"
+      ],
       "ribbon": "first"
     }
   ],
-  "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. Its copy is the featureGraphic block of every copy file.",
+  "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. slide: whose screen the phone shows. Its copy is the featureGraphic block of every copy file (its subline shows with \"subline\": true — with four points there is no room for it). phone: width in percent of the height, tilt, nudge [x in widths, y in heights]. stickers: placed straight on the canvas — x in widths, y in heights, size in heights.",
   "featureGraphic": {
     "slide": "month",
     "background": "petrol",
@@ -117,6 +193,15 @@
     "scale": 2,
     "format": "jpeg",
     "quality": 92,
-    "ribbon": true
+    "ribbon": true,
+    "phone": {
+      "width": 52,
+      "tilt": 7,
+      "nudge": [0, 0.13]
+    },
+    "stickers": [
+      { "art": "coin", "x": 0.635, "y": 0.8, "size": 0.3, "rotate": -10 },
+      { "art": "book", "x": 0.985, "y": 0.2, "size": 0.28, "rotate": -14, "layer": "back" }
+    ]
   }
 }

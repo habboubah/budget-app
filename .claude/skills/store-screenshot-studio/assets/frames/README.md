@@ -23,6 +23,10 @@ point of this note.
 
 ## Geometry
 
-Frame proportions live in `config/theme.json` under `device`. The screen box takes
-its aspect ratio from the raw capture itself (`--screen-aspect`), so app pixels are
-placed at their own ratio and are never stretched to fit a frame.
+The frame's proportions are in `templates/slide.css` (`.frame`, `.screen`,
+`.island`), in `cqw` — fractions of the phone's own width — so a phone of any
+size, tilted or not, is the same phone; its colour is `device.bezel` in
+`config/theme.json`. The screen box takes its aspect ratio from the raw capture
+itself (`--screen-aspect`), so app pixels are placed at their own ratio and are
+never stretched to fit a frame. The call-outs' layer (`.lift`) lies exactly
+over that box: change the bezel or the status band and change it there too.
