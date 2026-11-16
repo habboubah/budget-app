@@ -178,6 +178,54 @@ describe('reading a photo of a list under "Heute", torn apart by the reader', ()
   });
 });
 
+describe('reading a photo with a transfer’s purpose under its payee (November 2026)', () => {
+  // A bank's list read with the amounts apart from their payees (made-up
+  // values). A transfer shows its purpose on the line under the payee
+  // ("Kredit zurück"); taken for a payee, it took the next card's amount and
+  // every card after it the one below.
+  const today = new Date(2026, 10, 16);
+  const read = (lines: string[]) => parseStatementText(lines.join('\n'), [], today).map(x => [x.name, x.income ? x.amount : -x.amount]);
+  const cards = (transfer: string[]) => [
+    'Heute',
+    'Musterbee.com 1 Example Dr Springfield',
+    '2026-11-14T18:52 Debitk.10 2029-12',
+    '-14,32 EUR',
+    ...transfer,
+    'MARKT SAGT DANKE//Musterstr. 1 Musterstadt',
+    '2026-11-14T16:31 Debitk.0 2029-12',
+    '-93,96 EUR',
+    'BACKSTUBE MUSTER/Hauptstr. 10 Musterstadt',
+    '2026-11-14T16:48 Debitk.0 2029-12',
+    '-67,65 EUR',
+    'Kasse Musteramt',
+    'KG000000FK000000 1126',
+    '+777,00 EUR',
+    'Soccerhalle Musterweg 40 Musterstadt',
+    '-12,00 EUR',
+  ];
+  const right = [['Musterbee.com', -1432], ['Max Muster', 45000], ['Markt', -9396], ['Backstube Muster', -6765], ['Kasse Musteramt', 77700], ['Soccerhalle', -1200]];
+
+  it('takes the purpose for the transfer’s, with its amount on the payee’s line', () => {
+    const f = read(cards(['Max Muster +450,00 EUR', 'Kredit zurück']));
+    expect(f.map(([, amount]) => amount)).toEqual(right.map(([, amount]) => amount));
+    expect(f[1][0]).toBe('Max Muster');
+    expect(f.some(([name]) => /kredit/i.test(String(name)))).toBe(false);
+  });
+  it('and with its amount read after the purpose', () => {
+    const f = read(cards(['Max Muster', 'Kredit zurück', '+450,00 EUR']));
+    expect(f.map(([, amount]) => amount)).toEqual(right.map(([, amount]) => amount));
+    expect(f.some(([name]) => /kredit/i.test(String(name)))).toBe(false);
+  });
+  it('keeps the purpose with the transfer, for import rules', () => {
+    const f = parseStatementText(cards(['Max Muster', 'Kredit zurück', '+450,00 EUR']).join('\n'), [], today);
+    expect(f[1].ref).toContain('kredit zuruck');
+  });
+  it('still reads payees listed before all their amounts as payees', () => {
+    expect(read(['Kiosk Muster', 'Backstube Muster', 'Cafe Muster', '-4,20 EUR', '-3,50 EUR', '-2,80 EUR']))
+      .toEqual([['Kiosk Muster', -420], ['Backstube Muster', -350], ['Cafe Muster', -280]]);
+  });
+});
+
 describe('reading a photo the layout of which is not understood', () => {
   const read = (lines: string[]) => parseStatementText(lines.join('\n')).map(x => [x.name, x.income ? x.amount : -x.amount]);
   it('still hands back the amounts it read, nameless, for the user to complete', () => {
