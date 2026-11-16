@@ -154,6 +154,12 @@ Write 1–3 short lines per release, e.g.
 
 ### Next release (after 1.2.0)
 
+**DE:** Doppelt eingetragen? Zwei Einträge mit demselben Betrag im Monat werden rot markiert – ist es richtig, tippst du auf „Ist richtig“. Schon beim Eintragen warnt Spartopf, wenn es den Betrag im Monat gibt, und du kannst trotzdem sichern. Neue Einträge starten immer mit dem heutigen Datum.
+
+**EN:** Entered twice? Two entries with the same amount in a month are marked red – if that's right, tap "It's correct". Spartopf already warns while you enter an amount the month has, and you can save anyway. New entries always start on today's date.
+
+**AR:** مُدخَل مرتين؟ يُعلَّم بندان بنفس المبلغ في الشهر باللون الأحمر – وإن كان ذلك صحيحًا فاضغط «صحيح». وينبّهك Spartopf أثناء الإدخال إذا كان المبلغ موجودًا في الشهر، ويمكنك الحفظ على أي حال. وتبدأ البنود الجديدة دائمًا بتاريخ اليوم.
+
 **DE:** Wiederkehrende Posten unter „Mehr“: Ändere oder entferne einen Posten direkt in der Liste, ohne erst seinen Monat zu suchen. Die Liste ist jetzt nach „Monatlich“, „Alle 2 Monate“, „Alle 3 Monate“, „Halbjährlich“ und „Jährlich“ geordnet.
 
 **EN:** Recurring entries under "More": change or remove one right in the list, without finding its month first. The list is now grouped by "Monthly", "Every 2 months", "Every 3 months", "Every 6 months" and "Yearly".
