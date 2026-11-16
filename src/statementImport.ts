@@ -385,7 +385,8 @@ const startsAlike = (a: string, b: string) => {
  *
  * The reader rarely hands the layout back whole, so what it tears apart is
  * put together again: an amount read onto a detail line or a line of its own
- * goes to the oldest payee still without one; an amount behind the payee's
+ * goes to the oldest payee still without one (a transfer's purpose line is
+ * not one, see `oldestWaiting`); an amount behind the payee's
  * logo, read as a word, to the payee on the line above; a minus left on the
  * line above its amount is that amount's. A minus marks money going out;
  * when the list uses minus signs, an amount without one is money coming in.
@@ -401,7 +402,8 @@ export function parseStatementText(text: string, categoryNames: string[] = [], t
     const f = fold(stripMarks(line));
     return f && f.length <= 40 ? known.find(k => f === k || (f.endsWith(k) && f.length - k.length <= 3)) : undefined;
   };
-  type Item = Found & { signed: boolean; purpose: string };
+  /** `line`: where its payee was read; `amountAt`: where its amount was. */
+  type Item = Found & { signed: boolean; purpose: string; line: number; amountAt?: number };
   const items: Item[] = [];
   /** Amounts that stood before any payee: taken up only when nothing else was found. */
   const orphans: { cents: number; signed: boolean; date?: string }[] = [];
@@ -416,14 +418,39 @@ export function parseStatementText(text: string, categoryNames: string[] = [], t
     if (!it.date && stamp) it.date = parseDay(stamp[1]);
     if (/paypal/i.test(it.raw)) it.name = cleanPayee(it.raw, line);
   };
-  const add = (raw: string) => {
-    const it: Item = { date: day, name: cleanPayee(raw), raw, amount: 0, income: false, signed: false, purpose: '' };
+  const add = (raw: string, line = -1) => {
+    const it: Item = { date: day, name: cleanPayee(raw), raw, amount: 0, income: false, signed: false, purpose: '', line };
     items.push(it);
     return it;
   };
-  const give = (it: Item, cents: number, minus: boolean) => {
+  const give = (it: Item, cents: number, minus: boolean, at = -1) => {
     it.amount = cents;
     it.signed = minus;
+    it.amountAt = at;
+  };
+  /**
+   * The oldest payee still without an amount — the one an amount read apart
+   * goes to. A transfer's purpose ("Kredit zurück" under "Max Muster") reads
+   * like a payee of its own: it stands on the line right under a payee that
+   * has no detail yet and whose amount was read before the next payee began.
+   * Left as a payee, it would take the next card's amount, and every card
+   * after it the one below (November 2026). So, while a newer payee waits
+   * too, such a line becomes the purpose of the payee above it.
+   */
+  const oldestWaiting = (): Item | undefined => {
+    for (;;) {
+      const at = items.findIndex(it => !it.amount);
+      if (at < 0) return undefined;
+      const w = items[at];
+      const above = items[at - 1];
+      const next = items.slice(at + 1).find(it => !it.amount);
+      const purposeOfAbove = !!above && !!next && above.amount > 0 && !above.purpose && !above.bankCategory
+        && !w.purpose && !w.bankCategory && w.line >= 0 && w.line === above.line + 1
+        && above.amountAt !== undefined && above.amountAt < next.line;
+      if (!purposeOfAbove) return w;
+      detail(above, w.raw);
+      items.splice(at, 1);
+    }
   };
   for (let i = 0; i < lines.length; i++) {
     const whole = lines[i];
@@ -451,19 +478,19 @@ export function parseStatementText(text: string, categoryNames: string[] = [], t
       let owner: Item | undefined;
       let note = before;
       if (above?.item && !above.item.amount) owner = above.item;
-      else if (!before || looksLikeDetail(before)) owner = items.find(it => !it.amount);
+      else if (!before || looksLikeDetail(before)) owner = oldestWaiting();
       else if (last && !last.amount && !last.purpose && !last.bankCategory && startsAlike(before, last.raw)) { owner = last; note = ''; }
       if (owner) {
-        give(owner, cents, minus);
+        give(owner, cents, minus, i);
         if (note) detail(owner, note);
-      } else if (before) give(add(before), cents, minus);
+      } else if (before) give(add(before, i), cents, minus, i);
       else orphans.push({ cents, signed: minus, date: day });
       continue;
     }
     if (last && !last.purpose && looksLikeDetail(line)) { detail(last, line); continue; }
     if (isNoise(line)) continue;
     // A payee whose amount comes later (or never — then it is dropped).
-    const waiting = add(line);
+    const waiting = add(line, i);
     if (loose?.at === i) loose.item = waiting;
   }
   if (!items.some(it => it.amount)) {
@@ -474,7 +501,7 @@ export function parseStatementText(text: string, categoryNames: string[] = [], t
   }
   const found = items.filter(i => i.amount > 0);
   const anySigned = found.some(i => i.signed);
-  return found.map(({ signed, purpose, ...f }) => ({
+  return found.map(({ signed, purpose, line: _line, amountAt: _at, ...f }) => ({
     ...f,
     income: anySigned && !signed,
     ref: fingerprint(f.date, (anySigned && !signed ? 1 : -1) * f.amount, f.raw, purpose),

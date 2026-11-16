@@ -364,6 +364,8 @@ const nb: Strings = {
   chartLegendExpenses: 'Utgifter',
   ofExpenses: '{p} %',
   showTable: 'Vis som tabell',
+  monthByMonth: 'Måned for måned',
+  monthByMonthSub: 'Trykk på en måned for å se rapporten',
   rangeLast12: 'Siste 12 måneder',
   rangeAll: 'Alle måneder',
   allMonths: 'Alle måneder',

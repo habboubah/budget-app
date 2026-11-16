@@ -364,6 +364,8 @@ const sv: Strings = {
   chartLegendExpenses: 'Utgifter',
   ofExpenses: '{p} %',
   showTable: 'Visa som tabell',
+  monthByMonth: 'Månad för månad',
+  monthByMonthSub: 'Tryck på en månad för att se dess rapport',
   rangeLast12: 'Senaste 12 månaderna',
   rangeAll: 'Alla månader',
   allMonths: 'Alla månader',

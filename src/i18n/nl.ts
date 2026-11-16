@@ -363,6 +363,8 @@ const nl: Strings = {
   chartLegendExpenses: 'Uitgaven',
   ofExpenses: '{p}%',
   showTable: 'Als tabel tonen',
+  monthByMonth: 'Maand voor maand',
+  monthByMonthSub: 'Tik op een maand voor het overzicht',
   rangeLast12: 'Laatste 12 maanden',
   rangeAll: 'Alle maanden',
   allMonths: 'Alle maanden',

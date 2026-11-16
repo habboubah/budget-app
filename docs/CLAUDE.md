@@ -275,8 +275,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     (*Wann du Geld ausgibst*: `WeekdayBars`, and the picked month as a
     `HeatCalendar` — each day's sum in its square, whole units without a
     sign, in fixed px since the square doesn't grow with the text; a day
-    tapped is written out above it), the table (an
-    *Angelegt* column when any; a month → its report).
+    tapped is written out above it), the table — the card *Monat für
+    Monat*, always open (an *Angelegt* column when any; a month → its
+    report).
   - **`InsightsView`** (Planen, id `insights`): `PaceCard` (*November bis
     heute*: the finding and its three figures on a hero header — today's
     in `on-hero-warn` / `-pos` on the panel — the chart under it),

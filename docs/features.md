@@ -394,7 +394,8 @@ when it is wanted:
   share, how it moved against the months before, the budget as a tick), by
   payee or by tag, each over the period picked in the card's corner (this
   month, the last 2, 3, 6 or 12; the categories begin with the page's own
-  months); and the table — a month opens its **Monatsbericht**.
+  months); and **Monat für Monat**, the table of every month, always open —
+  a month opens its **Monatsbericht**.
 - **Wann du Geld ausgibst**: everyday spending per weekday — "Teuerster
   Wochentag: Samstag" when one clearly leads — and the picked month as a
   calendar, each day shaded by what went out on it, with the day's sum in
