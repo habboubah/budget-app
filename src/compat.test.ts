@@ -293,3 +293,12 @@ describe('version 30 (money lent)', () => {
     expect(data.categories.filter(c => c.id === 'lent')).toHaveLength(1);
   });
 });
+
+describe('version 31 (the same amount twice, checked)', () => {
+  it('keeps an entry checked as not entered twice, and only that one', () => {
+    const { data } = stored('storage-v31.json');
+    expect(data.entries.find(e => e.id === 'y2')).toMatchObject({ distinct: true, amount: 250 });
+    expect(data.entries.find(e => e.id === 'y1')?.distinct).toBeUndefined();
+    expect(stored('storage-v30.json').data.entries.some(e => e.distinct)).toBe(false);
+  });
+});

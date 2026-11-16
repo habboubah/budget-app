@@ -62,6 +62,14 @@ server, no ads; everything stays on the device.
   (rent not paid yet, salary expected), filled = paid. One tap toggles it —
   or swipe the entry to the right. Swipe left to delete (undoable). Every
   entry has a **date** (today unless you pick another day), shown on its row.
+  A new entry always starts on today — added from another month's page too:
+  the date pill then says the month it goes into ("Heute · November 2026"),
+  and picking a day of the page's month keeps it there.
+- **The same amount twice.** Two entries of a month with the same amount
+  (money out, or money in) show **red**, with a line under each: *Doppelt? ·
+  gleicher Betrag wie „Rewe" · 3. Nov.* If both are right (two coffees),
+  *Ist richtig* takes the warning off (undoable); of three, the other two stay
+  warned. Transfers and the parts of one split payment don't count.
   With a due day ("fällig am 14."), open entries turn **überfällig** once the
   day has passed.
 - **Demnächst fällig.** On the running month, a row of cards under the
@@ -169,10 +177,15 @@ when it is wanted:
   date, paid / open, repeat. A round "⋯" opens the others in place and stays
   open once tapped — refund, receipt, note, tag, and the ones a feature adds
   (account, trip, tax, debt); a pill that holds something always shows. With
-  them come *Sichern & nächster* for a stack of receipts (keeps the date)
+  them come *Sichern & nächster* for a stack of receipts (today again)
   and *Als Favorit merken*; without, the confirmation's *Noch einer* opens
   the next entry. Deleting is undoable. A book in use starts with all of it
   open.
+- **Warned before it's twice.** Once the amount typed is already in the
+  month, a red box under it names those entries (two, and how many more), and
+  *Sichern* reads *Trotzdem sichern*: the entry is then saved as checked, so
+  the month page doesn't mark it. Editing an entry warns the same way when its
+  amount changes.
 - **Name suggestions and completion.** Suggestions come from every entry in
   every month (this category's first, then the built-in ideas, then other
   categories'), narrow with each letter, and complete the name as you type;
@@ -502,8 +515,8 @@ when it is wanted:
 - **Export and import.** Everything as one file (share sheet → Files, iCloud
   Drive, AirDrop …), and back again — also to move the book between the web
   app and a phone. The backup is **encrypted with a password by default**
-  (AES-GCM, done on the device); one switch makes a readable `.json`
-  instead, and old plain backups still import. Receipts are part of it.
+  (AES-GCM, done on the device); one switch, above the password, makes a
+  readable `.json` instead, and old plain backups still import. Receipts are part of it.
 - **CSV for Excel**: every entry, with its category, currency and tags (and
   its account, once there is more than one).
 - **Automatic backups** (iPhone and Android app): a version a day, the last

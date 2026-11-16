@@ -9,8 +9,8 @@ import { Switch } from '../ui/Switch';
 /**
  * Export a backup (plan 04). By default the file is locked with a password
  * (AES-GCM, `src/crypto.ts`); one switch makes a readable `.json` instead.
- * One password field (twice, with "anzeigen"); a lost password can't be
- * recovered, and the sheet says so.
+ * The switch comes first, above the password field (twice, with "anzeigen");
+ * a lost password can't be recovered, and the sheet says so.
  */
 export function BackupExportSheet({ open, t, onClose, onExport }: {
   open: boolean;
@@ -49,6 +49,14 @@ export function BackupExportSheet({ open, t, onClose, onExport }: {
     <Sheet open={open} title={t.encryptExportTitle} closeLabel={t.cancel} onClose={onClose}
       action={{ label: busy ? t.encrypting : t.exportData, onClick: () => void submit(), disabled: !ready || busy }}>
       <form onSubmit={e => { e.preventDefault(); void submit(); }} className="space-y-5">
+        {/* The choice comes first: with it on, there is no password to type. */}
+        <div className="flex items-start gap-3 px-1">
+          <span className="min-w-0 flex-1">
+            <span className="block text-body text-fg wrap-compound">{t.encryptWithoutPassword}</span>
+            <span className="block text-caption text-fg-mute mt-0.5 wrap-prose">{t.encryptWithoutPasswordHint}</span>
+          </span>
+          <Switch checked={plain} onChange={setPlain} label={t.encryptWithoutPassword} />
+        </div>
         {!plain && (
           <>
             <p className="text-label text-fg-mute wrap-prose">{t.encryptBody}</p>
@@ -77,13 +85,6 @@ export function BackupExportSheet({ open, t, onClose, onExport }: {
             {mismatch && <p className="text-caption text-neg px-1 -mt-2 wrap-prose">{t.encryptMismatch}</p>}
           </>
         )}
-        <div className="flex items-start gap-3 px-1">
-          <span className="min-w-0 flex-1">
-            <span className="block text-body text-fg wrap-compound">{t.encryptWithoutPassword}</span>
-            <span className="block text-caption text-fg-mute mt-0.5 wrap-prose">{t.encryptWithoutPasswordHint}</span>
-          </span>
-          <Switch checked={plain} onChange={setPlain} label={t.encryptWithoutPassword} />
-        </div>
         <Button type="submit" full size="lg" disabled={!ready || busy}>{busy ? t.encrypting : t.exportData}</Button>
       </form>
     </Sheet>

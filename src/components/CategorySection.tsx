@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, ChevronsDownUp, ChevronsUpDown, Circle, CircleMinus, Gauge, ListFilter, MoreHorizontal, Paperclip, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Check, ChevronsDownUp, ChevronsUpDown, Circle, CircleMinus, Gauge, ListFilter, MoreHorizontal, Paperclip, Plus, Trash2 } from 'lucide-react';
 import { Category, Entry } from '../types';
 import { dayLabel, displayName, formatMoney, isOverdue, isoDay, spoken } from '../logic';
 import { BudgetStatus } from '../budgets';
@@ -32,6 +32,13 @@ interface Props {
   onToggle: (e: Entry) => void;
   /** Swipe left: delete (undoable). */
   onDelete: (e: Entry) => void;
+  /**
+   * Entries whose amount another entry of the month has too (src/duplicates.ts),
+   * each with the one to name: their rows show red, with a warning line under
+   * them and *Ist richtig* (`onDistinct`) to take it off.
+   */
+  twins?: ReadonlyMap<string, Entry>;
+  onDistinct?: (e: Entry) => void;
   /** The category's budget in this month, if it has one: the bar and the line under it say how it stands. */
   budget?: BudgetStatus | null;
   /** Set or change the budget (the card's menu) — spending categories only. */
@@ -67,7 +74,7 @@ interface Props {
  * a line shows where it would land. A swipe marks one paid or deletes it.
  */
 export function CategorySection({
-  category, entries: all, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle, onDelete,
+  category, entries: all, language, t, today, collapsed, onCollapse, onRemove, onAdd, onEdit, onToggle, onDelete, twins, onDistinct,
   budget, onBudget, openOnly, onOpenOnly, dragId, dropIndex, dragProps, onMoveBy, search,
 }: Props) {
   // The filter hides what is paid; totals still count everything.
@@ -128,6 +135,7 @@ export function CategorySection({
       if (showLine && dropIndex === others) rows.push(line);
       others++;
     }
+    const twin = e.id !== dragId ? twins?.get(e.id) : undefined;
     rows.push(
       <motion.li
         key={e.id}
@@ -149,7 +157,7 @@ export function CategorySection({
           }}
           trailing={{ label: t.delete, icon: Trash2, className: 'bg-swipe-delete', run: () => onDelete(e) }}
         >
-          <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)} lifted={e.id === dragId} search={search}
+          <EntryRow entry={e} income={income} t={t} overdue={isOverdue(e, today)} lifted={e.id === dragId} search={search} twin={!!twin}
             dragProps={dragProps(e.id)}
             onEdit={() => onEdit(e)} onToggle={() => onToggle(e)}
             onMoveBy={delta => {
@@ -159,6 +167,7 @@ export function CategorySection({
                 document.querySelector<HTMLElement>(`[data-entry-row="${e.id}"] [data-entry-body]`)?.focus());
             }} />
         </SwipeRow>
+        {twin && <TwinWarning twin={twin} t={t} onKeep={onDistinct ? () => onDistinct(e) : undefined} />}
       </motion.li>,
     );
   }
@@ -349,11 +358,40 @@ function HeaderShell({ search, children, ...button }: { search: boolean; childre
 }
 
 /**
- * A row: the paid ring (its own button, a checkbox for VoiceOver) beside the
- * row body that opens the editor. Siblings, never nested.
+ * Under a row whose amount the month has twice: what it matches, in red, and
+ * *Ist richtig* to take the warning off (it marks the entry `distinct`). A
+ * sibling of the row, so the button isn't inside the row's own button.
  */
-function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onEdit, onToggle, onMoveBy }: {
+function TwinWarning({ twin, t, onKeep }: { twin: Entry; t: Strings; onKeep?: () => void }) {
+  const what = `${fmt(t.dupSameAs, { name: `\u2068${twin.name}\u2069` })}${twin.date ? ` · ${dayLabel(twin.date, t.locale)}` : ''}`;
+  return (
+    <div className="flex items-center gap-2 bg-neg-dim ps-[26px] pe-2 pb-2 pt-0.5">
+      <AlertTriangle className="w-4 h-4 shrink-0 text-neg me-[18px]" strokeWidth={2.25} aria-hidden="true" />
+      <p className="min-w-0 flex-1 text-caption text-neg wrap-prose">
+        <span className="font-semibold">{t.dupTitle}</span>{' · '}{what}
+      </p>
+      {onKeep && (
+        <button
+          type="button"
+          onClick={() => { tapLight(); onKeep(); }}
+          aria-label={`${t.dupKeep} — ${t.dupTitle}, ${what}`}
+          className="hit-44 shrink-0 min-h-[30px] px-3 rounded-full bg-surface text-caption font-semibold text-neg card-edge active:opacity-70 focus-visible:ring-focus"
+        >
+          {t.dupKeep}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * A row: the paid ring (its own button, a checkbox for VoiceOver) beside the
+ * row body that opens the editor. Siblings, never nested. `twin`: its amount
+ * is in the month twice — the row turns red (the line under it says why).
+ */
+function EntryRow({ entry: e, income, t, overdue, lifted, search, twin = false, dragProps, onEdit, onToggle, onMoveBy }: {
   entry: Entry;
+  twin?: boolean;
   /** The search this row was found by: its words are marked. */
   search?: string;
   income: boolean;
@@ -399,7 +437,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
   const toggleLabel = `${e.paid ? t.markOpen : income ? t.markReceived : t.markPaid} — ${e.name}`;
 
   return (
-    <div className={`flex items-stretch min-h-tap transition-opacity duration-150 ${lifted ? 'opacity-35' : ''}`}>
+    <div className={`flex items-stretch min-h-tap transition-[opacity,background-color] duration-150 ${twin ? 'bg-neg-dim' : ''} ${lifted ? 'opacity-35' : ''}`}>
       <button
         type="button"
         role="checkbox"
@@ -452,11 +490,11 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
         }}
         aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
         aria-label={`${fmt(t.editNamed, { name: e.name })}, ${spoken(formatMoney(e.amount, t.locale), t.amountHidden)}, ${
-          e.paid ? (gain ? t.receivedState : t.paidState) : overdue ? t.overdue : gain ? t.expected : t.open}${e.refund ? `, ${t.refund}` : ''}`}
+          e.paid ? (gain ? t.receivedState : t.paidState) : overdue ? t.overdue : gain ? t.expected : t.open}${e.refund ? `, ${t.refund}` : ''}${twin ? `, ${t.dupTitle}` : ''}`}
         className="flex-1 min-w-0 py-1 pe-4 flex items-center gap-3 text-start select-none [-webkit-touch-callout:none] active:bg-surface-2 transition-colors focus-visible:ring-focus"
       >
         <span className="min-w-0 flex-1">
-          <span className="block text-label text-fg wrap-compound"><Highlight text={e.name} query={search} /></span>
+          <span className={`block text-label wrap-compound ${twin ? 'text-neg font-medium' : 'text-fg'}`}><Highlight text={e.name} query={search} /></span>
           {meta.length > 0 && (
             <span className="flex flex-wrap items-center gap-x-1.5 text-caption text-fg-mute">
               {meta.map((m, i) => (
@@ -466,7 +504,7 @@ function EntryRow({ entry: e, income, t, overdue, lifted, search, dragProps, onE
           )}
         </span>
         {/* Open money is grey, like a pending card payment; it turns solid once paid. */}
-        <span className={`shrink-0 rounded-num text-label font-semibold ${e.paid ? (gain ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
+        <span className={`shrink-0 rounded-num text-label font-semibold ${twin ? 'text-neg' : e.paid ? (gain ? 'text-pos' : 'text-fg') : 'text-fg-mute'}`}>
           <Highlight text={e.refund ? formatMoney(-e.amount, t.locale, 'always') : formatMoney(e.amount, t.locale)} query={search} />
         </span>
       </button>

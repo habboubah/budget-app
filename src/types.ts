@@ -144,6 +144,13 @@ export interface Entry {
   warrantyUntil?: string;
   returnUntil?: string;
   /**
+   * Checked: not a payment entered twice (schema 31). The month page shows an
+   * entry red while another of its month has the same amount; *Ist richtig*
+   * (or *Trotzdem sichern* in the entry sheet) sets this and takes the
+   * warning off. Not carried over: next month's copy is checked again.
+   */
+  distinct?: true;
+  /**
    * One side of a transfer between two accounts (plan 30): money leaving one
    * account (`out`) and arriving in another (`in`), two entries sharing a
    * `pairId`. Its category is `TRANSFER_CATEGORY`; it is neither income nor
@@ -370,4 +377,6 @@ export interface EntryDraft {
   /** The warranty's last day and the last day to return it (schema 27). */
   warrantyUntil?: string;
   returnUntil?: string;
+  /** Saved with *Trotzdem sichern*, or kept so when edited: not a payment entered twice (schema 31). */
+  distinct?: true;
 }

@@ -70,6 +70,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `src/xlsx.ts`, `src/excelImport.ts` | Reading an .xlsx on the device; a budget sheet into months |
 | `src/receipts.ts` | Receipts and documents on an entry |
 | `src/keywords.ts` | Name completion and the category guessed from the name |
+| `src/duplicates.ts` | The same amount twice in a month: the month page's red rows (`duplicateTwins`) and the entry sheet's warning (`sameAmount`) |
 | `src/tips.ts` | The one tip card on the month page, and the three gestures each at its moment |
 | `src/start.ts`, `src/fold.ts` | The first five minutes (plan 39): the start's answers as the book's first entries; Planen's and Statistik's cards as headlines |
 | `src/guide.ts`, `src/guideKit.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Mehr › Anleitung*), the tours and what *Zeigen* points at: topics and what is remembered (`guide.ts`, in the main bundle); labels, search and the tours' marks (`guideKit.ts`, a lazy chunk); its pages per language, loaded on demand (all pure, tested) |
@@ -403,7 +404,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   — view preference `spartopf-tax-marks`, or any marked entry — puts the
   *Steuer* pill into the entry sheet; the PDF is `PrintSpec.kind: 'tax'`
   through `PrintReport`. The app collects and says it gives no tax advice:
-  keep the kinds' names descriptive, never a paragraph of law) — all
+  keep the kinds' names descriptive, never a paragraph of law);
+  **schema 31** `Entry.distinct` (the same amount twice, checked as right;
+  see *The same amount twice*) — all
   optional, nothing to migrate, all in backups. What
   older
   versions stored and backed up is kept in `src/fixtures/` (`storage-v*.json`,
@@ -452,8 +455,15 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   editor drops it. The gesture is `ui/useEntryDrag.ts` (long press on touch,
   drag with a mouse, auto-scroll near the edges); it finds the drop spot via
   `data-drop-category` / `data-entry-row`, so keep those on the cards and rows.
-- **Entry date:** `Entry.date` (YYYY-MM-DD, always inside `month`) defaults to
-  today (`defaultEntryDate`), carries over to the same day of the next month,
+- **Entry date:** `Entry.date` (YYYY-MM-DD, always inside `month`). A new
+  entry in the entry sheet always starts on today (November 2026, Ahmad) —
+  *Sichern & nächster* too — and goes into the month its date falls in
+  (`target` in `EntrySheet`): opened on another month's page, the date pill
+  reads "Heute · November 2026", the picker spans the page's month to
+  today's, a day of the page's month keeps it there, and the toast names the
+  month (`entryAddedTo`). An edited entry keeps a date inside its month.
+  `defaultEntryDate` (the same day in a given month) is the transfer sheet's.
+  The date carries over to the same day of the next month,
   and goes out as the last CSV column. It is also when an open entry is due:
   `isOverdue()` compares it with today and `sortEntries()` sorts by its day.
   `dueDay` is legacy — no longer shown or asked for; **schema 7** turned it
@@ -473,6 +483,20 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   here only), *Zählt als*, picture, colour. The Kategorien screen lists them
   with a subline and the entry count; *Bearbeiten* shows grips and ⊖, a swipe
   deletes (undoable).
+- **The same amount twice (schema 31, `src/duplicates.ts`, pure and tested).**
+  On the month page an entry is red — name and amount in `text-neg` on
+  `bg-neg-dim`, with a `TwinWarning` line under the row (*Doppelt? · gleicher
+  Betrag wie „X" · 3. Nov.* and *Ist richtig*) — while another entry of its
+  month has the same amount in the same direction (income category or not;
+  a refund's minus keeps it apart). Transfers, zero amounts and two parts of
+  one split payment are never twins. *Ist richtig* sets `Entry.distinct`
+  (undoable toast): such an entry is never flagged and flags no other, so one
+  of a pair clears both. The entry sheet, for a new entry or an edit whose
+  amount or month changed, names the month's entries with the amount typed
+  (`sameAmount`, marked ones too) in a red box under the amount, and *Sichern*
+  becomes *Trotzdem sichern*, which saves it `distinct`; an edit otherwise
+  keeps its flag. Carry-over doesn't copy `distinct`. Only the entry sheet
+  warns before saving; imports and captures are caught by the month page.
 - **Name suggestions** (`suggestNames`) come from every entry of every month:
   this category's names, then other categories' names of the same kind (pass
   `categories`), and only then its built-in ideas; each remembers its
