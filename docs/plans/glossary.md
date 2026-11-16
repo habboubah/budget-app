@@ -10,7 +10,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Zůstatek teď | what is in the account now | |
 | Am Monatsende | At the end of the month | Na konci měsíce | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Zbývá tento měsíc | income minus spending this month | |
+| Monatssaldo | Net this month | Čistě tento měsíc | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Počáteční zůstatek | what the book's first month opened with | |
 | Übertrag | Carried over | Převedeno | balance carried over from last month | |
 | Einnahmen | Income | Příjmy |  | |
@@ -63,7 +63,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Saldo nu | what is in the account now | |
 | Am Monatsende | At the end of the month | Ved månedens slutning | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Tilbage denne måned | income minus spending this month | |
+| Monatssaldo | Net this month | Netto denne måned | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Startsaldo | what the book's first month opened with | |
 | Übertrag | Carried over | Overført | balance carried over from last month | |
 | Einnahmen | Income | Indtægter |  | |
@@ -116,7 +116,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Saldo actual | what is in the account now | |
 | Am Monatsende | At the end of the month | A fin de mes | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Queda este mes | income minus spending this month | |
+| Monatssaldo | Net this month | Neto este mes | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Saldo inicial | what the book's first month opened with | |
 | Übertrag | Carried over | Arrastrado | balance carried over from last month | |
 | Einnahmen | Income | Ingresos |  | |
@@ -169,7 +169,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Solde actuel | what is in the account now | |
 | Am Monatsende | At the end of the month | En fin de mois | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Reste ce mois-ci | income minus spending this month | |
+| Monatssaldo | Net this month | Net ce mois-ci | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Solde de départ | what the book's first month opened with | |
 | Übertrag | Carried over | Report | balance carried over from last month | |
 | Einnahmen | Income | Revenus |  | |
@@ -222,7 +222,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Saldo attuale | what is in the account now | |
 | Am Monatsende | At the end of the month | A fine mese | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Resta questo mese | income minus spending this month | |
+| Monatssaldo | Net this month | Netto questo mese | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Saldo iniziale | what the book's first month opened with | |
 | Übertrag | Carried over | Riportato | balance carried over from last month | |
 | Einnahmen | Income | Entrate |  | |
@@ -275,7 +275,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Saldo nu | what is in the account now | |
 | Am Monatsende | At the end of the month | Aan het einde van de maand | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Over deze maand | income minus spending this month | |
+| Monatssaldo | Net this month | Netto deze maand | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Beginsaldo | what the book's first month opened with | |
 | Übertrag | Carried over | Overgedragen | balance carried over from last month | |
 | Einnahmen | Income | Inkomsten |  | |
@@ -328,7 +328,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Saldo nå | what is in the account now | |
 | Am Monatsende | At the end of the month | Ved slutten av måneden | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Igjen denne måneden | income minus spending this month | |
+| Monatssaldo | Net this month | Netto denne måneden | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Startsaldo | what the book's first month opened with | |
 | Übertrag | Carried over | Overført | balance carried over from last month | |
 | Einnahmen | Income | Inntekter |  | |
@@ -381,7 +381,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Saldo teraz | what is in the account now | |
 | Am Monatsende | At the end of the month | Na koniec miesiąca | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Zostało w tym miesiącu | income minus spending this month | |
+| Monatssaldo | Net this month | Netto w tym miesiącu | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Saldo początkowe | what the book's first month opened with | |
 | Übertrag | Carried over | Przeniesione | balance carried over from last month | |
 | Einnahmen | Income | Wpływy |  | |
@@ -434,7 +434,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Saldo atual | what is in the account now | |
 | Am Monatsende | At the end of the month | No fim do mês | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Sobra este mês | income minus spending this month | |
+| Monatssaldo | Net this month | Líquido este mês | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Saldo inicial | what the book's first month opened with | |
 | Übertrag | Carried over | Transitado | balance carried over from last month | |
 | Einnahmen | Income | Receitas |  | |
@@ -487,7 +487,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Saldo nu | what is in the account now | |
 | Am Monatsende | At the end of the month | Vid månadens slut | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Kvar den här månaden | income minus spending this month | |
+| Monatssaldo | Net this month | Netto den här månaden | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Startsaldo | what the book's first month opened with | |
 | Übertrag | Carried over | Överfört | balance carried over from last month | |
 | Einnahmen | Income | Inkomster |  | |
@@ -540,7 +540,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | Şu anki bakiye | what is in the account now | |
 | Am Monatsende | At the end of the month | Ay sonunda | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | Bu ay kalan | income minus spending this month | |
+| Monatssaldo | Net this month | Bu ay net | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | Başlangıç bakiyesi | what the book's first month opened with | |
 | Übertrag | Carried over | Devreden | balance carried over from last month | |
 | Einnahmen | Income | Gelir |  | |
@@ -593,7 +593,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 |---|---|---|---|---|
 | Kontostand jetzt | Bank balance now | رصيد الحساب الآن | what is in the account now | |
 | Am Monatsende | At the end of the month | في نهاية الشهر | the balance expected at the end of the month | |
-| Diesen Monat übrig | Left this month | المتبقي هذا الشهر | income minus spending this month | |
+| Monatssaldo | Net this month | صافي هذا الشهر | income minus spending this month (the balance card's net) | |
 | Startguthaben | Starting balance | الرصيد الافتتاحي | what the book's first month opened with | |
 | Übertrag | Carried over | المُرحَّل | balance carried over from last month | |
 | Einnahmen | Income | الدخل |  | |

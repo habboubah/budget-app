@@ -1125,11 +1125,17 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   = *Jetzt auf dem Konto*, the last = *Am Monatsende* — tested against
   `computeBalances` for every account view): white ink only, solid up to
   today's dot, dashed ahead; one image for VoiceOver and **not scrubbed** —
-  the card's sideways swipe owns the finger. Its details are meters, not a
-  table (`Workings`): the paid part in `bg-on-hero-pos` (income) or
-  `bg-on-hero`, the open part in `bg-on-hero-warn`, label-and-amount pairs
-  that wrap by themselves (the amount in its own box, so `num` holds in
-  Arabic). Ink on it: `text-on-hero`,
+  the card's sideways swipe owns the finger. The second panel is the
+  month's net (*Monatssaldo*, `leftThisMonth`), its note *Zu viel
+  ausgegeben* / *Gespart* (plus the per-day amount while the running month
+  has money left) — "Diesen Monat übrig" read wrong once negative (November
+  2026, Ahmad). Its details (`Workings`) are income and expenses in one
+  chart on one scale (the larger whole fills the track): word, bar, total
+  per row; the paid part in `bg-on-hero-pos` (income) or `bg-on-hero`, the
+  open part in `bg-on-hero-warn`, and a line naming the open amounts only
+  while there are any (each amount in its own box, so `num` holds in
+  Arabic). The net is not repeated there — only the card without panels (no
+  balance known, `withNet`) ends on it. Ink on it: `text-on-hero`,
   `text-on-hero-mute` (captions on the gradient); on its frosted `hero-panel`
   also `text-on-hero-soft` / `-pos` / `-warn` / `-neg` — those four only on the
   panel. Never `text-pos` / `text-neg` / `text-fg` on the hero.
