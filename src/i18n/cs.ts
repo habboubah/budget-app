@@ -367,6 +367,8 @@ const cs: Strings = {
   chartLegendExpenses: 'Výdaje',
   ofExpenses: '{p} %',
   showTable: 'Zobrazit jako tabulku',
+  monthByMonth: 'Měsíc po měsíci',
+  monthByMonthSub: 'Klepni na měsíc a otevři jeho přehled',
   rangeLast12: 'Posledních 12 měs.',
   rangeAll: 'Všechny měsíce',
   allMonths: 'Všechny měsíce',

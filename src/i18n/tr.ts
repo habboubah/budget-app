@@ -366,6 +366,8 @@ const tr: Strings = {
   chartLegendExpenses: 'Giderler',
   ofExpenses: '%{p}',
   showTable: 'Tablo olarak göster',
+  monthByMonth: 'Ay ay',
+  monthByMonthSub: 'Raporu için bir aya dokun',
   rangeLast12: 'Son 12 ay',
   rangeAll: 'Tüm aylar',
   allMonths: 'Tüm aylar',

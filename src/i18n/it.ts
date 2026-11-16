@@ -363,6 +363,8 @@ const it: Strings = {
   chartLegendExpenses: 'Uscite',
   ofExpenses: '{p} %',
   showTable: 'Mostra come tabella',
+  monthByMonth: 'Mese per mese',
+  monthByMonthSub: 'Tocca un mese per aprirne il resoconto',
   rangeLast12: 'Ultimi 12 mesi',
   rangeAll: 'Tutti i mesi',
   allMonths: 'Tutti i mesi',

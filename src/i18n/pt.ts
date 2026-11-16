@@ -364,6 +364,8 @@ const pt: Strings = {
   chartLegendExpenses: 'Despesas',
   ofExpenses: '{p} %',
   showTable: 'Mostrar como tabela',
+  monthByMonth: 'Mês a mês',
+  monthByMonthSub: 'Toca num mês para abrir o relatório',
   rangeLast12: 'Últimos 12 meses',
   rangeAll: 'Todos os meses',
   allMonths: 'Todos os meses',

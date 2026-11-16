@@ -227,13 +227,10 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
 
         {rhythm}
 
-        {/* Every value of the charts, without hovering; a month opens its report. */}
-        <details className="rounded-md bg-surface card-edge group">
-          <summary className="min-h-control px-4 flex items-center gap-2 text-label font-semibold text-accent cursor-pointer list-none focus-visible:ring-focus rounded-md">
-            <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90 rtl:rotate-180" aria-hidden="true" />
-            {t.showTable}
-          </summary>
-          <div className="overflow-x-auto px-4 pb-4">
+        {/* Every value of the charts, without hovering; a month opens its report. Always
+            open (November 2026, Ahmad: it was "Als Tabelle anzeigen", folded). */}
+        <Card title={t.monthByMonth} sub={t.monthByMonthSub}>
+          <div className="overflow-x-auto -mx-1 px-1">
             <table className="w-full text-caption tabular-nums">
               <thead className="text-fg-mute">
                 <tr>
@@ -269,7 +266,7 @@ export function StatsView({ book, month, range, onRange, language, t, highlights
               </tbody>
             </table>
           </div>
-        </details>
+        </Card>
       </section>
     </Screen>
   );
