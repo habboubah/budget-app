@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 import { LANGUAGE_NAMES, languages, loadAllLanguages, stringsFor } from './translations';
 
 const TERMS: [string, string][] = [
-  ['balanceNow', 'what is in the account now'], ['balanceEnd', 'the balance expected at the end of the month'], ['leftOverNow', 'income minus spending this month'],
+  ['balanceNow', 'what is in the account now'], ['balanceEnd', 'the balance expected at the end of the month'], ['leftThisMonth', 'income minus spending this month (the balance card\'s net)'],
   ['startingBalance', 'what the book\'s first month opened with'], ['carryShort', 'balance carried over from last month'], ['income', ''], ['expenses', ''],
   ['kindExpense', 'one entry of money going out (the entry sheet\'s switch)'], ['kindIncome', 'one entry of money coming in'],
   ['open', 'not paid yet'], ['paidState', ''], ['expected', 'income not received yet'], ['receivedState', 'income that has arrived'],

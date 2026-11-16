@@ -2,7 +2,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
 import { CalendarCheck, Check, ChevronDown, ChevronRight, ChevronUp, Eye, EyeOff, PiggyBank, Wallet } from 'lucide-react';
 import { MonthBalance } from '../logic';
-import { dateAt, dayLabel, formatMoney, formatMoneyApprox, leftPerDay, monthKeyOf, monthLabel, monthLeft, monthSettled, spoken } from '../logic';
+import { dateAt, dayLabel, formatMoney, formatMoneyApprox, leftPerDay, monthLabel, monthLeft, monthSettled, spoken } from '../logic';
 import { MonthTrack } from '../insights';
 import { Strings, capitalize, fmt, plural } from '../translations';
 import { tapLight } from '../ui/haptics';
@@ -74,12 +74,11 @@ type Note = { text: string; tone: string };
  * line: from what it opened with, through today — where the line stands at
  * that balance — and, dashed, on to the month's end through what is still
  * open. Then two frosted panels: the balance once everything pending is
- * settled ("Am Monatsende"), and what the month leaves over — for the
- * running month also per day until it ends. A row at the bottom opens the
- * details: the carry-over (tap it to correct the opening balance), then
- * income and expenses each as a meter — what is received or paid, solid, and
- * what is still expected or open, amber, with both amounts under it — and
- * the month's net, paid so far and with the pending entries settled.
+ * settled ("Am Monatsende"), and the month's net (*Monatssaldo*) with a
+ * word for it — overspent or saved — and, while the running month has money
+ * left, how much a day. Under them the workings: the carry-over (tap it to
+ * correct the opening balance), then income and expenses in one chart on one
+ * scale — received or paid solid, expected or open amber.
  *
  * A month not started yet shows the balance it would open with and where
  * that comes from.
@@ -104,7 +103,6 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
   const [accountMenu, setAccountMenu] = useState<HTMLElement | null>(null);
   const swipe = useMonthSwipe(t.dir === 'rtl', onSwipe);
   const today = new Date();
-  const running = b.key === monthKeyOf(today);
   const settled = monthSettled(b);
   const perDay = leftPerDay(settled.net, b.key, today);
   const anyOpen = b.incomeOpen !== 0 || b.expenseOpen !== 0;
@@ -118,10 +116,17 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
       // Nothing open this month, but earlier months still have something.
       ? { text: t.afterPending, tone: 'text-on-hero-warn' }
       : { text: t.nothingOpen, tone: 'text-on-hero-soft' };
-  const leftNote: Note | null = perDay !== null
-    ? { text: fmt(t.perDay, { amount: formatMoneyApprox(perDay, t.locale) }), tone: 'text-on-hero' }
-    : anyOpen ? { text: t.colSettled, tone: 'text-on-hero-soft' } : null;
   const net = settled.net;
+  // What the net means, in a word (November 2026, Ahmad: "Diesen Monat übrig"
+  // read wrong once it was negative): overspent or saved — with the pending
+  // entries, and, while the running month has money left, how much a day.
+  const netNote: Note | null = net === 0 ? (anyOpen ? { text: t.colSettled, tone: 'text-on-hero-soft' } : null) : {
+    text: [
+      net < 0 ? t.netOverspent : t.netSaved,
+      perDay !== null ? fmt(t.perDay, { amount: formatMoneyApprox(perDay, t.locale) }) : anyOpen ? t.colSettled.toLowerCase() : '',
+    ].filter(Boolean).join(' · '),
+    tone: net < 0 ? 'text-on-hero-neg' : 'text-on-hero-pos',
+  };
 
   return (
     <motion.section className="hero hero-glow hero-art hero-shine rounded-lg overflow-hidden" aria-label={t.balanceNow} data-tour="balance" {...swipe}>
@@ -192,7 +197,7 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
                 <ChevronRight className="w-4 h-4 shrink-0 text-on-hero-soft rtl:rotate-180" strokeWidth={2.5} aria-hidden="true" />
               </button>
             )}
-            {open && <Workings balance={b} t={t} money={money} />}
+            {open && <Workings balance={b} t={t} money={money} withNet />}
           </div>
         </>
       ) : b.started && !open ? (
@@ -218,9 +223,9 @@ export function BalanceCard({ balance: b, track, t, onOpening, onSwipe, reconcil
             </Panel>
             <Panel
               icon={PiggyBank}
-              label={running ? t.leftOverNow : t.leftThisMonth}
+              label={t.leftThisMonth}
               tone={net > 0 ? 'text-on-hero-pos' : net < 0 ? 'text-on-hero-neg' : 'text-on-hero-soft'}
-              note={leftNote}
+              note={netNote}
             >
               <span className="sr-only">{say(money(net, 'exceptZero'))}</span>
               <span aria-hidden="true"><CountingMoney cents={net} money={c => money(c, 'exceptZero')} /></span>
@@ -528,77 +533,73 @@ function MonthLine({ track, t, money, say }: { track: MonthTrack; t: Strings; mo
 }
 
 /**
- * Income and expenses, each as a meter: what is received or paid so far,
- * solid, and what is still expected or open, amber — amber means "open"
- * everywhere — against the whole, which is written beside the name; both
- * amounts with their word under the bar. Then the month's net: paid so far,
- * and with the pending entries settled (only while anything is pending).
- * Everything wraps by itself when large text or long amounts don't fit side
- * by side. The bars run out when the details open.
+ * Income and expenses in one chart (November 2026, Ahmad: smaller): a row
+ * each — the word, a bar, the total with the pending entries — on one scale,
+ * so the longer bar says at a glance which way the month went. What is
+ * received or paid is solid, what is still expected or open amber (amber
+ * means "open" everywhere), and a line under the chart names the open
+ * amounts, only while there are any. The month's net is the panel above
+ * (*Monatssaldo*); only a card without those panels (no balance known yet,
+ * `withNet`) still ends on it. The bars run out when the details open.
  */
-function Workings({ balance: b, t, money }: { balance: MonthBalance; t: Strings; money: (c: number, sign?: 'auto' | 'exceptZero') => string }) {
+function Workings({ balance: b, t, money, withNet = false }: { balance: MonthBalance; t: Strings; money: (c: number, sign?: 'auto' | 'exceptZero') => string; withNet?: boolean }) {
   const left = monthLeft(b);
   const settled = monthSettled(b);
   const anyOpen = b.incomeOpen !== 0 || b.expenseOpen !== 0;
   const rows = [
-    {
-      label: t.income, total: money(settled.income, 'exceptZero'), paid: b.incomePaid, open: b.incomeOpen,
-      paidLabel: capitalize(t.receivedState), openLabel: capitalize(t.expected), fill: 'bg-on-hero-pos', ink: 'text-on-hero-pos',
-    },
-    {
-      label: t.expenses, total: money(settled.expense ? -settled.expense : 0), paid: b.expensePaid, open: b.expenseOpen,
-      paidLabel: capitalize(t.paidState), openLabel: capitalize(t.open), fill: 'bg-on-hero', ink: 'text-on-hero',
-    },
+    { label: t.income, total: money(settled.income, 'exceptZero'), paid: b.incomePaid, open: b.incomeOpen, openLabel: capitalize(t.expected), fill: 'bg-on-hero-pos' },
+    { label: t.expenses, total: money(settled.expense ? -settled.expense : 0), paid: b.expensePaid, open: b.expenseOpen, openLabel: capitalize(t.open), fill: 'bg-on-hero' },
   ];
-  // A label and its amount as one unit; the amount is its own box, so its direction holds in Arabic.
-  const pair = (label: string, amount: string, tone: string) => (
-    <span className="inline-flex flex-wrap items-baseline gap-x-1.5">
-      <span className="text-on-hero-soft">{label}</span>
-      <span className={`num font-semibold whitespace-nowrap ${tone}`}>{amount}</span>
-    </span>
-  );
+  // One scale for both bars: the larger of the two wholes fills the track.
+  const scale = Math.max(1, ...rows.map(r => Math.max(0, r.paid) + Math.max(0, r.open)));
+  const share = (c: number) => `${(Math.max(0, c) / scale) * 100}%`;
+  const spring = { type: 'spring' as const, duration: 0.6, bounce: 0 };
+  const pending = rows.filter(r => r.open !== 0);
   return (
     <div className="border-t border-on-hero/15">
-      <dl>
-        {rows.map(r => {
-          const whole = Math.max(0, r.paid) + Math.max(0, r.open);
-          const share = (c: number) => `${whole > 0 ? (Math.max(0, c) / whole) * 100 : 0}%`;
-          const spring = { type: 'spring' as const, duration: 0.6, bounce: 0 };
-          return (
-            <div key={r.label} className="px-3.5 pt-2.5 pb-2">
-              <div className="flex flex-wrap items-baseline gap-x-3">
-                <dt className="text-label text-on-hero-mute wrap-prose">{r.label}</dt>
-                <dd className="ms-auto"><span className="block text-label num font-semibold whitespace-nowrap text-on-hero">{r.total}</span></dd>
-              </div>
-              <dd>
-                <span className="mt-1.5 h-[7px] rounded-full bg-on-hero/15 overflow-hidden flex gap-[2px]" aria-hidden="true">
-                  <motion.span className={`h-full rounded-full ${r.fill}`} initial={{ width: 0 }} animate={{ width: share(r.paid) }} transition={spring} />
-                  <motion.span className="h-full rounded-full bg-on-hero-warn opacity-75" initial={{ width: 0 }} animate={{ width: share(r.open) }} transition={{ ...spring, delay: 0.08 }} />
-                </span>
-                <span className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 text-caption">
-                  {pair(r.paidLabel, money(r.paid), r.paid ? r.ink : 'text-on-hero-soft')}
-                  {r.open !== 0 && pair(r.openLabel, money(r.open), 'text-on-hero-warn')}
-                </span>
-              </dd>
-            </div>
-          );
-        })}
-      </dl>
-      <div className="border-t border-on-hero/15 px-3.5 pt-2.5 pb-3">
-        <p className="text-label font-semibold text-on-hero wrap-prose">{t.leftThisMonth}</p>
-        <dl className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
-          <div className="flex-1 basis-[7.5rem]">
-            <dt className="text-caption font-medium text-on-hero-soft wrap-prose">{t.colPaid}</dt>
-            <dd className={`text-label num font-bold whitespace-nowrap ${left.paid > 0 ? 'text-on-hero-pos' : left.paid < 0 ? 'text-on-hero-neg' : 'text-on-hero-soft'}`}>{money(left.paid, 'exceptZero')}</dd>
+      {/* The word, the bar and the total in a row; large text gives the bar a line of its own. */}
+      <dl className="px-3.5 pt-2.5 pb-2.5 space-y-2">
+        {rows.map((r, i) => (
+          <div key={r.label} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <dt className="w-[5.5rem] shrink-0 text-label text-on-hero-mute wrap-compound">{r.label}</dt>
+            <dd className="order-last basis-full min-[23rem]:order-none min-[23rem]:basis-auto flex-1 min-w-[4rem]">
+              <span className="h-[8px] rounded-full bg-on-hero/15 overflow-hidden flex gap-[2px]" aria-hidden="true">
+                <motion.span className={`h-full rounded-full ${r.fill}`} initial={{ width: 0 }} animate={{ width: share(r.paid) }} transition={{ ...spring, delay: i * 0.06 }} />
+                <motion.span className="h-full rounded-full bg-on-hero-warn opacity-75" initial={{ width: 0 }} animate={{ width: share(r.open) }} transition={{ ...spring, delay: 0.08 + i * 0.06 }} />
+              </span>
+            </dd>
+            <dd className="ms-auto"><span className="block text-label num font-semibold whitespace-nowrap text-on-hero">{r.total}</span></dd>
           </div>
-          {anyOpen && (
+        ))}
+      </dl>
+      {pending.length > 0 && (
+        <p className="px-3.5 -mt-1 pb-2.5 flex flex-wrap items-baseline gap-x-4 gap-y-0.5 text-caption">
+          {pending.map(r => (
+            <span key={r.label} className="inline-flex flex-wrap items-baseline gap-x-1.5">
+              <span className="w-2 h-2 rounded-full bg-on-hero-warn opacity-75 self-center" aria-hidden="true" />
+              <span className="text-on-hero-soft">{r.openLabel}</span>
+              <span className="num font-semibold whitespace-nowrap text-on-hero-warn">{money(r.open)}</span>
+            </span>
+          ))}
+        </p>
+      )}
+      {withNet && (
+        <div className="border-t border-on-hero/15 px-3.5 pt-2.5 pb-3">
+          <p className="text-label font-semibold text-on-hero wrap-prose">{t.leftThisMonth}</p>
+          <dl className="mt-1 flex flex-wrap gap-x-4 gap-y-1.5">
             <div className="flex-1 basis-[7.5rem]">
-              <dt className="text-caption font-medium text-on-hero-soft wrap-prose">{t.colSettled}</dt>
-              <dd className={`text-label num font-bold whitespace-nowrap ${left.open ? 'text-on-hero-warn' : 'text-on-hero-soft'}`}>{money(settled.net, 'exceptZero')}</dd>
+              <dt className="text-caption font-medium text-on-hero-soft wrap-prose">{t.colPaid}</dt>
+              <dd className={`text-label num font-bold whitespace-nowrap ${left.paid > 0 ? 'text-on-hero-pos' : left.paid < 0 ? 'text-on-hero-neg' : 'text-on-hero-soft'}`}>{money(left.paid, 'exceptZero')}</dd>
             </div>
-          )}
-        </dl>
-      </div>
+            {anyOpen && (
+              <div className="flex-1 basis-[7.5rem]">
+                <dt className="text-caption font-medium text-on-hero-soft wrap-prose">{t.colSettled}</dt>
+                <dd className={`text-label num font-bold whitespace-nowrap ${left.open ? 'text-on-hero-warn' : 'text-on-hero-soft'}`}>{money(settled.net, 'exceptZero')}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      )}
     </div>
   );
 }

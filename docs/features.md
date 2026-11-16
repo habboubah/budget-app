@@ -25,11 +25,13 @@ server, no ads; everything stays on the device.
   paid, **the month as a line** — from what it opened with, through today
   (the dot stands at the balance now) and, dashed, on to the month's end
   through what is still open, so a salary still to come or a big bill ahead
-  shows at a glance — and two panels, *Am Monatsende* and *Diesen Monat
-  übrig* with "≈ 72 € pro Tag". A row opens the details: what was carried
-  over (tap to correct it), then income and expenses each as a bar —
-  received or paid so far, and what is still expected or open in amber, with
-  both amounts — and the month's net, paid and with what is open. *Weniger*
+  shows at a glance — and two panels, *Am Monatsende* and *Monatssaldo*
+  (income minus spending, with what is open), which says in a word which way
+  it went — *Zu viel ausgegeben* in red or *Gespart* in green — and, while
+  the running month has money left, "≈ 72 € pro Tag". Under them: what was
+  carried over (tap to correct it), then income and expenses in **one chart**
+  on one scale — received or paid solid, still expected or open in amber,
+  named under the chart while there is any. *Weniger*
   under the card closes it to the one figure and the one row again. Amounts
   run to their new value when something is ticked. A book that was in use
   before this arrived starts with the card open.
