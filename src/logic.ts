@@ -31,8 +31,9 @@ import { isSupportedCurrency } from './currency';
  *  27: `Entry.warrantyUntil` / `Entry.returnUntil` (what a receipt is kept for) — optional.
  *  28: trips and projects (`AppData.projects`) — optional, unset = none.
  *  29: `Entry.tax` (an expense marked for the tax return) — optional.
- *  30: the built-in "Verliehenes Geld" (id `lent`) — added to a book saved before, in no month. */
-export const SCHEMA_VERSION = 30;
+ *  30: the built-in "Verliehenes Geld" (id `lent`) — added to a book saved before, in no month.
+ *  31: `Entry.distinct` (the same amount twice in a month, checked as right) — optional. */
+export const SCHEMA_VERSION = 31;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1667,6 +1668,7 @@ function normalizeEntry(v: unknown, start = 1): Entry | null {
   if ((TAX_KINDS as readonly unknown[]).includes(v.tax)) e.tax = v.tax as TaxKind;
   if (isIsoDay(v.warrantyUntil)) e.warrantyUntil = v.warrantyUntil;
   if (isIsoDay(v.returnUntil)) e.returnUntil = v.returnUntil;
+  if (v.distinct === true) e.distinct = true;
   const tags = normalizeTags(v.tags);
   if (tags.length) e.tags = tags;
   const splitId = str(v.splitId);

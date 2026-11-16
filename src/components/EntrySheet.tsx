@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calculator, CalendarDays, CalendarOff, Camera, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Landmark, MoreHorizontal, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, ShieldCheck, Star, Trash2, Undo2 } from 'lucide-react';
+import { Calculator, CalendarDays, CalendarOff, Camera, AlertTriangle, Check, ChevronDown, ChevronUp, FileText, HandCoins, Hash, Image as ImageIcon, Landmark, MoreHorizontal, Paperclip, ScanText, X, Plus, Repeat as RepeatIcon, Sparkles, SpellCheck, Split, ShieldCheck, Star, Trash2, Undo2 } from 'lucide-react';
 import { Attachment, Category, Entry, EntryDraft, Favorite, Goal, Interval, MonthKey, Project, Repeat, TAX_KINDS, TaxKind } from '../types';
 import { taxKindLabel } from './TaxView';
 import { fromProjectCurrency } from '../insights/projects';
@@ -12,9 +12,10 @@ import { FileTooLargeError } from '../limits';
 import { ReceiptViewer } from './ReceiptViewer';
 import { budgetOf } from '../data/defaults';
 import {
-  amountToInput, cleanText, dayLabel, dayLabelYear, shiftDays, isMonthKey, monthLabel, periodRange, defaultEntryDate, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, suggestNames,
+  amountToInput, cleanText, dayLabel, dayLabelYear, shiftDays, isMonthKey, monthLabel, periodRange, displayName, evalAmount, formatMoney, withAmounts, formatMoneyShort, isIsoDay, isoDay, monthKeyOf, normalizeTags, parseAmount, periodOf, suggestNames,
   normalizeDigits, topCategories, MAIN_ACCOUNT, MAX_ATTACHMENTS, currencySymbol } from '../logic';
 import { buildKeywordIndex, completeNames, correctTypo, guessCategories } from '../keywords';
+import { sameAmount } from '../duplicates';
 import { Strings, fmt } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Field, Segmented } from '../ui/Field';
@@ -220,7 +221,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setRefund(false);
     setTax(undefined);
     setDueText('');
-    setDateText(defaultEntryDate(month));
+    // Every new entry starts on today — on another month's page too: it then goes into today's month (see `target`).
+    setDateText(isoDay());
     setNote('');
     setNoteOpen(false);
     // A trip in progress — a project with both its dates, running today — is where a new entry most likely belongs.
@@ -294,9 +296,16 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const isExpression = computed !== null;
   const due = /^\d{1,2}$/.test(dueText.trim()) ? Number(dueText) : undefined;
   const dueValid = dueText.trim() === '' || (due !== undefined && due >= 1 && due <= 31);
-  // A date inside the entry's month, or none (entries from before dates existed).
-  const { first: firstDay, last: lastDay } = periodRange(month);
+  // An edited entry keeps a date inside its month (or none: entries from before dates existed).
+  // A new one starts on today and goes into the month its date falls in: any day from the page's
+  // month to today's, whichever comes first (`target`).
+  const pageRange = periodRange(month);
+  const todayRange = periodRange(monthKeyOf());
+  const firstDay = editing || pageRange.first < todayRange.first ? pageRange.first : todayRange.first;
+  const lastDay = editing || pageRange.last > todayRange.last ? pageRange.last : todayRange.last;
   const dateValid = dateText === '' || (isIsoDay(dateText) && dateText >= firstDay && dateText <= lastDay);
+  /** The month the entry goes into: its own when edited, else the one its date falls in. */
+  const target = !editing && isIsoDay(dateText) && dateValid ? periodOf(dateText) : month;
   const valid = amount !== null && !!category && dueValid && dateValid;
 
   // Earlier names and every category's keywords, read once per change of them (plan 32). App
@@ -308,6 +317,20 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   const guesses = useMemo(
     () => (nameTyped ? guessCategories(keywordIndex, name, { featured }) : []),
     [nameTyped, keywordIndex, name, featuredKey],
+  );
+  /**
+   * The month's entries with the amount typed (src/duplicates.ts): a payment
+   * entered twice? The sheet names them and *Sichern* becomes *Trotzdem
+   * sichern*, which saves the entry checked (`distinct`). For a new entry, or
+   * an edited one whose amount or month changed.
+   */
+  const incomeIds = useMemo(() => new Set(categories.filter(c => c.kind === 'income').map(c => c.id)), [categoriesKey]);
+  const signed = amount === null ? null : isRefund ? -amount : amount;
+  const twins = useMemo(
+    () => (signed === null || !category || (editing && editing.amount === signed && editing.month === target)
+      ? []
+      : sameAmount(entries, { month: target, amount: signed, income: !!income, except: editing?.id }, incomeIds)),
+    [entries, signed, target, income, !!category, editing, incomeIds],
   );
   /** "Lidel" → "Lidl". */
   const correction = useMemo(() => (nameTyped ? correctTypo(keywordIndex, name) : null), [nameTyped, keywordIndex, name]);
@@ -425,7 +448,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
       repeat,
       // Always said, so an edit can take the interval or the end off again (schema 24).
       every: repeat === 'yearly' ? every : undefined,
-      until: repeat !== 'none' && isMonthKey(until) && until >= month ? until : undefined,
+      until: repeat !== 'none' && isMonthKey(until) && until >= target ? until : undefined,
     };
     if (due !== undefined) d.dueDay = due;
     if (dateText) d.date = dateText;
@@ -445,6 +468,8 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     // The same for what the receipt is kept for (schema 27).
     d.warrantyUntil = isIsoDay(warranty) ? warranty : undefined;
     d.returnUntil = isIsoDay(returnBy) ? returnBy : undefined;
+    // Saved with *Trotzdem sichern*: checked, not entered twice (schema 31). An edit keeps what it had.
+    d.distinct = twins.length > 0 ? true : editing?.distinct;
     return d;
   };
 
@@ -502,11 +527,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     if (!d) { setShowError(true); return; }
     fresh.current.clear(); // saved with the entry
     if (editing) onSave(editing.id, d);
-    else onCreate(month, d);
+    else onCreate(target, d);
     if (next) {
-      const keepDate = dateText;
-      reset(categoryId);
-      setDateText(keepDate); // a stack of receipts is usually from one day
+      reset(categoryId); // today again, like every new entry
       setPaid(paid);
       setAccountId(accountId); // and paid from the same account
       amountRef.current?.focus({ preventScroll: true });
@@ -514,7 +537,9 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
   };
 
   const title = editing ? t.editEntry : income ? t.newIncome : isRefund ? t.refund : t.newExpense;
-  const dateLabel = !dateText ? t.dateNone : dateText === isoDay() ? t.dateToday : dayLabel(dateText, t.locale);
+  const dayText = !dateText ? t.dateNone : dateText === isoDay() ? t.dateToday : dayLabel(dateText, t.locale);
+  // Today on another month's page: the pill says where the entry will land ("Heute · November 2026").
+  const dateLabel = target !== month ? `${dayText} · ${monthLabel(target, t.locale)}` : dayText;
   const statusLabel = paid ? (gain ? t.statusReceived : t.statusPaid) : (gain ? t.statusExpected : t.statusOpen);
   const repeats = REPEAT_CHOICES.map(c => ({
     ...c,
@@ -526,7 +551,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
 
   return (
     <Sheet open={!!mode} title={title} closeLabel={t.cancel} onClose={onClose}
-      action={{ label: t.save, onClick: () => save(), disabled: !valid }}>
+      action={{ label: twins.length ? t.saveAnyway : t.save, onClick: () => save(), disabled: !valid }}>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-4">
         {/* Expense or income — the first thing said about a new entry. The amount keeps the keyboard. */}
         {!editing && bothKinds && (
@@ -619,6 +644,25 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
             <p id={`${amountId}-err`} role="alert" className="text-caption text-neg mt-1">{t.amountInvalid}</p>
           )}
         </div>
+
+        {/* The amount is in the month already: name it (two at most), and *Sichern* reads *Trotzdem sichern*. */}
+        {twins.length > 0 && (
+          <div role="status" className="flex items-start gap-2.5 rounded-md bg-neg-dim text-neg px-3 py-2.5">
+            <AlertTriangle className="w-[18px] h-[18px] shrink-0 mt-px" strokeWidth={2.25} aria-hidden="true" />
+            <div className="min-w-0 flex-1 text-caption wrap-prose">
+              <p className="text-label font-semibold">{fmt(t.dupExists, { month: monthLabel(target, t.locale) })}</p>
+              <ul className="mt-0.5">
+                {twins.slice(0, 2).map(x => (
+                  <li key={x.id} className="wrap-compound">
+                    {x.name}{x.date ? ` · ${dayLabel(x.date, t.locale)}` : ''}{x.paid ? '' : ` · ${income ? t.expected : t.open}`}
+                  </li>
+                ))}
+                {twins.length > 2 && <li>{fmt(t.dupMore, { n: twins.length - 2 })}</li>}
+              </ul>
+              <p className="mt-1 text-fg-mute">{t.dupExistsHint}</p>
+            </div>
+          </div>
+        )}
 
         {/* The savings goal this fills (plan 12): only for a Sparen category, only when goals exist. */}
         {isSaving && openGoalsList.length > 0 && (
@@ -833,7 +877,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
               <input
                 type="month"
                 value={until}
-                min={month}
+                min={target}
                 onChange={e => setUntil(e.target.value)}
                 onClick={e => { try { e.currentTarget.showPicker?.(); } catch { /* not allowed here: the tap still focuses it */ } }}
                 aria-label={`${t.repeatEnds}: ${untilLabel}`}
@@ -1138,7 +1182,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
         )}
 
         <div className="grid gap-2 pt-2">
-          <Button type="submit" full size="lg" disabled={!valid}>{t.save}</Button>
+          <Button type="submit" full size="lg" disabled={!valid}>{twins.length ? t.saveAnyway : t.save}</Button>
           {!editing && more && (
             <Button variant="secondary" full disabled={!valid} onClick={() => save(true)}>{t.saveAndNext}</Button>
           )}

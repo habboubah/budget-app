@@ -438,6 +438,7 @@ export function useAppStore() {
       if (!next.tax) delete next.tax;
       if (!next.warrantyUntil) delete next.warrantyUntil;
       if (!next.returnUntil) delete next.returnUntil;
+      if (!next.distinct) delete next.distinct;
       if (!next.every || next.repeat !== 'yearly') delete next.every;
       if (!next.until || next.repeat === 'none') delete next.until;
       // Back on the main account: no account is stored (plan 30).

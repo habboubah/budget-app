@@ -545,6 +545,7 @@ export default function App() {
     if (!entry.tax) delete entry.tax;
     if (!entry.warrantyUntil) delete entry.warrantyUntil;
     if (!entry.returnUntil) delete entry.returnUntil;
+    if (!entry.distinct) delete entry.distinct;
     if (!entry.every) delete entry.every;
     if (!entry.until) delete entry.until;
     store.addEntry(entry);
@@ -554,7 +555,8 @@ export default function App() {
     store.expand(d.categoryId);
     setLastCategory(d.categoryId);
     // The confirmation offers the next one (plan 39: one *Sichern* in the sheet).
-    show(budgetNote([...data.entries, entry], d.categoryId, m) ?? fmt(t.entryAdded, { name: d.name }),
+    // Added from another month's page on today's date: the toast says which month it went into.
+    show(budgetNote([...data.entries, entry], d.categoryId, m) ?? (m === month ? fmt(t.entryAdded, { name: d.name }) : fmt(t.entryAddedTo, { name: d.name, month: monthLabel(m, t.locale) })),
       { label: t.addAnother, run: () => setEntrySheet({ kind: 'new', month: m, categoryId: d.categoryId }) });
   };
 
@@ -1691,6 +1693,11 @@ export default function App() {
             onEdit={entry => setEntrySheet({ kind: 'edit', entry })}
             onToggle={toggle}
             onDelete={e => deleteEntry(e.id)}
+            onDistinct={e => {
+              // Checked: not entered twice (schema 31) — undoable, like a delete.
+              store.updateEntry(e.id, { distinct: true });
+              show(fmt(t.dupKept, { name: e.name }), { label: t.undo, run: () => store.updateEntry(e.id, { distinct: undefined }) });
+            }}
             onPickMonth={() => setMonthPickerOpen(true)}
             onOpening={account === ALL_ACCOUNTS ? undefined : () => setOpeningOpen(true)}
             account={multi ? {

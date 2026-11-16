@@ -24,6 +24,7 @@ import { EmptyCategories } from './EmptyCategories';
 import { budgetStatus } from '../budgets';
 import { dueSoon } from '../due';
 import { DueSoonRail } from './DueSoonRail';
+import { duplicateTwins } from '../duplicates';
 
 interface Props {
   month: MonthKey;
@@ -58,6 +59,8 @@ interface Props {
   onToggle: (e: Entry) => void;
   /** Swipe left on a row (undoable). */
   onDelete: (e: Entry) => void;
+  /** *Ist richtig* under an entry shown red for its amount twice in the month: not entered twice (schema 31). */
+  onDistinct?: (e: Entry) => void;
   /** Tap the month's name: the month picker. */
   onPickMonth: () => void;
   /** Unset for "Alle Konten" (plan 30). */
@@ -127,6 +130,9 @@ export function MonthView(p: Props) {
   const today = new Date();
   const current = monthKeyOf(today);
   const mine = entriesOf(entries, month);
+  // The same amount twice in the month (src/duplicates.ts): those rows show red with a warning.
+  const incomeIds = new Set(p.allCategories.filter(c => c.kind === 'income').map(c => c.id));
+  const twins = duplicateTwins(mine, incomeIds);
   const label = monthLabel(month, t.locale);
   const { year, month: mm } = parseMonthKey(month);
   const monthName = new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(year, mm - 1, 1));
@@ -417,6 +423,8 @@ export function MonthView(p: Props) {
               onEdit={p.onEdit}
               onToggle={p.onToggle}
               onDelete={p.onDelete}
+              twins={twins}
+              onDistinct={p.onDistinct}
               budget={budgetStatus(p.budgetEntries ?? entries, c, month, today)}
               onBudget={c.kind === 'expense' ? () => p.onBudget(c) : undefined}
               openOnly={filtered(c.id)}
