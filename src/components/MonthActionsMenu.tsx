@@ -1,4 +1,4 @@
-import { ArrowLeftRight, BarChart3, ChevronsDownUp, ChevronsUpDown, Download, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, Download, Repeat as RepeatIcon, Scale, Trash2, Wallet } from 'lucide-react';
 import { MonthKey } from '../types';
 import { monthLabel } from '../logic';
 import { Strings, fmt } from '../translations';
@@ -9,13 +9,14 @@ import { Menu, MenuItem } from '../ui/Menu';
  * month's report, the balance (match it against the bank; or, before the
  * book has one, enter it) and everything that imports — one row, its ways
  * are on the sheet it opens; then what is needed now and then: fetch missing
- * recurring entries, fold all categories; and, set apart, delete the month.
+ * recurring entries; and, set apart, delete the month. (Folding every
+ * category is the month page's own button, beside the filters.)
  * *Umbuchen* joins the first group once the book has a second account
  * (plan 30). (Plan 39 had put the second half behind a *Mehr* row; on
  * Ahmad's word, 13 November 2026, nothing is a second tap away any more —
  * only the imports keep their sheet.)
  */
-export function MonthActionsMenu({ anchor, month, started, prevKey, missing, allCollapsed, given, t, onClose, onOpening, onReconcile, onBalanceNow, onPull, onCollapseAll, onImport, onDelete, onReport, onTransfer }: {
+export function MonthActionsMenu({ anchor, month, started, prevKey, missing, given, t, onClose, onOpening, onReconcile, onBalanceNow, onPull, onImport, onDelete, onReport, onTransfer }: {
   /** The "⋯" button it opens from; null while closed. */
   anchor: HTMLElement | null;
   month: MonthKey;
@@ -23,8 +24,6 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
   prevKey?: MonthKey;
   /** Recurring entries of earlier months this month doesn't have yet. */
   missing: number;
-  /** Every category is folded down — the item offers to unfold them all. */
-  allCollapsed: boolean;
   /** The book knows what is on the account (`balanceGiven`): there is something to check. */
   given: boolean;
   t: Strings;
@@ -35,7 +34,6 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
   /** No balance yet: the row asks for it instead. */
   onBalanceNow?: () => void;
   onPull: () => void;
-  onCollapseAll: (collapse: boolean) => void;
   /** The sheet with every way to import (ImportSheet). */
   onImport: () => void;
   onDelete: () => void;
@@ -67,14 +65,6 @@ export function MonthActionsMenu({ anchor, month, started, prevKey, missing, all
       icon: RepeatIcon,
       disabled: !missing,
       onSelect: onPull,
-    });
-  }
-  if (started) {
-    rest.push({
-      key: 'fold',
-      label: allCollapsed ? t.expandAll : t.collapseAll,
-      icon: allCollapsed ? ChevronsUpDown : ChevronsDownUp,
-      onSelect: () => onCollapseAll(!allCollapsed),
     });
   }
   const danger: MenuItem[] = started

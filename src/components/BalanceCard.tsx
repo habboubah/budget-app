@@ -547,8 +547,8 @@ function Workings({ balance: b, t, money, withNet = false }: { balance: MonthBal
   const settled = monthSettled(b);
   const anyOpen = b.incomeOpen !== 0 || b.expenseOpen !== 0;
   const rows = [
-    { label: t.income, total: money(settled.income, 'exceptZero'), paid: b.incomePaid, open: b.incomeOpen, openLabel: capitalize(t.expected), fill: 'bg-on-hero-pos' },
-    { label: t.expenses, total: money(settled.expense ? -settled.expense : 0), paid: b.expensePaid, open: b.expenseOpen, openLabel: capitalize(t.open), fill: 'bg-on-hero' },
+    { label: t.income, total: money(settled.income, 'exceptZero'), paid: b.incomePaid, open: b.incomeOpen, openLabel: capitalize(t.expected), fill: 'bg-on-hero-pos', tone: 'text-on-hero' },
+    { label: t.expenses, total: money(settled.expense ? -settled.expense : 0), paid: b.expensePaid, open: b.expenseOpen, openLabel: capitalize(t.open), fill: 'bg-on-hero-neg', tone: settled.expense ? 'text-on-hero-neg' : 'text-on-hero' },
   ];
   // One scale for both bars: the larger of the two wholes fills the track.
   const scale = Math.max(1, ...rows.map(r => Math.max(0, r.paid) + Math.max(0, r.open)));
@@ -568,7 +568,7 @@ function Workings({ balance: b, t, money, withNet = false }: { balance: MonthBal
                 <motion.span className="h-full rounded-full bg-on-hero-warn opacity-75" initial={{ width: 0 }} animate={{ width: share(r.open) }} transition={{ ...spring, delay: 0.08 + i * 0.06 }} />
               </span>
             </dd>
-            <dd className="ms-auto"><span className="block text-label num font-semibold whitespace-nowrap text-on-hero">{r.total}</span></dd>
+            <dd className="ms-auto"><span className={`block text-label num font-semibold whitespace-nowrap ${r.tone}`}>{r.total}</span></dd>
           </div>
         ))}
       </dl>

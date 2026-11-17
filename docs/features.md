@@ -53,8 +53,8 @@ server, no ads; everything stays on the device.
   brings any category in — as does picking it when entering something. A
   category with entries always stays.
 - **Fold and filter.** Tap a card's header to fold it down to one line
-  (remembered per category, in every month); the month's "⋯" folds or
-  unfolds them all. A card's "⋯" can show only what is still open there.
+  (remembered per category, in every month); the round button beside the
+  filters folds or unfolds them all. A card's "⋯" can show only what is still open there.
   The filter beside the search field does that for the whole page — and
   unfolds every card while it is on; the folds are back when it is off.
   The 🔁 filter next to it shows only what repeats (rent, contracts,
@@ -86,8 +86,11 @@ server, no ads; everything stays on the device.
   names, notes, `#tags` and amounts, and marks what matched. The field (and
   the filter for what is still open beside it) appears once the book has 15
   entries or a second month.
-- **Carry-over.** Starting the next month shows exactly which recurring
-  entries come along and copies them in as *open*; the running month and the
+- **Carry-over.** Starting the next month lists every recurring entry that
+  would come along, each ticked; untick what won't come this month (the
+  parts of a split go together) — income, expenses and *Monatssaldo* below
+  the list follow every tick — and *Monat starten* copies the rest in as
+  *open*; the running month and the
   next one start by themselves. The balance is carried over automatically —
   set it by hand for the first month or when the real account has drifted
   ("⋯" → *Kontostand prüfen* → *Kontostand am Monatsanfang*). Open entries left in earlier months
@@ -105,7 +108,7 @@ server, no ads; everything stays on the device.
 - **The month's "⋯" menu is one level:** the *Monatsbericht*; the balance
   (*Kontostand eintragen* until one is known, then *Kontostand prüfen*);
   *Importieren* — one sheet with every way to bring entries in (below);
-  then fetching recurring entries and folding every category; and, apart,
+  then fetching recurring entries; and, apart,
   *Monat löschen*. *Umbuchen* joins them once there is more than one
   account.
 - **The start.** A new book opens on a welcome — what the app does in one

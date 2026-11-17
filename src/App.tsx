@@ -607,8 +607,8 @@ export default function App() {
     show(fmt(income ? t.dueReceived : t.duePaid, { name: e.name }), { label: t.undo, run: () => store.updateEntry(e.id, { paid: e.paid }) });
   };
 
-  const startMonth = (carry: boolean) => {
-    const n = store.startMonth(month, carry);
+  const startMonth = (carry: boolean, skip?: Set<string>) => {
+    const n = store.startMonth(month, carry, skip);
     notifySuccess();
     const name = monthLabel(month, t.locale);
     show(n ? fmt(t.monthStartedCarried, { month: name, n }) : fmt(t.monthStarted, { month: name }));
@@ -1682,6 +1682,7 @@ export default function App() {
             onCategories={() => push('categories')}
             collapsed={store.collapsed}
             onCollapse={store.toggleCollapsed}
+            onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
             onRemoveCategory={removeFromMonth}
             onAddCategory={() => setAddCategoryOpen(true)}
             noCategories={categories.length === 0}
@@ -2068,7 +2069,6 @@ export default function App() {
         started={balance.started}
         prevKey={balance.prevKey}
         missing={balance.started ? candidates.length : 0}
-        allCollapsed={categories.length > 0 && categories.every(c => store.collapsed.includes(c.id))}
         t={t}
         onClose={() => setActionsAnchor(null)}
         given={given}
@@ -2077,7 +2077,6 @@ export default function App() {
         onBalanceNow={account === ALL_ACCOUNTS ? undefined : () => setBalanceNowOpen(true)}
         onTransfer={multi ? newTransfer : undefined}
         onPull={() => { const n = store.pullRecurring(month); show(fmt(t.pulled, { n })); }}
-        onCollapseAll={fold => store.setCollapsed(fold ? categories.map(c => c.id) : [])}
         onImport={() => setImportOpen(true)}
         onDelete={deleteMonth}
         onReport={() => openReport(month)}

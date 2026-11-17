@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ListFilter, MoreHorizontal, Plus, Repeat as RepeatIcon } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ChevronsDownUp, ChevronsUpDown, ListFilter, MoreHorizontal, Plus, Repeat as RepeatIcon } from 'lucide-react';
 import { Category, Entry, MonthKey } from '../types';
 import {
   MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, parseMonthKey, searchByMonth, searchEntries, searchTerms,
@@ -16,6 +16,7 @@ import { useEntryDrag } from '../ui/useEntryDrag';
 import { rise, stagger } from '../ui/stagger';
 import { Picture } from '../ui/Picture';
 import { SearchField } from '../ui/SearchField';
+import { Tooltip } from '../ui/Tooltip';
 import { AccountSwitch, BalanceCard } from './BalanceCard';
 import { MonthTrack } from '../insights';
 import { CategorySection } from './CategorySection';
@@ -51,7 +52,8 @@ interface Props {
   language: string;
   t: Strings;
   onMonth: (m: MonthKey) => void;
-  onStart: (carry: boolean) => void;
+  /** `skip`: the carried entries the user took out on the start card. */
+  onStart: (carry: boolean, skip?: Set<string>) => void;
   /** The "⋯" button was tapped: the month's menu opens from it. */
   onActions: (anchor: HTMLElement) => void;
   onAdd: (categoryId: string) => void;
@@ -83,6 +85,8 @@ interface Props {
   /** Ids of the categories folded down to their header. */
   collapsed: string[];
   onCollapse: (categoryId: string) => void;
+  /** Fold every category down to its header, or unfold them all. */
+  onCollapseAll: (fold: boolean) => void;
   /** Take an empty category out of this month. */
   onRemoveCategory: (c: Category) => void;
   /** Open the sheet that puts a category (back) into this month. */
@@ -165,6 +169,14 @@ export function MonthView(p: Props) {
     ? categories.filter(c => mine.some(e => e.categoryId === c.id && (!allOpen || !e.paid) && (!recurringOnly || recurring(e))))
     : categories.filter(hasCard);
   const emptyCategories = pageFiltered ? [] : categories.filter(c => !hasCard(c));
+  // Fold or unfold every card at once, from the button beside the filters. Under
+  // the page filter it folds for the filter's time only, like a single card.
+  const foldedNow = (id: string) => (pageFiltered ? foldedInFilter.includes(id) : p.collapsed.includes(id));
+  const allFolded = shownCategories.length > 0 && shownCategories.every(c => foldedNow(c.id));
+  const setAllFolded = (fold: boolean) => {
+    if (pageFiltered) setFoldedInFilter(fold ? shownCategories.map(c => c.id) : []);
+    else p.onCollapseAll(fold);
+  };
 
   const grown = p.grown !== false;
   /** The empty categories' chip, opened in a book that is still new. */
@@ -248,7 +260,15 @@ export function MonthView(p: Props) {
           </button>
         </h1>
       }
-      accessory={(grown || searching) && (
+      accessory={(
+        // Under the month's name: the balance first, then search and filters.
+        // While searching only the field stays, with the results right under it.
+        <div className="flex flex-col gap-4">
+        {!searching && (
+          <BalanceCard balance={balance} track={p.track} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account}
+            open={p.balanceOpen} onOpen={p.onBalanceOpen} given={p.balanceGiven} onBalanceNow={p.onBalanceNow} />
+        )}
+        {(grown || searching) && (
         <div className="flex items-center gap-2">
           <div className="min-w-0 flex-1" data-tour="search">
             <SearchField
@@ -261,34 +281,53 @@ export function MonthView(p: Props) {
           </div>
           {/* Only what is still pending, across the page. */}
           {!searching && balance.started && (openCount > 0 || allOpen) && (
-            <button
-              type="button"
-              aria-pressed={allOpen}
-              aria-label={allOpen ? t.showAllEntries : t.showPendingEverywhere}
-              title={allOpen ? t.showAllEntries : t.showPendingEverywhere}
-              onClick={() => { tapLight(); setFoldedInFilter([]); setAllOpen(v => !v); }}
-              className={`shrink-0 h-11 ps-3 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label font-semibold tabular-nums transition-colors focus-visible:ring-focus ${
-                allOpen ? 'bg-warn-dim text-warn' : 'bg-surface card-edge text-fg-mute active:bg-surface-2'}`}
-            >
-              <ListFilter className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
-              {openCount}
-            </button>
+            <Tooltip text={t.tipPending}>
+              <button
+                type="button"
+                aria-pressed={allOpen}
+                aria-label={allOpen ? t.showAllEntries : t.showPendingEverywhere}
+                onClick={() => { tapLight(); setFoldedInFilter([]); setAllOpen(v => !v); }}
+                className={`shrink-0 h-11 ps-3 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label font-semibold tabular-nums transition-colors focus-visible:ring-focus ${
+                  allOpen ? 'bg-warn-dim text-warn' : 'bg-surface card-edge text-fg-mute active:bg-surface-2'}`}
+              >
+                <ListFilter className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
+                {openCount}
+              </button>
+            </Tooltip>
           )}
           {/* Only what repeats (rent, contracts, subscriptions), across the page. */}
           {!searching && balance.started && (recurringCount > 0 || recurringOnly) && (
-            <button
-              type="button"
-              aria-pressed={recurringOnly}
-              aria-label={recurringOnly ? t.showAllEntries : t.showRecurringOnly}
-              title={recurringOnly ? t.showAllEntries : t.showRecurringOnly}
-              onClick={() => { tapLight(); setFoldedInFilter([]); setRecurringOnly(v => !v); }}
-              className={`shrink-0 h-11 ps-3 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label font-semibold tabular-nums transition-colors focus-visible:ring-focus ${
-                recurringOnly ? 'bg-accent-dim text-accent' : 'bg-surface card-edge text-fg-mute active:bg-surface-2'}`}
-            >
-              <RepeatIcon className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
-              {recurringCount}
-            </button>
+            <Tooltip text={t.tipRecurring}>
+              <button
+                type="button"
+                aria-pressed={recurringOnly}
+                aria-label={recurringOnly ? t.showAllEntries : t.showRecurringOnly}
+                onClick={() => { tapLight(); setFoldedInFilter([]); setRecurringOnly(v => !v); }}
+                className={`shrink-0 h-11 ps-3 pe-3.5 rounded-full inline-flex items-center gap-1.5 text-label font-semibold tabular-nums transition-colors focus-visible:ring-focus ${
+                  recurringOnly ? 'bg-accent-dim text-accent' : 'bg-surface card-edge text-fg-mute active:bg-surface-2'}`}
+              >
+                <RepeatIcon className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
+                {recurringCount}
+              </button>
+            </Tooltip>
           )}
+          {/* Fold every card down to its header, or unfold them all. */}
+          {!searching && balance.started && shownCategories.length > 1 && (
+            <Tooltip text={t.tipFold}>
+              <button
+                type="button"
+                aria-label={allFolded ? t.expandAll : t.collapseAll}
+                onClick={() => { tapLight(); setAllFolded(!allFolded); }}
+                className="shrink-0 h-11 w-11 rounded-full inline-flex items-center justify-center bg-surface card-edge text-fg-mute active:bg-surface-2 transition-colors focus-visible:ring-focus"
+              >
+                {allFolded
+                  ? <ChevronsUpDown className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />
+                  : <ChevronsDownUp className="w-[18px] h-[18px]" strokeWidth={2.4} aria-hidden="true" />}
+              </button>
+            </Tooltip>
+          )}
+        </div>
+        )}
         </div>
       )}
       actions={
@@ -330,11 +369,8 @@ export function MonthView(p: Props) {
           onOpenMonth={m => { setQuery(''); p.onMonth(m); }}
         />
       ) : (<>
-      <BalanceCard balance={balance} track={p.track} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account}
-        open={p.balanceOpen} onOpen={p.onBalanceOpen} given={p.balanceGiven} onBalanceNow={p.onBalanceNow} />
-
       {/* Keyed by month: stepping to another one brings its cards in afresh
-          (the balance card above stays, and its numbers run to the new values). */}
+          (the balance card in the header stays, and its numbers run to the new values). */}
       <motion.div key={month} className="space-y-6" variants={stagger} initial="hidden" animate="show">
       {!balance.started ? (
         <StartMonthCard

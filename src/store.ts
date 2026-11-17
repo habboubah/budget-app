@@ -323,10 +323,11 @@ export function useAppStore() {
   /**
    * Start a month with the standard categories. With `carry`, the recurring
    * entries of earlier months come along as open entries (and their
-   * categories with them). Returns how many were carried over.
+   * categories with them) — all but those in `skip` (ids of the candidates
+   * the user took out on the start card). Returns how many were carried over.
    */
-  const startMonth = (key: MonthKey, carry: boolean): number => {
-    const copies = carry ? carryOver(carryCandidates(data, key), key, Date.now()) : [];
+  const startMonth = (key: MonthKey, carry: boolean, skip?: Set<string>): number => {
+    const copies = carry ? carryOver(carryCandidates(data, key).filter(e => !skip?.has(e.id)), key, Date.now()) : [];
     // A carried transfer brings no category along (plan 30).
     const record = newMonth(key, copies.filter(e => !e.transfer).map(e => e.categoryId));
     setMonths(prev => (prev.some(m => m.key === key) ? prev : sortMonths([...prev, record])));

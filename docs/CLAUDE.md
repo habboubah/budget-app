@@ -746,7 +746,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     *Kontostand prüfen* — the match with the bank, with the opening balance
     behind a button in the same sheet) and *Importieren* (`ImportSheet`:
     photo, CSV, PDF, invoice QR, each with its sentence — the one
-    thing that stays a sheet); then fetch recurring entries and fold all;
+    thing that stays a sheet); then fetch recurring entries;
     then, apart, delete the month. *Umbuchen* joins the first group once
     there are accounts. The rows have a budget (`check:simplicity`): a new
     action goes onto a sheet, or the budget is raised with a note.
