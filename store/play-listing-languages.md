@@ -21,7 +21,7 @@ PAYÉ OU EN ATTENTE
 Chaque écriture est soit payée, soit encore en attente – un appui sur le cercle la coche. Avec une date d’échéance, vous voyez tout de suite ce qui est en retard. Marquez le loyer, le salaire ou les assurances comme « chaque mois » ou « chaque année » : ils passent tout seuls au mois suivant, et le solde est reporté.
 
 VOS OPÉRATIONS, SANS IDENTIFIANTS BANCAIRES
-Importez le fichier CSV de votre banque en ligne, ou photographiez la liste des opérations dans votre application bancaire – le texte est lu sur le téléphone lui-même. Vous vérifiez chaque opération avant qu’elle soit reprise, et les factures en attente qu’elle règle sont cochées. Votre ancien tableau de budget arrive avec un import Excel.
+Importez le fichier CSV de votre banque en ligne, ou photographiez la liste des opérations dans votre application bancaire – le texte est lu sur le téléphone lui-même. Vous vérifiez chaque opération avant qu’elle soit reprise, et les factures en attente qu’elle règle sont cochées.
 
 SAISIE RAPIDE
 Calculez directement dans le champ du montant (12,50+4,80), gardez des favoris comme la boulangerie ou le carburant, répartissez un ticket sur plusieurs catégories, joignez le justificatif en photo et ajoutez des #tags. Spartopf propose le nom et la catégorie pendant la saisie.
@@ -62,7 +62,7 @@ PAGADO O PENDIENTE
 Cada movimiento está pagado o todavía pendiente – un toque en el círculo lo marca. Con una fecha de vencimiento ves al instante lo que está vencido. Marca el alquiler, la nómina o los seguros como «cada mes» o «cada año» y pasan solos al mes siguiente, y el saldo se arrastra.
 
 TUS MOVIMIENTOS, SIN ACCEDER AL BANCO
-Importa el archivo CSV de tu banca online o haz una foto de la lista de movimientos de la app de tu banco – el texto se lee en el propio teléfono. Revisas cada movimiento antes de añadirlo, y las facturas pendientes que paga se marcan solas. Tu antigua hoja de presupuesto entra con una importación de Excel.
+Importa el archivo CSV de tu banca online o haz una foto de la lista de movimientos de la app de tu banco – el texto se lee en el propio teléfono. Revisas cada movimiento antes de añadirlo, y las facturas pendientes que paga se marcan solas.
 
 RÁPIDO DE ANOTAR
 Haz cuentas en el campo del importe (12,50+4,80), guarda favoritos como la panadería o la gasolina, divide un tique entre varias categorías, adjunta el recibo como foto y añade #etiquetas. Spartopf sugiere el nombre y la categoría mientras escribes.
@@ -103,7 +103,7 @@ PAGATO O IN SOSPESO
 Ogni voce è pagata oppure ancora in sospeso – un tocco sul cerchio la spunta. Con una data di scadenza vedi subito cosa è scaduto. Segna affitto, stipendio o assicurazioni come «ogni mese» o «ogni anno» e passano da soli al mese successivo, con il saldo riportato.
 
 MOVIMENTI SENZA ACCESSO ALLA BANCA
-Importa il file CSV dal tuo home banking oppure fotografa l’elenco dei movimenti nella app della tua banca – il testo viene letto sul telefono stesso. Controlli ogni movimento prima che venga ripreso, e le fatture in sospeso che paga vengono spuntate. Il tuo vecchio foglio di bilancio entra con un’importazione da Excel.
+Importa il file CSV dal tuo home banking oppure fotografa l’elenco dei movimenti nella app della tua banca – il testo viene letto sul telefono stesso. Controlli ogni movimento prima che venga ripreso, e le fatture in sospeso che paga vengono spuntate.
 
 INSERIMENTO RAPIDO
 Fai i conti direttamente nel campo dell’importo (12,50+4,80), salva preferiti come il panificio o il carburante, dividi uno scontrino su più categorie, allega la ricevuta come foto e aggiungi #tag. Spartopf suggerisce nome e categoria mentre scrivi.
@@ -144,7 +144,7 @@ PAGO OU PENDENTE
 Cada movimento está pago ou ainda pendente – um toque no círculo marca-o. Com uma data de vencimento, vês logo o que está em atraso. Marca a renda, o ordenado ou os seguros como «todos os meses» ou «todos os anos» e passam sozinhos para o mês seguinte, com o saldo transportado.
 
 OS TEUS MOVIMENTOS, SEM ACESSO AO BANCO
-Importa o ficheiro CSV do teu homebanking ou fotografa a lista de movimentos na app do teu banco – o texto é lido no próprio telemóvel. Verificas cada movimento antes de ser adicionado, e as faturas pendentes que ele paga ficam marcadas. A tua antiga folha de orçamento entra com uma importação do Excel.
+Importa o ficheiro CSV do teu homebanking ou fotografa a lista de movimentos na app do teu banco – o texto é lido no próprio telemóvel. Verificas cada movimento antes de ser adicionado, e as faturas pendentes que ele paga ficam marcadas.
 
 REGISTO RÁPIDO
 Faz contas no campo do valor (12,50+4,80), guarda favoritos como a padaria ou o combustível, divide um talão por várias categorias, anexa o recibo como foto e acrescenta #etiquetas. O Spartopf sugere o nome e a categoria enquanto escreves.
@@ -185,7 +185,7 @@ BETAALD OF OPEN
 Elke post is betaald of staat nog open – een tik op het rondje vinkt hem af. Met een vervaldatum zie je meteen wat te laat is. Markeer huur, salaris of verzekeringen als ‘elke maand’ of ‘elk jaar’ en ze komen vanzelf in de volgende maand, en het saldo wordt meegenomen.
 
 TRANSACTIES ERIN, ZONDER BANKLOGIN
-Importeer het CSV-bestand uit je internetbankieren, of maak een foto van de transactielijst in je bankapp – de tekst wordt op de telefoon zelf gelezen. Je controleert elke transactie voordat die wordt overgenomen, en openstaande rekeningen die ermee betaald worden, worden afgevinkt. Je oude budgetspreadsheet haal je binnen met een Excel-import.
+Importeer het CSV-bestand uit je internetbankieren, of maak een foto van de transactielijst in je bankapp – de tekst wordt op de telefoon zelf gelezen. Je controleert elke transactie voordat die wordt overgenomen, en openstaande rekeningen die ermee betaald worden, worden afgevinkt.
 
 SNEL INGEVOERD
 Reken direct in het bedragveld (12,50+4,80), bewaar favorieten zoals de bakker of tanken, splits één bon over meerdere categorieën, voeg de bon toe als foto en geef posten #tags. Tijdens het typen stelt Spartopf naam en categorie voor.
@@ -226,7 +226,7 @@ BETALD ELLER VÄNTAR
 Varje post är antingen betald eller väntar fortfarande – ett tryck på cirkeln bockar av den. Med ett förfallodatum ser du direkt vad som är förfallet. Markera hyra, lön eller försäkringar som ”varje månad” eller ”varje år” så kommer de med till nästa månad av sig själva, och saldot förs över.
 
 TRANSAKTIONER UTAN BANKINLOGGNING
-Importera CSV-filen från din internetbank, eller fotografera transaktionslistan i din bankapp – texten läses på själva telefonen. Du granskar varje transaktion innan den tas med, och väntande räkningar som den betalar bockas av. Ditt gamla budgetkalkylark tar du in med en Excel-import.
+Importera CSV-filen från din internetbank, eller fotografera transaktionslistan i din bankapp – texten läses på själva telefonen. Du granskar varje transaktion innan den tas med, och väntande räkningar som den betalar bockas av.
 
 SNABBT ATT FÖRA IN
 Räkna direkt i beloppsfältet (12,50+4,80), spara favoriter som bageriet eller tankning, dela upp ett kvitto på flera kategorier, bifoga kvittot som foto och lägg till #taggar. Spartopf föreslår namn och kategori medan du skriver.
@@ -267,7 +267,7 @@ BETALT ELLER VENTER
 Hver post er enten betalt eller venter fortsatt – et trykk på sirkelen huker den av. Med forfallsdato ser du med en gang hva som er forfalt. Merk husleie, lønn eller forsikringer som «hver måned» eller «hvert år», så blir de med til neste måned av seg selv, og saldoen overføres.
 
 TRANSAKSJONER UTEN BANKINNLOGGING
-Importer CSV-filen fra nettbanken, eller ta bilde av transaksjonslisten i bankappen – teksten leses på selve telefonen. Du sjekker hver transaksjon før den tas med, og ventende regninger den betaler, hukes av. Det gamle budsjettregnearket ditt henter du inn med en Excel-import.
+Importer CSV-filen fra nettbanken, eller ta bilde av transaksjonslisten i bankappen – teksten leses på selve telefonen. Du sjekker hver transaksjon før den tas med, og ventende regninger den betaler, hukes av.
 
 RASKT Å FØRE
 Regn direkte i beløpsfeltet (12,50+4,80), lagre favoritter som bakeriet eller drivstoff, del opp én kvittering på flere kategorier, legg ved kvitteringen som bilde og legg til #tagger. Spartopf foreslår navn og kategori mens du skriver.
@@ -308,7 +308,7 @@ BETALT ELLER AFVENTER
 Hver post er enten betalt eller afventer stadig – et tryk på cirklen sætter flueben. Med en forfaldsdato ser du med det samme, hvad der er forfaldent. Markér husleje, løn eller forsikringer som "hver måned" eller "hvert år", så kommer de selv med i næste måned, og saldoen bliver overført.
 
 POSTERINGER UDEN BANKLOGIN
-Importér CSV-filen fra din netbank, eller tag et billede af posteringslisten i din bankapp – teksten læses på selve telefonen. Du tjekker hver postering, før den bliver overtaget, og afventende regninger, den betaler, får flueben. Dit gamle budgetregneark henter du ind med en Excel-import.
+Importér CSV-filen fra din netbank, eller tag et billede af posteringslisten i din bankapp – teksten læses på selve telefonen. Du tjekker hver postering, før den bliver overtaget, og afventende regninger, den betaler, får flueben.
 
 HURTIGT AT INDTASTE
 Regn direkte i beløbsfeltet (12,50+4,80), gem favoritter som bageren eller benzin, del én kvittering op på flere kategorier, vedhæft kvitteringen som foto og tilføj #tags. Spartopf foreslår navn og kategori, mens du skriver.
@@ -349,7 +349,7 @@ ZAPŁACONE ALBO OCZEKUJE
 Każdy wpis jest zapłacony albo wciąż oczekuje – dotknięcie kółka odhacza go. Z terminem płatności od razu widzisz, co jest zaległe. Oznacz czynsz, pensję albo ubezpieczenia jako „co miesiąc” lub „co rok” – same przejdą do następnego miesiąca, a saldo zostanie przeniesione.
 
 TRANSAKCJE BEZ LOGOWANIA DO BANKU
-Zaimportuj plik CSV z bankowości internetowej albo zrób zdjęcie listy transakcji w aplikacji banku – tekst jest odczytywany w samym telefonie. Sprawdzasz każdą transakcję, zanim zostanie przejęta, a oczekujące rachunki, które opłaca, zostają odhaczone. Swój dawny arkusz budżetu wczytasz jednym importem z Excela.
+Zaimportuj plik CSV z bankowości internetowej albo zrób zdjęcie listy transakcji w aplikacji banku – tekst jest odczytywany w samym telefonie. Sprawdzasz każdą transakcję, zanim zostanie przejęta, a oczekujące rachunki, które opłaca, zostają odhaczone.
 
 SZYBKIE WPISYWANIE
 Licz od razu w polu kwoty (12,50+4,80), zapisz ulubione, jak piekarnia czy tankowanie, podziel jeden paragon na kilka kategorii, dołącz paragon jako zdjęcie i dodawaj #tagi. Podczas pisania Spartopf podpowiada nazwę i kategorię.
@@ -390,7 +390,7 @@ ZAPLACENO, NEBO ČEKÁ
 Každá položka je buď zaplacená, nebo ještě čeká – klepnutím na kroužek ji odškrtneš. S datem splatnosti hned vidíš, co je po splatnosti. Označ nájem, výplatu nebo pojištění jako „měsíčně“ nebo „ročně“ a samy přejdou do dalšího měsíce a zůstatek se převede.
 
 PLATBY BEZ PŘIHLÁŠENÍ DO BANKY
-Importuj soubor CSV z internetového bankovnictví, nebo vyfoť seznam plateb v bankovní aplikaci – text se přečte přímo v telefonu. Každou platbu zkontroluješ, než se převezme, a čekající položky, které uhrazuje, se odškrtnou. Svou starou tabulku rozpočtu nahraješ importem z Excelu.
+Importuj soubor CSV z internetového bankovnictví, nebo vyfoť seznam plateb v bankovní aplikaci – text se přečte přímo v telefonu. Každou platbu zkontroluješ, než se převezme, a čekající položky, které uhrazuje, se odškrtnou.
 
 RYCHLÉ ZADÁVÁNÍ
 Počítej přímo v poli částky (12,50+4,80), ulož si oblíbené jako pekárnu nebo tankování, rozděl jednu účtenku do více kategorií, přilož účtenku jako fotku a přidej #štítky. Spartopf ti při psaní navrhne název i kategorii.
@@ -431,7 +431,7 @@ En üstte: şu anda hesabında ne olduğu – ve bekleyen her şey ödendiğinde
 Her kayıt ya ödenmiştir ya da hâlâ bekliyordur – daireye bir dokunuş onu işaretler. Son ödeme tarihiyle neyin geciktiğini hemen görürsün. Kirayı, maaşı ya da sigortaları "aylık" veya "yıllık" olarak işaretle; kendiliğinden sonraki aya geçerler ve bakiye devredilir.
 
 BANKAYA GİRİŞ YAPMADAN İŞLEMLER
-İnternet bankacılığından aldığın CSV dosyasını içe aktar ya da banka uygulamandaki işlem listesinin fotoğrafını çek – metin telefonun kendisinde okunur. Her işlemi eklenmeden önce kontrol edersin ve ödediği bekleyen faturalar işaretlenir. Eski bütçe tablonu tek bir Excel içe aktarımıyla getirirsin.
+İnternet bankacılığından aldığın CSV dosyasını içe aktar ya da banka uygulamandaki işlem listesinin fotoğrafını çek – metin telefonun kendisinde okunur. Her işlemi eklenmeden önce kontrol edersin ve ödediği bekleyen faturalar işaretlenir.
 
 HIZLI GİRİŞ
 Tutar alanında doğrudan hesap yap (12,50+4,80), fırın ya da yakıt gibi favoriler kaydet, bir fişi birden fazla kategoriye böl, fişi fotoğraf olarak ekle ve #etiketler ekle. Sen yazarken Spartopf adı ve kategoriyi önerir.

@@ -14,7 +14,7 @@ import { CATEGORY_NAMES, withLanguages } from './names';
  *
  * Ids are history: `fixed` is "Wohnen / Home" and `extra` is "Sonstiges /
  * Others" (schema 4 merged the former "Wohnen und Garten" and "Sonstiges"
- * into them), so entries, statistics and the Excel mapping carry on.
+ * into them), so entries and statistics carry on.
  *
  * After them, the usual categories of a German banking app (Bekleidung,
  * Mobilität, Geldanlage …): there to pick when entering something, or to

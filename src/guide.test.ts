@@ -139,7 +139,6 @@ describe('searching the guide', () => {
     expect(find('favorit')).toContain('favorites');
     expect(find('QR-CODE')).toContain('invoice');
     expect(find('ruckgangig')).toContain('paid');
-    expect(find('excel')[0]).toBe('excel');
   });
   it('wants every word', () => {
     expect(find('budget jahr')).toContain('budgets');

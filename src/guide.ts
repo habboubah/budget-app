@@ -81,7 +81,6 @@ export const GUIDE_TOPICS = [
 
   { id: 'bank', chapter: 'importing', title: 'guideBank', action: 'month', point: 'actions' },
   { id: 'invoice', chapter: 'importing', title: 'scanInvoice', action: 'month', point: 'actions' },
-  { id: 'excel', chapter: 'importing', title: 'importExcel', action: 'transfer' },
   { id: 'reconcile', chapter: 'importing', title: 'reconcileTitle', action: 'month', point: 'actions' },
 
   { id: 'accounts', chapter: 'more', title: 'accountsTitle', action: 'accounts' },

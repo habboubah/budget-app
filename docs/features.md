@@ -116,8 +116,8 @@ server, no ads; everything stays on the device.
   insurance: an amount and a day for those that apply). They become the
   month's first entries, all monthly — a day that has passed is paid, a
   later one waits as open — and the last screen says what that leaves at the
-  end of the month. *Ich habe schon Daten* goes to the backup and Excel
-  import instead, *Erst mit Testdaten ansehen* fills the app with the test
+  end of the month. *Ich habe schon Daten* goes to the backup
+  instead, *Erst mit Testdaten ansehen* fills the app with the test
   year (a capsule above the tab bar takes it out again and returns to the
   start).
 - **Erste Schritte.** Until all four are done — the balance, the income, the
@@ -274,7 +274,7 @@ when it is wanted:
   (Sparkasse and others), the statement itself as a **PDF** (*Kontoauszug
   importieren (PDF)*, for banks that offer nothing else), a photo or
   screenshot of the banking app — the text is read on the phone itself — an
-  invoice's QR code, and an Excel budget sheet. A photo may be a crop or the
+  and an invoice's QR code. A photo may be a crop or the
   whole screen, by day or at night; entries under *Heute* or *Gestern* get
   that day; and where the list itself cannot be made out, the amounts that
   were read are still shown, nameless, to complete. Every transaction is shown to check first: new ones, ones
@@ -295,16 +295,6 @@ when it is wanted:
   note, the reference and the IBAN: an open bill, ready to tick off once it
   is paid from the banking app. The picture isn't kept, and nothing is saved
   before *Sichern*.
-- **From Excel.** *Importieren* → *Aus Excel importieren* (also under *Mehr ›
-  Sichern und übertragen*, where the start's *Ich habe schon Daten* leads) reads a budget sheet laid out like
-  `My_expense.xlsx`: one tab per month ("11.2026"), the categories in row 1,
-  each with name · paid · open columns. A preview shows every month, how the
-  columns map onto categories and what gets replaced before anything is
-  written. "Before" becomes the starting balance (and a hand correction in a
-  later month is kept), a day in brackets like `Vodafone(18)` becomes the due
-  day, what comes back every month is marked *monatlich*, and a tab with a
-  year typo ("08.2025" between July and September 2026) lands in the right
-  month. Undoable.
 
 ## Budgets
 
@@ -520,7 +510,7 @@ when it is wanted:
   app and a phone. The backup is **encrypted with a password by default**
   (AES-GCM, done on the device); one switch, above the password, makes a
   readable `.json` instead, and old plain backups still import. Receipts are part of it.
-- **CSV for Excel**: every entry, with its category, currency and tags (and
+- **CSV export**: every entry (it opens in Excel), with its category, currency and tags (and
   its account, once there is more than one).
 - **Automatic backups** (iPhone and Android app): a version a day, the last
   14 days and one per month for a year, kept on the device. Restoring one

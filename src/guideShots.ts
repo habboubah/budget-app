@@ -53,10 +53,6 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
       377,
       251
     ],
-    "excel": [
-      377,
-      263
-    ],
     "favorites": [
       377,
       300
@@ -182,10 +178,6 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     "due": [
       377,
       251
-    ],
-    "excel": [
-      377,
-      263
     ],
     "favorites": [
       377,
@@ -313,10 +305,6 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
       377,
       269
     ],
-    "excel": [
-      377,
-      245
-    ],
     "favorites": [
       377,
       275
@@ -442,10 +430,6 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     "due": [
       377,
       269
-    ],
-    "excel": [
-      377,
-      245
     ],
     "favorites": [
       377,
@@ -573,10 +557,6 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
       377,
       269
     ],
-    "excel": [
-      377,
-      245
-    ],
     "favorites": [
       377,
       275
@@ -702,10 +682,6 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     "due": [
       377,
       269
-    ],
-    "excel": [
-      377,
-      245
     ],
     "favorites": [
       377,

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Download, FileDown, FileUp, Upload } from 'lucide-react';
+import { Download, FileDown, Upload } from 'lucide-react';
 import { AppData } from '../types';
 import { Strings } from '../translations';
 import { attachmentBytes, attachmentIds, backupFiles, isoDay, keepAttachments, makeBackup, parseBackup, toCsv } from '../logic';
@@ -15,22 +15,19 @@ import { BackupPasswordSheet } from './BackupPasswordSheet';
 
 /**
  * Sichern und übertragen → Datensicherung: everything as one file, encrypted
- * with a password by default (plan 04), loaded back the same way. → Excel: the
- * old budget spreadsheet in, and every entry out again as a CSV that opens in
- * Excel (not protected).
+ * with a password by default (plan 04), loaded back the same way. → CSV:
+ * every entry out as a CSV that opens in Excel (not protected).
  */
 /** Bytes as megabytes with one decimal, at least 0,1 ("42 MB", "0,4 MB"). */
 function megabytes(bytes: number, locale: string): string {
   return `${new Intl.NumberFormat(locale, { maximumFractionDigits: bytes < 10 * 1024 * 1024 ? 1 : 0 }).format(Math.max(0.1, bytes / (1024 * 1024)))} MB`;
 }
 
-export function BackupGroup({ data, language, t, onImport, onImportExcel, toast, onExported }: {
+export function BackupGroup({ data, language, t, onImport, toast, onExported }: {
   data: AppData;
   language: string;
   t: Strings;
   onImport: (data: AppData) => void;
-  /** Opens the file picker for an .xlsx (handled in App, so the intro card can use it too). */
-  onImportExcel: () => void;
   toast: (label: string) => void;
   /** A copy just left the device — resets plan 03's 90-day nudge. */
   onExported?: () => void;
@@ -124,8 +121,7 @@ export function BackupGroup({ data, language, t, onImport, onImportExcel, toast,
         <Row label={t.exportData} leading={<IconTile icon={Download} hue="blue" />} onClick={() => setExportOpen(true)} />
         <Row label={t.importData} leading={<IconTile icon={Upload} hue="sky" />} onClick={() => file.current?.click()} />
       </Group>
-      <Group title={t.excelSection} footer={`${t.excelHint} ${t.csvNotProtected}`}>
-        <Row label={t.importExcel} sub={t.importExcelSub} leading={<IconTile icon={FileUp} hue="leaf" />} onClick={onImportExcel} />
+      <Group title={t.csvSection} footer={t.csvNotProtected}>
         <Row label={t.exportCsv} leading={<IconTile icon={FileDown} hue="mint" />} onClick={exportCsv} />
       </Group>
       <input ref={file} type="file" accept="application/json,.json,.spartopf" className="sr-only" tabIndex={-1} aria-hidden="true"

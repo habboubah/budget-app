@@ -35,7 +35,7 @@ BEZAHLT ODER OFFEN
 Jeder Eintrag ist entweder bezahlt oder noch offen – ein Tipp auf den Kreis hakt ihn ab. Mit Fälligkeitstag siehst du sofort, was überfällig ist. Markierst du Miete, Gehalt oder Versicherungen als „monatlich“ oder „jährlich“, kommen sie von selbst in den nächsten Monat, und der Kontostand wird übertragen.
 
 UMSÄTZE ÜBERNEHMEN, OHNE BANK-LOGIN
-Importiere die CSV-Datei aus deinem Online-Banking, oder fotografiere die Umsatzliste deiner Banking-App – der Text wird auf dem Handy selbst gelesen. Du prüfst jeden Umsatz, bevor er übernommen wird, und offene Rechnungen, die er bezahlt, werden abgehakt. Dein bisheriges Haushaltsbuch aus Excel holst du mit einem Import herein.
+Importiere die CSV-Datei aus deinem Online-Banking, oder fotografiere die Umsatzliste deiner Banking-App – der Text wird auf dem Handy selbst gelesen. Du prüfst jeden Umsatz, bevor er übernommen wird, und offene Rechnungen, die er bezahlt, werden abgehakt.
 
 SCHNELL EINGETRAGEN
 Rechne direkt im Betragsfeld (12,50+4,80), merk dir Favoriten wie Bäcker oder Tanken, teil einen Kassenbon auf mehrere Kategorien auf, häng den Beleg als Foto an und versieh Einträge mit #Tags. Beim Tippen schlägt Spartopf Namen und Kategorie vor.
@@ -70,7 +70,7 @@ PAID OR OPEN
 Every entry is either paid or still open – a tap on the circle ticks it off. With a due date you see at once what is overdue. Mark rent, salary or insurance as “monthly” or “yearly” and they come into the next month by themselves, and the balance is carried over.
 
 BRING IN TRANSACTIONS, NO BANK LOGIN
-Import the CSV file from your online banking, or photograph the transaction list in your banking app – the text is read on the phone itself. You check every transaction before it is taken over, and open bills it pays are ticked off. Your old budget spreadsheet comes in with an Excel import.
+Import the CSV file from your online banking, or photograph the transaction list in your banking app – the text is read on the phone itself. You check every transaction before it is taken over, and open bills it pays are ticked off.
 
 QUICK TO ENTER
 Do the maths in the amount field (12.50+4.80), pin favourites like the bakery or fuel, split one receipt across categories, attach the receipt as a photo and add #tags. Spartopf suggests the name and category as you type.
@@ -105,7 +105,7 @@ Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إ
 كل بند إما مدفوع أو ما زال معلّقاً – نقرة على الدائرة تؤشّر عليه. مع تاريخ الاستحقاق ترى فوراً ما تأخّر. اجعل الإيجار أو الراتب أو التأمين «شهرياً» أو «سنوياً» فتنتقل تلقائياً إلى الشهر التالي، ويُرحَّل الرصيد.
 
 استيراد الحركات دون تسجيل دخول إلى البنك
-استورد ملف CSV من خدمتك المصرفية، أو صوّر قائمة الحركات في تطبيق البنك – يُقرأ النص على الهاتف نفسه. تراجع كل حركة قبل اعتمادها، ويُؤشَّر على الفواتير المعلّقة التي تسدّدها. ودفترك القديم في Excel يدخل باستيراد واحد.
+استورد ملف CSV من خدمتك المصرفية، أو صوّر قائمة الحركات في تطبيق البنك – يُقرأ النص على الهاتف نفسه. تراجع كل حركة قبل اعتمادها، ويُؤشَّر على الفواتير المعلّقة التي تسدّدها.
 
 إدخال سريع
 احسب مباشرة في خانة المبلغ (12.50+4.80)، واحفظ المفضّلات كالمخبز أو الوقود، وقسّم إيصالاً واحداً على عدة فئات، وأرفق الإيصال كصورة، وأضف #وسوماً. يقترح Spartopf الاسم والفئة أثناء الكتابة.

@@ -62,7 +62,7 @@ BEZAHLT ODER OFFEN
 Jeder Eintrag ist entweder bezahlt oder noch offen – ein Tipp auf den Kreis hakt ihn ab. Mit Fälligkeitstag siehst du sofort, was überfällig ist. Markierst du Miete, Gehalt oder Versicherungen als „monatlich“ oder „jährlich“, kommen sie von selbst in den nächsten Monat, und der Kontostand wird übertragen.
 
 UMSÄTZE ÜBERNEHMEN, OHNE BANK-LOGIN
-Importiere die CSV-Datei aus deinem Online-Banking, oder fotografiere die Umsatzliste deiner Banking-App – der Text wird auf dem iPhone selbst gelesen. Du prüfst jeden Umsatz, bevor er übernommen wird, und offene Rechnungen, die er bezahlt, werden abgehakt. Dein bisheriges Haushaltsbuch aus Excel holst du mit einem Import herein.
+Importiere die CSV-Datei aus deinem Online-Banking, oder fotografiere die Umsatzliste deiner Banking-App – der Text wird auf dem iPhone selbst gelesen. Du prüfst jeden Umsatz, bevor er übernommen wird, und offene Rechnungen, die er bezahlt, werden abgehakt.
 
 SCHNELL EINGETRAGEN
 Rechne direkt im Betragsfeld (12,50+4,80), merk dir Favoriten wie Bäcker oder Tanken, teil einen Kassenbon auf mehrere Kategorien auf und versieh Einträge mit #Tags. Beim Tippen schlägt Spartopf Namen und Kategorie vor.
@@ -94,7 +94,7 @@ PAID OR OPEN
 Every entry is either paid or still open – one tap on the circle ticks it off. Give it a due day and you see at once what is overdue. Mark rent, salary or insurance as "monthly" or "yearly" and they come back in the next month by themselves, with the balance carried over.
 
 TRANSACTIONS IN, WITHOUT A BANK LOGIN
-Import the CSV file from your online banking, or take a photo or screenshot of the transaction list in your banking app – the text is read on the iPhone itself. You check every transaction before it goes in, and open bills it pays are ticked off. Bring your old budget spreadsheet over from Excel in one import.
+Import the CSV file from your online banking, or take a photo or screenshot of the transaction list in your banking app – the text is read on the iPhone itself. You check every transaction before it goes in, and open bills it pays are ticked off.
 
 QUICK TO ENTER
 Do the maths in the amount field (12.50+4.80), pin favourites like the bakery or fuel, split one receipt across categories and add #tags. Spartopf suggests the name and category as you type.
@@ -126,7 +126,7 @@ Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إ
 كل بند إما مدفوع أو ما زال معلّقًا – لمسة على الدائرة تحدّده كمدفوع. ومع يوم الاستحقاق ترى فورًا ما تأخّر. اجعل الإيجار أو الراتب أو التأمين «شهريًا» أو «سنويًا» لينتقل وحده إلى الشهر التالي، ويُرحَّل الرصيد تلقائيًا.
 
 حركات حسابك دون تسجيل الدخول إلى البنك
-استورد ملف CSV من خدمتك المصرفية عبر الإنترنت، أو التقط صورة أو لقطة شاشة لقائمة الحركات في تطبيق البنك – ويُقرأ النص على جهازك نفسه. تراجع كل حركة قبل إضافتها، وتُحدَّد الفواتير المعلّقة التي تسدّدها كمدفوعة. ويمكنك نقل دفتر ميزانيتك القديم من Excel باستيراد واحد.
+استورد ملف CSV من خدمتك المصرفية عبر الإنترنت، أو التقط صورة أو لقطة شاشة لقائمة الحركات في تطبيق البنك – ويُقرأ النص على جهازك نفسه. تراجع كل حركة قبل إضافتها، وتُحدَّد الفواتير المعلّقة التي تسدّدها كمدفوعة.
 
 إدخال سريع
 احسب مباشرةً في حقل المبلغ، مثل 12.50+4.80، واحفظ مفضّلاتك مثل المخبز أو الوقود، وقسّم فاتورة واحدة على عدة فئات، وأضِف وسومًا مثل ‎#إجازة. وأثناء الكتابة يقترح Spartopf الاسم والفئة.
@@ -395,7 +395,7 @@ Spartopf is a household budget book for private individuals and families who kee
 3) How to use the app
 No login, account or sample files are needed; the first start asks three questions, each can be skipped. To see every screen filled in: More > Settings > Add test data (a year of invented household data; Remove test data takes it out again).
 - Month tab: + adds an entry (amount, name, category, optional due day and monthly/yearly repeat). Tap the circle in front of an entry to mark it as paid; both balances update. Recurring entries come along into the next month as open.
-- Transactions without typing, all read on the device and shown for checking before anything is saved: Month > ... > Import takes the CSV file or PDF statement from online banking, a photo or screenshot of a banking app, an invoice's payment QR code, or an Excel budget sheet.
+- Transactions without typing, all read on the device and shown for checking before anything is saved: Month > ... > Import takes the CSV file or PDF statement from online banking, a photo or screenshot of a banking app, or an invoice's payment QR code.
 - Statistics tab: what stands out, income and spending over time, spending by category or payee.
 - Plan tab: the month so far, budgets, a twelve-month outlook, savings pots, subscriptions and contracts, a money check.
 - More tab: a guide, categories and budgets, backup export (encrypted with a password by default) and import, and optional tools: more accounts, debts, trips and projects, a tax list. More > Settings: language, appearance, currency, Face ID lock, reminders, reset app (deletes all data).

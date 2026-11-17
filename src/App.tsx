@@ -89,9 +89,6 @@ import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeIn
 import { PrintReport, PrintSpec, ReportPdfSheet, reportFileName } from './components/PrintReport';
 import { PLAY_URL, REVIEW_URL, feedbackMail, privacyUrl } from './links';
 import { isDemoEntry } from './demo';
-import { ExcelImportSheet } from './components/ExcelImportSheet';
-import { readXlsx } from './xlsx';
-import { ImportPlan, applyExcelImport, lastMonth, planExcelImport, replacedMonths } from './excelImport';
 import { StatementImportSheet, ImportState } from './components/StatementImportSheet';
 import { PlannedRow, allCategoryNames, applyStatement, csvForMapping, parseBankCsv, parseMappedCsv, parseStatementText, planStatement } from './statementImport';
 import { readImageText, readTextFile } from './ocr';
@@ -236,9 +233,6 @@ export default function App() {
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
   /** A category created from the month page also joins that month. */
   const [createForMonth, setCreateForMonth] = useState<MonthKey | null>(null);
-  /** An Excel file read and planned, waiting for "import". */
-  const [excel, setExcel] = useState<{ plan: ImportPlan; fileName: string } | null>(null);
-  const excelInput = useRef<HTMLInputElement>(null);
   // Bank transactions: a CSV export or a photo, read, then checked in a sheet.
   const statementInput = useRef<HTMLInputElement>(null);
   const photoInput = useRef<HTMLInputElement>(null);
@@ -675,21 +669,7 @@ export default function App() {
   /** A way to import, picked on the sheet: its file picker opens in the same tap. */
   const pickImport = (kind: ImportKind) => {
     setImportOpen(false);
-    (kind === 'photo' ? photoInput : kind === 'csv' ? statementInput : kind === 'pdf' ? pdfInput : kind === 'invoice' ? invoiceInput : excelInput).current?.click();
-  };
-
-  const onExcelFile = async (f: File | undefined) => {
-    if (excelInput.current) excelInput.current.value = '';
-    if (!f) return;
-    if (f.size > LIMITS.xlsxBytes) { show(t.importTooLarge); return; }
-    try {
-      const plan = planExcelImport(readXlsx(new Uint8Array(await f.arrayBuffer())), categories, language);
-      if (!plan.months.length) { show(t.excelNoMonths); return; }
-      setExcel({ plan, fileName: f.name });
-    } catch (e) {
-      trouble.current = true;
-      show(e instanceof FileTooLargeError ? t[e.key] : t.excelInvalid);
-    }
+    (kind === 'photo' ? photoInput : kind === 'csv' ? statementInput : kind === 'pdf' ? pdfInput : invoiceInput).current?.click();
   };
 
   /**
@@ -773,26 +753,6 @@ export default function App() {
     setTab('month');
     show(fmt(t.statementDone, { added: done.added.length, paid: done.paid.length }), { label: t.undo, run: () => store.undoImport(done) });
     if (done.added.length >= REVIEW_RULE.bigImport) goodMoment('bigImport');
-  };
-
-  const importExcel = () => {
-    if (!excel) return;
-    const before = data;
-    const introWasDone = store.introDone;
-    const after = applyExcelImport(data, excel.plan);
-    store.importData(after);
-    store.dismissIntro();
-    const n = excel.plan.months.length;
-    setMonth(lastMonth(excel.plan) ?? monthKeyOf());
-    setTab('month');
-    setStack({});
-    setExcel(null);
-    notifySuccess();
-    show(fmt(t.excelDone, { n }), {
-      label: t.undo,
-      run: () => { store.importData(before); if (!introWasDone) store.restoreIntro(); setMonth(monthKeyOf()); },
-    });
-    if (after.entries.length - before.entries.length >= REVIEW_RULE.bigImport) goodMoment('bigImport');
   };
 
   /**
@@ -1134,7 +1094,7 @@ export default function App() {
     setMonth(m);
     setTab('month');
   };
-  /** *Ich habe schon Daten*: the screen with the backup and the Excel import. */
+  /** *Ich habe schon Daten*: the screen with the backup. */
   const startWithData = () => { store.dismissIntro(); store.knowGuide(); setStartOpen(false); push('transfer'); };
   /** *Erst mit Testdaten ansehen*: a year of a household — and a capsule that says so until it is taken out again. */
   const startWithDemo = () => {
@@ -1488,7 +1448,6 @@ export default function App() {
             onBack={back}
             // Into a new book (a new phone): whoever kept this book elsewhere sees the app as it was there.
             onImport={d => { if (!data.entries.length && d.entries.length) store.unfoldAll(); store.importData(d); setMonth(monthKeyOf()); }}
-            onImportExcel={() => excelInput.current?.click()}
             toast={label => show(label)}
             onExported={store.markExported}
             onOpenBackups={() => push('backups')}
@@ -2156,13 +2115,6 @@ export default function App() {
       />
 
       <input
-        ref={excelInput}
-        type="file"
-        accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        className="sr-only" tabIndex={-1} aria-hidden="true"
-        onChange={e => void onExcelFile(e.target.files?.[0])}
-      />
-      <input
         ref={statementInput}
         type="file"
         accept=".csv,text/csv,text/comma-separated-values,application/vnd.ms-excel,text/plain"
@@ -2200,16 +2152,6 @@ export default function App() {
         onClose={() => { reviewIds.current = null; setStatement(null); }}
         onConfirm={confirmStatement}
         onReclassified={(row, categoryId, anchor) => setReclassify({ anchor, found: row.found, categoryId, name: row.name })}
-      />
-      <ExcelImportSheet
-        plan={excel?.plan ?? null}
-        fileName={excel?.fileName ?? ''}
-        replaced={excel ? replacedMonths(data, excel.plan) : []}
-        categories={categories}
-        language={language}
-        t={t}
-        onClose={() => setExcel(null)}
-        onConfirm={importExcel}
       />
 
       <Confirm

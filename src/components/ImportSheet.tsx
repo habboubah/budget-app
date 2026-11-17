@@ -1,14 +1,14 @@
-import { Camera, ChevronRight, FileSpreadsheet, FileText, QrCode, Table2 } from 'lucide-react';
+import { Camera, ChevronRight, FileSpreadsheet, FileText, QrCode } from 'lucide-react';
 import { Strings } from '../translations';
 import { Sheet } from '../ui/Sheet';
 import { Group, IconTile, Row } from '../ui/Screen';
 
-export type ImportKind = 'photo' | 'csv' | 'pdf' | 'invoice' | 'excel';
+export type ImportKind = 'photo' | 'csv' | 'pdf' | 'invoice';
 
 /**
  * Every way to bring entries in without typing, on one sheet (plan 39): a
  * photo or screenshot of the banking app, the bank's CSV, a statement PDF, an
- * invoice's QR code, an Excel budget sheet — each with the sentence that
+ * invoice's QR code — each with the sentence that
  * says what it takes. The month's "⋯" has one row for it instead of four,
  * and the explanations are read here, where one is picked.
  */
@@ -24,7 +24,6 @@ export function ImportSheet({ open, t, onClose, onPick }: {
     { kind: 'csv', label: t.importCsv, sub: t.importCsvSub, icon: FileSpreadsheet, hue: 'mint' },
     { kind: 'pdf', label: t.importPdf, sub: t.importPdfSub, icon: FileText, hue: 'tomato' },
     { kind: 'invoice', label: t.scanInvoice, sub: t.scanInvoiceSub, icon: QrCode, hue: 'lavender' },
-    { kind: 'excel', label: t.importExcel, sub: t.importExcelSub, icon: Table2, hue: 'leaf' },
   ];
   return (
     <Sheet open={open} title={t.importMenu} closeLabel={t.close} onClose={onClose}>

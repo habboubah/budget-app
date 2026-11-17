@@ -47,7 +47,6 @@
     "@capacitor/share": "8.0.1",
     "@capacitor/status-bar": "8.0.3",
     "@tesseract.js-data/deu": "1.0.0",
-    "fflate": "0.8.3",
     "lucide-react": "0.546.0",
     "motion": "12.41.0",
     "pdfjs-dist": "6.5.438",

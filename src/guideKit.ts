@@ -40,7 +40,7 @@ export function guideLabels(t: Strings): Record<string, string> {
     review: t.captureReview, display: t.displaySection, language: t.language, appearance: t.appearance, currency: t.currency,
     categories: t.categoriesTitle, favorites: t.favorites, accounts: t.accountsTitle, accountAdd: t.accountAddOther,
     debts: t.debtsTitle, debtAdd: t.debtAdd, projects: t.projectsTitle, projectAdd: t.projectAdd, taxList: t.taxTitle,
-    taxSwitch: t.taxSwitch, rules: t.rulesRow, monthStart: t.monthStartRow, transfer: t.transferTitle, excel: t.importExcel,
+    taxSwitch: t.taxSwitch, rules: t.rulesRow, monthStart: t.monthStartRow, transfer: t.transferTitle,
     exportData: t.exportData, importData: t.importData, exportCsv: t.exportCsv,
   };
 }

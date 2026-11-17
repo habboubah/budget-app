@@ -24,7 +24,7 @@ interface Props {
   /** The recurring entries still running, and their list. */
   recurringCount: number;
   onRecurring: () => void;
-  /** The sheet that asks what to import: a photo, a statement, an invoice, Excel (plan 39). */
+  /** The sheet that asks what to import: a photo, a statement, an invoice (plan 39). */
   onImport: () => void;
   debtCount: number;
   onDebts: () => void;
@@ -35,7 +35,7 @@ interface Props {
   onRules: () => void;
   /** Plan 19, iPhone only: the guide to the Shortcuts automations. */
   onCapture?: () => void;
-  /** Pushes "Sichern und übertragen": backup, Excel, CSV. */
+  /** Pushes "Sichern und übertragen": backup and CSV. */
   onTransfer: () => void;
   /** Pushes the guide (src/guide.ts): every feature explained, and the short tours. */
   onGuide: () => void;

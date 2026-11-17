@@ -127,7 +127,6 @@ const SHOTS = {
   reports: { go: async (p, t) => { await actionsMenu(p); await p.locator(menuItem(t, t.reportTitle)).first().click(); await wait(p, 800); }, top: true, max: 430 },
   bank: { go: importSheet, crop: t => [sheetRow(t.importPhoto), sheetRow(t.importCsv), sheetRow(t.importPdf)], ring: t => [sheetRow(t.importPhoto), sheetRow(t.importCsv), sheetRow(t.importPdf)], pad: 50, max: 520, stay: true },
   invoice: { go: importSheet, crop: t => [sheetRow(t.scanInvoice)], ring: t => [sheetRow(t.scanInvoice)], pad: 110, stay: true },
-  excel: { go: async (p, t) => { await tab(p, 3); await open(p, t.transferTitle); }, crop: t => [`main section:has(button:has-text("${t.importExcel}"))`], ring: t => [`main button:has-text("${t.importExcel}")`], max: 300 },
   reconcile: { go: actionsMenu, crop: t => [menuItem(t, t.balanceCheck)], ring: t => [menuItem(t, t.balanceCheck)], pad: 110 },
   accounts: { go: async (p, t) => { await tab(p, 3); await open(p, t.accountsTitle); }, top: true, max: 380 },
   projects: { go: async (p, t) => { await tab(p, 3); await open(p, t.projectsTitle); }, top: true, max: 380 },

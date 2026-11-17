@@ -2,7 +2,7 @@ import { CSSProperties, ComponentType, Fragment, useEffect, useId, useMemo, useS
 import { motion } from 'motion/react';
 import {
   ArrowRight, BarChart3, Bell, Calculator, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleEllipsis,
-  Compass, Download, EyeOff, FileSpreadsheet, FileText, FlaskConical, HandCoins, Hash, Info, Landmark, Lightbulb, Luggage,
+  Compass, Download, EyeOff, FileText, FlaskConical, HandCoins, Hash, Info, Landmark, Lightbulb, Luggage,
   MoreHorizontal, Palette, Paperclip, PenLine, PiggyBank, Play, Plus, QrCode, Repeat, Scale, ScrollText, Search, Settings, Share,
   ShieldCheck, Split, Star, Tags, Target, TrendingUp, Undo2, Wallet, WalletCards, Zap,
 } from 'lucide-react';
@@ -43,7 +43,6 @@ const LOOK: Record<GuideTopicId, [Icon, Hue]> = {
   reports: [FileText, 'leaf'],
   bank: [Landmark, 'sky'],
   invoice: [QrCode, 'stone'],
-  excel: [FileSpreadsheet, 'leaf'],
   reconcile: [Scale, 'plum'],
   accounts: [Wallet, 'leaf'],
   projects: [Luggage, 'sand'],

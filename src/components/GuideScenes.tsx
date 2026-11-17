@@ -311,13 +311,6 @@ const SCENES: Record<GuideTopicId, (t: Strings) => ReactNode> = {
       <span className="flex-1 rounded-[12px] bg-surface card-edge py-1"><Entry state="open" cents={18450} w="55%" /><span className="block px-2.5 pb-1"><Bar w="70%" dim /></span></span>
     </Row2>
   ),
-  excel: () => (
-    <Row2>
-      <span className="grid grid-cols-4 gap-[2px] p-1.5 rounded-[8px] bg-surface card-edge shrink-0">{Array.from({ length: 16 }, (_, i) => <span key={i} className={`w-5 h-3 rounded-[2px] ${i < 4 ? 'bg-swipe-paid/70' : 'bg-fg/10'}`} />)}</span>
-      <Arrow />
-      <span className="flex-1 grid gap-1.5"><Card hue="leaf" emoji="🏠"><Entry cents={89000} w="45%" /></Card><Card hue="carrot" emoji="🛒" folded /></span>
-    </Row2>
-  ),
   reconcile: () => (
     <Row2>
       <span className="flex-1 rounded-[12px] bg-surface card-edge p-2 text-center"><span className="block emoji text-[14px]">🐷</span><Money cents={124050} className="text-[13px] text-fg-mute" /></span>

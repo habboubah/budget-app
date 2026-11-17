@@ -42,7 +42,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   Anything that touches secrets or financial data gets our own small native
   plugin, not a third-party one.
 - **Security (plan 05).** `src/limits.ts` caps every import (bytes + count);
-  `readXlsx` rejects zip bombs; `toCsv` neutralises formula cells; a CSP ships
+  `toCsv` neutralises formula cells; a CSP ships
   on production builds (`vite.config.ts`); `src/crypto.ts` (WebCrypto) encrypts
   exports; `wipeAll()`/`onWipe()` in `storage.ts` erase everything on *Alle
   Daten löschen*; no `console.*` in app source (`check:security`). See
@@ -67,7 +67,6 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `src/pdfText.ts`, `src/statementPdf.ts` | A statement PDF's text (pdf.js) and its transactions |
 | `src/ocr.ts` | Text off a photo, on the device (tesseract, copied to `public/ocr/` by `scripts/copy-ocr.mjs`) |
 | `src/girocode.ts`, `src/qrScan.ts` | An invoice's payment QR code (GiroCode) |
-| `src/xlsx.ts`, `src/excelImport.ts` | Reading an .xlsx on the device; a budget sheet into months |
 | `src/receipts.ts` | Receipts and documents on an entry |
 | `src/keywords.ts` | Name completion and the category guessed from the name |
 | `src/duplicates.ts` | The same amount twice in a month: the month page's red rows (`duplicateTwins`) and the entry sheet's warning (`sameAmount`) |
@@ -206,11 +205,6 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   statistics, storage validation) and is tested in `src/logic.test.ts`;
   Statistik and Planen in `src/insights/`. Components never do balance
   arithmetic themselves.
-- **Excel import** is two layers: `src/xlsx.ts` unzips the file (fflate) and
-  reads cell values with string matching — no spreadsheet library — and
-  `src/excelImport.ts` plans the import as pure data (`planExcelImport`) that
-  the preview sheet shows and `applyExcelImport` writes. Tests build their own
-  .xlsx in memory; never commit a real one (it is someone's finances).
 - **Statistik and Planen** (`docs/STATISTICS_AND_INSIGHTS.md`, plans 06a and 13;
   its definitions §6 and decisions §14 apply to every figure). Statistik looks
   back, Planen looks ahead; at most three hints per screen, ranked, each with a
@@ -349,7 +343,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   `fg-mute` line (`docs/STATISTICS_AND_INSIGHTS.md` §9.9).
 - **Categories per month:** `MonthRecord.categories` lists what a month
   shows; `monthCategories()` adds anything with entries, so money never
-  vanishes. Unset (months from before, Excel imports) = the standard ones. New
+  vanishes. Unset (months from before) = the standard ones. New
   months take `standardCategoryIds()` (categories with `standard !== false`).
   Of the 21 built-ins two are standard, `income` and `fixed` (Wohnen): what
   comes and goes every month. The other six main ones (`car`, `extra`,
@@ -647,8 +641,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   month a `TransfersCard`, the "⋯" *Umbuchen* (`TransferSheet`), the entry
   sheet an account pill, Planen a *Vermögen* row (`accountTotals`). An opening
   and the bank match are one account's, so *Alle Konten* offers neither. Bank
-  imports go into the shown account (`intoAccount`, matched against it); an
-  Excel import replaces only the main account's own entries. Carry-over keeps
+  imports go into the shown account (`intoAccount`, matched against it).
+  Carry-over keeps
   the account, and a carried transfer gets a new shared pair id
   (`carryOver`, `laterTransferCopies`). An account can be deleted only once
   nothing is booked on it (`canDeleteAccount`); the main one stays. With
@@ -751,7 +745,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     November 2026): the report, the balance (*Kontostand eintragen*, then
     *Kontostand prüfen* — the match with the bank, with the opening balance
     behind a button in the same sheet) and *Importieren* (`ImportSheet`:
-    photo, CSV, PDF, invoice QR, Excel, each with its sentence — the one
+    photo, CSV, PDF, invoice QR, each with its sentence — the one
     thing that stays a sheet); then fetch recurring entries and fold all;
     then, apart, delete the month. *Umbuchen* joins the first group once
     there are accounts. The rows have a budget (`check:simplicity`): a new
@@ -1037,8 +1031,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   1. `src/i18n/xx.ts`: every key (the `Strings` type enforces it), the same
      placeholders as German, `locale`, `dir`, a 10-column `csvHeader`, and
      `suggestionNames` (the entry sheet's suggestions, keyed by the German
-     one in `NAME_SUGGESTIONS`). Keep “Before” in `excelHint`/`excelOpening`:
-     it is the row the Excel import reads.
+     one in `NAME_SUGGESTIONS`).
   2. A loader in `translations.ts`, the code in `languages` and
      `LANGUAGE_NAMES`, and in Info.plist's `CFBundleLocalizations`.
      The permission prompts: `ios/App/App/xx.lproj/InfoPlist.strings` with

@@ -20,12 +20,6 @@ export const LIMITS = {
   statementPdfBytes: 20 * MB,
   statementPdfPages: 60,
   csvRows: 50_000,
-  /** An .xlsx workbook (the zip itself). */
-  xlsxBytes: 20 * MB,
-  /** One unzipped .xlsx entry we'll read; anything bigger is skipped. */
-  xlsxEntryBytes: 50 * MB,
-  /** Total unzipped size of the .xlsx entries we read before we stop. */
-  xlsxTotalBytes: 100 * MB,
   /** An image for OCR, before createImageBitmap. */
   imageBytes: 30 * MB,
 } as const;
