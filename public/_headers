@@ -1,0 +1,20 @@
+# Cloudflare static-asset headers (copied into dist/ by every build).
+# The service worker and its registration must never be cached long,
+# or users stay stuck on an old version of the app.
+/sw.js
+  Cache-Control: no-cache
+/registerSW.js
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/
+  Cache-Control: no-cache
+# Hashed bundles never change under the same name.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()

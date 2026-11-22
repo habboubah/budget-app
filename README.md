@@ -27,6 +27,17 @@ npm run build:web        # production web build → dist/
 npm run preview          # serves dist/ on http://localhost:3002
 ```
 
+### Web version (Cloudflare)
+
+The web build is live at https://haushaltsbuch-einfach.pizza-driver.workers.dev,
+served as static files by Cloudflare Workers (free, unlimited static requests).
+`wrangler.jsonc` holds the config, `public/_headers` the cache rules (the service
+worker is never cached, hashed bundles are cached for a year).
+
+```bash
+npm run deploy:web       # vite build → wrangler deploy (asks you to log in to Cloudflare the first time)
+```
+
 ## Screenshots
 
 ```bash

@@ -1,0 +1,10 @@
+// Cloudflare Workers static-assets deploy of the web build (PWA).
+// Deploy: npm run deploy:web  (builds dist/ and runs `wrangler deploy`).
+{
+  "name": "haushaltsbuch-einfach",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
