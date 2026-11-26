@@ -81,7 +81,8 @@ function Chip({ part, t }: { part: { label: string; key: string }; t: Strings })
   const round = 'inline-flex items-center justify-center rounded-full align-[-0.3em] mx-[0.1em]';
   switch (part.key) {
     case 'add':
-      return <span role="img" aria-label={t.addEntry} className={`${round} w-[1.45em] h-[1.45em] hero text-on-hero`}><Plus className="w-[1em] h-[1em]" strokeWidth={2.6} /></span>;
+      // As on the month page's bar: a round glass button with the plus in the accent.
+      return <span role="img" aria-label={t.addEntry} className={`${round} w-[1.45em] h-[1.45em] glass-chrome text-accent`}><Plus className="w-[1em] h-[1em]" strokeWidth={2.6} /></span>;
     case 'menu':
       // ☰ on the month page's bar, which opens the menu.
       return <span role="img" aria-label={t.tabSettings} className={`${round} w-[1.45em] h-[1.45em] glass-chrome text-fg`}><MenuIcon className="w-[0.95em] h-[0.95em]" strokeWidth={2.4} /></span>;

@@ -7,6 +7,8 @@ import { AddButton } from './AddButton';
 
 interface Props {
   title: string;
+  /** The small title in the bar once the large one has scrolled away, where `title` is too long beside the buttons ("Nov. 2026"). */
+  barTitle?: string;
   /** A small line above the large title (today's date on home). */
   eyebrow?: React.ReactNode;
   subtitle?: React.ReactNode;
@@ -45,7 +47,7 @@ const roundButton = 'h-tap w-tap inline-flex items-center justify-center rounded
  * (a gradient, never a blur — backdrop-filter over a scrolling list is too
  * expensive in a WebView).
  */
-export function Screen({ title, eyebrow, subtitle, onBack, backLabel, onClose, closeLabel, actions, leading, docked, tabbed, titleSlot, accessory, still, withAdd, children }: Props) {
+export function Screen({ title, barTitle, eyebrow, subtitle, onBack, backLabel, onClose, closeLabel, actions, leading, docked, tabbed, titleSlot, accessory, still, withAdd, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
   // Where the page passes no back button: ☰ and + on the month page, ‹ to the month on Statistik and Planen.
   const menu = useMenuButton();
@@ -115,7 +117,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, onClose, c
             aria-hidden="true"
             className={`min-w-0 display text-chrome-title font-semibold text-fg text-center truncate transition-opacity duration-200 ${scrolled ? 'opacity-100' : 'opacity-0'}`}
           >
-            {title}
+            {barTitle ?? title}
           </span>
           <div className="justify-self-end flex items-center gap-2">{actions}</div>
         </div>

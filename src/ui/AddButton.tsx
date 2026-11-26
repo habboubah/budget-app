@@ -4,8 +4,10 @@ import { Plus } from 'lucide-react';
 import { tapMedium } from './haptics';
 
 /**
- * The add button: round, the size of ☰ beside it (44 px), on the accent's
- * gradient (`add-fab`) so it is the one coloured button in the bar. It sits
+ * The add button: one of the bar's round glass buttons, like ☰ beside it and
+ * ‹ › and ⋯ across (44 px, `glass-chrome`, the same press) — only its plus is
+ * in the accent, so it is still the one to find (November 2026: on the
+ * accent's gradient it stood out of the group, Ahmad). It sits
  * in the month page's bar next to ☰ and floats with the bar as the page
  * scrolls (Ahmad, November 2026; it floated at the bottom's trailing end
  * before, and in the tab bar before that). Screen draws it from
@@ -35,11 +37,11 @@ export function AddButton({ label, open, onClick }: { label: string; open: boole
         rest: { opacity: 1, scale: 1 },
         open: { opacity: 1, scale: 1 },
         // In at once, without a bounce; the spring below is the way back out.
-        down: { scale: 0.88, transition: { type: 'spring', duration: 0.16, bounce: 0 } },
+        // The bar's buttons give to 0.92 under the finger; this one the same.
+        down: { scale: 0.92, transition: { type: 'spring', duration: 0.16, bounce: 0 } },
       }}
       transition={{ type: 'spring', duration: 0.42, bounce: 0.35 }}
-      style={{ borderRadius: 9999 }}
-      className="relative h-tap w-tap add-fab text-on-hero inline-flex items-center justify-center focus-visible:ring-focus"
+      className="relative h-tap w-tap rounded-full glass-chrome text-accent inline-flex items-center justify-center focus-visible:ring-focus"
     >
       {taps > 0 && !calm && (
         <motion.span
@@ -56,7 +58,7 @@ export function AddButton({ label, open, onClick }: { label: string; open: boole
         variants={{ away: { rotate: -90 }, rest: { rotate: 0 }, open: { rotate: 45 }, down: { rotate: 45 } }}
         transition={{ type: 'spring', duration: 0.5, bounce: 0.4 }}
       >
-        <Plus className="w-[22px] h-[22px]" strokeWidth={2.6} />
+        <Plus className="w-6 h-6" strokeWidth={2.5} />
       </motion.span>
     </motion.button>
   );

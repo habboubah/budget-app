@@ -138,6 +138,8 @@ export function MonthView(p: Props) {
   const incomeIds = new Set(p.allCategories.filter(c => c.kind === 'income').map(c => c.id));
   const twins = duplicateTwins(mine, incomeIds);
   const label = monthLabel(month, t.locale);
+  // In the bar, between ☰ + and ‹ › ⋯, the month short: "Nov. 2026", not "November 2…".
+  const barLabel = (() => { const { year, month: m } = parseMonthKey(month); return new Intl.DateTimeFormat(t.locale, { month: 'short', year: 'numeric' }).format(new Date(year, m - 1, 1)); })();
   const { year, month: mm } = parseMonthKey(month);
   const monthName = new Intl.DateTimeFormat(t.locale, { month: 'long' }).format(new Date(year, mm - 1, 1));
 
@@ -231,6 +233,7 @@ export function MonthView(p: Props) {
     <Screen
       still
       title={label}
+      barTitle={barLabel}
       tabbed
       withAdd
       subtitle={monthStartDay() !== 1 ? periodLabel(month, t) : undefined}
