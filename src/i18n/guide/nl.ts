@@ -124,7 +124,7 @@ const nl: GuidePages = {
   tourBalance: 'Bovenaan: wat er nu op je rekening staat. Daaronder: wat er aan het einde van de maand overblijft als alles wat openstaat betaald is.',
   tourTick: 'Een tik op het rondje vinkt een post af: betaald in plaats van open.',
   tourMonth: 'Hier wissel je van maand. Terugkerende posten komen vanzelf mee.',
-  tourTabs: '‘{stats}’ kijkt terug, ‘{plan}’ kijkt vooruit. De hele handleiding vind je onder ‘{settings}’.',
+  tourTabs: 'Al het andere zit achter {menu}: ‘{stats}’ kijkt terug, ‘{plan}’ kijkt vooruit – en daar vind je ook de hele handleiding.',
   tourAdd: 'En hier voer je iets in – eerst het bedrag.',
   guideToursTitle: 'Rondleidingen',
   guideToursBody: 'Stap voor stap op de echte schermen – elke duurt minder dan een minuut.',

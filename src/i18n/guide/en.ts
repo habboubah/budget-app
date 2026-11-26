@@ -124,7 +124,7 @@ const en: GuidePages = {
   tourBalance: 'At the top: what is on your account now. Below it: what will be left at the end of the month, once everything pending is paid.',
   tourTick: 'A tap on the circle ticks an entry off: paid instead of pending.',
   tourMonth: 'This is where you switch months. Recurring entries come along on their own.',
-  tourTabs: '“{stats}” looks back, “{plan}” looks ahead. Under “{settings}” you’ll find the whole guide.',
+  tourTabs: 'Everything else is behind {menu}: “{stats}” looks back, “{plan}” looks ahead – and you’ll find the whole guide there too.',
   tourAdd: 'And this is where you enter something – the amount first.',
   guideToursTitle: 'Tours',
   guideToursBody: 'Step by step on the real screens – each takes less than a minute.',

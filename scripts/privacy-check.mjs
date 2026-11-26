@@ -16,6 +16,7 @@ import { fileURLToPath } from 'url';
 import { chromium } from 'playwright';
 import encodeQR from 'qr';
 import { build, preview } from 'vite';
+import { goTab } from './nav.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
@@ -96,7 +97,7 @@ try {
   const step = async (name, fn) => {
     try { await fn(); ok(name); } catch (e) { fail(`${name}: ${e.message.split('\n')[0]}`); }
   };
-  const tab = async i => { await page.locator('nav button:not(.hero)').nth(i).click(); await page.waitForTimeout(400); };
+  const tab = async i => { await goTab(page, i); await page.waitForTimeout(400); };
 
   console.log('Requests while using the app');
   await step('first run', async () => {

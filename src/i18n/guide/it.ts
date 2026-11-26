@@ -124,7 +124,7 @@ const it: GuidePages = {
   tourBalance: 'In alto: quanto c’è ora sul conto. Sotto: quanto resterà a fine mese, una volta pagato tutto ciò che è in sospeso.',
   tourTick: 'Un tocco sul cerchio spunta una voce: pagata invece che in sospeso.',
   tourMonth: 'Qui cambi mese. Le voci ricorrenti arrivano da sole.',
-  tourTabs: '«{stats}» guarda indietro, «{plan}» guarda avanti. La guida completa è in «{settings}».',
+  tourTabs: 'Tutto il resto è dietro {menu}: «{stats}» guarda indietro, «{plan}» guarda avanti – e lì trovi anche la guida completa.',
   tourAdd: 'E qui inserisci qualcosa – prima l’importo.',
   guideToursTitle: 'Tour',
   guideToursBody: 'Passo dopo passo sulle schermate vere – ognuno dura meno di un minuto.',

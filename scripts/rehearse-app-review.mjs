@@ -102,7 +102,7 @@ async function must(labels, nth, timeout, roles) {
 
 // Of the elements named exactly so, the one closest (up and down) to the
 // anchor – as the iPhone runner's `near` does: the balance card's "More" row
-// and the "More" tab share a name.
+// and the old "More" tab shared a name (the tab is the menu ☰ since November 2026).
 async function nearest(labels, anchor, timeout, roles) {
   await must(labels, 0, timeout, roles);
   // The anchor may be plain text (a card's title), as the iPhone finds it.

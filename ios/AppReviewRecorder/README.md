@@ -17,7 +17,7 @@ went out the same day):
 | 3 Checking the balance and the month report | Check the bank balance with a difference booked, the month report |
 | 4 A year of test data and Statistics | Add test data, Statistics (Expand all if it opens as headlines), 12 months, a category's screen |
 | 5 Plan | The month so far, budgets and a new one, the outlook, the savings pots |
-| 6 More | The guide, categories and budgets |
+| 6 The menu (☰) | The guide, categories and budgets |
 | 7 Settings | Dark, light, automatic; reminders (the permission, the first time iOS asks) |
 
 What it leaves out is listed at the end, for the Review Notes.
@@ -59,7 +59,7 @@ What it leaves out is listed at the end, for the Review Notes.
    code in about 2 minutes.
 3. **No demo files to AirDrop:** the imports are no longer filmed. The
    files in `demo-files/` are kept for trying an import by hand. The earlier
-   months come from More › Settings › Add test data.
+   months come from the menu (☰) › Settings › Add test data.
 4. The build you submit has to be the one installed from **TestFlight**,
    and a build the scenes fit: `scenes.json` › `app.minVersion` (1.2.20, the
    first with the start — the welcome and its three questions). The run
@@ -69,7 +69,7 @@ What it leaves out is listed at the end, for the Review Notes.
    stops. A newer build than `minVersion` you install yourself.
    No need to delete the app before each run: every full run **resets it in
    the app before the screen recording starts**, without asking — from a
-   book (More › Settings › Reset app), and from the welcome a stopped run
+   book (the menu ☰ › Settings › Reset app), and from the welcome a stopped run
    left (test data first, then the same reset, so the language goes back to
    the iPhone's too). If the reset can't be played the run stops there and
    records nothing (`RESET=0` skips the reset and stops if the app isn't

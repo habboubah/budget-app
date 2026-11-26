@@ -29,6 +29,7 @@ import { execSync } from 'child_process';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
+import { goTab } from './nav.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -209,7 +210,7 @@ const openAccounts = async (page, l) => {
 };
 
 const dialog = '[role="dialog"], [role="alertdialog"]';
-const tab = n => async page => { await page.locator('nav button:not(.hero)').nth(n).click(); await page.waitForTimeout(450); };
+const tab = n => async page => { await goTab(page, n); await page.waitForTimeout(450); };
 const openCategories = async (page, l) => {
   await tab(3)(page);
   await page.locator('main button', { hasText: l.categories }).first().click();

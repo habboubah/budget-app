@@ -403,15 +403,15 @@
 
 @utility pb-safe-8 { padding-bottom: calc(2rem + env(safe-area-inset-bottom)); }
 @utility inset-safe-bottom-6 { bottom: calc(24px + env(safe-area-inset-bottom)); }
-/* Clears a docked button (ui/Screen Dock), which sits above the tab bar. */
-@utility pb-safe-dock { padding-bottom: calc(196px + env(safe-area-inset-bottom)); }
-/* A docked button's own padding: the tab bar (62px above its gap over the home indicator) and a breath. */
-@utility pb-above-tabs { padding-bottom: calc(max(env(safe-area-inset-bottom) - 6px, 14px) + 62px + 12px); }
-/* Clears the floating tab bar (62px + its gap above the home indicator). */
-@utility pb-safe-tabs { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
-/* The month page: clears the tab bar and the add button above its end (56px + 14px of air over the bar). */
-@utility pb-safe-add { padding-bottom: calc(176px + env(safe-area-inset-bottom)); }
-/* Just above the floating tab bar. */
+/* Clears a docked button (ui/Screen Dock). */
+@utility pb-safe-dock { padding-bottom: calc(136px + env(safe-area-inset-bottom)); }
+/* A docked button's own padding: just above the home indicator (16px without one). */
+@utility pb-above-tabs { padding-bottom: calc(max(env(safe-area-inset-bottom), 16px) + 4px); }
+/* A screen's room under its last card (there is no tab bar since the menu, November 2026). */
+@utility pb-safe-tabs { padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
+/* The month page: clears the add button at the bottom's end (56px, and air above it). */
+@utility pb-safe-add { padding-bottom: calc(108px + env(safe-area-inset-bottom)); }
+/* Just above the add button's row at the bottom. */
 @utility bottom-above-tabs { bottom: calc(86px + env(safe-area-inset-bottom)); }
 
 @utility scrim { background-color: var(--t-scrim); }
@@ -562,7 +562,7 @@
 @utility hero-glow {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 0 0 0.5px rgb(255 255 255 / 0.12), 0 18px 36px -14px rgb(var(--hero-glow) / 0.75), 0 4px 10px -4px rgb(var(--hero-glow) / 0.4);
 }
-/* The floating add button (ui/TabBar): a rounded square on the accent's
+/* The floating add button (ui/AddButton): a rounded square on the accent's
    gradient — a soft highlight across its top, light along its upper rim,
    shade inside its lower edge and a glow of its own colour beneath it, so it
    floats over the page rather than sitting in the bar. The ring of light a

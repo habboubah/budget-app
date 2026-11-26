@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronsUpDown } from 'lucide-react';
+import { ChevronLeft, ChevronsUpDown, Menu as MenuIcon, X } from 'lucide-react';
 import { tapLight } from './haptics';
+import { useMenuButton } from './menu';
 
 interface Props {
   title: string;
@@ -10,15 +11,18 @@ interface Props {
   subtitle?: React.ReactNode;
   onBack?: () => void;
   backLabel?: string;
+  /** The menu itself: ✕ on the bar's leading end, where ☰ opened it. */
+  onClose?: () => void;
+  closeLabel?: string;
   /** Header-right controls. Keep to two. */
   actions?: React.ReactNode;
   /** Something shown left of the large title. */
   leading?: React.ReactNode;
   /** Extra bottom padding for a docked bar. */
   docked?: boolean;
-  /** A tab screen: bottom padding clears the tab bar. */
+  /** A screen of its own (not a form): a little room under its last card. */
   tabbed?: boolean;
-  /** The month page: bottom padding also clears the add button floating above the bar. */
+  /** The month page: bottom padding also clears the add button floating at the bottom. */
   withAdd?: boolean;
   /** Replaces the plain large title (the month switcher). */
   titleSlot?: React.ReactNode;
@@ -29,6 +33,9 @@ interface Props {
   children: React.ReactNode;
 }
 
+/** The bar's round floating buttons: back, ☰ and ✕. */
+const roundButton = 'h-tap w-tap inline-flex items-center justify-center rounded-full glass-chrome text-fg active:scale-[0.92] transition-transform focus-visible:ring-focus';
+
 /**
  * Every screen's shell, the iOS way: a large title that scrolls with the
  * content, and a bar that stays — back on the left, round floating buttons on
@@ -37,8 +44,10 @@ interface Props {
  * (a gradient, never a blur — backdrop-filter over a scrolling list is too
  * expensive in a WebView).
  */
-export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, docked, tabbed, titleSlot, accessory, still, withAdd, children }: Props) {
+export function Screen({ title, eyebrow, subtitle, onBack, backLabel, onClose, closeLabel, actions, leading, docked, tabbed, titleSlot, accessory, still, withAdd, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
+  // ☰ where there is nothing to go back to: the month page, Statistik, Planen.
+  const menu = useMenuButton();
   // At the very top the bar is see-through, so the page's accent light shows
   // behind it; once anything scrolls under it, it turns solid (as iOS does).
   const [atTop, setAtTop] = useState(true);
@@ -63,15 +72,32 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
             wide action can never sit on top of it. */}
         <div className="px-[12px] min-h-[54px] grid grid-cols-[minmax(44px,auto)_minmax(0,1fr)_minmax(44px,auto)] gap-2 items-center">
           <div className="justify-self-start">
-            {onBack && (
+            {onBack ? (
               <button
                 type="button" onClick={() => { tapLight(); onBack(); }}
-                title={backLabel} aria-label={backLabel}
-                className="h-tap w-tap inline-flex items-center justify-center rounded-full glass-chrome text-fg active:scale-[0.92] transition-transform focus-visible:ring-focus"
+                title={backLabel} aria-label={backLabel} data-nav="back"
+                className={roundButton}
               >
                 <ChevronLeft className="w-6 h-6 -ms-0.5 rtl:rotate-180" strokeWidth={2.25} />
               </button>
-            )}
+            ) : onClose ? (
+              <button
+                type="button" onClick={() => { tapLight(); onClose(); }}
+                title={closeLabel} aria-label={closeLabel} data-nav="close"
+                className={roundButton}
+              >
+                <X className="w-[22px] h-[22px]" strokeWidth={2.25} />
+              </button>
+            ) : menu ? (
+              <button
+                type="button" onClick={() => { tapLight(); menu.onOpen(); }}
+                title={menu.label} aria-label={menu.label} aria-haspopup="true"
+                data-nav="menu" data-tour="tabs"
+                className={roundButton}
+              >
+                <MenuIcon className="w-[22px] h-[22px]" strokeWidth={2.25} />
+              </button>
+            ) : null}
           </div>
           <span
             aria-hidden="true"
@@ -267,7 +293,7 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions }: 
 export function Dock({ children }: { children: React.ReactNode }) {
   return createPortal(
     <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none">
-      {/* Above the tab bar, which stays on every screen: the button used to lie half under it. */}
+      {/* Just above the home indicator. */}
       <div className="mx-auto w-full max-w-xl px-4 pt-8 pb-above-tabs dock-fade">
         <div className="pointer-events-auto">{children}</div>
       </div>

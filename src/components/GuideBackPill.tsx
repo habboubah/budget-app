@@ -4,9 +4,9 @@ import { ChevronLeft, X } from 'lucide-react';
 import { tapLight } from '../ui/haptics';
 
 /**
- * The way back to the guide after *Zeigen* or a tour led to another tab, the
+ * The way back to the guide after *Zeigen* or a tour led to another page, the
  * month page or one of its sheets — where no back button would lead there.
- * A small capsule above the tab bar, as iOS shows "◀ Einstellungen" after a
+ * A small capsule at the bottom, between the edges (the add button keeps the trailing one), as iOS shows "◀ Einstellungen" after a
  * link: "‹ Anleitung" returns to the topic that was open, ✕ lets it go. It
  * sits under every sheet and menu (z-35), so it never covers one; the tour
  * hides it while it runs.
@@ -24,7 +24,7 @@ export function GuideBackPill({ show, title, label, closeLabel, onBack, onClose 
   return createPortal(
     <div
       className="fixed inset-x-0 z-[35] flex justify-center px-[84px] pointer-events-none"
-      style={{ bottom: 'calc(92px + env(safe-area-inset-bottom))' }}
+      style={{ bottom: 'calc(max(env(safe-area-inset-bottom), 16px) + 12px)' }}
     >
       <AnimatePresence>
         {show && (

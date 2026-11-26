@@ -19,8 +19,8 @@ import { GuideTopic, GuideWords, topicText } from './guide';
  */
 export function guideLabels(t: Strings): Record<string, string> {
   return {
-    // The tabs, and the two balances.
-    month: t.tabMonth, stats: t.tabStats, plan: t.tabInsights, settings: t.tabSettings, now: t.balanceNow, end: t.balanceEnd,
+    // The menu (☰) and its three pages, and the two balances.
+    menu: '☰', month: t.tabMonth, stats: t.tabStats, plan: t.tabInsights, settings: t.tabSettings, now: t.balanceNow, end: t.balanceEnd,
     // The balance card's "Mehr" row, which unfolds it.
     cardMore: t.more,
     // On screen as symbols.
@@ -101,7 +101,7 @@ const at = (name: string, radius: number, scroll: TourMark['scroll']): TourMark 
 
 /** Every mark a tour or a topic's *Zeigen* can light up. */
 export const MARKS = {
-  // The month page and the tab bar (the first entry's row, tick and all).
+  // The month page and its menu button ☰ (the first entry's row, tick and all).
   balance: at('balance', 36, 'top'),
   tick: { anchor: '[data-entry-row]', radius: 18, scroll: 'center' },
   month: at('month', 18, 'top'),
@@ -130,7 +130,7 @@ export const MARKS = {
   planRunway: at('plan-runway', 24, 'center'),
   planOutlook: at('plan-outlook', 24, 'center'),
   planGoals: at('plan-goals', 24, 'center'),
-  // Mehr.
+  // The menu (it was the tab Mehr).
   setSearch: at('set-search', 999, 'top'),
   setTransfer: at('set-transfer', 24, 'center'),
   setBook: at('set-book', 24, 'center'),

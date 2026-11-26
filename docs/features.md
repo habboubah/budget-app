@@ -44,7 +44,7 @@ server, no ads; everything stays on the device.
   **Lebensmittel und Drogerie**, **Restaurants**, **Familie**, **Kinder** —
   each a card in its own colour with what is paid so far and, below it, the
   total including what is still open. Each month has its own set: a new
-  month gets the ones switched on under *Mehr › Kategorien und Budgets ›
+  month gets the ones switched on under *Menü › Kategorien und Budgets ›
   (a category) › In jedem neuen Monat* — as shipped only **Einkommen** and
   **Wohnen**, what comes and goes every month; every other category joins a
   month with its first entry there. Empty ones sit in a *Noch leer* row
@@ -100,7 +100,7 @@ server, no ads; everything stays on the device.
   and Spartopf books the difference as a "Kontoabgleich" entry (so you see
   where it came from) or, if you prefer, moves the month's opening balance.
   Undoable; the balance card then notes "Abgeglichen am …".
-- **Month from payday.** *Mehr › Einstellungen › Monat beginnt am*: the
+- **Month from payday.** *Menü › Einstellungen › Monat beginnt am*: the
   1st, or any day up to the 28th for those who plan from salary to salary.
   "November" then runs from 25 Oct to 24 Nov (named after the calendar month
   most of its days fall in) and the month title says so. Before the change
@@ -121,7 +121,7 @@ server, no ads; everything stays on the device.
   later one waits as open — and the last screen says what that leaves at the
   end of the month. *Ich habe schon Daten* goes to the backup
   instead, *Erst mit Testdaten ansehen* fills the app with the test
-  year (a capsule above the tab bar takes it out again and returns to the
+  year (a capsule at the bottom takes it out again and returns to the
   start).
 - **Erste Schritte.** Until all four are done — the balance, the income, the
   fixed costs, the first expense — one slim row on the month page says how
@@ -159,7 +159,7 @@ when it is wanted:
 - **Zeigen** goes to the real thing — the screen, the tab, the entry sheet —
   and lights up what the topic is about: the add button, the month's "⋯",
   the repeat pill, the budgets card. *Zurück zur Anleitung* is on that card;
-  after it, "‹ Anleitung" above the tab bar leads back, the topic still open
+  after it, "‹ Anleitung" at the bottom leads back, the topic still open
   (on a screen of *Mehr*, its back button does).
 - **Touren** — at the top of the guide: the month page, adding an entry,
   Statistik, Planen and Mehr, each at most five things lit one at a time
@@ -223,7 +223,7 @@ when it is wanted:
   *Als Favorit merken*; they appear as chips at the top of a new entry. A tap
   fills the sheet in — name, category, amount, repeat — with the amount
   selected, so typing replaces it; nothing is saved before *Sichern*. Reorder
-  and remove them in *Mehr › Haushaltsbuch › Favoriten*. Up to eight.
+  and remove them in *Menü › Haushaltsbuch › Favoriten*. Up to eight.
 - **Split a payment.** In an entry's editor, *Aufteilen* turns one receipt
   ("Lidl 48,20 €") into parts in different categories ("Lebensmittel 35,10 € ·
   Drogerie 13,10 €") that must add up to the original. The parts are normal
@@ -258,7 +258,7 @@ when it is wanted:
   answer once the phone is unlocked, never while the app lock is on. All
   three are in the Shortcuts app and Spotlight too, for automations, in every
   language of the app.
-- **Automatic capture** (iPhone). *Mehr › Automatisch erfassen* explains
+- **Automatic capture** (iPhone). *Menü › Automatisch erfassen* explains
   how to set up two automations in the Shortcuts app, once: after an Apple
   Pay payment, and (from iOS 27) on a notification from the banking app. The
   payment then becomes an entry by itself — your own name for the payee, the
@@ -272,7 +272,7 @@ when it is wanted:
 ## Bringing transactions in
 
 - **From the bank, without typing.** The month's "⋯" → *Importieren* (also
-  under *Mehr › Werkzeuge*) is one sheet with every way in, each with a
+  under *Menü › Werkzeuge*) is one sheet with every way in, each with a
   sentence on what it takes: the CSV file from your online banking
   (Sparkasse and others), the statement itself as a **PDF** (*Kontoauszug
   importieren (PDF)*, for banks that offer nothing else), a photo or
@@ -291,7 +291,7 @@ when it is wanted:
 - **Import rules.** Correct an imported entry's category and Spartopf offers
   to remember it — *nur diesen*, *auch künftige „REWE"*, or *auch alle
   bisherigen*. Rules can also leave transfers out (*nicht übernehmen*).
-  Manage them in *Mehr › Werkzeuge › Regeln*.
+  Manage them in *Menü › Werkzeuge › Regeln*.
 - **Scan an invoice.** "⋯" → *Importieren* → *Rechnung scannen (QR-Code)*: take a photo (or
   pick a screenshot) of the payment QR code many invoices carry — the
   GiroCode. The entry sheet opens with the payee, the amount and, as the
@@ -318,7 +318,7 @@ when it is wanted:
 ## More than one account, and the money around it
 
 - **Cash and savings accounts.** One account is all most people need, and
-  that is all a book shows until *Mehr › Konten* gets another — cash, a
+  that is all a book shows until *Menü › Konten* gets another — cash, a
   savings account or any other, each with what is on it today. From then on
   the balance card has a small switch ("🏦 Girokonto ▾", *Alle Konten* for
   the total), a new entry has an account pill, and the month's "⋯" has
@@ -328,7 +328,7 @@ when it is wanted:
   keeps its own opening balance; budgets, Statistik and Planen count every
   account, and Planen shows *Vermögen* — all of them together. An account
   goes only once it is empty.
-- **Debts and loans.** *Mehr › Schulden und Kredite* takes a loan or a
+- **Debts and loans.** *Menü › Schulden und Kredite* takes a loan or a
   debt — what it was, since when, the interest a year, the monthly payment
   and the recurring entry it is paid with — or money lent to someone ("Mir
   geschuldet"). Each shows what is left and when it ends ("schuldenfrei im
@@ -339,7 +339,7 @@ when it is wanted:
   97 € im Monat bis Juni"; a "Sparen" entry can be put into a pot, recurring
   ones fill it by themselves. Money put into a savings category (an ETF plan
   in *Geldanlage*) counts as saved, not spent, everywhere in the statistics.
-- **Trips and projects.** *Mehr › Reisen und Projekte*: a holiday, a
+- **Trips and projects.** *Menü › Reisen und Projekte*: a holiday, a
   move, the baby's room — a name (it becomes the tag), a budget in all, and
   optionally its first and last day. Everything with that tag counts towards
   it, whatever the category or month: "640 € von 2.000 € · 9.–18. Nov. · ≈
@@ -350,7 +350,7 @@ when it is wanted:
   what was typed kept as the note. No rate is ever fetched. Planen shows a
   card once there is one; finished ones can be closed, and deleting one
   leaves its entries' tags.
-- **Tax list.** *Mehr › Steuerliste*: switch on *Im Eintragsblatt
+- **Tax list.** *Menü › Steuerliste*: switch on *Im Eintragsblatt
   anbieten*, and an expense gets a *Steuer* pill — Handwerker, haushaltsnahe
   Dienste, Kinderbetreuung, Spenden, Beruf und Arbeitsmittel, Gesundheit und
   Pflege, Sonstiges. The screen lists what is marked and paid by kind and
@@ -469,7 +469,7 @@ when it is wanted:
 
 ## Reminders
 
-*Mehr › Einstellungen › Sicherheit und Mitteilungen* (iPhone and Android app):
+*Menü › Einstellungen › Sicherheit und Mitteilungen* (iPhone and Android app):
 
 - **An offene Posten erinnern**: a notification some days before an open
   bill is due, and before a contract's last day to cancel.
@@ -499,14 +499,14 @@ when it is wanted:
   whether the book is part of the phone's iCloud or computer backup;
   switched off, it stays on this iPhone only. On Android, *Im Gerätebackup
   sichern* does the same for Google's backup.
-- **App zurücksetzen** (*Mehr › Einstellungen*) erases every month, entry, category and
+- **App zurücksetzen** (*Menü › Einstellungen*) erases every month, entry, category and
   automatic backup on this device; the app then begins again with the start,
   in the phone's language and currency, and light (*Darstellung › Hell*)
   whatever the phone is set to.
 
 ## Backup and transfer
 
-*Mehr › Sichern und übertragen*:
+*Menü › Sichern und übertragen*:
 
 - **Export and import.** Everything as one file (share sheet → Files, iCloud
   Drive, AirDrop …), and back again — also to move the book between the web
@@ -521,10 +521,16 @@ when it is wanted:
   the latest. After 90 days without a copy leaving the phone, a dismissable
   card reminds you to export one.
 
-## Mehr — what is done there, and Einstellungen
+## The menu (☰) — every page, and Einstellungen
 
-The fourth tab (it was *Optionen*) holds everything that is not a month, a
-statistic or a plan, on about one screen:
+There is no tab bar: ☰ at the top left of the month page, *Statistik* and
+*Planen* opens the menu over the whole screen (until November 2026 it was the
+fourth tab, *Mehr*, and *Optionen* before that). ✕ — or Android's back — goes
+back to the page it was opened from. On about one screen:
+
+- **Three big tiles** — *Monat* (with the month shown), *Statistik* ("Blick
+  zurück") and *Planen* ("Blick nach vorn"); the page you came from is
+  marked.
 
 - **A search** on top — "Was möchtest du tun?" — over the rows below, over
   what *Einstellungen* holds ("Währung" leads there) and over the guide's
@@ -555,7 +561,7 @@ categories, 3 favourites) sit in a small pill at the row's end.
   at the top, cards that float on a soft shadow, and an ink-blue night mode;
   light, dark or automatic. Each category brings its colour — its card's
   header, its tile, its bar, its ticks. The balance sits on a deep gradient
-  card in the app's colour (eight to choose from in *Mehr › Einstellungen ›
+  card in the app's colour (eight to choose from in *Menü › Einstellungen ›
   Darstellung*). Charts grow in with round-ended columns and smooth lines;
   cards rise in, a tick pops, the tab's symbol lands with a bounce — all of
   it off under reduced motion. On the iPhone, Apple's own fonts (SF Pro, SF
@@ -564,7 +570,7 @@ categories, 3 favourites) sit in a small pill at the row's end.
   Norsk, Dansk, Français, Italiano, Español, Nederlands, Português and
   العربية (right to left, with Arabic category names; amounts typed with
   Arabic digits are understood). A new install starts in English.
-- **Currency.** EUR by default; *Mehr › Einstellungen › Darstellung › Währung* switches
+- **Currency.** EUR by default; *Menü › Einstellungen › Darstellung › Währung* switches
   to CHF, GBP, USD, SAR and more. It only relabels the amounts — nothing is
   converted.
 - **Accessibility.** VoiceOver labels on everything (the paid circle is a
@@ -583,7 +589,7 @@ categories, 3 favourites) sit in a small pill at the row's end.
   (income or expense, default repeat, emoji, colour), edit, drag to reorder,
   delete (undoable; asks first if entries go with it), *Standard
   wiederherstellen*.
-- **Test data.** *Mehr › Einstellungen › Ausprobieren › Testdaten hinzufügen*
+- **Test data.** *Menü › Einstellungen › Ausprobieren › Testdaten hinzufügen*
   (also in the guide, and on the start as *Erst mit Testdaten ansehen*) fills the
   book with a year of a family's household money — salary, child benefit,
   rent, electricity, groceries, the pharmacy, the car, a weekend away and a

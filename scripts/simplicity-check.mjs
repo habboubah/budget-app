@@ -18,6 +18,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { chromium } from 'playwright';
 import { build, preview } from 'vite';
+import { goTab } from './nav.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4343;
@@ -47,7 +48,8 @@ const BUDGET = {
   'the month page, everything put off': { taps: 13, figures: 2 },
   'the entry sheet, a new entry': { taps: 16 },
   'the month’s “⋯”': { rows: 5 },
-  'Mehr': { rows: 13 },
+  // The menu (☰, November 2026; it was the tab Mehr): its 13 rows and the three page tiles that were the tab bar.
+  'the menu': { rows: 16 },
   'Planen in the first month': { taps: 13 },
   'Statistik in the first month': { taps: 9 },
 };
@@ -113,7 +115,7 @@ try {
     return { ctx, page };
   };
   const wait = (page, ms = 450) => page.waitForTimeout(ms);
-  const tab = async (page, n) => { await page.locator('nav button:not(.hero)').nth(n).click(); await wait(page); };
+  const tab = async (page, n) => { await goTab(page, n); await wait(page); };
   /** The start, put off: the month page of a book with nothing in it. */
   const putOff = async page => {
     await page.locator('[data-start="go"]').click();
@@ -170,7 +172,7 @@ try {
     await page.keyboard.press('Escape');
     await wait(page);
     await tab(page, 3);
-    await check(page, 'Mehr', 'main button');
+    await check(page, 'the menu', 'main button');
     await ctx.close();
   }
   {
