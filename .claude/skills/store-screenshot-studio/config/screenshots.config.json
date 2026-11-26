@@ -1,19 +1,20 @@
 {
-  "//rawDir": "Where scripts/screenshots.mjs writes its captures and, next to each, <capture>.marks.json; {locale} is replaced per language.",
+  "//rawDir": "Where scripts/screenshots.mjs writes the iPhone captures and, next to each, <capture>.marks.json; {locale} is replaced per language. A target (and the feature graphic) may name its own rawDir: Google Play's take the Android captures (screenshots/<locale>-android/: Android's wording, no iCloud, fingerprint instead of Face ID, the Android app's rounded face) — same file names, same marks.",
   "rawDir": "screenshots/{locale}",
   "outDir": "screenshots/store",
   "previewFile": "screenshots/store/contact-sheet.png",
-  "//locales": "Each locale needs a config/copy.<locale>.json and a capture folder. `dir` there drives RTL.",
+  "//locales": "Each locale needs a config/copy.<locale>.json and a capture folder (npm run screenshots takes de, en and ar). `dir` there drives RTL (ar).",
   "locales": [
     "de",
-    "en"
+    "en",
+    "ar"
   ],
   "//style": "For the whole set. sublines: show each slide's subline under its headline (off: a thumbnail has room for one message; a slide can still ask for its own with \"subline\": true). maxLines: a headline that needs more lines than this is stepped down in size until it fits.",
   "style": {
     "sublines": false,
     "maxLines": 3
   },
-  "//slides": "Order is the store order. raw: a capture in rawDir. layout: where the copy is — top (the phone runs off the bottom edge) or bottom (it runs off the top). Alternate them. background: a preset in theme.json. device: iphone | pixel. phone: { width (percent of the canvas height, 39 by default), tilt (degrees), nudge [x, y] (x in App Store canvas widths, y in canvas heights) }. second: another capture as a phone behind the first (raw, width, tilt, nudge; \"front\": true puts it in front). callouts: pieces of the capture lifted out of the phone — see //callouts. The whole model, with the reasons: reference/composition.md.",
+  "//slides": "Order is the store order. raw: a capture in rawDir. layout: where the copy is — top (the phone runs off the bottom edge) or bottom (it runs off the top). Alternate them. background: a preset in theme.json. device: iphone | pixel. phone: { width (percent of the canvas height, 39 by default), tilt (degrees), nudge [x, y] (x in App Store canvas widths, y in canvas heights) }. second: another capture as a phone behind the first (raw, width, tilt, nudge; \"front\": true puts it in front). icon: a picture from the repo drawn as the app's icon above the headline (the opening slide: assets/icon-only.png). callouts: pieces of the capture lifted out of the phone — see //callouts. The whole model, with the reasons: reference/composition.md.",
   "//callouts": "Each lifts one piece of the slide's own capture: { mark, scale, tilt, shift, anchor, pad, radius }. mark: a name from <capture>.marks.json (named in scripts/screenshots.mjs, written by `npm run screenshots`), so the piece is found in every language and follows the app when a screen changes. scale: how much bigger than in the phone (1.1–1.5). tilt: degrees. shift: [x, y] in screen widths. anchor: the edge that stays put while it grows (center, top, bottom, start, end, top-start …). pad: grow the piece on every side, in capture widths (for a piece that has no card of its own). radius: its corner, in capture widths, when the mark's own is not wanted. A fixed \"crop\": [x, y, w, h] (fractions of the capture) works too, but is the same spot in every language.",
   "slides": [
     {
@@ -23,6 +24,7 @@
       "layout": "top",
       "device": "iphone",
       "background": "petrol",
+      "icon": "assets/icon-only.png",
       "subline": true,
       "phone": {
         "width": 34,
@@ -164,6 +166,7 @@
       "//": "Google Play phone screenshots. `device` overrides each slide's frame (no iPhone on Play); `slides` picks and orders the eight Play allows. The first slide says what the app is and carries the promise (no ads, no subscription, data stays on the device), so the ribbon is on it only.",
       "id": "play-phone",
       "store": "play",
+      "rawDir": "screenshots/{locale}-android",
       "width": 1080,
       "height": 1920,
       "scale": 3,
@@ -186,6 +189,7 @@
   "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. slide: whose screen the phone shows. Its copy is the featureGraphic block of every copy file (its subline shows with \"subline\": true — with four points there is no room for it). phone: width in percent of the height, tilt, nudge [x in widths, y in heights]. stickers: placed straight on the canvas — x in widths, y in heights, size in heights.",
   "featureGraphic": {
     "slide": "month",
+    "rawDir": "screenshots/{locale}-android",
     "background": "petrol",
     "device": "pixel",
     "width": 1024,

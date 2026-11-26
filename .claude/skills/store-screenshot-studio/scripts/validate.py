@@ -27,8 +27,9 @@ PLAY_MAX_BYTES = 8 * 1024 * 1024
 BANNED = ["download now", "download today", "best app", "#1", "number one",
           "must have", "must-have", "amazing", "revolutionary", "click here"]
 MAX_HEADLINE_WORDS = 5
-# The ribbon's band shows about a dozen letters; a point is one pill on one line.
-MAX_RIBBON_CHARS = 12
+# The ribbon's band shows about a dozen letters, its long form (two words,
+# "Free · No Ads") about twenty; a point is one pill on one line.
+MAX_RIBBON_CHARS = 20
 MAX_POINT_CHARS = 28
 MAX_POINTS = 5
 # Composition (reference/composition.md).
@@ -206,13 +207,22 @@ slide_ids = [sl["id"] for sl in CFG["slides"]]
 stickers_dir = os.path.join(SKILL, "assets", "stickers")
 
 
-def raw_file(name, locale):
-    return os.path.join(ROOT, CFG["rawDir"].replace("{locale}", locale), name)
+def raw_file(name, locale, raw_dir=None):
+    return os.path.join(ROOT, (raw_dir or CFG["rawDir"]).replace("{locale}", locale), name)
 
 
-def marks_of(name, locale):
+def raw_dirs(sid):
+    """Every capture folder a slide is framed from: the set's, and that of each target showing it with its own (Play: the Android captures)."""
+    dirs = [CFG["rawDir"]]
+    for target in CFG["targets"]:
+        if target.get("rawDir") and sid in target.get("slides", slide_ids) and target["rawDir"] not in dirs:
+            dirs.append(target["rawDir"])
+    return dirs
+
+
+def marks_of(name, locale, raw_dir=None):
     """The marks `npm run screenshots` wrote next to a capture, or None."""
-    path = os.path.splitext(raw_file(name, locale))[0] + ".marks.json"
+    path = os.path.splitext(raw_file(name, locale, raw_dir))[0] + ".marks.json"
     if not os.path.exists(path):
         return None
     return json.load(open(path)).get("marks", {})
@@ -236,18 +246,20 @@ for i, sl in enumerate(CFG["slides"]):
             errors.append(f"{where}: scale {scale!r}; use {MIN_SCALE}-{MAX_SCALE}")
             continue
         if "mark" in c:
-            for locale in CFG["locales"]:
-                marks = marks_of(sl["raw"], locale)
-                if marks is None:
-                    errors.append(f"{where}: no marks next to {locale}/{sl['raw']} -- run `npm run screenshots`")
-                elif c["mark"] not in marks:
-                    errors.append(f"{where}: mark {c['mark']!r} is not in {locale}/{sl['raw']}'s marks "
-                                  f"({', '.join(sorted(marks)) or 'none'})")
+            for raw_dir in raw_dirs(sid):
+                for locale in CFG["locales"]:
+                    folder = os.path.basename(os.path.dirname(raw_file(sl["raw"], locale, raw_dir)))
+                    marks = marks_of(sl["raw"], locale, raw_dir)
+                    if marks is None:
+                        errors.append(f"{where}: no marks next to {folder}/{sl['raw']} -- run `npm run screenshots`")
+                    elif c["mark"] not in marks:
+                        errors.append(f"{where}: mark {c['mark']!r} is not in {folder}/{sl['raw']}'s marks "
+                                      f"({', '.join(sorted(marks)) or 'none'})")
         elif not (isinstance(c.get("crop"), list) and len(c["crop"]) == 4):
             errors.append(f"{where}: needs a \"mark\" or a \"crop\" of [x, y, w, h]")
         elif len(CFG["locales"]) > 1:
             warnings.append(f"{where}: a fixed \"crop\" is the same spot in every language, and the screens "
-                            f"differ. Name a mark in scripts/screenshots.mjs instead")
+                            f"differ. Name a mark in scripts/lib/shots.mjs instead")
 
         # A lifted piece is the capture's own pixels, enlarged. Too far and it
         # goes soft beside the screen it was lifted from.
