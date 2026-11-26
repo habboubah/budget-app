@@ -258,7 +258,8 @@ function moneyFormat(locale: string, sign: 'auto' | 'always' | 'exceptZero'): In
   const key = `${locale}|${sign}`;
   let f = formatters.get(key);
   if (!f) {
-    f = new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, currencyDisplay: 'narrowSymbol', signDisplay: sign });
+    // Always two decimals: amounts are cents, and the Syrian pound's CLDR data has none (currency.ts).
+    f = new Intl.NumberFormat(locale, { style: 'currency', currency: activeCurrency, currencyDisplay: 'narrowSymbol', signDisplay: sign, minimumFractionDigits: 2, maximumFractionDigits: 2 });
     formatters.set(key, f);
   }
   return f;
