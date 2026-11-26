@@ -174,7 +174,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   draws what `MenuContext` (`ui/menuButton.ts` — not `menu.ts`, which on a
   Mac is the same file as `Menu.tsx`) asks for, so no view passes it: on the
   month page's root ☰ and, beside it, the add button (`ui/AddButton.tsx`:
-  round, 44 px like ☰, on the accent's gradient, floating with the bar); on
+  a round glass button like ☰, ‹ › and ⋯, only its plus in the accent, floating with the bar); on
   Statistik and Planen ‹ back to the month. ☰ opens the menu full screen: the
   tab `settings` (`MoreView`), always at its top, rising in a little from
   below; ✕ on its bar and Android's back lead to the month. The menu opens on
