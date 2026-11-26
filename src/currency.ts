@@ -6,11 +6,20 @@
  * relabels the amounts.
  */
 
-/** ISO 4217 codes offered in the picker, each with exactly two minor units. */
+/**
+ * ISO 4217 codes offered in the picker, each with two minor units — the
+ * Syrian pound (lira) too: ISO gives it 100 piastres, though the phones'
+ * formatting data (CLDR) writes it without decimals, so the app always
+ * writes money with two (`moneyFormat` in logic.ts). The code stayed SYP
+ * when the new pound came on 1 January 2026 (100 old = 1 new).
+ */
 export const CURRENCIES = [
   'EUR', 'CHF', 'GBP', 'USD', 'CAD', 'AUD', 'SEK', 'NOK', 'DKK', 'PLN',
-  'CZK', 'TRY', 'SAR', 'AED', 'QAR', 'EGP', 'MAD',
+  'CZK', 'TRY', 'SAR', 'AED', 'QAR', 'EGP', 'SYP', 'MAD',
 ] as const;
+
+/** In the list though CLDR writes it without decimals (see above). */
+const TWO_DIGITS_BY_ISO: readonly string[] = ['SYP'];
 
 export type Currency = (typeof CURRENCIES)[number];
 
@@ -33,6 +42,7 @@ export function isSupportedCurrency(code: unknown): code is Currency {
  * to keep the list honest; the app offers only `CURRENCIES`, which all pass.
  */
 export function hasTwoMinorDigits(code: string): boolean {
+  if (TWO_DIGITS_BY_ISO.includes(code)) return true;
   try {
     return new Intl.NumberFormat('en', { style: 'currency', currency: code }).resolvedOptions().maximumFractionDigits === 2;
   } catch {
@@ -50,7 +60,7 @@ const REGION_CURRENCY: Record<string, Currency> = {
   SE: 'SEK', NO: 'NOK', DK: 'DKK',
   PL: 'PLN', CZ: 'CZK',
   TR: 'TRY',
-  SA: 'SAR', AE: 'AED', QA: 'QAR', EG: 'EGP', MA: 'MAD',
+  SA: 'SAR', AE: 'AED', QA: 'QAR', EG: 'EGP', SY: 'SYP', MA: 'MAD',
 };
 
 /**

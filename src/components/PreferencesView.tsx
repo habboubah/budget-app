@@ -1,15 +1,15 @@
-import { CSSProperties, useEffect, useId, useState } from 'react';
+import { CSSProperties, useId, useState } from 'react';
 import { ArrowUpRight, Bell, CalendarDays, CalendarRange, Check, CloudUpload, Coins, EyeOff, FlaskConical, FlaskConicalOff, Fingerprint, Languages, ListChecks, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
 import { LockKind } from '../lock';
 import { ReminderPrefs } from '../reminders';
-import { Screen, Group, IconTile, MenuRow, Row } from '../ui/Screen';
+import { Group, IconTile, MenuRow, Row } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
 import { Switch } from '../ui/Switch';
 import { tapLight } from '../ui/haptics';
-import { Next, PrefsSection } from './MoreView';
+import { Next } from './MoreView';
 import { leadLabel, timeLabel } from './RemindersView';
 
 interface Props {
@@ -17,9 +17,6 @@ interface Props {
   themeMode: ThemeMode;
   accent: Accent;
   t: Strings;
-  onBack: () => void;
-  /** The group a search in *Mehr* led to: the screen opens there. */
-  section?: PrefsSection;
   /** How much the book holds, for the card about the app: its started months and its entries (no amounts). */
   monthCount: number;
   entryCount: number;
@@ -119,23 +116,25 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
 }
 
 /**
- * Mehr › Einstellungen (plan 39): what is set once and then left alone, in
- * the order it is looked for:
+ * The settings (plan 39): what is set once and then left alone. They stand in
+ * the menu itself, under the heading *Einstellungen*, after its rows (they had
+ * a screen of their own until November 2026), in the order they are looked for:
  *
- *   0. on top, the card on the hero: what the app is, its version, how much
- *      the book holds (months and entries, never an amount);
- *   1. *Darstellung* — language, light or dark, the colour, the currency
- *      (the guide sends people here by this name: keep those four in it);
- *   2. *Sicherheit und Mitteilungen* — hiding amounts first (every device
- *      has it), then the lock, reminders and the phone's backup (apps only);
- *   3. *Haushaltsbuch* — the day the month begins;
- *   4. *Ausprobieren* — the test data, in and out;
- *   5. *Über Spartopf* — rating, feedback and the privacy policy;
- *   6. last, on its own, resetting.
+ *   1. *Allgemein* — language, currency, the day the month begins;
+ *   2. *Darstellung* — light or dark, the colour (the guide's {display});
+ *   3. *Datenschutz und Sicherheit* — hiding amounts first (every device
+ *      has it), then the lock and the phone's backup (apps only);
+ *   4. *Mitteilungen* — the reminders (apps only);
+ *   5. *Ausprobieren* — the test data, in and out;
+ *   6. *Über Spartopf* — the card on the hero (what the app is, its version,
+ *      how much the book holds: months and entries, never an amount), then
+ *      rating, feedback and the privacy policy (it stood on top until
+ *      November 2026);
+ *   7. last, on its own, resetting.
  *
  * Every icon tile in a group has its own colour, so a row is found by it.
  */
-export function PreferencesView(p: Props) {
+export function PreferencesGroups(p: Props) {
   const { t } = p;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmDemo, setConfirmDemo] = useState(false);
@@ -146,39 +145,12 @@ export function PreferencesView(p: Props) {
     ...(p.monthCount > 1 ? [{ icon: CalendarDays, text: fmt(t.averageSpanN, { n: p.monthCount }) }] : []),
     ...(p.entryCount > 1 ? [{ icon: ListChecks, text: fmt(t.tagEntries, { n: p.entryCount }) }] : []),
   ];
-  // A search led here: its group at the top. (A frame later than App's own scroll-to-top for a new screen.)
-  useEffect(() => {
-    if (!p.section) return;
-    const id = requestAnimationFrame(() => document.querySelector(`[data-prefs="${p.section}"]`)?.scrollIntoView({ block: 'center' }));
-    return () => cancelAnimationFrame(id);
-  }, []);
-
   return (
-    <Screen title={t.prefsTitle} onBack={p.onBack} backLabel={t.back} tabbed>
-      {/* First on the page: what the app is, its version, how much the book holds. */}
-      <section className="rounded-lg hero hero-glow hero-art overflow-hidden text-on-hero p-[18px]" aria-labelledby="about-title">
-        <div className="flex items-center gap-3.5">
-          <img src="/icon.svg" alt="" className="w-[52px] h-[52px] rounded-[14px] shrink-0 shadow-[0_0_0_1px_rgb(255_255_255/0.2)]" />
-          <div className="min-w-0 flex-1">
-            <h2 id="about-title" className="display text-heading font-semibold wrap-compound">{t.about}</h2>
-            <p className="text-caption text-on-hero-mute tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
-          </div>
-        </div>
-        <p className="mt-3 text-label text-on-hero-mute wrap-prose">{t.aboutBody}</p>
-        {facts.length > 0 && (
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {facts.map(f => (
-              <li key={f.text} className="min-h-[30px] ps-2.5 pe-3 py-1 rounded-full hero-panel inline-flex items-center gap-1.5 text-caption font-semibold text-on-hero tabular-nums">
-                <f.icon className="w-[15px] h-[15px] shrink-0 text-on-hero-soft" strokeWidth={2.2} aria-hidden="true" />
-                {f.text}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <div data-prefs="display">
-        <Group title={t.displaySection} tour="set-display">
+    <>
+      {/* Where the settings begin in the menu: a heading of the page's own size, so they read as a part of their own. */}
+      <h2 data-tour="set-prefs" className="display text-heading font-bold text-fg px-[4px] pt-2 wrap-compound">{t.prefsTitle}</h2>
+      <div data-prefs="general">
+        <Group title={t.generalSection}>
           <MenuRow<Language>
             label={t.language}
             leading={<IconTile icon={Languages} hue="blue" />}
@@ -186,6 +158,25 @@ export function PreferencesView(p: Props) {
             onChange={p.onLanguage}
             options={languages.map(l => ({ value: l, label: LANGUAGE_NAMES[l] }))}
           />
+          <MenuRow<Currency>
+            label={t.currency}
+            leading={<IconTile icon={Coins} hue="lemon" />}
+            value={p.currency}
+            onChange={p.onCurrency}
+            options={CURRENCIES.map(c => ({ value: c, label: currencyName(c, t.locale) }))}
+          />
+          <Row
+            label={t.monthStartRow}
+            sub={t.monthStartRowSub}
+            leading={<IconTile icon={CalendarRange} hue="tomato" />}
+            trailing={<Next value={fmt(t.monthStartValue, { day: p.monthStart })} />}
+            onClick={p.onMonthStart}
+          />
+        </Group>
+      </div>
+
+      <div data-prefs="display">
+        <Group title={t.displaySection} tour="set-display">
           <MenuRow<ThemeMode>
             label={t.appearance}
             leading={<IconTile icon={SunMoon} hue="stone" />}
@@ -198,13 +189,6 @@ export function PreferencesView(p: Props) {
             ]}
           />
           <AccentRow value={p.accent} onChange={p.onAccent} t={t} />
-          <MenuRow<Currency>
-            label={t.currency}
-            leading={<IconTile icon={Coins} hue="lemon" />}
-            value={p.currency}
-            onChange={p.onCurrency}
-            options={CURRENCIES.map(c => ({ value: c, label: currencyName(c, t.locale) }))}
-          />
         </Group>
       </div>
 
@@ -222,17 +206,6 @@ export function PreferencesView(p: Props) {
               sub={t.lockSub}
               leading={<IconTile icon={LockIcon} hue="leaf" />}
               trailing={<Switch checked={p.lockOn} onChange={p.onLock} label={lockLabel} className="-me-2" />}
-            />
-          )}
-          {p.reminders && (
-            <Row
-              label={t.remindersRow}
-              // The setting as a line under it: long in German, and text in Arabic (no `num`).
-              sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}`
-                : p.reminders.nudge ? `${t.nudgeRow} · ${timeLabel(p.reminders.nudgeTime, t.locale)}` : t.remindersOff}
-              leading={<IconTile icon={Bell} hue="tomato" />}
-              trailing={<Next />}
-              onClick={p.onReminders}
             />
           )}
           {p.deviceBackup !== null && (
@@ -253,17 +226,21 @@ export function PreferencesView(p: Props) {
         </Group>
       </div>
 
-      <div data-prefs="book">
-        <Group title={t.bookSection}>
-          <Row
-            label={t.monthStartRow}
-            sub={t.monthStartRowSub}
-            leading={<IconTile icon={CalendarRange} hue="tomato" />}
-            trailing={<Next value={fmt(t.monthStartValue, { day: p.monthStart })} />}
-            onClick={p.onMonthStart}
-          />
-        </Group>
-      </div>
+      {p.reminders && (
+        <div data-prefs="notify">
+          <Group title={t.notifySection}>
+              <Row
+                label={t.remindersRow}
+                // The setting as a line under it: long in German, and text in Arabic (no `num`).
+                sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}`
+                  : p.reminders.nudge ? `${t.nudgeRow} · ${timeLabel(p.reminders.nudgeTime, t.locale)}` : t.remindersOff}
+                leading={<IconTile icon={Bell} hue="tomato" />}
+                trailing={<Next />}
+                onClick={p.onReminders}
+              />
+          </Group>
+        </div>
+      )}
 
       <div data-prefs="demo">
         <Group title={t.demoSection} footer={t.demoFooter}>
@@ -285,9 +262,29 @@ export function PreferencesView(p: Props) {
         </Group>
       </div>
 
-      {/* About the app (its card stands at the top): where to rate it, write to its maker and read the privacy policy. */}
-      <div data-prefs="about">
-        <Group title={t.aboutSection}>
+      {/* About the app, near the end: its card (what it is, its version, how much the book holds), then rating, feedback and the privacy policy. */}
+      <div data-prefs="about" className="space-y-3">
+        <section className="rounded-lg hero hero-glow hero-art overflow-hidden text-on-hero p-[18px]" aria-labelledby="about-title">
+          <div className="flex items-center gap-3.5">
+            <img src="/icon.svg" alt="" className="w-[52px] h-[52px] rounded-[14px] shrink-0 shadow-[0_0_0_1px_rgb(255_255_255/0.2)]" />
+            <div className="min-w-0 flex-1">
+              <h2 id="about-title" className="display text-heading font-semibold wrap-compound">{t.about}</h2>
+              <p className="text-caption text-on-hero-mute tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
+            </div>
+          </div>
+          <p className="mt-3 text-label text-on-hero-mute wrap-prose">{t.aboutBody}</p>
+          {facts.length > 0 && (
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {facts.map(f => (
+                <li key={f.text} className="min-h-[30px] ps-2.5 pe-3 py-1 rounded-full hero-panel inline-flex items-center gap-1.5 text-caption font-semibold text-on-hero tabular-nums">
+                  <f.icon className="w-[15px] h-[15px] shrink-0 text-on-hero-soft" strokeWidth={2.2} aria-hidden="true" />
+                  {f.text}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+        <Group>
           {p.onRate && <Row label={t.rateApp} leading={<IconTile icon={Star} hue="lemon" />} trailing={<Away />} onClick={p.onRate} />}
           <Row label={t.sendFeedback} sub={t.sendFeedbackSub} leading={<IconTile icon={Mail} hue="blue" />} trailing={<Away />} onClick={p.onFeedback} />
           <Row label={t.privacyPolicy} leading={<IconTile icon={ShieldCheck} hue="leaf" />} trailing={<Away />} onClick={p.onPrivacy} />
@@ -320,6 +317,6 @@ export function PreferencesView(p: Props) {
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => { setConfirmDelete(false); p.onDeleteAll(); }}
       />
-    </Screen>
+    </>
   );
 }

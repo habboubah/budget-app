@@ -169,43 +169,49 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   - Debug: `localStorage['spartopf-debug'] = '1'` (Safari Web Inspector on a
     device) shows *WebKit-Daten löschen* in *Sichern und übertragen* — what
     iOS does when it reclaims web storage; after a relaunch the file has it all.
-- **No tab bar: the menu (☰, November 2026, on Ahmad's word).** The month
-  page, Statistik and Planen show ☰ on the bar's leading end where a pushed
-  screen shows ‹ (`Screen` reads `MenuContext` from `ui/menuButton.ts`, which App
-  provides — no view passes it). ☰ opens the menu full screen: it is the tab
-  `settings` (`MoreView`), always at its top, rising in a little from below.
-  It covers the page it was opened from (`menuFrom` in App): ✕ on its bar and
-  Android's back return there, and that page's tile is marked. The menu opens
-  on three big tiles — *Monat* (with the month shown), *Statistik*, *Planen*
-  (`NavTile`, `data-nav-tile`) — then everything *Mehr* held, below. The add
-  button floats on its own at the bottom's trailing end (`ui/AddButton.tsx`),
-  on the month page's root only; the guide's and the test data's capsules sit
-  at the bottom between the edges. Scripts get around with
-  `scripts/nav.mjs` (`goTab(page, n)`: 0 month, 1 Statistik, 2 Planen,
-  3 the menu) and find ☰, ✕ and ‹ as `data-nav="menu" | "close" | "back"`;
-  the App Review recording taps "Menu" (`role: button`). The tour's `tabs`
-  mark is ☰ now.
-- **The menu (`MoreView`; the fourth tab *Mehr* until November 2026, *Optionen* before) holds what is done,
-  Einstellungen (`PreferencesView`, pushed as `preferences`) what is set
-  once** (plan 39). *Mehr*, on about one screen: a search ("Was möchtest du
-  tun?" — its own rows, what Einstellungen holds (`prefsIndex` in App) and the
-  guide's topics, whose words are fetched when the search begins), two
-  `QuickTile` cards (the guide; backup and transfer), *Haushaltsbuch* (what
-  every book has: categories and budgets, accounts, favourites), *Werkzeuge*
-  (what a book may use: importing — the same `ImportSheet` as the month's
-  "⋯" —, debts, trips and projects, the tax list, import rules, automatic
-  capture) and one row to *Einstellungen*: *Darstellung* (language,
-  appearance, colour, currency — the guide's `{display}` sends people here,
-  so those four stay in it), *Sicherheit und Mitteilungen* (hide amounts
-  first, then the lock, reminders, the phone's backup), *Haushaltsbuch* (the
-  day the month begins), *Ausprobieren* (the test data), *Über Spartopf*
-  (rating, feedback, the privacy policy), and resetting last and alone. The
-  page opens on the app's card on the hero — icon, name, version, the
+- **No tab bar: the month page is home, the rest is behind ☰ (November
+  2026, on Ahmad's word).** Where a page passes no back of its own, `Screen`
+  draws what `MenuContext` (`ui/menuButton.ts` — not `menu.ts`, which on a
+  Mac is the same file as `Menu.tsx`) asks for, so no view passes it: on the
+  month page's root ☰ and, beside it, the add button (`ui/AddButton.tsx`:
+  round, 44 px like ☰, on the accent's gradient, floating with the bar); on
+  Statistik and Planen ‹ back to the month. ☰ opens the menu full screen: the
+  tab `settings` (`MoreView`), always at its top, rising in a little from
+  below; ✕ on its bar and Android's back lead to the month. The menu opens on
+  two big tiles, *Statistik* and *Planen* (`NavTile`, `data-nav-tile`) — no
+  *Monat*: ✕ leads there. The guide's and the test data's capsules sit at the
+  bottom. Scripts get around with `scripts/nav.mjs` (`goTab(page, n)`:
+  0 month, 1 Statistik, 2 Planen, 3 the menu; `toMonth`, `openMenu`) and
+  find ☰, ✕ and ‹ as `data-nav="menu" | "close" | "back"`; the App Review
+  recording taps "Menu" (`role: button`), "Back" and "Close menu". The tour's
+  `tabs` mark is ☰.
+- **The menu (`MoreView`; the fourth tab *Mehr* until November 2026, *Optionen* before) holds what is done
+  and, under the heading *Einstellungen*, what is set once** (plan 39; the
+  settings are `PreferencesGroups` in `PreferencesView.tsx`, which App passes
+  to the menu as children — they had a pushed screen, `preferences`, until
+  November 2026, on Ahmad's word). The menu, on about one screen: a search ("Was möchtest
+  du tun?" — its own rows, what Einstellungen holds (`prefsIndex` in App) and
+  the guide's topics, whose words are fetched when the search begins), the
+  two tiles, *Haushaltsbuch* (what every book has: categories and budgets,
+  accounts, recurring entries, favourites), *Werkzeuge* (what a book may use:
+  importing — the same `ImportSheet` as the month's "⋯" —, debts, trips and
+  projects, the tax list, import rules, automatic capture), *App* (the
+  guide, backup and transfer) and then every setting, grouped by topic (a
+  setting the search finds clears the search and scrolls its group into
+  view; the guide's *Zeigen* for the lock and the look opens the menu and
+  marks the group): *Allgemein* (language, currency, the day the month
+  begins), *Darstellung* (light or dark, the colour — the guide's
+  `{display}`; `{general}` names *Allgemein*), *Datenschutz und Sicherheit*
+  (hide amounts first, then the lock and the phone's backup),
+  *Mitteilungen* (the reminders, apps only), *Ausprobieren* (the test data),
+  *Über Spartopf* — the app's card on the hero (icon, name, version, the
   tagline, how many months and entries the book holds: counts from two on,
-  never an amount. The currency applies as it is picked: it only relabels,
+  never an amount; on top of the page until November 2026), then rating,
+  feedback, the privacy policy — and resetting last and alone.
+  `PrefsSection` is `general | display | security | notify | demo | about |
+  reset`. The currency applies as it is picked: it only relabels,
   and picking the old one again undoes it — no `Confirm`. Back
-  from the reminders leads to Einstellungen again (`prefsReturn`, like
-  `guideReturn`). A new feature's row joins *Werkzeuge* (or *Haushaltsbuch*
+  from the reminders leads to the menu. A new feature's row joins *Werkzeuge* (or *Haushaltsbuch*
   when every book has it), a new setting joins its group in Einstellungen —
   with an `IconTile` hue no other row of that group has, a count in `Next`'s
   pill, and a line in `prefsIndex` so the search finds it. *Mehr* has a

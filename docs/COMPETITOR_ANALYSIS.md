@@ -523,7 +523,7 @@ I ranked by verified number of ratings and installs. Money Manager says it has 2
 ### Accessibility and languages
 
 #### F26 · Currency setting — P1, quick win
-- **What:** Choose the currency once (EUR, CHF, GBP, USD, TRY, SAR, AED, EGP, MAD …), and every amount follows it.
+- **What:** Choose the currency once (EUR, CHF, GBP, USD, TRY, SAR, AED, EGP, SYP, MAD …), and every amount follows it.
 - **Who has it:** Monefy, Spendee, Wallet, Money Manager, Outbank and Cashew (multi-currency). A Finanzfluss Copilot reviewer asks for CHF.
 - **Value:** `formatMoney()` is hard-wired to EUR even though the app is available in Arabic and English. Users outside the euro area can't use it today.
 - **Impact:** Medium–High · **Effort:** S · **Priority:** P1

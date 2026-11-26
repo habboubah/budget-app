@@ -56,8 +56,8 @@ import { ProjectsCard, ProjectsView } from './components/ProjectsView';
 import { ProjectSheet, ProjectSheetMode } from './components/ProjectSheet';
 import { TaxView } from './components/TaxView';
 import { GuideBackPill } from './components/GuideBackPill';
-import { GuideHit, MenuPage, MoreView, PrefsSection } from './components/MoreView';
-import { PreferencesView } from './components/PreferencesView';
+import { GuideHit, MoreView, PrefsSection } from './components/MoreView';
+import { PreferencesGroups } from './components/PreferencesView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
@@ -97,8 +97,7 @@ import { PdfLockedError, readPdfLines } from './pdfText';
 import { parseStatementLines } from './statementPdf';
 import { giroCodeEntry, parseGiroCode } from './girocode';
 import { FileTooLargeError, LIMITS } from './limits';
-import { AddButton } from './ui/AddButton';
-import { MenuContext } from './ui/menuButton';
+import { MenuButton, MenuContext } from './ui/menuButton';
 import { Toast, useToast } from './ui/Toast';
 import { Menu } from './ui/Menu';
 import { Confirm } from './ui/Sheet';
@@ -139,7 +138,7 @@ type TourState = {
   guide?: boolean;
 } | null;
 
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'preferences' | 'recurring';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'recurring';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -147,7 +146,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings', preferences: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -197,18 +196,11 @@ export default function App() {
     : action);
 
   const [tab, setTab] = useState<TabId>('month');
-  /**
-   * The menu (☰) is the tab *settings* (it was *Mehr*): the page it was opened
-   * from is kept, so ✕ — and Android's back — return there, and its tile is marked.
-   */
-  const [menuFrom, setMenuFrom] = useState<MenuPage>('month');
-  useEffect(() => { if (tab !== 'settings') setMenuFrom(tab); }, [tab]);
+  // The menu (☰) is the tab *settings* (it was *Mehr*). The month page is the
+  // app's home: ✕ in the menu, ‹ on Statistik and Planen and Android's back
+  // all lead there.
   /** A screen the guide's *Zeigen* opened is shown: back leads to the guide again (see `under` below). */
   const [guideReturn, setGuideReturn] = useState(false);
-  /** A screen pushed from *Einstellungen* is shown (the reminders): back leads there again, not to *Mehr*. */
-  const [prefsReturn, setPrefsReturn] = useState(false);
-  /** The group of *Einstellungen* a search in *Mehr* led to. */
-  const [prefsSection, setPrefsSection] = useState<PrefsSection | undefined>(undefined);
   /** *Zeigen* or a tour led away from the guide to where no back button leads to it: the capsule above the tab bar does. */
   const [guideAway, setGuideAway] = useState(false);
   /** Per tab, the screen pushed over its root — each tab keeps its place, as on iOS. */
@@ -219,7 +211,6 @@ export default function App() {
     setStack(s => ({ ...s, [onTab]: to }));
     // Whatever is pushed, it isn't the guide's doing — unless guideGo says so right after.
     setGuideReturn(false);
-    setPrefsReturn(false);
   };
   const popTo = (onTab: TabId) => setStack(s => ({ ...s, [onTab]: undefined }));
   /** Every entry read once per change: what Statistik, Planen and the reports compute from. */
@@ -445,13 +436,11 @@ export default function App() {
    * a tab holds one pushed screen. From there, back leads to the guide again
    * rather than to Mehr: `under` is what lies beneath the screen shown.
    */
-  const under: ScreenId = guideReturn && tab === 'settings' && pushed && pushed !== 'guide' ? 'guide'
-    : prefsReturn && tab === 'settings' && pushed === 'reminders' ? 'preferences' : tab;
+  const under: ScreenId = guideReturn && tab === 'settings' && pushed && pushed !== 'guide' ? 'guide' : tab;
   /** Set for the one change that should slide though the depth stays the same (guide ⇄ what it showed). */
   const slide = useRef<0 | 1 | -1>(0);
   const back = () => {
     if (under === 'guide') { slide.current = -1; setGuideReturn(false); setStack(s => ({ ...s, settings: 'guide' })); }
-    else if (under === 'preferences') { slide.current = -1; setPrefsReturn(false); setStack(s => ({ ...s, settings: 'preferences' })); }
     else popTo(tab);
   };
   // The iOS back gesture on a pushed screen (touch, from the leading edge).
@@ -493,12 +482,11 @@ export default function App() {
         return;
       }
       if (pushed) back();
-      else if (tab === 'settings') setTab(menuFrom);
       else if (tab !== 'month') setTab('month');
       else void CapacitorApp.minimizeApp();
     });
     return () => { void handle.then(h => h.remove()); };
-  }, [pushed, tab, under, menuFrom]);
+  }, [pushed, tab, under]);
 
   // Reminders: after a change settles, and on every return to the app, what is
   // pending on the device becomes the plan again (iPhone app only).
@@ -1208,10 +1196,17 @@ export default function App() {
   /** A tab's root, whatever was pushed on it. */
   const root = (id: TabId) => { setTab(id); setStack(s => ({ ...s, [id]: undefined })); };
   /** ☰: the menu, always at its top (not at a screen left open in it). */
-  const openMenu = () => { setGuideReturn(false); setPrefsReturn(false); root('settings'); };
-  const menuButton = useMemo(() => ({ label: t.tabSettings, onOpen: openMenu }), [t.tabSettings]);
+  const openMenu = () => { setGuideReturn(false); root('settings'); };
   /** The add button: on the month page's root only, while there is something to add to. */
   const addShown = tab === 'month' && !stack.month && !!quickAddCategory && balance.started;
+  const addOpen = entrySheet?.kind === 'new';
+  /** What the bars show where a page passes no back of its own (ui/menuButton.ts): ☰ and + on the month page, ‹ to it on Statistik and Planen. */
+  const menuButton = useMemo<MenuButton>(() => ({
+    label: t.tabSettings,
+    onOpen: openMenu,
+    back: tab === 'stats' || tab === 'insights' ? { label: t.back, onBack: () => setTab('month') } : undefined,
+    add: addShown ? { label: t.addEntry, open: addOpen, onClick: () => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory! }) } : undefined,
+  }), [t, tab, addShown, addOpen, month, quickAddCategory]);
   /** Once the screen stands (it comes in over about 300 ms; a sheet a little longer), find the marks and begin. */
   const beginMarks = (wait: number, make: (words: GuideWords, kit: typeof import('./guideKit')) => TourState) => {
     window.clearTimeout(tourTimer.current);
@@ -1282,8 +1277,6 @@ export default function App() {
     } else {
       // A screen of Mehr takes the guide's place: back returns to the guide.
       if (HOME[a] === 'settings') slide.current = 1;
-      // Einstellungen from its top: the mark brings its own group into view.
-      if (a === 'preferences') setPrefsSection(undefined);
       push(a);
       if (HOME[a] === 'settings') setGuideReturn(true);
     }
@@ -1303,13 +1296,13 @@ export default function App() {
   // ---- Mehr's search: its own rows, what Einstellungen holds, and the guide's topics.
   /** What *Einstellungen* holds on this device: a label, and the group it is in. */
   const prefsIndex: { label: string; sub?: string; section: PrefsSection }[] = [
-    { label: t.language, section: 'display' }, { label: t.appearance, section: 'display' },
-    { label: t.accent, section: 'display' }, { label: t.currency, section: 'display' },
+    { label: t.language, section: 'general' }, { label: t.currency, section: 'general' },
+    { label: t.monthStartRow, sub: t.monthStartRowSub, section: 'general' },
+    { label: t.appearance, section: 'display' }, { label: t.accent, section: 'display' },
     { label: t.hideAmounts, sub: t.hideAmountsSub, section: 'security' },
     ...(lockKind ? [{ label: lockKind === 'faceId' ? t.lockFaceId : lockKind === 'touchId' ? t.lockTouchId : t.lockCode, sub: t.lockSub, section: 'security' as const }] : []),
-    ...(remindersAvailable() ? [{ label: t.remindersRow, section: 'security' as const }] : []),
     ...(deviceBackup !== null ? [{ label: t.deviceBackup, section: 'security' as const }] : []),
-    { label: t.monthStartRow, sub: t.monthStartRowSub, section: 'book' },
+    ...(remindersAvailable() ? [{ label: t.remindersRow, section: 'notify' as const }] : []),
     store.hasDemo ? { label: t.demoRemove, sub: t.demoRemoveSub, section: 'demo' } : { label: t.demoAdd, sub: t.demoAddSub, section: 'demo' },
     ...(native || devNative() ? [{ label: t.rateApp, section: 'about' as const }] : []),
     { label: t.sendFeedback, sub: t.sendFeedbackSub, section: 'about' }, { label: t.privacyPolicy, section: 'about' },
@@ -1529,10 +1522,8 @@ export default function App() {
         ) : id === 'settings' ? (
           <MoreView
             t={t}
-            current={menuFrom}
-            monthLabel={monthLabel(month, t.locale)}
             onPage={root}
-            onClose={() => setTab(menuFrom)}
+            onClose={() => setTab('month')}
             categoryCount={categories.length}
             onCategories={() => push('categories')}
             accountCount={accounts.length}
@@ -1552,48 +1543,44 @@ export default function App() {
             onCapture={isIos() || devNative() ? () => push('capture') : undefined}
             onTransfer={() => push('transfer')}
             onGuide={openGuide}
-            onPrefs={section => { setPrefsSection(section); push('preferences'); }}
             prefs={prefsIndex}
             onSearch={loadFind}
             findGuide={findGuide}
             onGuideTopic={openGuideAt}
-          />
-        ) : id === 'preferences' ? (
-          <PreferencesView
-            language={language}
-            themeMode={themeMode}
-            accent={store.accent}
-            onAccent={store.setAccent}
-            currency={store.currency}
-            onCurrency={store.setCurrency}
-            t={t}
-            onBack={back}
-            section={prefsSection}
-            monthCount={data.months.length}
-            entryCount={allView.entries.length}
-            onLanguage={store.setLanguage}
-            onTheme={store.setThemeMode}
-            monthStart={store.monthStart}
-            onMonthStart={() => setMonthStartOpen(true)}
-            hasDemo={store.hasDemo}
-            onAddDemo={addDemo}
-            onRemoveDemo={removeDemo}
-            onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); setStartOpen(true); }}
-            lockKind={lockKind}
-            lockOn={store.lockOn}
-            onLock={on => void setLock(on)}
-            hideAmounts={store.hideAmounts}
-            onHideAmounts={on => { store.setHideAmounts(on); setPeek(false); }}
-            deviceBackup={deviceBackup}
-            onDeviceBackup={on => void switchDeviceBackup(on)}
-            deviceBackupBusy={backupMoving}
-            reminders={remindersAvailable() ? store.reminders : null}
-            // Back from the reminders leads here again, not to Mehr.
-            onReminders={() => { push('reminders'); setPrefsReturn(true); }}
-            onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
-            onFeedback={() => void sendFeedback()}
-            onPrivacy={() => void openExternal(privacyUrl(language))}
-          />
+          >
+            <PreferencesGroups
+              language={language}
+              themeMode={themeMode}
+              accent={store.accent}
+              onAccent={store.setAccent}
+              currency={store.currency}
+              onCurrency={store.setCurrency}
+              t={t}
+              monthCount={data.months.length}
+              entryCount={allView.entries.length}
+              onLanguage={store.setLanguage}
+              onTheme={store.setThemeMode}
+              monthStart={store.monthStart}
+              onMonthStart={() => setMonthStartOpen(true)}
+              hasDemo={store.hasDemo}
+              onAddDemo={addDemo}
+              onRemoveDemo={removeDemo}
+              onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); setStartOpen(true); }}
+              lockKind={lockKind}
+              lockOn={store.lockOn}
+              onLock={on => void setLock(on)}
+              hideAmounts={store.hideAmounts}
+              onHideAmounts={on => { store.setHideAmounts(on); setPeek(false); }}
+              deviceBackup={deviceBackup}
+              onDeviceBackup={on => void switchDeviceBackup(on)}
+              deviceBackupBusy={backupMoving}
+              reminders={remindersAvailable() ? store.reminders : null}
+              onReminders={() => push('reminders')}
+              onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
+              onFeedback={() => void sendFeedback()}
+              onPrivacy={() => void openExternal(privacyUrl(language))}
+            />
+          </MoreView>
         ) : id === 'stats' ? (
           <StatsView
             book={book}
@@ -1787,10 +1774,6 @@ export default function App() {
         />
       )}
 
-      {/* The month page's add button, at the bottom's trailing end where the tab bar ended until November 2026. */}
-      {addShown && (
-        <AddButton label={t.addEntry} open={entrySheet?.kind === 'new'} onClick={() => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory! })} />
-      )}
 
       <MonthPickerSheet
         open={monthPickerOpen}
@@ -2210,7 +2193,7 @@ export default function App() {
         onClose={() => setGuideAway(false)}
       />
 
-      <Toast toast={toast} onDone={hide} raised={addShown} />
+      <Toast toast={toast} onDone={hide} />
     </div>
     </MenuContext.Provider>
   );

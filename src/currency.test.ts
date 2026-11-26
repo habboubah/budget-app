@@ -12,6 +12,14 @@ describe('currency list', () => {
     expect(hasTwoMinorDigits('KWD')).toBe(false);
   });
 
+  it('offers the Syrian pound, written with two decimals like every other', () => {
+    expect(isSupportedCurrency('SYP')).toBe(true);
+    expect(currencyForRegion('SY')).toBe('SYP');
+    setActiveCurrency('SYP');
+    expect(formatMoney(123450, 'de-DE')).toBe('1.234,50\u00a0SYP');
+    expect(formatMoney(5000, 'en-GB')).toMatch(/50\.00/);
+  });
+
   it('recognises supported codes', () => {
     expect(isSupportedCurrency('CHF')).toBe(true);
     expect(isSupportedCurrency('JPY')).toBe(false);

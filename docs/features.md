@@ -469,7 +469,7 @@ when it is wanted:
 
 ## Reminders
 
-*Menü › Einstellungen › Sicherheit und Mitteilungen* (iPhone and Android app):
+*Menü › Einstellungen › Mitteilungen* (iPhone and Android app):
 
 - **An offene Posten erinnern**: a notification some days before an open
   bill is due, and before a contract's last day to cancel.
@@ -523,33 +523,35 @@ when it is wanted:
 
 ## The menu (☰) — every page, and Einstellungen
 
-There is no tab bar: ☰ at the top left of the month page, *Statistik* and
-*Planen* opens the menu over the whole screen (until November 2026 it was the
-fourth tab, *Mehr*, and *Optionen* before that). ✕ — or Android's back — goes
-back to the page it was opened from. On about one screen:
-
-- **Three big tiles** — *Monat* (with the month shown), *Statistik* ("Blick
-  zurück") and *Planen* ("Blick nach vorn"); the page you came from is
-  marked.
+There is no tab bar. The month page is home: ☰ at its top left opens the menu
+over the whole screen, and beside it sits the round **+** that adds an entry
+(both float with the bar as the page scrolls). ✕ — or Android's back — closes
+the menu. *Statistik* and *Planen* open from it and go back to the month with
+‹. (Until November 2026 the menu was the fourth tab, *Mehr*, and *Optionen*
+before that.) On about one screen:
 
 - **A search** on top — "Was möchtest du tun?" — over the rows below, over
   what *Einstellungen* holds ("Währung" leads there) and over the guide's
   topics.
-- Two large cards: the **Anleitung**, and **Sichern und übertragen**.
+- **Two big tiles** — *Statistik* ("Blick zurück") and *Planen* ("Blick nach
+  vorn").
 - **Haushaltsbuch** — what every book has: categories and budgets,
-  accounts, favourites.
+  accounts, recurring entries, favourites.
 - **Werkzeuge** — what you may use: importing, debts and loans, trips and
   projects, the tax list, import rules, automatic capture (iPhone).
-- **Einstellungen** — one row to the screen with what is set once. On top,
-  the app's card: its name and version, "ohne Konto, ohne Server", and how
-  much your book holds (months and entries, never an amount). Then:
-  - **Darstellung** — language, light or dark, the colour, the currency
-    (picking another currency applies at once).
-  - **Sicherheit und Mitteilungen** — hide amounts, the lock, reminders, the
-    phone's backup.
-  - **Haushaltsbuch** — the day the month begins.
+- **App** — the **Anleitung** and **Sichern und übertragen**.
+- **Einstellungen** — every setting, right in the menu (no screen of its
+  own), grouped by topic; a setting found by the search scrolls into view:
+  - **Allgemein** — language, currency (picking another applies at once;
+    the Syrian pound is among them), the day the month begins.
+  - **Darstellung** — light or dark, the colour.
+  - **Datenschutz und Sicherheit** — hide amounts, the lock, the phone's
+    backup.
+  - **Mitteilungen** — reminders (in the apps).
   - **Ausprobieren** — the test data, in and out.
-  - **Über Spartopf** — rating, feedback and the privacy policy.
+  - **Über Spartopf** — the app's card (its name and version, "ohne Konto,
+    ohne Server", how much your book holds: months and entries, never an
+    amount), then rating, feedback and the privacy policy.
   - Last, on its own, *App zurücksetzen*.
 
 Every row has an icon in its own colour within its group; counts (21
@@ -570,8 +572,8 @@ categories, 3 favourites) sit in a small pill at the row's end.
   Norsk, Dansk, Français, Italiano, Español, Nederlands, Português and
   العربية (right to left, with Arabic category names; amounts typed with
   Arabic digits are understood). A new install starts in English.
-- **Currency.** EUR by default; *Menü › Einstellungen › Darstellung › Währung* switches
-  to CHF, GBP, USD, SAR and more. It only relabels the amounts — nothing is
+- **Currency.** EUR by default; *Menü › Einstellungen › Allgemein › Währung* switches
+  to CHF, GBP, USD, SAR, the Syrian pound (SYP) and more. It only relabels the amounts — nothing is
   converted.
 - **Accessibility.** VoiceOver labels on everything (the paid circle is a
   real checkbox, never colour alone), larger text up to 200 %, 44-point tap

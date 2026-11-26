@@ -48,8 +48,9 @@ const BUDGET = {
   'the month page, everything put off': { taps: 13, figures: 2 },
   'the entry sheet, a new entry': { taps: 16 },
   'the month’s “⋯”': { rows: 5 },
-  // The menu (☰, November 2026; it was the tab Mehr): its 13 rows and the three page tiles that were the tab bar.
-  'the menu': { rows: 16 },
+  // The menu (☰, November 2026; it was the tab Mehr): its rows, the two page tiles, and — on Ahmad's word,
+  // November 2026 — every setting, which had a screen of its own before (27 on the web).
+  'the menu': { rows: 28 },
   'Planen in the first month': { taps: 13 },
   'Statistik in the first month': { taps: 9 },
 };

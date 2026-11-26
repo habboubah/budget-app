@@ -99,7 +99,7 @@ describe('the guide’s pages (src/i18n/guide/), in every language', () => {
   it('name the app’s own labels', () => {
     expect(guideText(de, 'guideSplitSteps')).toContain(de.splitPayAction);
     expect(guideText(de, 'guideSplitSteps')).toContain(de.refund);
-    expect(guideText(de, 'guideAddSteps')).toMatch(/^Tippe unten rechts auf \+\./);
+    expect(guideText(de, 'guideAddSteps')).toMatch(/^Tippe oben neben ☰ auf \+\./);
     expect(guideText(words('en'), 'tourTabs')).toBe('Everything else is behind ☰: “Statistics” looks back, “Plan” looks ahead – and you’ll find the whole guide there too.');
     expect(Object.values(guideLabels(translations.ar)).every(Boolean)).toBe(true);
   });
@@ -164,7 +164,7 @@ describe('the buttons a text names', () => {
       { label: '⋯', key: 'more' }, ' › ', { label: de.refund, key: 'refund' }, '.',
     ]);
     // A symbol on screen: its character in plain text, its key for the drawing.
-    expect(guideParts(de, 'guideAddSteps')[1]).toEqual({ label: '+', key: 'add' });
+    expect(guideParts(de, 'guideAddSteps').slice(1, 4)).toEqual([{ label: '☰', key: 'menu' }, ' auf ', { label: '+', key: 'add' }]);
   });
 
   it('a text that names none is one piece', () => {
