@@ -105,3 +105,19 @@ ffmpeg -i "ScreenRecording_11-13-2026 17.MP4" -vf "scale=-2:1280,fps=30" -c:v li
 IN="ScreenRecording_11-13-2026 17.MP4"
 ffmpeg -y -i "$IN" -vf "scale=-2:1280,fps=15" -c:v libx264 -preset veryfast -b:v 170k -pass 1 -an -f mp4 /dev/null && \
 ffmpeg -i "$IN" -vf "scale=-2:1280,fps=15" -c:v libx264 -preset veryfast -b:v 170k -pass 2 -pix_fmt yuv420p -an -movflags +faststart app-review-under10.mp4
+
+
+# Summery
+
+`npm run release`               screenshots, store set, preview video, update listing
+`npm run release:upload`        Build and upload only (`release:ios`, `release:android`) 
+`npm run screenshots`           Raw store captures in DE / EN / AR → `screenshots/<de\|en\|ar>/`
+`npm run store-screenshots`     Framed App Store and Play set + feature graphic
+`npm run app-preview`           App Store preview video per language → `screenshots/store/app-preview/`
+`npm run store:listing`         Uploads texts, What's New, screenshots, video and graphics to both stores
+
+### Video Recording Mobile
+
+`npm run rehearse:app-review`   Rehearses the App Review recording in the browser, no iPhone
+`npm run record:app-review`     Records the App Review video on the connected iPhone
+`npm run record:watch`          Leave it running so Claude can start recording runs on the iPhone
