@@ -1,0 +1,42 @@
+<!doctype html>
+<!-- The stage: one frame of the app preview, drawn from the footage and the
+     plan. scripts/compose.mjs opens it once, hands it the plan
+     (stage.init), then asks for every frame in turn (stage.render) and takes
+     a picture of each. Nothing here moves by itself — no transition, no
+     animation, no timer: what a frame shows depends on its number alone, so
+     the same footage and the same plan give the same video. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>App preview stage</title>
+  <link rel="stylesheet" href="/assets/fonts.css">
+  <link rel="stylesheet" href="stage.css">
+</head>
+<body>
+  <div id="frame">
+    <!-- The phone's screen: what was filmed, and what belongs to it. A zoom moves all of it. -->
+    <div id="screen">
+      <canvas id="footage"></canvas>
+      <div id="statusbar" aria-hidden="true">
+        <span class="time"></span>
+        <span class="right">
+          <svg class="signal" viewBox="0 0 18 12"><rect x="0" y="8" width="3.2" height="4" rx=".9"/><rect x="4.9" y="5.6" width="3.2" height="6.4" rx=".9"/><rect x="9.8" y="3" width="3.2" height="9" rx=".9"/><rect x="14.7" y="0" width="3.2" height="12" rx=".9"/></svg>
+          <svg class="wifi" viewBox="0 0 17 12"><path d="M1.2 4.3a10.4 10.4 0 0 1 14.6 0" /><path d="M3.9 7.1a6.6 6.6 0 0 1 9.2 0" /><path d="M6.6 9.8a2.8 2.8 0 0 1 3.8 0" /></svg>
+          <svg class="battery" viewBox="0 0 27 13"><rect class="shell" x=".6" y=".6" width="22.3" height="11.8" rx="3.7"/><rect x="2.2" y="2.2" width="19.1" height="8.6" rx="2.3"/><path class="nub" d="M24.4 4.4c.9.3 1.5 1.1 1.5 2.1s-.6 1.8-1.5 2.1z"/></svg>
+        </span>
+      </div>
+      <div id="homebar" aria-hidden="true"></div>
+      <svg id="lights" aria-hidden="true"><path fill-rule="evenodd"/></svg>
+      <div id="dots" aria-hidden="true"></div>
+    </div>
+    <div id="veil"></div>
+    <div id="captions"></div>
+    <div id="card">
+      <img class="icon" alt="">
+      <p class="name"></p>
+      <ul class="points"></ul>
+    </div>
+  </div>
+  <script src="stage.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "locale": "de",
+  "dir": "ltr",
+  "captions": {
+    "balance": "Sieh, was am Monatsende bleibt",
+    "entry": "Ausgabe in Sekunden notiert",
+    "stats": "Sieh, wohin dein Geld geht",
+    "next": "Neuer Monat mit einem Tipp"
+  },
+  "card": {
+    "name": "Spartopf",
+    "points": [
+      "Keine Werbung, kein Konto",
+      "Alles bleibt auf dem Gerät"
+    ]
+  }
+}

@@ -1,0 +1,138 @@
+/* The stage is laid out in the app's own points (the video is `scale` times
+   that in pixels), so a size here is the size it has in the app. Every
+   colour and the type come from config/theme.json, set as variables by
+   stage.js. Nothing is animated in CSS: stage.js sets every value for the
+   frame it is asked for. */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #000; overflow: hidden; }
+body { -webkit-font-smoothing: antialiased; }
+
+#frame {
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  overflow: hidden;
+  background: #000;
+}
+
+/* ------------------------------------------------------------- the screen */
+#screen { position: absolute; inset: 0; transform-origin: 0 0; }
+#footage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* What a screen recording of an iPhone carries: the time, the signal, the
+   battery, and the home indicator. Drawn here because a browser has none. */
+#statusbar {
+  position: absolute; inset: 0 0 auto 0;
+  height: var(--safe-top);
+  color: var(--status-ink);
+  font: 600 17px/1 -apple-system, "SF Pro Text", system-ui, var(--font-text), sans-serif;
+  letter-spacing: -0.2px;
+  font-variant-numeric: tabular-nums;
+}
+/* Left and right, not start and end: iOS keeps the status bar this way round in every language. */
+#statusbar .time { position: absolute; left: 52px; top: calc(var(--safe-top) / 2 + 4px); transform: translateY(-50%); }
+#statusbar .right { position: absolute; right: 34px; top: calc(var(--safe-top) / 2 + 4px); transform: translateY(-50%); display: flex; align-items: center; gap: 6px; }
+#statusbar svg { display: block; fill: currentColor; }
+#statusbar .signal { width: 18px; height: 12px; }
+#statusbar .wifi { width: 17px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; }
+#statusbar .battery { width: 27px; height: 13px; }
+#statusbar .battery .shell { fill: none; stroke: currentColor; stroke-width: 1.2; opacity: 0.4; }
+#statusbar .battery .nub { opacity: 0.45; }
+#homebar {
+  position: absolute; left: 50%; bottom: 8px;
+  width: 144px; height: 5px; margin-left: -72px; border-radius: 3px;
+  background: var(--status-ink);
+}
+.no-statusbar #statusbar, .no-statusbar #homebar { display: none; }
+
+/* A part of the screen lit up: everything around it is dimmed. */
+#lights { position: absolute; inset: 0; width: 100%; height: 100%; }
+#lights path { fill: var(--light-fill); }
+
+/* Where a tap lands. */
+#dots { position: absolute; inset: 0; }
+.dot {
+  position: absolute;
+  width: var(--touch); height: var(--touch);
+  margin: calc(var(--touch) / -2) 0 0 calc(var(--touch) / -2);
+  border-radius: 50%;
+  background: var(--touch-fill);
+  box-shadow: inset 0 0 0 2px var(--touch-ring), 0 3px 12px rgb(0 0 0 / 0.22);
+}
+
+/* ------------------------------------------------------------ the caption */
+/* The veil: the app's ink over the frozen screen, which goes soft under it so
+   the caption has the screen to itself. (The blur is the video's, not the
+   app's — the app itself has none.) */
+#veil {
+  position: absolute; inset: 0;
+  background: color-mix(in srgb, var(--veil-fill) calc(var(--veil-opacity) * 100%), transparent);
+  -webkit-backdrop-filter: blur(var(--veil-blur));
+  backdrop-filter: blur(var(--veil-blur));
+  opacity: 0;
+}
+#captions { position: absolute; inset: 0; }
+.caption {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding-bottom: 4%;
+  opacity: 0;
+}
+.caption p {
+  width: calc(var(--caption-width) * 100%);
+  color: var(--veil-ink);
+  font-family: var(--font-display), sans-serif;
+  font-weight: var(--display-weight, 650);
+  font-optical-sizing: auto;
+  line-height: 1.08;
+  letter-spacing: -0.2px;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+/* ----------------------------------------------------------- the end card */
+#card {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0;
+  padding: 0 34px 3%;
+  background: var(--card-fill);
+  color: var(--card-ink);
+  opacity: 0;
+}
+#card .icon {
+  width: 148px; height: 148px;
+  border-radius: 22.4%;
+  box-shadow: 0 18px 40px -14px rgb(5 33 31 / 0.55), 0 3px 10px rgb(5 33 31 / 0.18);
+}
+#card .name {
+  margin-top: 30px;
+  font-family: var(--font-display), sans-serif;
+  font-weight: var(--display-weight, 650);
+  font-size: 40px;
+  line-height: 1.08;
+  letter-spacing: -0.2px;
+  text-align: center;
+  text-wrap: balance;
+}
+#card .points {
+  margin-top: 26px;
+  list-style: none;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+#card .points li {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 18px 9px 12px;
+  border-radius: 999px;
+  background: var(--card-chip);
+  color: var(--card-chip-ink);
+  font-family: var(--font-text), sans-serif;
+  font-weight: var(--text-weight, 800);
+  font-size: 18px;
+  line-height: 1.2;
+}
+#card .points svg { width: 22px; height: 22px; flex: none; }
+#card .points circle { fill: var(--card-tick); }
+#card .points path { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+[dir="rtl"] #card .points li { padding: 9px 12px 9px 18px; }
