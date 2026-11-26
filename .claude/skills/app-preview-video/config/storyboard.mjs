@@ -20,8 +20,9 @@
 // runs on the store screenshots' household: six invented months with salary,
 // rent, groceries and four budgets (scripts/lib/shots.mjs › sampleData).
 import {
-  PORT, ORIGIN, LOCALE, PAGES, SCREENS, categoryCard, sheet, loadSource as loadShotsSource, storage, words,
+  PORT, ORIGIN, LOCALE, SCREENS, categoryCard, sheet, loadSource as loadShotsSource, storage, words,
 } from '../../../../scripts/lib/shots.mjs';
+import { MENU, TILE } from '../../../../scripts/nav.mjs';
 
 /** Where the built app is served while it is filmed (the screenshot scripts' port). */
 export const server = { port: PORT, origin: ORIGIN };
@@ -94,7 +95,7 @@ const button = label => `button[aria-label="${label.replace(/"/g, '\\"')}"]`;
  */
 export const marks = w => ({
   ...Object.assign({}, ...SCREENS.filter(s => s.marks).map(s => s.marks)),
-  // The round "+" above the tab bar: a new entry in the month shown.
+  // The round "+" beside ☰: a new entry in the month shown.
   add: button(w.t.addEntry),
   save: `${sheet} button:text-is("${w.t.save}")`,
   next: button(w.t.nextMonth),
@@ -105,24 +106,24 @@ export const marks = w => ({
 });
 
 /**
- * To one of the app's pages (0 Monat, 1 Statistik) with taps the film shows:
- * the tab bar where there is one, else ☰ and the page's tile (backing out of
- * a pushed screen with ‹ first) — the same rule as scripts/lib/shots.mjs › tab.
+ * To one of the app's pages (0 Monat, 1 Statistik, 2 Planen) with taps the
+ * film shows, the way scripts/nav.mjs › goTab gets there: back to the month
+ * (✕ closes the menu, ‹ leaves a pushed screen), then ☰ and the page's tile.
  */
 async function goTo(a, n, { dot = true } = {}) {
-  const bar = a.page.locator('nav button:not(.hero)');
-  if (await bar.count()) { await a.tap(bar.nth(n), { dot }); return; }
-  for (let i = 0; i < 5; i++) {
-    const tiles = a.page.locator('[data-nav-tile]');
+  for (let i = 0; i < 6; i++) {
+    const close = a.page.locator('[data-nav="close"]:visible');
     const back = a.page.locator('[data-nav="back"]:visible');
-    if (await tiles.count() && !(await back.count())) break;
-    const menu = a.page.locator('[data-nav="menu"]:visible');
-    if (await menu.count()) await a.tap(menu.first(), { dot });
+    if (await close.count()) await a.tap(close.first(), { dot });
     else if (await back.count()) await a.tap(back.first(), { dot });
-    else throw new Error('goTo: no tab bar, and neither ☰ nor ‹ on the screen');
+    else if (await a.page.locator(`${MENU}:visible`).count()) break;
+    else throw new Error('goTo: neither ☰, ‹ nor ✕ on the screen');
     await a.pause(0.4);
   }
-  await a.tap(`[data-nav-tile="${PAGES[n]}"]`, { dot });
+  if (n === 0) return;
+  await a.tap(a.page.locator(`${MENU}:visible`).first(), { dot });
+  await a.pause(0.4);
+  await a.tap(TILE(n), { dot });
 }
 
 /* -------------------------------------------------------------- the chapters */
