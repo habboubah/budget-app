@@ -1,12 +1,15 @@
 ---
 name: app-store-screenshots
-description: Regenerate the raw store screenshots of Spartopf (npm run screenshots → screenshots/<de|en>/, ten screens per language, each with its marks). Use when asked to update, refresh or regenerate store screenshots, to add, drop or reorder a screen in the set, or to mark a part of a screen for a call-out. The composed, captioned upload set is the store-screenshot-studio skill.
+description: Regenerate the raw store screenshots of Spartopf (npm run screenshots → screenshots/<de|en|ar>/ for the iPhone and screenshots/<de|en|ar>-android/ for Google Play, ten screens per language, each with its marks). Use when asked to update, refresh or regenerate store screenshots, to add, drop or reorder a screen in the set, or to mark a part of a screen for a call-out. The composed, captioned upload set is the store-screenshot-studio skill.
 ---
 
 # Store screenshots (raw captures)
 
 `scripts/screenshots.mjs` builds the app, seeds it with demo data and captures
-**ten screens per language** — the most App Store Connect takes per slot — as
+**ten screens per language** (German, English, Arabic) — the most App Store
+Connect takes per slot — twice: as the iPhone app and as the Android app
+(Android's wording from `src/i18n/android.ts` — no iCloud, fingerprint and
+face unlock — and its rounded face; Google Play's set is framed from these), as
 plain app screens, and next to each one where its parts are
 (`<screen>.marks.json`). `store-screenshot-studio`
 (`npm run store-screenshots`) then composes and captions them at the sizes the
@@ -17,7 +20,9 @@ Upload those, not these: the raw size (1290 × 2796) fits no required slot.
 
 ```bash
 npx playwright install chromium        # once per Mac
-npm run screenshots                    # all ten, DE and EN
+npm run screenshots                    # all ten, DE + EN + AR, iPhone and Android
+npm run screenshots -- --ios           # only the iPhone ones (or --android)
+npm run screenshots -- --lang ar       # one language (or --lang de,en)
 npm run screenshots -- --only 08-category,10-plan    # just these, e.g. after a fix
 npm run store-screenshots              # the composed upload set from these
 ```
@@ -29,7 +34,10 @@ font sets where a line breaks).
 
 ## What comes out
 
-`screenshots/de/` and `screenshots/en/`, 1290 × 2796 PNG (430 × 932 pt @3x):
+`screenshots/<de|en|ar>/` (iPhone) and `screenshots/<de|en|ar>-android/`
+(Android), 1290 × 2796 PNG (430 × 932 pt @3x). The iPhone ones are taken from
+the built app; the Android ones from Vite's dev server, the only place the
+browser can be told to look like the Android app (`spartopf-dev-platform`):
 
 | # | file | screen | how it is reached |
 |---|---|---|---|
@@ -44,7 +52,7 @@ font sets where a line breaks).
 | 9 | `09-report` | Monatsbericht of last month | ‹ → ⋯ → Monatsbericht |
 | 10 | `10-plan` | Planen: *{Monat} bis heute*, budgets | tab 3 |
 
-A full run empties both folders first, so a screen dropped from the list can't
+A full run empties each folder first, so a screen dropped from the list can't
 linger. A screen that can't be reached is reported by name (`✗ de/08-category: …`),
 the others are still taken, and the run exits non-zero.
 
@@ -52,11 +60,11 @@ the others are still taken, and the run exits non-zero.
 
 The store set lifts pieces of a screen out of the phone — the amount field, a
 category's card, the month report's summary (the studio's call-outs). It finds
-them by name in `screenshots/<de|en>/<screen>.marks.json`, which this run
+them by name in `screenshots/<folder>/<screen>.marks.json`, which this run
 writes with each capture: every mark's box in fractions of the screen, and its
 corner radius, measured in the running app in that language.
 
-Each screen names its marks in `SCREENS` (`scripts/screenshots.mjs`):
+Each screen names its marks in `SCREENS` (`scripts/lib/shots.mjs`):
 
 ```js
 marks: { amount: `${sheet} [data-tour="entry-amount"]`, name: `${sheet} [data-tour="entry-name"]` },
@@ -98,19 +106,24 @@ fuel, groceries at five shops, extras, Kita — partly paid in the running month
 generated relative to today so the first screen always says *Dieser Monat*.
 Plus the shipped categories (loaded through Vite from `src/data/defaults.ts`)
 with four budgets: Lebensmittel 650 €, Auto 400 €, Sonstiges 150 €, Restaurants
-120 €. English uses English names and UK shops.
+120 €. English uses English names and UK shops, Arabic Arabic names (the
+shops keep their brands). Everything is in euros, the app's default.
 
 ## Adding, dropping or reordering a screen
 
-Edit `SCREENS` in `scripts/screenshots.mjs`. Each entry is a `name` (its
-filename; the number is the store order) and an optional `run(page, l)` that
-gets there from a fresh load of `/` on the running month. The app has no router,
-so every screen is reached by clicking. Labels the clicks need per language live
-in `L`. Handles that have proved stable (also used by `scripts/ui-review.mjs`):
+Edit `SCREENS` in `scripts/lib/shots.mjs` (shared with the app preview
+video). Each entry is a `name` (its filename; the number is the store order)
+and an optional `run(page, w)` that gets there from a fresh load of `/` on the
+running month. The app has no router, so every screen is reached by clicking.
+**Every label a click needs comes from the app's strings** (`w.t`, loaded from
+`src/translations.ts` through Vite; `w.category(id)` a category's name), never
+written out — one list of screens works in every language, and a renamed
+button stops the run instead of capturing the wrong screen. The sample data's
+names per language are `NAMES`. Handles that have proved stable (also used by `scripts/ui-review.mjs`):
 
 | target | selector |
 |---|---|
-| tab bar (Monat, Statistik, Planen, Einstellungen) | `nav button:not(.hero)` nth 0–3 — the `tab(page, n)` helper |
+| the pages (Monat, Statistik, Planen, Mehr) | the `tab(page, n)` helper, 0–3: the tab bar (`nav button:not(.hero)`) where there is one, else ☰ (`data-nav="menu"`) and the page's tile (`data-nav-tile`) |
 | a category's card on the month | `main section[data-drop-category="<id>"]` |
 | month ‹ › | `button[aria-label="<prev/next label>"]` |
 | month ⋯ menu | `header button` last, then `getByRole('menuitem', { name })` |
