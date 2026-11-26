@@ -782,7 +782,7 @@ const fr: Strings = {
   favoriteRemoved: 'Favori retiré',
   moveUp: 'Monter',
   moveDown: 'Descendre',
-  transferTitle: 'Sauvegarder et transférer',
+  transferTitle: 'Sauvegarder et restaurer',
   transferFooter: 'Sauvegarde et export CSV. Tout reste sur cet appareil.',
   moreSection: 'Outils',
   prefsTitle: 'Réglages',

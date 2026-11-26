@@ -9,7 +9,7 @@ import { BackupGroup } from './BackupGroup';
 const NUDGE_AFTER_DAYS = 90;
 
 /**
- * Optionen → Sichern und übertragen (pushed): the whole household book as
+ * Optionen → Sichern und wiederherstellen (pushed): the whole household book as
  * one backup file and back, every entry out as CSV,
  * and the versions Spartopf keeps automatically on the device (plan 03).
  * Nothing leaves the device unless the user sends a file somewhere.

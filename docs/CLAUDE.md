@@ -167,7 +167,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     amounts) stay in localStorage in `store.ts`: losing
     them costs nothing, and a failed write of one doesn't raise the banner.
   - Debug: `localStorage['spartopf-debug'] = '1'` (Safari Web Inspector on a
-    device) shows *WebKit-Daten löschen* in *Sichern und übertragen* — what
+    device) shows *WebKit-Daten löschen* in *Sichern und wiederherstellen* — what
     iOS does when it reclaims web storage; after a relaunch the file has it all.
 - **No tab bar: the month page is home, the rest is behind ☰ (November
   2026, on Ahmad's word).** Where a page passes no back of its own, `Screen`
@@ -205,9 +205,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   debts, trips and projects, the tax list, import rules, automatic
   capture); *Einstellungen* (`PreferencesRows`: the day the month begins,
   hide amounts, the lock and the phone's backup — the guide's `{security}`
-  —, the reminders, the test data in and out, each behind a `Confirm`, and
-  *App zurücksetzen* in red); the guide, backup and transfer, and *Über
-  diese App* (`AboutView`, pushed as `about`: the app's card — icon, name,
+  —, the reminders, *Sichern und wiederherstellen* (it was *Sichern und
+  übertragen*), the test data in and out, each behind a `Confirm`, and
+  *App zurücksetzen* in red); the guide, then *Über diese App* (`AboutView`,
+  pushed as `about`: the app's card — icon, name,
   version, tagline, no counts —, *Darauf kannst du dich verlassen* (free
   without ads or subscription, no account, the data stays on the device,
   backups locked with one's own password), rating, feedback, the privacy
@@ -304,7 +305,8 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   - **`InsightsView`** (Planen, id `insights`): `PaceCard` (*November bis
     heute*: the finding and its three figures on a hero header — today's
     in `on-hero-warn` / `-pos` on the panel — the chart under it),
-    `BudgetsCard`, `RunwayCard` (*Nächste 30 Tage*, once anything open falls
+    `BudgetsCard`, right under it `GoalsCard` (the savings pots, since
+    November 2026 on Ahmad's word), `RunwayCard` (*Nächste 30 Tage*, once anything open falls
     into them: `RunwayChart`, what comes in and goes out, → *Demnächst
     fällig*), `OutlookCard` (from three finished months; `StatTiles` under
     the chart: start, the lowest month when the line dips, end),
@@ -1367,7 +1369,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     handles `appUrlOpen` (a cold start's link is kept by the App plugin until
     the listener is there), holding a link while locked. URL scheme in
     `Info.plist` (`CFBundleURLTypes`). Debug: *Widget-Daten testen* in
-    *Sichern und übertragen* round-trips the snapshot.
+    *Sichern und wiederherstellen* round-trips the snapshot.
   - `localStorage['spartopf-dev-native'] = '1'` shows these settings in a dev
     build on the web (for screenshots); nothing is scheduled or locked there.
 

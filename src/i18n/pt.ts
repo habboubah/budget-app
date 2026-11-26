@@ -782,7 +782,7 @@ const pt: Strings = {
   favoriteRemoved: 'Favorito removido',
   moveUp: 'Mover para cima',
   moveDown: 'Mover para baixo',
-  transferTitle: 'Cópia de segurança e transferência',
+  transferTitle: 'Cópia de segurança e restauro',
   transferFooter: 'Cópia de segurança e exportação CSV. Tudo fica neste dispositivo.',
   moreSection: 'Ferramentas',
   prefsTitle: 'Definições',

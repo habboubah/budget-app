@@ -784,7 +784,7 @@ const tr: Strings = {
   favoriteRemoved: 'Favori kaldırıldı',
   moveUp: 'Yukarı taşı',
   moveDown: 'Aşağı taşı',
-  transferTitle: 'Yedekle ve aktar',
+  transferTitle: 'Yedekle ve geri yükle',
   transferFooter: 'Yedek ve CSV dışa aktarma. Her şey bu cihazda kalır.',
   moreSection: 'Araçlar',
   prefsTitle: 'Ayarlar',

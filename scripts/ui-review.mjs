@@ -67,7 +67,7 @@ const LANGS = {
     guide: 'Anleitung',
     prefs: 'Einstellungen',
     show: 'Zeigen',
-    transfer: 'Sichern und übertragen',
+    transfer: 'Sichern und wiederherstellen',
     reminders: 'An offene Posten erinnern',
     capture: 'Automatisch erfassen',
     contracts: 'Abos & Verträge',
@@ -87,7 +87,7 @@ const LANGS = {
     guide: 'الدليل',
     prefs: 'الإعدادات',
     show: 'أرِني',
-    transfer: 'النسخ الاحتياطي والنقل',
+    transfer: 'النسخ الاحتياطي والاستعادة',
     reminders: 'التذكير بالبنود المعلّقة',
     capture: 'التسجيل التلقائي',
     contracts: 'الاشتراكات والعقود',
@@ -493,7 +493,7 @@ const SCREENS = [
     await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.capture }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page', full: true },
-  // Mehr → Sichern und übertragen.
+  // Mehr → Sichern und wiederherstellen.
   { name: 'transfer', run: async (page, l) => {
     await tab(3)(page);
     await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.transfer }).first().click();

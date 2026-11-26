@@ -854,7 +854,7 @@ export default function App() {
     }, SAVE_DEBOUNCE_MS);
     return () => window.clearTimeout(id);
   }, [native, data, language, store.accent, store.lockOn, midnight, resumed]);
-  /** Debug (Sichern und übertragen): write the snapshot and read it back. */
+  /** Debug (Sichern und wiederherstellen): write the snapshot and read it back. */
   const testBridge = async () => {
     const snapshot = snapshotFor();
     const ok = (await writeSnapshot(snapshot)) && JSON.stringify(await readSnapshot()) === JSON.stringify(snapshot);
@@ -1575,6 +1575,7 @@ export default function App() {
                 deviceBackupBusy={backupMoving}
                 reminders={remindersAvailable() ? store.reminders : null}
                 onReminders={() => push('reminders')}
+                onTransfer={() => push('transfer')}
               />
             )}
             footer={(

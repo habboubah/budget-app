@@ -784,7 +784,7 @@ const pl: Strings = {
   favoriteRemoved: 'Usunięto z ulubionych',
   moveUp: 'Przesuń w górę',
   moveDown: 'Przesuń w dół',
-  transferTitle: 'Kopia i przenoszenie',
+  transferTitle: 'Kopia i przywracanie',
   transferFooter: 'Kopia zapasowa i eksport CSV. Wszystko zostaje na tym urządzeniu.',
   moreSection: 'Narzędzia',
   prefsTitle: 'Ustawienia',

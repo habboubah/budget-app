@@ -14,7 +14,7 @@ import { BackupExportSheet } from './BackupExportSheet';
 import { BackupPasswordSheet } from './BackupPasswordSheet';
 
 /**
- * Sichern und übertragen → Datensicherung: everything as one file, encrypted
+ * Sichern und wiederherstellen → Datensicherung: everything as one file, encrypted
  * with a password by default (plan 04), loaded back the same way. → CSV:
  * every entry out as a CSV that opens in Excel (not protected).
  */
