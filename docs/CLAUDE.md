@@ -196,20 +196,22 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   accounts, recurring entries, favourites), *Werkzeuge* (what a book may use:
   importing — the same `ImportSheet` as the month's "⋯" —, debts, trips and
   projects, the tax list, import rules, automatic capture), *App* (the
-  guide, backup and transfer) and then every setting, grouped by topic (a
+  guide, backup and transfer, and *Über diese App* — `AboutView`, pushed as
+  `about`: the app's card, *Darauf kannst du dich verlassen* (free without
+  ads or subscription, no account, the data stays on the device, backups
+  locked with one's own password), rating, feedback, the privacy policy) and
+  then every setting, grouped by topic (a
   setting the search finds clears the search and scrolls its group into
   view; the guide's *Zeigen* for the lock and the look opens the menu and
   marks the group): *Allgemein* (language, currency, the day the month
   begins), *Darstellung* (light or dark, the colour — the guide's
   `{display}`; `{general}` names *Allgemein*), *Datenschutz und Sicherheit*
   (hide amounts first, then the lock and the phone's backup),
-  *Mitteilungen* (the reminders, apps only), *Ausprobieren* (the test data),
-  *Über Spartopf* — the app's card on the hero (icon, name, version, the
+  *Mitteilungen* (the reminders, apps only), *Ausprobieren* (the test data)
+  and resetting last and alone. The app's card (icon, name, version, the
   tagline, how many months and entries the book holds: counts from two on,
-  never an amount; on top of the page until November 2026), then rating,
-  feedback, the privacy policy — and resetting last and alone.
-  `PrefsSection` is `general | display | security | notify | demo | about |
-  reset`. The currency applies as it is picked: it only relabels,
+  never an amount) lives on *Über diese App* since November 2026.
+  `PrefsSection` is `general | display | security | notify | demo | reset`. The currency applies as it is picked: it only relabels,
   and picking the old one again undoes it — no `Confirm`. Back
   from the reminders leads to the menu. A new feature's row joins *Werkzeuge* (or *Haushaltsbuch*
   when every book has it), a new setting joins its group in Einstellungen —

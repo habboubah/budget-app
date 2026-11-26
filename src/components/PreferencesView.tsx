@@ -1,5 +1,5 @@
 import { CSSProperties, useId, useState } from 'react';
-import { ArrowUpRight, Bell, CalendarDays, CalendarRange, Check, CloudUpload, Coins, EyeOff, FlaskConical, FlaskConicalOff, Fingerprint, Languages, ListChecks, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Trash2 } from 'lucide-react';
+import { Bell, CalendarRange, Check, CloudUpload, Coins, EyeOff, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Palette, ScanFace, SunMoon, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -17,9 +17,6 @@ interface Props {
   themeMode: ThemeMode;
   accent: Accent;
   t: Strings;
-  /** How much the book holds, for the card about the app: its started months and its entries (no amounts). */
-  monthCount: number;
-  entryCount: number;
   onLanguage: (l: Language) => void;
   onTheme: (m: ThemeMode) => void;
   onAccent: (a: Accent) => void;
@@ -50,15 +47,6 @@ interface Props {
   /** The reminder settings; null where there are no notifications (the web). */
   reminders: ReminderPrefs | null;
   onReminders: () => void;
-  /** Über Spartopf (plan 15): the App Store's review page — iPhone app only; Mail with the versions; the privacy policy. */
-  onRate?: () => void;
-  onFeedback: () => void;
-  onPrivacy: () => void;
-}
-
-/** A row's end when it opens something outside the app (the App Store, Mail, Safari): ↗. */
-function Away() {
-  return <ArrowUpRight className="shrink-0 w-5 h-5 text-fg-faint rtl:-scale-x-100" aria-hidden="true" />;
 }
 
 /**
@@ -126,11 +114,10 @@ function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent
  *      has it), then the lock and the phone's backup (apps only);
  *   4. *Mitteilungen* — the reminders (apps only);
  *   5. *Ausprobieren* — the test data, in and out;
- *   6. *Über Spartopf* — the card on the hero (what the app is, its version,
- *      how much the book holds: months and entries, never an amount), then
- *      rating, feedback and the privacy policy (it stood on top until
- *      November 2026);
- *   7. last, on its own, resetting.
+ *   6. last, on its own, resetting.
+ *
+ * What the app is — its card, its promises, rating, feedback and the privacy
+ * policy — has a page of its own, *Über diese App* (AboutView, from the menu).
  *
  * Every icon tile in a group has its own colour, so a row is found by it.
  */
@@ -140,11 +127,6 @@ export function PreferencesGroups(p: Props) {
   const [confirmDemo, setConfirmDemo] = useState(false);
   const lockLabel = p.lockKind === 'faceId' ? t.lockFaceId : p.lockKind === 'touchId' ? t.lockTouchId : t.lockCode;
   const LockIcon = p.lockKind === 'faceId' ? ScanFace : p.lockKind === 'touchId' ? Fingerprint : Lock;
-  // From two on: the strings are plurals ("14 Monate").
-  const facts = [
-    ...(p.monthCount > 1 ? [{ icon: CalendarDays, text: fmt(t.averageSpanN, { n: p.monthCount }) }] : []),
-    ...(p.entryCount > 1 ? [{ icon: ListChecks, text: fmt(t.tagEntries, { n: p.entryCount }) }] : []),
-  ];
   return (
     <>
       {/* Where the settings begin in the menu: a heading of the page's own size, so they read as a part of their own. */}
@@ -259,35 +241,6 @@ export function PreferencesGroups(p: Props) {
               onClick={p.onAddDemo}
             />
           )}
-        </Group>
-      </div>
-
-      {/* About the app, near the end: its card (what it is, its version, how much the book holds), then rating, feedback and the privacy policy. */}
-      <div data-prefs="about" className="space-y-3">
-        <section className="rounded-lg hero hero-glow hero-art overflow-hidden text-on-hero p-[18px]" aria-labelledby="about-title">
-          <div className="flex items-center gap-3.5">
-            <img src="/icon.svg" alt="" className="w-[52px] h-[52px] rounded-[14px] shrink-0 shadow-[0_0_0_1px_rgb(255_255_255/0.2)]" />
-            <div className="min-w-0 flex-1">
-              <h2 id="about-title" className="display text-heading font-semibold wrap-compound">{t.about}</h2>
-              <p className="text-caption text-on-hero-mute tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
-            </div>
-          </div>
-          <p className="mt-3 text-label text-on-hero-mute wrap-prose">{t.aboutBody}</p>
-          {facts.length > 0 && (
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {facts.map(f => (
-                <li key={f.text} className="min-h-[30px] ps-2.5 pe-3 py-1 rounded-full hero-panel inline-flex items-center gap-1.5 text-caption font-semibold text-on-hero tabular-nums">
-                  <f.icon className="w-[15px] h-[15px] shrink-0 text-on-hero-soft" strokeWidth={2.2} aria-hidden="true" />
-                  {f.text}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <Group>
-          {p.onRate && <Row label={t.rateApp} leading={<IconTile icon={Star} hue="lemon" />} trailing={<Away />} onClick={p.onRate} />}
-          <Row label={t.sendFeedback} sub={t.sendFeedbackSub} leading={<IconTile icon={Mail} hue="blue" />} trailing={<Away />} onClick={p.onFeedback} />
-          <Row label={t.privacyPolicy} leading={<IconTile icon={ShieldCheck} hue="leaf" />} trailing={<Away />} onClick={p.onPrivacy} />
         </Group>
       </div>
 

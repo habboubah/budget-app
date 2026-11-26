@@ -539,7 +539,12 @@ before that.) On about one screen:
   accounts, recurring entries, favourites.
 - **Werkzeuge** — what you may use: importing, debts and loans, trips and
   projects, the tax list, import rules, automatic capture (iPhone).
-- **App** — the **Anleitung** and **Sichern und übertragen**.
+- **App** — the **Anleitung**, **Sichern und übertragen** and **Über diese
+  App**: the app's card (its name and version, "ohne Konto, ohne Server", how
+  much your book holds: months and entries, never an amount), what you can
+  count on (free without ads or subscription, no account, your data stays on
+  the device and goes to no one, backups locked with your own password), and
+  rating, feedback and the privacy policy.
 - **Einstellungen** — every setting, right in the menu (no screen of its
   own), grouped by topic; a setting found by the search scrolls into view:
   - **Allgemein** — language, currency (picking another applies at once;
@@ -549,9 +554,6 @@ before that.) On about one screen:
     backup.
   - **Mitteilungen** — reminders (in the apps).
   - **Ausprobieren** — the test data, in and out.
-  - **Über Spartopf** — the app's card (its name and version, "ohne Konto,
-    ohne Server", how much your book holds: months and entries, never an
-    amount), then rating, feedback and the privacy policy.
   - Last, on its own, *App zurücksetzen*.
 
 Every row has an icon in its own colour within its group; counts (21

@@ -58,6 +58,7 @@ import { TaxView } from './components/TaxView';
 import { GuideBackPill } from './components/GuideBackPill';
 import { GuideHit, MoreView, PrefsSection } from './components/MoreView';
 import { PreferencesGroups } from './components/PreferencesView';
+import { AboutView } from './components/AboutView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
@@ -138,7 +139,7 @@ type TourState = {
   guide?: boolean;
 } | null;
 
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'recurring';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'recurring' | 'about';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -146,7 +147,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings', about: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -1304,8 +1305,6 @@ export default function App() {
     ...(deviceBackup !== null ? [{ label: t.deviceBackup, section: 'security' as const }] : []),
     ...(remindersAvailable() ? [{ label: t.remindersRow, section: 'notify' as const }] : []),
     store.hasDemo ? { label: t.demoRemove, sub: t.demoRemoveSub, section: 'demo' } : { label: t.demoAdd, sub: t.demoAddSub, section: 'demo' },
-    ...(native || devNative() ? [{ label: t.rateApp, section: 'about' as const }] : []),
-    { label: t.sendFeedback, sub: t.sendFeedbackSub, section: 'about' }, { label: t.privacyPolicy, section: 'about' },
     { label: t.deleteAll, section: 'reset' },
   ];
   /** The guide's words are a chunk of their own: they come when the search begins. */
@@ -1543,6 +1542,7 @@ export default function App() {
             onCapture={isIos() || devNative() ? () => push('capture') : undefined}
             onTransfer={() => push('transfer')}
             onGuide={openGuide}
+            onAbout={() => push('about')}
             prefs={prefsIndex}
             onSearch={loadFind}
             findGuide={findGuide}
@@ -1556,8 +1556,6 @@ export default function App() {
               currency={store.currency}
               onCurrency={store.setCurrency}
               t={t}
-              monthCount={data.months.length}
-              entryCount={allView.entries.length}
               onLanguage={store.setLanguage}
               onTheme={store.setThemeMode}
               monthStart={store.monthStart}
@@ -1576,11 +1574,18 @@ export default function App() {
               deviceBackupBusy={backupMoving}
               reminders={remindersAvailable() ? store.reminders : null}
               onReminders={() => push('reminders')}
-              onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
-              onFeedback={() => void sendFeedback()}
-              onPrivacy={() => void openExternal(privacyUrl(language))}
             />
           </MoreView>
+        ) : id === 'about' ? (
+          <AboutView
+            t={t}
+            onBack={back}
+            monthCount={data.months.length}
+            entryCount={allView.entries.length}
+            onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
+            onFeedback={() => void sendFeedback()}
+            onPrivacy={() => void openExternal(privacyUrl(language))}
+          />
         ) : id === 'stats' ? (
           <StatsView
             book={book}

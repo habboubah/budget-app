@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react';
-import { BarChart3, ChevronRight, Compass, Download, Filter, HandCoins, Landmark, Luggage, PiggyBank, Repeat, Settings, Star, Tags, Wallet, Zap } from 'lucide-react';
+import { BarChart3, ChevronRight, Compass, Download, Filter, HandCoins, Info, Landmark, Luggage, PiggyBank, Repeat, Settings, Star, Tags, Wallet, Zap } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Strings, fmt } from '../translations';
 import { foldForSearch, searchTerms } from '../logic';
@@ -8,7 +8,7 @@ import { SearchField } from '../ui/SearchField';
 import { tapLight } from '../ui/haptics';
 
 /** The settings' groups a search can lead to (the menu scrolls there). */
-export type PrefsSection = 'general' | 'display' | 'security' | 'notify' | 'demo' | 'about' | 'reset';
+export type PrefsSection = 'general' | 'display' | 'security' | 'notify' | 'demo' | 'reset';
 
 /** The two pages the menu goes to besides its rows (the month page is home: ✕ leads there). */
 export type MenuPage = 'stats' | 'insights';
@@ -46,6 +46,8 @@ interface Props {
   onTransfer: () => void;
   /** Pushes the guide (src/guide.ts): every feature explained, and the short tours. */
   onGuide: () => void;
+  /** Pushes *Über diese App*: the app's card, its promises, rating, feedback, the privacy policy. */
+  onAbout: () => void;
   /** The settings' groups (PreferencesGroups), shown under the rows. */
   children: ReactNode;
   /** What the settings hold on this device, for the search: a label and the group it is in. */
@@ -130,7 +132,7 @@ interface Feature {
  *      accounts, recurring entries, favourites;
  *   4. *Werkzeuge* — what a book may use: importing, debts, trips and
  *      projects, the tax list, import rules, automatic capture (iPhone);
- *   5. *App* — the guide, and backup and transfer;
+ *   5. *App* — the guide, backup and transfer, and *Über diese App* (AboutView);
  *   6. *Einstellungen* — every setting, grouped by topic (PreferencesGroups,
  *      which App passes as children): the search's settings scroll here.
  *
@@ -155,6 +157,7 @@ export function MoreView(p: Props) {
   useEffect(() => { if (searching) p.onSearch(); }, [searching]);
 
   const guide: Feature = { id: 'guide', label: t.guideTitle, sub: t.guideRowSub, icon: Compass, hue: 'blue', onClick: p.onGuide };
+  const about: Feature = { id: 'about', label: t.aboutPageTitle, sub: t.aboutPageRowSub, icon: Info, hue: 'mint', onClick: p.onAbout };
   const transfer: Feature = { id: 'transfer', label: t.transferTitle, sub: t.transferRowSub, icon: Download, hue: 'sky', onClick: p.onTransfer };
   const book: Feature[] = [
     { id: 'categories', label: t.categoriesTitle, icon: Tags, hue: 'lavender', value: p.categoryCount, onClick: p.onCategories },
@@ -179,7 +182,7 @@ export function MoreView(p: Props) {
     const text = foldForSearch(texts.filter(Boolean).join(' '));
     return terms.every(w => text.includes(w));
   };
-  const features = searching ? [guide, transfer, ...book, ...tools].filter(f => has(f.label, f.sub)) : [];
+  const features = searching ? [guide, transfer, about, ...book, ...tools].filter(f => has(f.label, f.sub)) : [];
   const settings = searching ? p.prefs.filter(s => has(s.label, s.sub, t.prefsTitle)) : [];
   const topics = searching ? p.findGuide(query) ?? [] : [];
 
@@ -227,6 +230,7 @@ export function MoreView(p: Props) {
           <Group title={t.appSection}>
             {row(guide)}
             <Row label={transfer.label} sub={transfer.sub} leading={<IconTile icon={transfer.icon} hue={transfer.hue} />} trailing={<Next />} onClick={transfer.onClick} tour="set-transfer" />
+            {row(about)}
           </Group>
           {/* Then every setting, right here (they had a screen of their own until November 2026). */}
           {p.children}
