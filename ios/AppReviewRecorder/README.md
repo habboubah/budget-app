@@ -53,7 +53,7 @@ What it leaves out is listed at the end, for the Review Notes.
 
 ## Every recording
 
-1. **Save your own data:** the menu (☰) › Back up and transfer ›
+1. **Save your own data:** the menu (☰) › Backup and restore ›
    Export backup, to iCloud Drive.
 2. `npm run rehearse:app-review` — checks every step against the current
    code in about 2 minutes.
@@ -83,7 +83,7 @@ What it leaves out is listed at the end, for the Review Notes.
    then look at the phone.
 8. **Afterwards:** the video is in Photos. Trim it, AirDrop it to the Mac,
    upload it in App Store Connect › App Review Information › Attachment.
-   Then the menu (☰) › Back up and transfer › Import backup with your own file.
+   Then the menu (☰) › Backup and restore › Import backup with your own file.
 
 Options: `PACE` scales every pause (0.65 unless set; `PACE=1` slower,
 `PACE=0.5` faster); `FROM=5 TO=8` only those

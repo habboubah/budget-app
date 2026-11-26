@@ -56,6 +56,11 @@ enum SharedFiles {
         format.numberStyle = .currency
         if let locale = source?["locale"] as? String { format.locale = Locale(identifier: locale) }
         format.currencyCode = (source?["currency"] as? String) ?? "EUR"
+        // Always two decimals, as in the app (the Syrian pound has none in the system's data), and the
+        // Syrian pound as "SYP", or "ل.س" in Arabic — never its narrow "£" (logic.ts, currencyOpts).
+        format.minimumFractionDigits = 2
+        format.maximumFractionDigits = 2
+        if format.currencyCode == "SYP" { format.currencySymbol = format.locale.identifier.hasPrefix("ar") ? "ل.س" : "SYP" }
         return format.string(from: NSNumber(value: Double(cents) / 100)) ?? String(format: "%.2f", Double(cents) / 100)
     }
 

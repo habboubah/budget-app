@@ -133,6 +133,19 @@ export function InsightsView({ book, language, t, hidden, open, onOpen, onBudget
         </FoldCard>
       )}
 
+      {/* The savings pots right under the budgets (Ahmad, November 2026): what is set aside beside what may be spent. */}
+      {goals.count === 0 ? (
+        // Without a goal the card is one quiet row already — the invitation.
+        <div data-tour="plan-goals"><GoalsCard data={data} t={t} today={today} onOpen={onGoals} /></div>
+      ) : (
+        <FoldCard
+          tour="plan-goals" fold={fold('goals')} title={t.goalsTitle}
+          headline={fmt(t.goalSaved, { saved: formatMoneyShort(goals.saved, t.locale), target: formatMoneyShort(goals.target, t.locale) })}
+        >
+          {() => <GoalsCard data={data} t={t} today={today} onOpen={onGoals} />}
+        </FoldCard>
+      )}
+
       {next && (
         <FoldCard tour="plan-runway" fold={fold('runway')} title={t.runwayTitle} headline={runwayHeadline(next, t)} tone={next.lowest.balance < 0 ? 'neg' : undefined}>
           {() => <RunwayCard runway={next} t={t} onDue={onDue} onExplain={onExplain} />}
@@ -171,18 +184,6 @@ export function InsightsView({ book, language, t, hidden, open, onOpen, onBudget
               onCreateGoal={() => onReserveGoal(reserve.upcoming.reduce((s, u) => s + u.amount, 0) || reserve.monthly * 12, reserve.upcoming[0]?.month)}
             />
           )}
-        </FoldCard>
-      )}
-
-      {goals.count === 0 ? (
-        // Without a goal the card is one quiet row already — the invitation.
-        <div data-tour="plan-goals"><GoalsCard data={data} t={t} today={today} onOpen={onGoals} /></div>
-      ) : (
-        <FoldCard
-          tour="plan-goals" fold={fold('goals')} title={t.goalsTitle}
-          headline={fmt(t.goalSaved, { saved: formatMoneyShort(goals.saved, t.locale), target: formatMoneyShort(goals.target, t.locale) })}
-        >
-          {() => <GoalsCard data={data} t={t} today={today} onOpen={onGoals} />}
         </FoldCard>
       )}
 

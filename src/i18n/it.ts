@@ -781,7 +781,7 @@ const it: Strings = {
   favoriteRemoved: 'Preferito rimosso',
   moveUp: 'Sposta su',
   moveDown: 'Sposta giù',
-  transferTitle: 'Backup e trasferimento',
+  transferTitle: 'Backup e ripristino',
   transferFooter: 'Backup ed esportazione CSV. Tutto resta su questo dispositivo.',
   moreSection: 'Strumenti',
   prefsTitle: 'Impostazioni',

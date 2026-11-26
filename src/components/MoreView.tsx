@@ -42,7 +42,7 @@ interface Props {
   onRules: () => void;
   /** Plan 19, iPhone only: the guide to the Shortcuts automations. */
   onCapture?: () => void;
-  /** Pushes "Sichern und übertragen": backup and CSV. */
+  /** Pushes "Sichern und wiederherstellen": backup and CSV. */
   onTransfer: () => void;
   /** Pushes the guide (src/guide.ts): every feature explained, and the short tours. */
   onGuide: () => void;
@@ -101,9 +101,9 @@ interface Feature {
  *   - *Werkzeuge* — importing, debts, trips and projects, the tax list,
  *     import rules, automatic capture (iPhone);
  *   - *Einstellungen* (PreferencesRows): the day the month begins, hiding
- *     amounts, the lock, the phone's backup, reminders, the test data;
- *   - quieter, grey: the guide, backup and transfer, *Über diese App*, and
- *     resetting the app;
+ *     amounts, the lock, the phone's backup, reminders, *Sichern und
+ *     wiederherstellen*, the test data, resetting the app;
+ *   - quieter, grey: the guide, then *Über diese App*;
  *   - at the foot, round icon buttons without a label (PreferencesButtons):
  *     the look, the language, the currency and the colour — each opens the
  *     phone's own picker.
@@ -221,7 +221,6 @@ export function MoreView(p: Props) {
             {p.settings}
             <div className={section}>
               {row(guide, false)}
-              {row(transfer, false, 'set-transfer')}
               {row(about, false)}
             </div>
           </>

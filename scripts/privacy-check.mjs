@@ -259,7 +259,7 @@ try {
       await page.waitForTimeout(300);
     }
     await tab(3);
-    await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: 'Sichern und übertragen' }).click();
+    await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: 'Sichern und wiederherstellen' }).click();
     await page.waitForTimeout(400);
     // Opens the export sheet (plan 04); export without a password so no key
     // derivation or password entry is needed in the check. The row is the

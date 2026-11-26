@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { CURRENCIES, currencyForRegion, hasTwoMinorDigits, isSupportedCurrency } from './currency';
-import { formatMoney, getActiveCurrency, parseAmount, setActiveCurrency } from './logic';
+import { formatMoney, formatMoneyWhole, getActiveCurrency, parseAmount, setActiveCurrency } from './logic';
 
 afterEach(() => setActiveCurrency('EUR'));
 
@@ -17,7 +17,12 @@ describe('currency list', () => {
     expect(currencyForRegion('SY')).toBe('SYP');
     setActiveCurrency('SYP');
     expect(formatMoney(123450, 'de-DE')).toBe('1.234,50\u00a0SYP');
-    expect(formatMoney(5000, 'en-GB')).toMatch(/50\.00/);
+    // CLDR's narrow symbol for it is "£": never that — "SYP", and "ل.س" in Arabic.
+    expect(formatMoney(5000, 'en-GB')).toBe('SYP\u00a050.00');
+    expect(formatMoney(5000, 'fr-FR')).not.toContain('£');
+    expect(formatMoney(5000, 'ar')).toContain('ل.س');
+    expect(formatMoney(5000, 'ar')).not.toContain('SYP');
+    expect(formatMoneyWhole(500000, 'en-GB')).toBe('SYP\u00a05,000');
   });
 
   it('recognises supported codes', () => {

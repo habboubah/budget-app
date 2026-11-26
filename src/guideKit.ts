@@ -147,8 +147,8 @@ export const TOUR_STEPS: Record<TourId, readonly MarkId[]> = {
   month: ['balance', 'tick', 'month', 'tabs', 'add'],
   entry: ['entryAmount', 'entryName', 'entryCategory', 'entryDetails', 'save'],
   stats: ['statsRange', 'statsHero', 'statsChart', 'statsWhere', 'statsRhythm'],
-  plan: ['planPace', 'planBudgets', 'planRunway', 'planOutlook', 'planGoals'],
-  settings: ['setSearch', 'setBook', 'setMore', 'setTransfer', 'setPrefs'],
+  plan: ['planPace', 'planBudgets', 'planGoals', 'planRunway', 'planOutlook'],
+  settings: ['setSearch', 'setBook', 'setMore', 'setPrefs', 'setTransfer'],
 };
 
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);

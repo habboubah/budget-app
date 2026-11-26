@@ -782,7 +782,7 @@ const nb: Strings = {
   favoriteRemoved: 'Favoritt fjernet',
   moveUp: 'Flytt opp',
   moveDown: 'Flytt ned',
-  transferTitle: 'Sikkerhetskopi og overføring',
+  transferTitle: 'Sikkerhetskopi og gjenoppretting',
   transferFooter: 'Sikkerhetskopi og CSV-eksport. Alt blir på denne enheten.',
   moreSection: 'Verktøy',
   prefsTitle: 'Innstillinger',

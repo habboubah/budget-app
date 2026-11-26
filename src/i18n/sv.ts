@@ -782,7 +782,7 @@ const sv: Strings = {
   favoriteRemoved: 'Favorit borttagen',
   moveUp: 'Flytta upp',
   moveDown: 'Flytta ned',
-  transferTitle: 'Säkerhetskopiera och flytta',
+  transferTitle: 'Säkerhetskopiera och återställ',
   transferFooter: 'Säkerhetskopia och CSV-export. Allt stannar på den här enheten.',
   moreSection: 'Verktyg',
   prefsTitle: 'Inställningar',

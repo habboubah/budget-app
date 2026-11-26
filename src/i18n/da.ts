@@ -781,7 +781,7 @@ const da: Strings = {
   favoriteRemoved: 'Favorit fjernet',
   moveUp: 'Flyt op',
   moveDown: 'Flyt ned',
-  transferTitle: 'Sikkerhedskopi og overførsel',
+  transferTitle: 'Sikkerhedskopi og gendannelse',
   transferFooter: 'Sikkerhedskopi og CSV-eksport. Alt bliver på denne enhed.',
   moreSection: 'Værktøjer',
   prefsTitle: 'Indstillinger',

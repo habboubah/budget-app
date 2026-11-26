@@ -781,7 +781,7 @@ const es: Strings = {
   favoriteRemoved: 'Favorito quitado',
   moveUp: 'Subir',
   moveDown: 'Bajar',
-  transferTitle: 'Copia de seguridad y traspaso',
+  transferTitle: 'Copia de seguridad y restauración',
   transferFooter: 'Copia de seguridad y exportación CSV. Todo se queda en este dispositivo.',
   moreSection: 'Herramientas',
   prefsTitle: 'Ajustes',

@@ -245,7 +245,7 @@ export const SCREENS = [
     category: `${sheet} [data-tour="entry-category"]`,
     details: `${sheet} [data-tour="entry-details"]`,
   } },
-  // Mehr → Sichern und übertragen: "Alles bleibt auf diesem Gerät, es gibt keine Cloud."
+  // Mehr → Sichern und wiederherstellen: "Alles bleibt auf diesem Gerät, es gibt keine Cloud."
   { name: '03-backup', run: async (page, w) => {
     await tab(page, 3);
     await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: w.t.transferTitle }).first().click();

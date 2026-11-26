@@ -785,7 +785,7 @@ const cs: Strings = {
   favoriteRemoved: 'Oblíbená odebrána',
   moveUp: 'Posunout nahoru',
   moveDown: 'Posunout dolů',
-  transferTitle: 'Záloha a přenos',
+  transferTitle: 'Záloha a obnovení',
   transferFooter: 'Záloha a export CSV. Vše zůstává v tomto zařízení.',
   moreSection: 'Nástroje',
   prefsTitle: 'Nastavení',

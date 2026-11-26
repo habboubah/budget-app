@@ -781,7 +781,7 @@ const nl: Strings = {
   favoriteRemoved: 'Favoriet verwijderd',
   moveUp: 'Omhoog',
   moveDown: 'Omlaag',
-  transferTitle: 'Back-up en overzetten',
+  transferTitle: 'Back-up en herstel',
   transferFooter: 'Back-up en CSV-export. Alles blijft op dit apparaat.',
   moreSection: 'Hulpmiddelen',
   prefsTitle: 'Instellingen',

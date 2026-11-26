@@ -1,5 +1,5 @@
 import { ComponentType, useState } from 'react';
-import { Bell, CalendarRange, CloudUpload, Coins, EyeOff, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Moon, Palette, ScanFace, Sun, SunMoon, Trash2 } from 'lucide-react';
+import { ArchiveRestore, Bell, CalendarRange, CloudUpload, Coins, EyeOff, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Moon, Palette, ScanFace, Sun, SunMoon, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
@@ -45,6 +45,8 @@ interface Props {
   /** The reminder settings; null where there are no notifications (the web). */
   reminders: ReminderPrefs | null;
   onReminders: () => void;
+  /** Pushes *Sichern und wiederherstellen*: export a backup, import one, the CSV. */
+  onTransfer: () => void;
 }
 
 /**
@@ -54,8 +56,8 @@ interface Props {
  *
  * - `PreferencesRows`, under the heading *Einstellungen*: the day the month
  *   begins; hiding amounts, the lock and the phone's backup (the guide's
- *   `{security}`); the reminders (apps only); the test data in and out (each
- *   asks first); and
+ *   `{security}`); the reminders (apps only); *Sichern und wiederherstellen*;
+ *   the test data in and out (each asks first); and
  *   resetting the app, in red, behind a confirmation.
  * - `PreferencesButtons`, at the drawer's foot: four round icon buttons
  *   without a visible label — the look (light, dark, automatic), the language,
@@ -103,6 +105,9 @@ export function PreferencesRows(p: Props) {
           />
         </div>
       )}
+      <div data-prefs="backup">
+        <DrawerRow icon={ArchiveRestore} label={t.transferTitle} onClick={p.onTransfer} tour="set-transfer" />
+      </div>
       <div data-prefs="demo">
         {p.hasDemo
           ? <DrawerRow icon={FlaskConicalOff} label={t.demoRemove} onClick={() => setConfirmDemo(true)} />

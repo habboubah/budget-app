@@ -505,7 +505,7 @@ when it is wanted:
 
 ## Backup and transfer
 
-*Menü › Sichern und übertragen*:
+*Menü › Sichern und wiederherstellen*:
 
 - **Export and import.** Everything as one file (share sheet → Files, iCloud
   Drive, AirDrop …), and back again — also to move the book between the web
@@ -536,10 +536,10 @@ tab, *Mehr*, and *Optionen* before that.) In the drawer, from the top:
 - **Werkzeuge**: importing, debts and loans, trips and projects, the tax
   list, import rules, automatic capture (iPhone).
 - **Einstellungen**: the day the month begins, hide amounts, the lock and
-  the phone's backup (in the apps), reminders (in the apps), test data in
-  and out (both ask first), and *App zurücksetzen*.
-- Quieter: the **Anleitung**, **Sichern und übertragen** and **Über diese
-  App** — the app's card (its name and version, "ohne Konto, ohne Server"),
+  the phone's backup (in the apps), reminders (in the apps), **Sichern und
+  wiederherstellen**, test data in and out (both ask first), and *App
+  zurücksetzen*.
+- Quieter: the **Anleitung**, then **Über diese App** — the app's card (its name and version, "ohne Konto, ohne Server"),
   what you can count on (free without ads or subscription, no account, your
   data stays on the device and goes to no one, backups locked with your own
   password), rating, feedback and the privacy policy.
