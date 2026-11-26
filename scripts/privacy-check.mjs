@@ -34,6 +34,8 @@ const ALLOWED_URLS = [
     "tesseract.js's default download paths; src/ocr.ts passes local ones (ocr/) — the OCR step below proves none is used"],
   [/^https:\/\/apps\.apple\.com\/app\/id\d+\?action=write-review$/,
     'Mehr › Einstellungen › Spartopf bewerten (src/links.ts): handed to the App Store when tapped, never fetched'],
+  [/^https:\/\/apps\.apple\.com\/app\/id\d+$/,
+    "the update offer's Aktualisieren in the iPhone app (src/links.ts APP_STORE_URL): handed to the App Store when tapped, never fetched"],
   [/^https:\/\/play\.google\.com\/store\/apps\/details\?id=com\.habboubah\.spartopf$/,
     'Mehr › Einstellungen › Spartopf bewerten in the Android app (src/links.ts): handed to Google Play when tapped, never fetched'],
   [/^https:\/\/habboubah\.github\.io\/privacy-policy\/spartopf\/(de\/)?$/,

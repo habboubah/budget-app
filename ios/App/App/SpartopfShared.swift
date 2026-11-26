@@ -46,7 +46,8 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "region", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "makePdf", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "writeAmounts", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "removeAmounts", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "removeAmounts", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "checkUpdate", returnType: CAPPluginReturnPromise)
     ]
 
     static let appGroup = "group.com.habboubah.spartopf"
@@ -186,6 +187,67 @@ public class SpartopfSharedPlugin: CAPPlugin, CAPBridgedPlugin {
             code = Locale.current.regionCode
         }
         call.resolve(["region": code ?? ""])
+    }
+
+    /// A newer version on the App Store (src/appUpdate.ts). iOS lets no app install itself,
+    /// so this only asks Apple's public lookup for the newest version number; the app then
+    /// offers "Update", which opens its App Store page. The request carries the bundle id and
+    /// the store's country — nothing of the book, no cookies, nothing cached. `available`
+    /// when the store's version is newer than this one and runs on this phone's iOS.
+    @objc func checkUpdate(_ call: CAPPluginCall) {
+        guard let bundleId = Bundle.main.bundleIdentifier,
+              let current = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
+            call.resolve(["available": false])
+            return
+        }
+        let country: String?
+        if #available(iOS 16, *) {
+            country = Locale.current.region?.identifier
+        } else {
+            country = Locale.current.regionCode
+        }
+        Task { @MainActor in
+            // The lookup answers per storefront: the phone's region first, then the default (US) one.
+            var found = await Self.storeVersion(bundleId: bundleId, country: country)
+            if found == nil, country != nil { found = await Self.storeVersion(bundleId: bundleId, country: nil) }
+            guard let found else {
+                call.resolve(["available": false])
+                return
+            }
+            let runsHere = found.minimumOS.map { !Self.isNewer($0, than: UIDevice.current.systemVersion) } ?? true
+            call.resolve(["available": runsHere && Self.isNewer(found.version, than: current), "version": found.version])
+        }
+    }
+
+    /// The App Store's newest version of the app and the iOS it needs, or nil (offline, not in that store).
+    static func storeVersion(bundleId: String, country: String?) async -> (version: String, minimumOS: String?)? {
+        var parts = URLComponents(string: "https://itunes.apple.com/lookup")
+        var items = [URLQueryItem(name: "bundleId", value: bundleId)]
+        if let country, country.count == 2 { items.append(URLQueryItem(name: "country", value: country.lowercased())) }
+        parts?.queryItems = items
+        guard let url = parts?.url else { return nil }
+        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
+        let session = URLSession(configuration: .ephemeral)
+        defer { session.finishTasksAndInvalidate() }
+        guard let answer = try? await session.data(for: request) else { return nil }
+        let (data, response) = answer
+        guard (response as? HTTPURLResponse)?.statusCode == 200, data.count <= 512 * 1024,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let first = (json["results"] as? [[String: Any]])?.first,
+              let version = first["version"] as? String else { return nil }
+        return (version, first["minimumOsVersion"] as? String)
+    }
+
+    /// "1.2.10" is newer than "1.2.9": numeric parts, a missing part is 0 (src/appUpdate.ts isNewer).
+    static func isNewer(_ candidate: String, than current: String) -> Bool {
+        let a = candidate.split(separator: ".").map { Int($0) ?? 0 }
+        let b = current.split(separator: ".").map { Int($0) ?? 0 }
+        for i in 0..<max(a.count, b.count) {
+            let x = i < a.count ? a[i] : 0
+            let y = i < b.count ? b[i] : 0
+            if x != y { return x > y }
+        }
+        return false
     }
 
     /// Plan 28: the page as printed — the print stylesheet shows only the report (index.css,
