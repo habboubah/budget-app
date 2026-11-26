@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronsUpDown, Menu as MenuIcon, X } from 'lucide-react';
+import { ChevronLeft, ChevronsUpDown, Info, Menu as MenuIcon, X } from 'lucide-react';
 import { tapLight } from './haptics';
 import { useMenuButton } from './menuButton';
+import { usePageInfo } from './pageInfo';
 import { AddButton } from './AddButton';
 
 interface Props {
@@ -51,6 +52,8 @@ export function Screen({ title, barTitle, eyebrow, subtitle, onBack, backLabel, 
   const [scrolled, setScrolled] = useState(false);
   // Where the page passes no back button: ☰ and + on the month page, ‹ to the month on Statistik and Planen.
   const menu = useMenuButton();
+  // ⓘ: what the page is for, where App gives it one (ui/pageInfo.ts).
+  const info = usePageInfo();
   // At the very top the bar is see-through, so the page's accent light shows
   // behind it; once anything scrolls under it, it turns solid (as iOS does).
   const [atTop, setAtTop] = useState(true);
@@ -119,7 +122,18 @@ export function Screen({ title, barTitle, eyebrow, subtitle, onBack, backLabel, 
           >
             {barTitle ?? title}
           </span>
-          <div className="justify-self-end flex items-center gap-2">{actions}</div>
+          <div className="justify-self-end flex items-center gap-2">
+            {info && (
+              <button
+                type="button" onClick={() => { tapLight(); info.onOpen(); }}
+                title={info.label} aria-label={info.label} data-page-info
+                className={roundButton}
+              >
+                <Info className="w-[22px] h-[22px]" strokeWidth={2.1} />
+              </button>
+            )}
+            {actions}
+          </div>
         </div>
         {/* Scroll edge: the content fades into the bar instead of meeting a line. */}
         <div

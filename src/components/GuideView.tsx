@@ -1,7 +1,7 @@
 import { CSSProperties, ComponentType, Fragment, useEffect, useId, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  ArrowRight, BarChart3, Bell, Calculator, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleEllipsis,
+  ArrowRight, BarChart3, Filter, Bell, Calculator, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleEllipsis,
   Compass, Download, EyeOff, FileText, FlaskConical, HandCoins, Hash, Info, Landmark, Lightbulb, Luggage,
   MoreHorizontal, Palette, Paperclip, PenLine, PiggyBank, Play, Plus, QrCode, Repeat, Scale, ScrollText, Search, Settings, Share,
   Menu as MenuIcon, ShieldCheck, Split, Star, Tags, Target, TrendingUp, Undo2, Wallet, WalletCards, Zap,
@@ -43,6 +43,7 @@ const LOOK: Record<GuideTopicId, [Icon, Hue]> = {
   reports: [FileText, 'leaf'],
   bank: [Landmark, 'sky'],
   invoice: [QrCode, 'stone'],
+  rules: [Filter, 'plum'],
   reconcile: [Scale, 'plum'],
   accounts: [Wallet, 'leaf'],
   projects: [Luggage, 'sand'],

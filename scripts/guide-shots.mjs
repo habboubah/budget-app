@@ -133,6 +133,7 @@ const SHOTS = {
   accounts: { go: async (p, t) => { await tab(p, 3); await open(p, t.accountsTitle); }, top: true, max: 380 },
   projects: { go: async (p, t) => { await tab(p, 3); await open(p, t.projectsTitle); }, top: true, max: 380 },
   tax: { go: async (p, t) => { await tab(p, 3); await open(p, t.taxTitle); }, top: true, max: 400 },
+  rules: { go: async (p, t) => { await tab(p, 3); await open(p, t.rulesRow); }, top: true, max: 380 },
   monthStart: { go: async (p, t) => { await prefs(p, t); await open(p, t.monthStartRow); await wait(p, 300); }, crop: ['[role="dialog"]'], max: 440 },
   private: { go: prefs, crop: ['main section.hero'], max: 360 },
   backup: { go: async (p, t) => { await tab(p, 3); await open(p, t.transferTitle); }, top: true, max: 420 },

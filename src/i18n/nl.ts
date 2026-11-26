@@ -1103,6 +1103,8 @@ const nl: Strings = {
   // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
   // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
   guideTitle: 'Handleiding',
+  pageInfo: 'Wat is dit?',
+  pageInfoGuide: 'Openen in de handleiding',
   guideBack: 'Terug naar de handleiding',
   guideRowSub: 'Alle functies kort uitgelegd, met een korte rondleiding',
   guideAll: 'Alle functies bekijken',
