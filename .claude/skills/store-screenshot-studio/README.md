@@ -41,14 +41,14 @@ python3 .claude/skills/store-screenshot-studio/scripts/validate.py
 
 ```
 screenshots/store/
-  iphone-6.3/{de,en}/01-month.png … 10-plan.png        1206×2622 PNG
+  iphone/{de,en}/01-month.png … 10-plan.png            1206×2622 PNG
   play-phone/{de,en}/01-month.jpg … 08-plan.jpg        1080×1920 JPEG, the ribbon on the first
   play-feature/{de,en}/feature-graphic.jpg             1024×500 JPEG, with the ribbon
   contact-sheet.png                                    the iPhone set
   contact-sheet-play-phone.png                         the Play set and the feature graphics
 ```
 
-`iphone-6.3` is the set for App Store Connect's required *iPhone with Dynamic
+`iphone` is the set for App Store Connect's required *iPhone with Dynamic
 Island (medium display)* slot; `play-phone` and `play-feature` are Google
 Play's. Each run deletes and rewrites only the folders this script makes,
 including ones from older configs (`apple-6.9`, `apple-6.5`); files next to

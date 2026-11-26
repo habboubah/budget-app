@@ -42,7 +42,7 @@ npm run deploy:web       # vite build → wrangler deploy (asks you to log in to
 
 ```bash
 npx playwright install chromium                      # once per Mac
-npm run screenshots                                  # raw captures, de + en + ar → screenshots/<lang>/ (iPhone) and <lang>-android/
+npm run screenshots                                  # raw captures, de + en + ar → screenshots/<lang>/ (one set for both stores)
 npm run screenshots -- --lang ar --ios               # one language, one platform
 npm run screenshots -- --only 08-category,10-plan    # only some screens
 npm run store-screenshots                            # framed store set → screenshots/store/ (takes missing captures first)

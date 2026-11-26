@@ -236,7 +236,7 @@ function imageSize(file) {
 }
 const filesIn = (dir, ext) => (fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => ext.test(f)).sort().map(f => path.join(dir, f)) : []);
 const media = {
-  iphone: lang => filesIn(path.join(root, 'screenshots/store/iphone-6.3', lang), /\.(png|jpe?g)$/i),
+  iphone: lang => filesIn(path.join(root, 'screenshots/store/iphone', lang), /\.(png|jpe?g)$/i),
   preview: lang => {
     const file = path.join(root, 'screenshots/store/app-preview', `app-preview-${lang}.mp4`);
     return fs.existsSync(file) ? file : null;
@@ -332,7 +332,7 @@ function printPlan(listing) {
         console.log(`             ${locale} What's New ${note ? `${short(note.text)} ← ${note.from}` : '— (no release-notes file)'}`);
       }
       if (!textsOnly && MEDIA_LANGS.includes(lang)) {
-        console.log(`             shots     ${media.iphone(lang).length} from screenshots/store/iphone-6.3/${lang}/`);
+        console.log(`             shots     ${media.iphone(lang).length} from screenshots/store/iphone/${lang}/`);
         if (withPreview) console.log(`             preview   ${media.preview(lang) ? `${rel(media.preview(lang))}, poster ${posterTimeCode(lang) ?? '(App Store Connect default, 0:05)'}` : '—'}`);
       }
     }

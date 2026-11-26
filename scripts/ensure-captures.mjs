@@ -1,8 +1,7 @@
 // Runs before `npm run store-screenshots`: the store set frames captures that
-// `npm run screenshots` makes (the iPhone ones in screenshots/<de|en|ar>/,
-// the Android ones in screenshots/<de|en|ar>-android/ for Google Play). When
-// any the set needs is missing, this takes them first — only the platform
-// that lacks them — so the framing never stops at a missing file.
+// `npm run screenshots` makes (screenshots/<de|en|ar>/, one set for the App
+// Store and Google Play). When any the set needs is missing, this takes them
+// first, so the framing never stops at a missing file.
 import fs from 'fs';
 import path from 'path';
 import { execFileSync } from 'child_process';
@@ -26,18 +25,9 @@ if (cfg.featureGraphic) {
   if (s) needed.push([cfg.featureGraphic.rawDir ?? cfg.rawDir, s.raw]);
 }
 
-let ios = false, android = false;
-for (const [dir, file] of needed) {
-  for (const locale of cfg.locales) {
-    const d = dir.replaceAll('{locale}', locale);
-    if (!fs.existsSync(path.join(root, d, file))) {
-      if (d.endsWith('-android')) android = true; else ios = true;
-    }
-  }
-}
-if (!ios && !android) process.exit(0);
+const missing = needed.some(([dir, file]) => cfg.locales.some(locale => !fs.existsSync(path.join(root, dir.replaceAll('{locale}', locale), file))));
+if (!missing) process.exit(0);
 
-const flag = ios && android ? [] : ios ? ['--ios'] : ['--android'];
-console.log(`Some ${ios && android ? '' : ios ? 'iPhone ' : 'Android '}captures are missing — taking them first (npm run screenshots${flag.length ? ` -- ${flag[0]}` : ''}, a few minutes) …\n`);
-execFileSync(process.execPath, [path.join(root, 'scripts', 'screenshots.mjs'), ...flag], { cwd: root, stdio: 'inherit' });
+console.log('Some captures are missing — taking them first (npm run screenshots, a few minutes) …\n');
+execFileSync(process.execPath, [path.join(root, 'scripts', 'screenshots.mjs')], { cwd: root, stdio: 'inherit' });
 console.log('');

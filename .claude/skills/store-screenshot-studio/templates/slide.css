@@ -361,6 +361,52 @@ body {
    in from the sides, so no line of it reaches under the band. */
 [data-ribbon][data-layout="top"] .copy { padding-top: calc(22 * var(--u)); padding-inline: calc(12 * var(--u)); }
 
+/* ---------- banner ----------
+   The ribbon's word as a band across the whole top edge (ribbonStyle:
+   "banner"): bold red with white capitals, a star either side, a lighter top
+   and a shadow under it, so in a row of store screenshots it is the first
+   thing seen. The copy starts under it. */
+
+.banner {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  inset-inline: 0;
+  height: calc(15 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 16%, var(--banner-bg)) 0%, var(--banner-bg) 55%, color-mix(in srgb, black 10%, var(--banner-bg)) 100%);
+  color: var(--banner-fg);
+  box-shadow: 0 calc(0.8 * var(--u)) calc(2.6 * var(--u)) color-mix(in srgb, var(--shade) 55%, transparent);
+  pointer-events: none;
+}
+.banner[hidden] { display: none; }
+.banner span {
+  display: flex;
+  align-items: center;
+  gap: calc(3 * var(--u));
+  padding-top: calc(1.2 * var(--u));
+  font-family: var(--font-display), var(--font-text), system-ui, sans-serif;
+  font-size: calc(7.4 * var(--t));
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 calc(0.3 * var(--u)) calc(0.8 * var(--u)) color-mix(in srgb, black 30%, transparent);
+}
+[lang="ar"] .banner span { letter-spacing: 0; font-size: calc(8 * var(--t)); }
+.banner span::before,
+.banner span::after {
+  content: "★";
+  font-size: 0.62em;
+  letter-spacing: 0;
+}
+[data-banner][data-layout="top"] .copy { padding-top: calc(23 * var(--u)); }
+[data-banner][data-layout="bottom"] .stage { padding-top: calc(15 * var(--u)); }
+
 /* ---------- feature graphic (1024x500, landscape) ----------
    Copy at the start, the phone at the end, everything driven by the short
    side: the portrait rules are made for a tall canvas, and on a 1024-wide one

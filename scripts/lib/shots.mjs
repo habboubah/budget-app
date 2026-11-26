@@ -80,7 +80,8 @@ export function sampleData(n) {
     add(m, 'income', n.child, 255, paidBy(17), 17, monthly(n.child));
     add(m, 'fixed', n.rent, 1050, paidBy(1), 1, monthly(n.rent));
     add(m, 'fixed', n.power, 83, paidBy(3), 3, monthly(n.power));
-    add(m, 'fixed', n.net, 39.99, paidBy(18), 18, monthly(n.net));
+    // A new price two months ago (Abos & Verträge says what it does in a year).
+    add(m, 'fixed', n.net, off < -1 ? 34.99 : 39.99, paidBy(18), 18, monthly(n.net));
     add(m, 'fixed', n.phone, 19.99, paidBy(22), 22, monthly(n.phone));
     add(m, 'fixed', n.ins, 6.5, paidBy(1), 1, monthly(n.ins));
     add(m, 'fixed', n.gym, 24.9, paidBy(15), 15, monthly(n.gym));
@@ -93,7 +94,15 @@ export function sampleData(n) {
     for (const x of n.extras) if (rnd() > 0.35) add(m, 'extra', x, 9 + Math.round(rnd() * 9000) / 100, true, anyDay());
     add(m, 'family', n.kita, 180, paidBy(5), 5, monthly(n.kita));
   }
-  return { entries, months };
+  // The gym runs until two months from today with a month's notice, so its
+  // last day to cancel is about a month away and shows in amber; the phone
+  // contract ends next autumn with three months' notice.
+  const ahead = (months, d) => { const x = new Date(now.getFullYear(), now.getMonth() + months, 1); return day(key(months), Math.min(d, new Date(x.getFullYear(), x.getMonth() + 1, 0).getDate())); };
+  const contracts = {
+    [n.gym]: { end: ahead(2, today), notice: 1 },
+    [n.phone]: { end: ahead(10, 30), notice: 3, renews: 24 },
+  };
+  return { entries, months, contracts };
 }
 
 /**
@@ -131,6 +140,8 @@ export function words(src, lang, platform) {
     // The labels the clicks need, built from the strings.
     sectionMenu: new RegExp(`^${escapeRe(t.more)} — `),
     report: new RegExp(`^${escapeRe(t.reportTitle)}`),
+    // "Alle (9)" on the Abos & Verträge card.
+    allContracts: new RegExp(`^${escapeRe(t.allPayees).replace('\\{n\\}', '\\d+')}$`),
     groceries: category('groceries'),
     ...ENTRY[lang],
   };
@@ -138,11 +149,12 @@ export function words(src, lang, platform) {
 
 /** The page's storage before the app starts: six months, the categories with budgets, past the first run. Values are strings (null removes). */
 export function storage(src, lang, { platform } = {}) {
-  const { entries, months } = sampleData(NAMES[lang]);
+  const { entries, months, contracts } = sampleData(NAMES[lang]);
   return {
     'spartopf-entries': JSON.stringify(entries),
     'spartopf-months': JSON.stringify(months),
     'spartopf-categories': JSON.stringify(src.categories),
+    'spartopf-contracts': JSON.stringify(contracts),
     'spartopf-meta': JSON.stringify({ schemaVersion: src.schema, seeded: true }),
     'spartopf-lang': lang,
     'spartopf-intro-done': '1',
@@ -245,18 +257,21 @@ export const SCREENS = [
     category: `${sheet} [data-tour="entry-category"]`,
     details: `${sheet} [data-tour="entry-details"]`,
   } },
-  // Mehr → Sichern und wiederherstellen: "Alles bleibt auf diesem Gerät, es gibt keine Cloud."
-  { name: '03-backup', run: async (page, w) => {
-    await tab(page, 3);
-    await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: w.t.transferTitle }).first().click();
+  // Planen → Abos & Verträge → "Alle (n)": every recurring cost with its next
+  // payment, what they come to a month and a year, the gym's notice deadline
+  // in amber and the internet's new price with what it does in a year.
+  { name: '03-contracts', run: async (page, w) => {
+    await tab(page, 2);
+    const card = page.locator('[data-tour="plan-contracts"]');
+    await scrollTo(card);
+    await card.getByRole('button', { name: w.allContracts }).first().click();
     await pause(page, 600);
     await toTop(page);
   }, marks: {
-    // The backup card alone, and with the sentence under it ("Alles bleibt auf
-    // diesem Gerät, es gibt keine Cloud") — without the heading above the card.
-    backup: 'main > section:nth-of-type(1) > div',
-    'backup-note': ['main > section:nth-of-type(1) > div', 'main > section:nth-of-type(1) > p'],
-    excel: 'main > section:nth-of-type(2) > div',
+    // The list's first two rows: the deadline to cancel, then the dearest.
+    list: 'main ul',
+    'first-rows': ['main ul > li:nth-child(1)', 'main ul > li:nth-child(2)'],
+    'contract-1': 'main ul > li:nth-child(1)',
   } },
   // The month further down: Auto, Sonstiges and Lebensmittel with their budgets.
   { name: '04-budgets', run: page => scrollTo(page.locator(categoryCard('car'))), marks: {
@@ -378,7 +393,7 @@ export const launch = () => chromium.launch({ executablePath: process.env.CHROME
  * the same data, so a screen that can't be reached fails under its own name
  * and the others are still taken. Returns the screens that failed.
  */
-export async function capture({ variants, screens = SCREENS, outDir, onlyNames = null, marks = true }) {
+export async function capture({ variants, screens = SCREENS, outDir, onlyNames = null, marks = true, forbidden = null }) {
   const ios = variants.some(v => v.platform !== 'android');
   const android = variants.some(v => v.platform === 'android');
   if (ios) {
@@ -427,6 +442,11 @@ export async function capture({ variants, screens = SCREENS, outDir, onlyNames =
           // Measured before the file is written: a screen whose marks are gone
           // must not leave a fresh capture behind with stale marks.
           const found = marks && s.marks ? await measure(page, s.marks) : null;
+          // A capture that both stores show must not name one of them.
+          if (forbidden) {
+            const hit = (await page.evaluate(() => document.body.innerText)).match(forbidden);
+            if (hit) throw new Error(`the screen says "${hit[0]}", which belongs to one store only — the set is shown on both`);
+          }
           await page.screenshot({ path: path.join(dir, `${s.name}.png`) });
           if (found) fs.writeFileSync(path.join(dir, `${s.name}.marks.json`), `${JSON.stringify({ capture: `${s.name}.png`, marks: found }, null, 2)}\n`);
           console.log(`  ${v.id}/${s.name}.png${found ? `  (${Object.keys(found).length} marks)` : ''}`);

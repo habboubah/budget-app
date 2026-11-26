@@ -401,7 +401,7 @@ Spartopf هو دفتر ميزانيتك لكل شهر – مجاني، بلا إ
 
 | Field | Value |
 |---|---|
-| Screenshots | *iPhone with Dynamic Island (medium display)*: the 10 images in `screenshots/store/iphone-6.3/de/` and `…/en/` (1206 × 2622). Arabic has none; the store then shows the German ones. No *Kostenlos* ribbon and no points about the price here: App Review rejects price words on screenshots (2.3.7). Remake them with `npm run screenshots` and `npm run store-screenshots` |
+| Screenshots | *iPhone with Dynamic Island (medium display)*: the 10 images in `screenshots/store/iphone/de/` and `…/en/` (1206 × 2622). Arabic has none; the store then shows the German ones. No *Kostenlos* ribbon and no points about the price here: App Review rejects price words on screenshots (2.3.7). Remake them with `npm run screenshots` and `npm run store-screenshots` |
 | Support URL | https://habboubah.github.io/privacy-policy/spartopf/de/ (DE) · https://habboubah.github.io/privacy-policy/spartopf/ (EN, AR) |
 | Marketing URL | optional — leave empty |
 | Copyright | `2026 Ahmad Habboubah` |

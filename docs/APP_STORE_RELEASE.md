@@ -187,14 +187,14 @@ checked against Apple's character limits).
 ```bash
 npx playwright install chromium      # once per Mac
 npm run screenshots                  # raw app captures and their marks → screenshots/de, screenshots/en
-npm run store-screenshots            # composed, captioned set → screenshots/store/iphone-6.3/
+npm run store-screenshots            # composed, captioned set → screenshots/store/iphone/
 ```
 
 Both on the Mac, in this order: the store set lifts a piece of each screen out
 of the phone and finds it by the marks the capture run writes next to each
 capture (`<screen>.marks.json`).
 
-Upload `screenshots/store/iphone-6.3/de/` and `…/en/`: 10 images each (the
+Upload `screenshots/store/iphone/de/` and `…/en/`: 10 images each (the
 most a slot takes) at **1206 × 2622**, the size of the required *iPhone with
 Dynamic Island (medium display)* slot (6.1″/6.3″) – month · new entry · backup ·
 budgets · next month · statistics · history · category · month report · Planen.
@@ -205,7 +205,7 @@ The raw captures (1290 × 2796) don't fit that slot.
 App Store Connect → Spartopf → left: **iOS App 1.0 – Prepare for Submission**
 [Vorbereitung für Einreichung]:
 
-- [ ] **Screenshots** → *iPhone with Dynamic Island (medium display)* → drag in the 10 images from `screenshots/store/iphone-6.3/de/`.
+- [ ] **Screenshots** → *iPhone with Dynamic Island (medium display)* → drag in the 10 images from `screenshots/store/iphone/de/`.
 - [ ] **Promotional Text** [Werbetext], **Description** [Beschreibung],
       **Keywords** → from `store/listing.md` (DE).
 - [ ] **Support URL** → `https://habboubah.github.io/privacy-policy/spartopf/de/`
@@ -218,7 +218,7 @@ App Store Connect → Spartopf → left: **iOS App 1.0 – Prepare for Submissio
 ### 8c. Add English (optional, recommended)
 
 Language menu at the top right (*German*) → add **English (U.K.)** → fill the same
-fields with the English texts and the images from `screenshots/store/iphone-6.3/en/`.
+fields with the English texts and the images from `screenshots/store/iphone/en/`.
 
 ### 8c-2. Add Arabic
 

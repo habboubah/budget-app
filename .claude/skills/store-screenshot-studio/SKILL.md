@@ -18,10 +18,9 @@ description: Turn the raw app captures in screenshots/<locale>/ into polished, s
 
 Raw capture in → marketing slide out. The raw captures come from the
 `app-store-screenshots` skill (`npm run screenshots`), which writes plain,
-unstyled app screens to `screenshots/<de|en|ar>/` (iPhone) and
-`screenshots/<de|en|ar>-android/` (Android: its wording and its rounded face —
-the Play target and the feature graphic name that folder as their `rawDir`)
-and, next to each, where its parts are (`<capture>.marks.json`). This skill composes them:
+unstyled app screens to `screenshots/<de|en|ar>/` — one set for both stores,
+framed in an iPhone for the App Store and in a Pixel for Google Play — and,
+next to each, where its parts are (`<capture>.marks.json`). This skill composes them:
 colour, headline, phone, call-outs, stickers.
 
 **Never edit the pixels of the app.** What is inside the phone is the untouched
@@ -227,15 +226,18 @@ Two things say what the app costs and promises, beside the headline:
 - **The ribbon** — the band across the top corner with the copy file's `ribbon`
   word (*Kostenlos* / *Free*). Switched on per target and on the feature graphic
   in `config/screenshots.config.json`: `"ribbon": true` (every slide), `"first"`
-  (the first slide only) or `false`. Its colours come with the background
-  (`ribbon` / `ribbonInk` in `theme.json`).
+  (the first slide only) or `false`. `"ribbonStyle"`: `"corner"` (default, a
+  sash across the leading top corner) or `"banner"` (a red band across the
+  whole top edge — Google Play's first slide has it, to catch the eye in the
+  row of screenshots). Its colours come with the background (`ribbon` /
+  `ribbonInk`, `banner` / `bannerInk` in `theme.json`).
 - **Points** — the pills with a tick under a slide's headline, from `points` in
   the copy file (a slide's, or the feature graphic's). A point is a string, or
   `{ "text": "Kein Abo", "price": true }` for one that speaks about the price.
   Price points appear only on targets that have the ribbon on.
 
 **Google Play only.** Apple reads "free" on a screenshot as a price reference
-and rejects the version for it, so the `iphone-6.3` target has the ribbon off
+and rejects the version for it, so the `iphone` target has the ribbon off
 and shows only the plain points. `validate.py` warns when an App Store target
 turns it on. On Play it is allowed, at the cost of being picked for Play's
 promotion surfaces less readily. And every one of these words has to be true:

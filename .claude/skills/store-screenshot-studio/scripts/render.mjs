@@ -42,10 +42,13 @@ export function pngSize(file) {
 // another Mac produces the same pixels.
 export const launchArgs = ['--force-color-profile=srgb', '--font-render-hinting=none', '--disable-lcd-text'];
 
-// The corner ribbon ("Kostenlos" / "Free"). `owner` is a target or the
+// The ribbon ("Kostenlos" / "Free"). `owner` is a target or the
 // featureGraphic block: `"ribbon": true` puts it on every slide, `"first"` on
-// the first one only, absent or false on none. The word is the copy file's
-// `ribbon`; its colours come with the slide's background (theme.json).
+// the first one only, absent or false on none. `"ribbonStyle"`: "corner" (the
+// default, a sash across the leading top corner) or "banner" (a red band
+// across the whole top edge, the first thing the eye meets in a store list).
+// The word is the copy file's `ribbon`; its colours come with the slide's
+// background (theme.json: ribbon / ribbonInk, banner / bannerInk).
 // Where the stores allow it: reference/store-specs.md › The ribbon.
 export function ribbonFor(owner, locale, index = 0) {
   const name = owner.id || 'featureGraphic';
@@ -54,9 +57,11 @@ export function ribbonFor(owner, locale, index = 0) {
     die(`"${name}" has "ribbon": ${JSON.stringify(owner.ribbon)}. Use true (every slide), "first" or false.`);
   }
   if (owner.ribbon === 'first' && index !== 0) return null;
+  const style = owner.ribbonStyle ?? 'corner';
+  if (style !== 'corner' && style !== 'banner') die(`"${name}" has "ribbonStyle": ${JSON.stringify(style)}. Use "corner" or "banner".`);
   const text = copyFor(locale).ribbon;
   if (!text) die(`"${name}" asks for the ribbon, but config/copy.${locale}.json has no "ribbon" text.`);
-  return { text };
+  return { text, style };
 }
 
 // The pills under the headline: a slide's (or the feature graphic's) `points`
@@ -77,9 +82,8 @@ export function pointsFor(points, priceWords, where) {
 // ---------------------------------------------------------------- captures
 
 // A target (or the feature graphic) may take its captures from its own
-// folder: Google Play's come from the Android captures (`npm run screenshots`
-// writes screenshots/<locale>-android/), with Android's words (no iCloud,
-// fingerprint for Face ID) and its rounded face. Same file names, same marks.
+// folder (`rawDir`). Today both stores frame the same captures
+// (screenshots/<locale>/), so none names one.
 const rawPath = (file, locale, dir = cfg.rawDir) => path.join(root, dir.replaceAll('{locale}', locale), file);
 
 /** One phone's worth of data: the capture, its shape, how the frame is placed. */
@@ -286,8 +290,9 @@ export function slideData(slide, locale, { ids = cfg.slides.map(s => s.id), inde
   const style = cfg.style || {};
   const phone = phoneData(slide, locale, slide.device, where, slide.rawDir);
   const background = backgroundFor(slide.background, where);
-  if (ribbon && !(background.ribbon && background.ribbonInk)) {
-    die(`${where} carries the ribbon, but background "${slide.background}" has no "ribbon" / "ribbonInk" colours in theme.json.`);
+  const [bgKey, inkKey] = ribbon?.style === 'banner' ? ['banner', 'bannerInk'] : ['ribbon', 'ribbonInk'];
+  if (ribbon && !(background[bgKey] && background[inkKey])) {
+    die(`${where} carries the ${ribbon.style}, but background "${slide.background}" has no "${bgKey}" / "${inkKey}" colours in theme.json.`);
   }
   // A slide shows its subline only where the set asks for sublines, or the
   // slide itself does.
@@ -313,7 +318,7 @@ export function slideData(slide, locale, { ids = cfg.slides.map(s => s.id), inde
     icon: slide.icon ? iconUrl(slide.icon, where) : null,
     stickers: stickersFor(ids, index, copy.dir === 'rtl'),
     // Off unless the caller passes ribbonFor(…).
-    ribbon: ribbon && { ...ribbon, bg: background.ribbon, fg: background.ribbonInk },
+    ribbon: ribbon && { ...ribbon, bg: background[bgKey], fg: background[inkKey] },
     ...extra,
   };
 }
