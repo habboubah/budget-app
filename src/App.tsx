@@ -88,9 +88,10 @@ import { GUIDE_TOPICS, GuideTopic, GuideTopicId, GuideWords, guideTopics, topicT
 import type { MarkId, TourId } from './guideKit';
 import { guidePages, loadGuidePages } from './guidePages';
 import { DeepLink, parseDeepLink } from './native/deepLink';
-import { makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, setSecure, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
+import { checkUpdate, makePdf, openExternal, readInbox, readSnapshot, removeAmounts, removeInbox, requestReview, setSecure, systemVersion, writeAmounts, writeSnapshot } from './native/bridge';
 import { PrintReport, PrintSpec, ReportPdfSheet, reportFileName } from './components/PrintReport';
-import { PLAY_URL, REVIEW_URL, feedbackMail, privacyUrl } from './links';
+import { APP_STORE_URL, PLAY_URL, REVIEW_URL, feedbackMail, privacyUrl } from './links';
+import { LATER_KEY, dueForCheck, readLater, shouldOffer } from './appUpdate';
 import { isDemoEntry } from './demo';
 import { StatementImportSheet, ImportState } from './components/StatementImportSheet';
 import { PlannedRow, allCategoryNames, applyStatement, csvForMapping, parseBankCsv, parseMappedCsv, parseStatementText, planStatement } from './statementImport';
@@ -379,6 +380,32 @@ export default function App() {
     });
     return () => { void handle.then(h => h.remove()); };
   }, [native]);
+
+  /**
+   * A newer version in the store (src/appUpdate.ts): asked on opening the app
+   * and on coming back to it, at most once an hour. Android's Google Play
+   * installs it with its own screen; the iPhone gets the "Update" offer.
+   */
+  const lastUpdateCheck = useRef<number | null>(null);
+  const [updateOffer, setUpdateOffer] = useState<string | null>(null);
+  useEffect(() => {
+    if (!native || locked || !dueForCheck(lastUpdateCheck.current, Date.now())) return;
+    lastUpdateCheck.current = Date.now();
+    let live = true;
+    void checkUpdate().then(version => {
+      if (!live || !version) return;
+      let later = null;
+      try { later = readLater(localStorage.getItem(LATER_KEY)); } catch { /* no storage: offer it */ }
+      if (shouldOffer(version, later, Date.now())) setUpdateOffer(version);
+    });
+    return () => { live = false; };
+  }, [native, locked, resumed]);
+  const updateLater = () => {
+    if (updateOffer) {
+      try { localStorage.setItem(LATER_KEY, JSON.stringify({ version: updateOffer, at: Date.now() })); } catch { /* asked again next time */ }
+    }
+    setUpdateOffer(null);
+  };
 
   const balance = balanceFor(balances, month);
   /**
@@ -2225,6 +2252,16 @@ export default function App() {
 
       {/* Looking around with the test data: a capsule says so, and takes it out again. */}
       <DemoPill show={store.demoTrial && store.hasDemo && !guideAway && !tour} title={t.demoPill} label={t.demoPillAction} onRemove={() => setDemoOut(true)} />
+      <Confirm
+        open={!!updateOffer && !locked}
+        title={t.updateTitle}
+        body={fmt(t.updateBody, { version: updateOffer ?? '' })}
+        confirmLabel={t.updateNow}
+        cancelLabel={t.updateLater}
+        onCancel={updateLater}
+        onConfirm={() => { setUpdateOffer(null); void openExternal(APP_STORE_URL); }}
+      />
+
       <Confirm
         open={demoOut}
         title={t.demoRemoveTitle}

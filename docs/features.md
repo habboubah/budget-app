@@ -484,7 +484,9 @@ when it is wanted:
 
 - **Nothing leaves the device.** No account, no server, no analytics; every
   build is checked for any request to another address. Bank texts, receipts
-  and QR codes are read on the phone.
+  and QR codes are read on the phone. The one question the phone apps ask is
+  whether the store has a newer version (below) — nothing of the book goes
+  with it.
 - **App lock**: Face ID, Touch ID or the passcode on the iPhone, fingerprint
   or face on Android, when opening Spartopf. While it is on, Siri doesn't
   answer and Android allows no screenshots.
@@ -606,12 +608,22 @@ way into the guide at that topic.
 
 ## Where it runs
 
+- **Always the newest version.** On opening the app (and on coming back to
+  it, at most once an hour) the phone apps look for a newer version in the
+  store (`src/appUpdate.ts`). Android: Google Play's own update screen
+  appears, installs the new version and restarts the app. iPhone: iOS lets no
+  app install itself, so *Neue Version verfügbar* offers *Aktualisieren*,
+  which opens the App Store page (*Später* waits a day for that version);
+  iPhones with *App Store › App-Updates* on install it by themselves too. The
+  iPhone asks Apple's public lookup with only the app's bundle id and the
+  store's country. The web app updates itself (service worker).
+
 - **iPhone app** (App Store): everything above. Siri, Shortcuts and automatic
   capture are iPhone only.
 - **Android app** (Google Play): the same app — fingerprint or face unlock,
   no screenshots while the lock is on, *Im Gerätebackup sichern*, reports
   through the print dialog as PDF, the system back button, no Google
-  services.
+  services (only Play's in-app update library).
 - **Web app**: installable from the browser and works offline. It keeps its
   own data (move it with a backup file); reminders and the lock are only in
   the phone apps.

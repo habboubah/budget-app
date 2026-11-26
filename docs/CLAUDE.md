@@ -74,6 +74,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `src/start.ts`, `src/fold.ts` | The first five minutes (plan 39): the start's answers as the book's first entries; Planen's and Statistik's cards as headlines |
 | `src/guide.ts`, `src/guideKit.ts`, `src/guidePages.ts`, `src/i18n/guide/` | The guide (*Menü › Anleitung*), the tours and what *Zeigen* points at: topics and what is remembered (`guide.ts`, in the main bundle); labels, search and the tours' marks (`guideKit.ts`, a lazy chunk); its pages per language, loaded on demand (all pure, tested) |
 | `src/crypto.ts`, `src/export.ts`, `src/limits.ts` | Encrypted backups (WebCrypto), sharing files, the size limits of every import |
+| `src/appUpdate.ts` | A newer store version on opening the app: Android's Play in-app update, the iPhone's *Aktualisieren* offer (the one network request; `checkUpdate` in both native plugins) |
 | `src/currency.ts`, `src/links.ts`, `src/platform.ts` | Currencies; the links *Über Spartopf* opens; which app we run in |
 | `src/demo.ts` | The test data year |
 | `src/shareImage.ts` | The year review as a picture |

@@ -24,6 +24,12 @@ interface SharedPlugin {
   removeAmounts(): Promise<void>;
   /** Android only (plan 23): FLAG_SECURE on the window. */
   setSecure(options: { on: boolean }): Promise<void>;
+  /**
+   * A newer version in the store (src/appUpdate.ts). Android: Google Play's
+   * in-app update runs by itself — `started` when its screen was shown.
+   * iPhone: the App Store's newest version, when it is newer than this one.
+   */
+  checkUpdate(): Promise<{ started?: boolean; available?: boolean; version?: string }>;
 }
 
 const Shared = registerPlugin<SharedPlugin>('SpartopfShared');
@@ -131,6 +137,20 @@ export async function makePdf(name: string): Promise<boolean> {
 export async function setSecure(on: boolean): Promise<void> {
   if (!isAndroid()) return;
   try { await Shared.setSecure({ on }); } catch { /* the next change sets it again */ }
+}
+
+/**
+ * A newer version in the store, asked on opening the app. Android: Google
+ * Play shows its own update screen and installs it — null comes back. iPhone:
+ * the newer version's number for the "Update" offer, or null. Null on the
+ * web, offline, or when the store can't tell.
+ */
+export async function checkUpdate(): Promise<string | null> {
+  if (!isNative()) return null;
+  try {
+    const { available, version } = await Shared.checkUpdate();
+    return !isAndroid() && available && version ? version : null;
+  } catch { return null; }
 }
 
 // "Alle Daten löschen" erases the snapshot and the inbox too (plan 05's wipeAll).

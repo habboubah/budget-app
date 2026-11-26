@@ -17,6 +17,12 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.appupdate.AppUpdateOptions;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.UpdateAvailability;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -37,6 +43,11 @@ import java.util.Set;
  * - setSecure: FLAG_SECURE on the window while the app lock is on — no
  *   screenshots, a blank card in Recents. Kept in the app's preferences, so
  *   MainActivity sets it again before the first frame of a cold start.
+ * - checkUpdate: a newer version on Google Play (src/appUpdate.ts) — Play's
+ *   own in-app update, the immediate kind: its full-screen update downloads
+ *   and installs the new version and restarts the app. An update cut short
+ *   (the app closed mid-way) is picked up again. Play's library asks the Play
+ *   Store app on the phone; it sends nothing of the book.
  *
  * The snapshot, the inbox and Siri's amounts belong to the iPhone's App Group
  * (plans 14, 18, 19); here they do nothing and report nothing, until plan 24
@@ -46,6 +57,8 @@ import java.util.Set;
 public class SpartopfSharedPlugin extends Plugin {
 
     static final String PREFS = "spartopf";
+    /** Any number: Play's update screen reports back under it, and nothing listens. */
+    private static final int UPDATE_REQUEST = 7301;
     static final String SECURE = "secure";
 
     /** Hosts `open` may hand to Android (Optionen › Über Spartopf, src/links.ts). */
@@ -86,6 +99,38 @@ public class SpartopfSharedPlugin extends Plugin {
             call.resolve();
         } catch (Exception e) {
             call.reject("Nothing opened the link");
+        }
+    }
+
+    @PluginMethod
+    public void checkUpdate(PluginCall call) {
+        AppUpdateManager manager;
+        try {
+            manager = AppUpdateManagerFactory.create(getContext());
+        } catch (RuntimeException e) {
+            call.reject("Google Play isn't available");
+            return;
+        }
+        manager.getAppUpdateInfo()
+            .addOnSuccessListener(info -> getActivity().runOnUiThread(() -> {
+                JSObject result = new JSObject();
+                result.put("started", startUpdate(manager, info));
+                call.resolve(result);
+            }))
+            // Not installed from Play (a debug build, another store), offline, no Play Store: nothing to do.
+            .addOnFailureListener(e -> call.reject("Google Play couldn't tell"));
+    }
+
+    /** Play's immediate update, when one is waiting or was cut short. True when its screen was shown. */
+    private boolean startUpdate(AppUpdateManager manager, AppUpdateInfo info) {
+        int availability = info.updateAvailability();
+        boolean resume = availability == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS;
+        boolean waiting = availability == UpdateAvailability.UPDATE_AVAILABLE && info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE);
+        if (!resume && !waiting) return false;
+        try {
+            return manager.startUpdateFlowForResult(info, getActivity(), AppUpdateOptions.defaultOptions(AppUpdateType.IMMEDIATE), UPDATE_REQUEST);
+        } catch (Exception e) {
+            return false;
         }
     }
 
