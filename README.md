@@ -121,3 +121,16 @@ ffmpeg -i "$IN" -vf "scale=-2:1280,fps=15" -c:v libx264 -preset veryfast -b:v 17
 `npm run rehearse:app-review`   Rehearses the App Review recording in the browser, no iPhone
 `npm run record:app-review`     Records the App Review video on the connected iPhone
 `npm run record:watch`          Leave it running so Claude can start recording runs on the iPhone
+
+
+
+# Compree Video
+
+cd /Users/ahmadhabboubah/Downloads
+ffmpeg -i "ScreenRecording_11-26-2026 20-39-57_1.MP4" -vf "scale=-2:1280,fps=30" -c:v libx264 -preset veryfast -crf 30 -pix_fmt yuv420p -an -movflags +faststart app-review-small.mp4
+
+
+IN="ScreenRecording_11-26-2026 20-39-57_1.MP4"
+ffmpeg -y -i "$IN" -vf "scale=-2:1280,fps=15" -c:v libx264 -preset veryfast -b:v 170k -pass 1 -an -f mp4 /dev/null && \
+ffmpeg -i "$IN" -vf "scale=-2:1280,fps=15" -c:v libx264 -preset veryfast -b:v 170k -pass 2 -pix_fmt yuv420p -an -movflags +faststart app-review-under10.mp4
+
