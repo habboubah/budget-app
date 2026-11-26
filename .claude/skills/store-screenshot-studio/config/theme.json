@@ -15,7 +15,7 @@
     "displayWeight": 900,
     "css": "assets/fonts/fonts.css"
   },
-  "//backgrounds": "Presets referenced by slide.background: one flat colour and what stands on it. fill = the canvas; ink = the headline; inkSoft = the subline; shade = the colour every shadow is mixed from (a darker tone of the fill, never grey); chip / chipInk / tick = a point's pill, its text and its tick; ribbon / ribbonInk = the corner ribbon. petrol is the icon's own colour and the app's accent (--acc-l) with white type and the coin's gold for the ribbon; mist is the same hue as a light canvas with petrol ink, the quieter alternative; night is the app's dark page as a canvas, for a screen shown in dark mode (`night: true` — validate.py does not count it as a second colour). One preset for the whole set; night only for a dark screen.",
+  "//backgrounds": "Presets referenced by slide.background: one flat colour and what stands on it. fill = the canvas; ink = the headline; inkSoft = the subline; shade = the colour every shadow is mixed from (a darker tone of the fill, never grey); chip / chipInk / tick = a point's pill, its text and its tick; ribbon / ribbonInk = the corner ribbon; banner / bannerInk = the red band across the top (ribbonStyle \"banner\"). petrol is the icon's own colour and the app's accent (--acc-l) with white type and the coin's gold for the ribbon; mist is the same hue as a light canvas with petrol ink, the quieter alternative; night is the app's dark page as a canvas, for a screen shown in dark mode (`night: true` — validate.py does not count it as a second colour). One preset for the whole set; night only for a dark screen.",
   "backgrounds": {
     "petrol": {
       "fill": "#0A6D80",
@@ -26,7 +26,9 @@
       "chipInk": "#0D1017",
       "tick": "#0A6D80",
       "ribbon": "#F5C04A",
-      "ribbonInk": "#3A2800"
+      "ribbonInk": "#3A2800",
+      "banner": "#E5262E",
+      "bannerInk": "#FFFFFF"
     },
     "mist": {
       "fill": "#CFEAEE",
@@ -37,7 +39,9 @@
       "chipInk": "#0D1017",
       "tick": "#0A6D80",
       "ribbon": "#0A6D80",
-      "ribbonInk": "#FFFFFF"
+      "ribbonInk": "#FFFFFF",
+      "banner": "#E5262E",
+      "bannerInk": "#FFFFFF"
     },
     "night": {
       "night": true,
@@ -49,7 +53,9 @@
       "chipInk": "#06323B",
       "tick": "#0A6D80",
       "ribbon": "#F5C04A",
-      "ribbonInk": "#3A2800"
+      "ribbonInk": "#3A2800",
+      "banner": "#E5262E",
+      "bannerInk": "#FFFFFF"
     }
   },
   "//device": "The frame is drawn in CSS, not composited from a PNG (assets/frames/README.md); its proportions are in templates/slide.css. bezel is its colour: near black with a little of the petrol in it, so it sits on the canvas instead of cutting a hole in it.",

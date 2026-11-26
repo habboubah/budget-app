@@ -1,16 +1,17 @@
 ---
 name: app-store-screenshots
-description: Regenerate the raw store screenshots of Spartopf (npm run screenshots → screenshots/<de|en|ar>/ for the iPhone and screenshots/<de|en|ar>-android/ for Google Play, ten screens per language, each with its marks). Use when asked to update, refresh or regenerate store screenshots, to add, drop or reorder a screen in the set, or to mark a part of a screen for a call-out. The composed, captioned upload set is the store-screenshot-studio skill.
+description: Regenerate the raw store screenshots of Spartopf (npm run screenshots → screenshots/<de|en|ar>/, one set for the App Store and Google Play, ten screens per language, each with its marks). Use when asked to update, refresh or regenerate store screenshots, to add, drop or reorder a screen in the set, or to mark a part of a screen for a call-out. The composed, captioned upload set is the store-screenshot-studio skill.
 ---
 
 # Store screenshots (raw captures)
 
 `scripts/screenshots.mjs` builds the app, seeds it with demo data and captures
 **ten screens per language** (German, English, Arabic) — the most App Store
-Connect takes per slot — twice: as the iPhone app and as the Android app
-(Android's wording from `src/i18n/android.ts` — no iCloud, fingerprint and
-face unlock — and its rounded face; Google Play's set is framed from these), as
-plain app screens, and next to each one where its parts are
+Connect takes per slot — once, for both stores: the App Store set frames them
+in an iPhone, Google Play's in a Pixel. None of the ten screens names a
+platform (no iPhone, iCloud, Face ID, Android …); the run checks each screen's
+text and fails the one that does, so a screen added later can't slip one into
+the other store. As plain app screens, and next to each one where its parts are
 (`<screen>.marks.json`). `store-screenshot-studio`
 (`npm run store-screenshots`) then composes and captions them at the sizes the
 App Store and Google Play ask for, and lifts the marked parts out of the phone.
@@ -20,8 +21,7 @@ Upload those, not these: the raw size (1290 × 2796) fits no required slot.
 
 ```bash
 npx playwright install chromium        # once per Mac
-npm run screenshots                    # all ten, DE + EN + AR, iPhone and Android
-npm run screenshots -- --ios           # only the iPhone ones (or --android)
+npm run screenshots                    # all ten, DE + EN + AR, for both stores
 npm run screenshots -- --lang ar       # one language (or --lang de,en)
 npm run screenshots -- --only 08-category,10-plan    # just these, e.g. after a fix
 npm run store-screenshots              # the composed upload set from these
@@ -34,16 +34,15 @@ font sets where a line breaks).
 
 ## What comes out
 
-`screenshots/<de|en|ar>/` (iPhone) and `screenshots/<de|en|ar>-android/`
-(Android), 1290 × 2796 PNG (430 × 932 pt @3x). The iPhone ones are taken from
-the built app; the Android ones from Vite's dev server, the only place the
-browser can be told to look like the Android app (`spartopf-dev-platform`):
+`screenshots/<de|en|ar>/`, 1290 × 2796 PNG (430 × 932 pt @3x), taken from the
+built app. (Until November 2026 Google Play had its own Android captures in
+`screenshots/<lang>-android/`; a full run removes those folders.)
 
 | # | file | screen | how it is reached |
 |---|---|---|---|
 | 1 | `01-month` | the running month, both balances | start screen |
 | 2 | `02-entry` | new entry, 47,85 € at Lidl | groceries' add row → type → suggestion chip |
-| 3 | `03-backup` | Sichern und übertragen: "Alles bleibt auf diesem Gerät, es gibt keine Cloud" | Einstellungen → that row |
+| 3 | `03-contracts` | Abos & Verträge: every recurring cost, a month and a year together, the gym's notice deadline in amber, the internet's new price | Planen → *Abos & Verträge* → *Alle (n)* |
 | 4 | `04-budgets` | Auto, Sonstiges, Lebensmittel with their budgets | month scrolled to the car card |
 | 5 | `05-next-month` | next month, not started, what it carries over | › in the header |
 | 6 | `06-stats` | Statistik: *Das fällt auf* | tab 2 |
@@ -78,7 +77,7 @@ so one selector is right in German and in English.
 |---|---|
 | `01-month` | `balance`, `month-end`, `left`, `search` |
 | `02-entry` | `amount`, `name`, `category`, `details` |
-| `03-backup` | `backup`, `backup-note` (the card with the sentence under it), `excel` |
+| `03-contracts` | `list`, `first-rows` (the first two rows), `contract-1` |
 | `04-budgets` | `budget-car`, `budget-extra`, `budget-groceries-head` |
 | `05-next-month` | `started` (the toast), `balance`, `month-end`, `left` |
 | `06-stats` | `range`, `summary`, `stands-out` (*Das fällt auf* with its first hint) |

@@ -43,6 +43,8 @@
 
   <!-- The corner ribbon ("Kostenlos"). Hidden unless the target asks for it. -->
   <div class="ribbon" hidden><span></span></div>
+  <!-- Or the same word as a band across the top edge (ribbonStyle: "banner"). -->
+  <div class="banner" hidden><span></span></div>
 
 <script>
 // window.__DATA__ is injected by scripts/render.mjs before this page loads.
@@ -136,7 +138,15 @@
   }
 
   // ---- ribbon ----
-  if (d.ribbon) {
+  if (d.ribbon && d.ribbon.style === 'banner') {
+    set('--banner-bg', d.ribbon.bg);
+    set('--banner-fg', d.ribbon.fg);
+    const banner = document.querySelector('.banner');
+    banner.firstElementChild.textContent = d.ribbon.text;
+    banner.hidden = false;
+    // The copy starts under the band (slide.css).
+    body.dataset.banner = 'on';
+  } else if (d.ribbon) {
     set('--ribbon-bg', d.ribbon.bg);
     set('--ribbon-fg', d.ribbon.fg);
     const ribbon = document.querySelector('.ribbon');
