@@ -52,12 +52,13 @@ const { GUIDE_TOPICS } = await server.ssrLoadModule('/src/guide.ts');
 const wait = (page, ms = 450) => page.waitForTimeout(ms);
 const tab = async (page, n) => { await goTab(page, n); await wait(page); };
 /** A row or a card of Mehr (or any screen) by its label. */
-const open = async (page, label) => { await page.locator('main button', { hasText: label }).first().click(); await wait(page, 550); };
+const open = async (page, label) => { await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: label }).first().click(); await wait(page, 550); };
 const addSheet = async page => { await page.locator('[data-tour="add"]').click(); await page.waitForSelector('[data-tour="entry-amount"]'); await wait(page, 500); };
 const actionsMenu = async page => { await page.locator('[data-tour="actions"]').click(); await page.waitForSelector('[role="menu"]'); await wait(page, 350); };
 const menuItem = (t, label) => `[role="menu"] [role="menuitem"]:has-text("${label.replace(/"/g, '\\"')}")`;
 /** Mehr › Einstellungen: what is set once (plan 39). */
-const prefs = async (page, t) => { await tab(page, 3); await open(page, t.prefsTitle); };
+// The settings are in the menu drawer itself (November 2026): opening it is enough.
+const prefs = async (page, t) => { await tab(page, 3); };
 /** The month's "⋯" › Importieren: the sheet with every way to bring entries in. */
 const importSheet = async (page, t) => { await actionsMenu(page); await page.locator(menuItem(t, t.importMenu)).first().click(); await page.waitForSelector('[role="dialog"]'); await wait(page, 600); };
 const sheetRow = label => `[role="dialog"] button:has-text("${label.replace(/"/g, '\\"')}")`;
@@ -185,7 +186,9 @@ for (const set of sets) {
   await page.evaluate(() => document.fonts.ready);
   // The test data, the way anyone adds it.
   await prefs(page, t);
-  await page.locator('main button', { hasText: t.demoAdd }).first().click();
+  await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: t.demoAdd }).first().click();
+  // It asks first (November 2026).
+  await page.locator('[role="alertdialog"] button', { hasText: t.demoAdd }).click();
   await wait(page, 1200);
 
   fs.mkdirSync(path.join(outDir, set), { recursive: true });

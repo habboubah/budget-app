@@ -199,7 +199,7 @@ const es: Strings = {
   dueNothing: 'Todo está pagado y recibido. Lo próximo pendiente aparecerá aquí.',
   addCategoryToMonth: 'Añadir categoría',
   addCategoryTitle: 'Añadir una categoría',
-  addCategoryBody: 'Solo para {month}. Las categorías de cada mes nuevo se eligen en «Menú» › «Categorías y presupuestos».',
+  addCategoryBody: 'Solo para {month}. Las categorías de cada mes nuevo se eligen en «Menú» › «Categorías».',
   allCategoriesShown: 'Todas las categorías ya están en este mes.',
   createCategory: 'Crear una categoría nueva',
   categoryAddedToMonth: '«{name}» añadida',
@@ -936,6 +936,7 @@ const es: Strings = {
   demoAdded: 'Datos de prueba añadidos',
   demoRemoved: 'Datos de prueba quitados',
   demoRemoveTitle: '¿Quitar los datos de prueba?',
+  demoAddTitle: '¿Añadir datos de prueba?',
   demoRemoveBody: 'Todos los apuntes de ejemplo se quitan junto con sus presupuestos, favoritos y huchas. Todo lo que anotaste tú se queda.',
   about: 'Spartopf',
   aboutBody: 'El presupuesto de tu hogar. Sin cuenta, sin servidor – todo se queda en tu dispositivo.',
@@ -1116,7 +1117,7 @@ const es: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Categorías y presupuestos',
+  categoriesTitle: 'Categorías',
   categoriesIntro: 'El mes las muestra en este orden. Toca una para cambiarla – para ordenar o eliminar, toca «Editar».',
   inEveryMonth: 'en cada mes',
   budgetFieldHint: 'Opcional. Vale para cada mes, sin arrastrar nada.',

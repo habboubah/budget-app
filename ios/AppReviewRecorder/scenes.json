@@ -146,6 +146,8 @@
     {"scrollTo": "Add test data"},
     {"pause": 1},
     {"tap": "Add test data"},
+    {"pause": 1},
+    {"tap": "Add test data", "near": "Add test data?"},
     {"pause": 1.5},
     {"tap": "Menu", "role": "button"},
     {"pause": 1},
@@ -197,7 +199,7 @@
     {"pause": 1.5},
     {"tap": "Back"},
     {"pause": 1},
-    {"tap": "Categories and budgets"},
+    {"tap": "Categories"},
     {"pause": 1.5},
     {"tap": "Back"},
     {"pause": 1}

@@ -210,7 +210,7 @@ const de = {
   dueNothing: 'Alles bezahlt und erhalten. Was neu offen ist, steht hier.',
   addCategoryToMonth: 'Kategorie hinzufügen',
   addCategoryTitle: 'Kategorie hinzufügen',
-  addCategoryBody: 'Nur für {month}. Welche Kategorien jeder neue Monat bekommt, legst du unter „Menü“ › „Kategorien und Budgets“ fest.',
+  addCategoryBody: 'Nur für {month}. Welche Kategorien jeder neue Monat bekommt, legst du unter „Menü“ › „Kategorien“ fest.',
   allCategoriesShown: 'Alle Kategorien sind schon in diesem Monat.',
   createCategory: 'Neue Kategorie anlegen',
   categoryAddedToMonth: '„{name}“ hinzugefügt',
@@ -964,6 +964,7 @@ const de = {
   demoAdded: 'Testdaten hinzugefügt',
   demoRemoved: 'Testdaten entfernt',
   demoRemoveTitle: 'Testdaten entfernen?',
+  demoAddTitle: 'Testdaten hinzufügen?',
   demoRemoveBody: 'Alle Beispieleinträge mit ihren Budgets, Favoriten und Spartöpfen werden entfernt. Was du selbst eingetragen hast, bleibt.',
   about: 'Spartopf',
   aboutBody: 'Dein Haushaltsbuch. Ohne Konto, ohne Server – alles bleibt auf deinem Gerät.',
@@ -1145,7 +1146,7 @@ const de = {
   csvSection: 'CSV',
 
   // Categories
-  categoriesTitle: 'Kategorien und Budgets',
+  categoriesTitle: 'Kategorien',
   categoriesIntro: 'In dieser Reihenfolge stehen sie im Monat. Tippe auf eine, um sie zu ändern – sortieren und löschen kannst du mit „Bearbeiten“.',
   inEveryMonth: 'in jedem Monat',
   budgetFieldHint: 'Optional. Gilt für jeden Monat, ohne Übertrag.',
@@ -1512,7 +1513,7 @@ const en: Strings = {
   dueNothing: 'Everything is paid and received. Whatever is pending next shows up here.',
   addCategoryToMonth: 'Add category',
   addCategoryTitle: 'Add a category',
-  addCategoryBody: 'For {month} only. Which categories every new month gets is set under “Menu” › “Categories and budgets”.',
+  addCategoryBody: 'For {month} only. Which categories every new month gets is set under “Menu” › “Categories”.',
   allCategoriesShown: 'Every category is already in this month.',
   createCategory: 'Create a new category',
   categoryAddedToMonth: '“{name}” added',
@@ -2249,6 +2250,7 @@ const en: Strings = {
   demoAdded: 'Test data added',
   demoRemoved: 'Test data removed',
   demoRemoveTitle: 'Remove test data?',
+  demoAddTitle: 'Add test data?',
   demoRemoveBody: 'All sample entries and their budgets, favourites and savings pots are removed. Everything you entered yourself stays.',
   about: 'Spartopf',
   aboutBody: 'Your household budget book. No account, no server – everything stays on your device.',
@@ -2429,7 +2431,7 @@ const en: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Categories and budgets',
+  categoriesTitle: 'Categories',
   categoriesIntro: 'The month lists them in this order. Tap one to change it – to sort or delete, tap “Edit”.',
   inEveryMonth: 'in every month',
   budgetFieldHint: 'Optional. Applies to every month, nothing carried over.',
@@ -2802,7 +2804,7 @@ const ar: Strings = {
   dueNothing: 'كل شيء مدفوع ومستلم. ما يصبح معلّقًا سيظهر هنا.',
   addCategoryToMonth: 'إضافة فئة',
   addCategoryTitle: 'إضافة فئة',
-  addCategoryBody: 'لشهر {month} فقط. الفئات التي يحصل عليها كل شهر جديد تحددها في «القائمة» › «الفئات والميزانيات».',
+  addCategoryBody: 'لشهر {month} فقط. الفئات التي يحصل عليها كل شهر جديد تحددها في «القائمة» › «الفئات».',
   allCategoriesShown: 'كل الفئات موجودة في هذا الشهر.',
   createCategory: 'إنشاء فئة جديدة',
   categoryAddedToMonth: 'تمت إضافة «{name}»',
@@ -3545,6 +3547,7 @@ const ar: Strings = {
   demoAdded: 'تمت إضافة البيانات التجريبية',
   demoRemoved: 'تمت إزالة البيانات التجريبية',
   demoRemoveTitle: 'إزالة البيانات التجريبية؟',
+  demoAddTitle: 'إضافة بيانات تجريبية؟',
   demoRemoveBody: 'ستُزال كل البنود التجريبية مع ميزانياتها ومفضّلاتها وأوعية ادخارها. يبقى كل ما أدخلته بنفسك.',
   about: 'Spartopf',
   aboutBody: 'دفتر ميزانية منزلك. بلا حساب ولا خادم – كل شيء يبقى على جهازك.',
@@ -3726,7 +3729,7 @@ const ar: Strings = {
   csvSection: 'CSV',
 
   // Categories
-  categoriesTitle: 'الفئات والميزانيات',
+  categoriesTitle: 'الفئات',
   categoriesIntro: 'بهذا الترتيب تظهر في الشهر. اضغط على فئة لتغييرها – وللترتيب أو الحذف اضغط «تعديل».',
   inEveryMonth: 'في كل شهر',
   budgetFieldHint: 'اختياري. تسري على كل شهر دون ترحيل.',

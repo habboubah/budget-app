@@ -202,7 +202,7 @@ const tr: Strings = {
   dueNothing: 'Her şey ödendi ve alındı. Sıradaki bekleyenler burada görünür.',
   addCategoryToMonth: 'Kategori ekle',
   addCategoryTitle: 'Kategori ekle',
-  addCategoryBody: 'Yalnızca {month} için. Her yeni ayın hangi kategorileri alacağını “Menü” › “Kategoriler ve bütçeler” altında belirlersin.',
+  addCategoryBody: 'Yalnızca {month} için. Her yeni ayın hangi kategorileri alacağını “Menü” › “Kategoriler” altında belirlersin.',
   allCategoriesShown: 'Tüm kategoriler bu ayda zaten var.',
   createCategory: 'Yeni kategori oluştur',
   categoryAddedToMonth: '“{name}” eklendi',
@@ -939,6 +939,7 @@ const tr: Strings = {
   demoAdded: 'Test verisi eklendi',
   demoRemoved: 'Test verisi kaldırıldı',
   demoRemoveTitle: 'Test verisi kaldırılsın mı?',
+  demoAddTitle: 'Test verisi eklensin mi?',
   demoRemoveBody: 'Tüm örnek kalemler bütçeleri, favorileri ve birikim kumbaralarıyla birlikte kaldırılır. Kendi girdiğin her şey kalır.',
   about: 'Spartopf',
   aboutBody: 'Ev bütçe defterin. Hesap yok, sunucu yok – her şey cihazında kalır.',
@@ -1119,7 +1120,7 @@ const tr: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Kategoriler ve bütçeler',
+  categoriesTitle: 'Kategoriler',
   categoriesIntro: 'Ay sayfası onları bu sırayla listeler. Değiştirmek için birine dokun – sıralamak veya silmek için “Düzenle”ye dokun.',
   inEveryMonth: 'her ayda',
   budgetFieldHint: 'İsteğe bağlı. Her ay için geçerli, artan devretmez.',

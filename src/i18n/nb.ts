@@ -200,7 +200,7 @@ const nb: Strings = {
   dueNothing: 'Alt er betalt og mottatt. Det som venter neste gang, vises her.',
   addCategoryToMonth: 'Legg til kategori',
   addCategoryTitle: 'Legg til en kategori',
-  addCategoryBody: 'Bare for {month}. Hvilke kategorier hver ny måned får, velger du under «Meny» › «Kategorier og budsjetter».',
+  addCategoryBody: 'Bare for {month}. Hvilke kategorier hver ny måned får, velger du under «Meny» › «Kategorier».',
   allCategoriesShown: 'Alle kategorier er allerede i denne måneden.',
   createCategory: 'Opprett en ny kategori',
   categoryAddedToMonth: '«{name}» lagt til',
@@ -937,6 +937,7 @@ const nb: Strings = {
   demoAdded: 'Testdata lagt til',
   demoRemoved: 'Testdata fjernet',
   demoRemoveTitle: 'Fjerne testdata?',
+  demoAddTitle: 'Legge til testdata?',
   demoRemoveBody: 'Alle eksempelposter fjernes sammen med budsjettene, favorittene og sparekrukkene deres. Alt du har ført selv, blir værende.',
   about: 'Spartopf',
   aboutBody: 'Husholdningsbudsjettet ditt. Ingen konto, ingen server – alt blir på enheten din.',
@@ -1117,7 +1118,7 @@ const nb: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Kategorier og budsjetter',
+  categoriesTitle: 'Kategorier',
   categoriesIntro: 'Måneden viser dem i denne rekkefølgen. Trykk på en for å endre den – for å sortere eller slette, trykk på «Rediger».',
   inEveryMonth: 'i hver måned',
   budgetFieldHint: 'Valgfritt. Gjelder hver måned, ingenting overføres.',

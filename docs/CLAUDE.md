@@ -175,42 +175,47 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   Mac is the same file as `Menu.tsx`) asks for, so no view passes it: on the
   month page's root ☰ and, beside it, the add button (`ui/AddButton.tsx`:
   a round glass button like ☰, ‹ › and ⋯, only its plus in the accent, floating with the bar); on
-  Statistik and Planen ‹ back to the month. ☰ opens the menu full screen: the
-  tab `settings` (`MoreView`), always at its top, rising in a little from
-  below; ✕ on its bar and Android's back lead to the month. The menu opens on
-  two big tiles, *Statistik* and *Planen* (`NavTile`, `data-nav-tile`) — no
-  *Monat*: ✕ leads there. The guide's and the test data's capsules sit at the
-  bottom. Scripts get around with `scripts/nav.mjs` (`goTab(page, n)`:
-  0 month, 1 Statistik, 2 Planen, 3 the menu; `toMonth`, `openMenu`) and
-  find ☰, ✕ and ‹ as `data-nav="menu" | "close" | "back"`; the App Review
-  recording taps "Menu" (`role: button`), "Back" and "Close menu". The tour's
-  `tabs` mark is ☰.
-- **The menu (`MoreView`; the fourth tab *Mehr* until November 2026, *Optionen* before) holds what is done
-  and, under the heading *Einstellungen*, what is set once** (plan 39; the
-  settings are `PreferencesGroups` in `PreferencesView.tsx`, which App passes
-  to the menu as children — they had a pushed screen, `preferences`, until
-  November 2026, on Ahmad's word). The menu, on about one screen: a search ("Was möchtest
-  du tun?" — its own rows, what Einstellungen holds (`prefsIndex` in App) and
-  the guide's topics, whose words are fetched when the search begins), the
-  two tiles, *Haushaltsbuch* (what every book has: categories and budgets,
-  accounts, recurring entries, favourites), *Werkzeuge* (what a book may use:
-  importing — the same `ImportSheet` as the month's "⋯" —, debts, trips and
-  projects, the tax list, import rules, automatic capture), *App* (the
-  guide, backup and transfer, and *Über diese App* — `AboutView`, pushed as
-  `about`: the app's card, *Darauf kannst du dich verlassen* (free without
-  ads or subscription, no account, the data stays on the device, backups
-  locked with one's own password), rating, feedback, the privacy policy) and
-  then every setting, grouped by topic (a
-  setting the search finds clears the search and scrolls its group into
-  view; the guide's *Zeigen* for the lock and the look opens the menu and
-  marks the group): *Allgemein* (language, currency, the day the month
-  begins), *Darstellung* (light or dark, the colour — the guide's
-  `{display}`; `{general}` names *Allgemein*), *Datenschutz und Sicherheit*
-  (hide amounts first, then the lock and the phone's backup),
-  *Mitteilungen* (the reminders, apps only), *Ausprobieren* (the test data)
-  and resetting last and alone. The app's card (icon, name, version, the
-  tagline, how many months and entries the book holds: counts from two on,
-  never an amount) lives on *Über diese App* since November 2026.
+  Statistik and Planen ‹ back to the month. ☰ opens the menu: a drawer from
+  the start edge over the dimmed month page, the way fuel-app has it
+  (`MoreView`, portalled, `[data-menu]`; `.drawer` / `.drawer-backdrop` in
+  index.css). It is the tab `settings`, whose root draws the month page
+  underneath (`inert`, still — no transition between the two) and the
+  drawer; what the drawer opens is pushed on it, so back from there shows
+  the drawer again. ✕, a tap on the dimmed page, Escape and Android's back
+  close it. The guide's and the test data's capsules sit at the bottom.
+  Scripts get around with `scripts/nav.mjs` (`goTab(page, n)`: 0 month,
+  1 Statistik, 2 Planen, 3 the menu; `toMonth` closes the drawer first, as
+  ☰ shows under it) and find ☰, ✕ and ‹ as `data-nav="menu" | "close" |
+  "back"`, the drawer's rows to a page as `data-nav-tile`, and the drawer's
+  buttons as `[data-menu] button` (the page's as `main:not([inert] main)
+  button`); the App Review recording taps "Menu" (`role: button`), "Back" and
+  "Close menu". The tour's `tabs` mark is ☰.
+- **The menu drawer (`MoreView`; the fourth tab *Mehr* until November 2026, *Optionen* before) holds what is done
+  and what is set once** (plan 39; the settings had a pushed screen,
+  `preferences`, until November 2026 — on Ahmad's word they are in the
+  drawer, the way fuel-app has them). Rows as fuel-app draws them
+  (`ui/DrawerRow.tsx`: no cards, no chevrons; the pages with the icon in the
+  accent, the rest grey and smaller): the app's name and ✕; a search ("Was
+  möchtest du tun?" — its rows, what the settings hold (`prefsIndex` in App)
+  and the guide's topics, whose words are fetched when the search begins; a
+  setting it finds clears the search and scrolls into view); the pages —
+  *Statistik*, *Planen*, then what every book has: *Kategorien* (it was
+  *Kategorien und Budgets*), accounts, recurring entries, favourites;
+  *Werkzeuge* (importing — the same `ImportSheet` as the month's "⋯" —,
+  debts, trips and projects, the tax list, import rules, automatic
+  capture); *Einstellungen* (`PreferencesRows`: the day the month begins,
+  hide amounts, the lock and the phone's backup — the guide's `{security}`
+  —, the reminders, the test data in and out, each behind a `Confirm`, and
+  *App zurücksetzen* in red); the guide, backup and transfer, and *Über
+  diese App* (`AboutView`, pushed as `about`: the app's card — icon, name,
+  version, tagline, no counts —, *Darauf kannst du dich verlassen* (free
+  without ads or subscription, no account, the data stays on the device,
+  backups locked with one's own password), rating, feedback, the privacy
+  policy); and at the foot four round icon buttons without a label
+  (`PreferencesButtons`, the guide's `{display}`): the look, the language,
+  the currency and the colour (filled with it), each with the phone's own
+  picker lying invisibly over it. The guide's *Zeigen* for the lock and the
+  look opens the drawer and marks the rows.
   `PrefsSection` is `general | display | security | notify | demo | reset`. The currency applies as it is picked: it only relabels,
   and picking the old one again undoes it — no `Confirm`. Back
   from the reminders leads to the menu. A new feature's row joins *Werkzeuge* (or *Haushaltsbuch*
@@ -537,9 +542,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   most used. Sure matches only, within 15 points of the best, when any; else
   the likely ones from three letters. `completeNames()` and `correctTypo()`
   feed the sheet's chips and *Meintest du …?*. The entry sheet takes a sure
-  guess for a new entry until a category or a name chip is tapped (and only
-  with the view preference `spartopf-auto-category`, switched in
-  *Kategorien und Budgets*; off: only marked), and goes back to the category
+  guess for a new entry until a category or a name chip is tapped (always:
+  the switch for it in *Kategorien* went in November 2026, Ahmad, and so did
+  the one for the budget notes, which always show), and goes back to the category
   it opened with when the name is emptied; an edited entry is never moved.
   Guessed chips lead the row with a ✦ and `suggest-pop` (index.css).
   **Schema 18** adds `Category.keywords` — unset = what ships (so new shipped

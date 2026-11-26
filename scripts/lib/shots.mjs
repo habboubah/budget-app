@@ -248,7 +248,7 @@ export const SCREENS = [
   // Mehr → Sichern und übertragen: "Alles bleibt auf diesem Gerät, es gibt keine Cloud."
   { name: '03-backup', run: async (page, w) => {
     await tab(page, 3);
-    await page.locator('main button', { hasText: w.t.transferTitle }).first().click();
+    await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: w.t.transferTitle }).first().click();
     await pause(page, 600);
     await toTop(page);
   }, marks: {

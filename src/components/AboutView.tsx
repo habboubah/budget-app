@@ -1,13 +1,10 @@
-import { ArrowUpRight, CalendarDays, Gift, KeyRound, ListChecks, Mail, ShieldCheck, Smartphone, Star, UserX } from 'lucide-react';
+import { ArrowUpRight, Gift, KeyRound, Mail, ShieldCheck, Smartphone, Star, UserX } from 'lucide-react';
 import { Strings, fmt } from '../translations';
 import { Group, IconTile, Row, Screen } from '../ui/Screen';
 
 interface Props {
   t: Strings;
   onBack: () => void;
-  /** How much the book holds, for the card: its started months and its entries (no amounts). */
-  monthCount: number;
-  entryCount: number;
   /** Plan 15: the store's review page — in the apps only; Mail with the versions; the privacy policy. */
   onRate?: () => void;
   onFeedback: () => void;
@@ -23,9 +20,8 @@ function Away() {
  * *Über diese App* (November 2026, Ahmad: its card stood in the settings
  * before), pushed from the menu's *App* group:
  *
- *   1. the card on the hero — the icon, the name, the version, the tagline,
- *      how much the book holds (months and entries from two on, never an
- *      amount);
+ *   1. the card on the hero — the icon, the name, the version, the tagline
+ *      (no counts of months or entries: Ahmad, November 2026);
  *   2. *Darauf kannst du dich verlassen* — what the app promises, as the store
  *      listing says it: free without ads or subscriptions, no account, the
  *      data stays on the device and goes to no one, backups locked with the
@@ -33,12 +29,7 @@ function Away() {
  *   3. rating (the apps only), feedback and the privacy policy — each opens
  *      something outside the app (↗).
  */
-export function AboutView({ t, onBack, monthCount, entryCount, onRate, onFeedback, onPrivacy }: Props) {
-  // From two on: the strings are plurals ("14 Monate").
-  const facts = [
-    ...(monthCount > 1 ? [{ icon: CalendarDays, text: fmt(t.averageSpanN, { n: monthCount }) }] : []),
-    ...(entryCount > 1 ? [{ icon: ListChecks, text: fmt(t.tagEntries, { n: entryCount }) }] : []),
-  ];
+export function AboutView({ t, onBack, onRate, onFeedback, onPrivacy }: Props) {
   const promises = [
     { icon: Gift, hue: 'berry', label: t.promiseFree },
     { icon: UserX, hue: 'stone', label: t.promiseAccount },
@@ -56,16 +47,6 @@ export function AboutView({ t, onBack, monthCount, entryCount, onRate, onFeedbac
           </div>
         </div>
         <p className="mt-3 text-label text-on-hero-mute wrap-prose">{t.aboutBody}</p>
-        {facts.length > 0 && (
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {facts.map(f => (
-              <li key={f.text} className="min-h-[30px] ps-2.5 pe-3 py-1 rounded-full hero-panel inline-flex items-center gap-1.5 text-caption font-semibold text-on-hero tabular-nums">
-                <f.icon className="w-[15px] h-[15px] shrink-0 text-on-hero-soft" strokeWidth={2.2} aria-hidden="true" />
-                {f.text}
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
 
       <Group title={t.aboutPromises}>

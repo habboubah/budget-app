@@ -44,7 +44,7 @@ server, no ads; everything stays on the device.
   **Lebensmittel und Drogerie**, **Restaurants**, **Familie**, **Kinder** —
   each a card in its own colour with what is paid so far and, below it, the
   total including what is still open. Each month has its own set: a new
-  month gets the ones switched on under *Menü › Kategorien und Budgets ›
+  month gets the ones switched on under *Menü › Kategorien ›
   (a category) › In jedem neuen Monat* — as shipped only **Einkommen** and
   **Wohnen**, what comes and goes every month; every other category joins a
   month with its first entry there. Empty ones sit in a *Noch leer* row
@@ -250,8 +250,7 @@ when it is wanted:
   there is still time, and a reminder comes before either runs out.
 - **A word when a budget runs low.** The entry that takes a category to 80 %
   of its budget, or over it, says so in its confirmation ("Restaurants: 83 %
-  des Budgets verbraucht") — once per mark, no amounts. Switch it off in
-  *Kategorien und Budgets*.
+  des Budgets verbraucht") — once per mark, no amounts. Always on.
 - **Siri and Shortcuts** (iPhone). "Ausgabe in Spartopf" — Siri asks how much
   and what for, and the entry is booked (with an undo when the app opens).
   "Was bleibt am Monatsende in Spartopf" and "Offene Rechnungen in Spartopf"
@@ -469,7 +468,7 @@ when it is wanted:
 
 ## Reminders
 
-*Menü › Einstellungen › Mitteilungen* (iPhone and Android app):
+*Menü › Einstellungen* (iPhone and Android app):
 
 - **An offene Posten erinnern**: a notification some days before an open
   bill is due, and before a contract's last day to cancel.
@@ -521,43 +520,32 @@ when it is wanted:
   the latest. After 90 days without a copy leaving the phone, a dismissable
   card reminds you to export one.
 
-## The menu (☰) — every page, and Einstellungen
+## The menu (☰) — every page, and the settings
 
 There is no tab bar. The month page is home: ☰ at its top left opens the menu
-over the whole screen, and beside it sits the round **+** that adds an entry
-(both float with the bar as the page scrolls). ✕ — or Android's back — closes
-the menu. *Statistik* and *Planen* open from it and go back to the month with
-‹. (Until November 2026 the menu was the fourth tab, *Mehr*, and *Optionen*
-before that.) On about one screen:
+— a drawer that slides in from the side over the dimmed page, as in the fuel
+app — and beside ☰ sits the round **+** that adds an entry. ✕, a tap beside
+the drawer, or Android's back closes it. *Statistik* and *Planen* open from it
+and go back to the month with ‹. (Until November 2026 the menu was the fourth
+tab, *Mehr*, and *Optionen* before that.) In the drawer, from the top:
 
-- **A search** on top — "Was möchtest du tun?" — over the rows below, over
-  what *Einstellungen* holds ("Währung" leads there) and over the guide's
-  topics.
-- **Two big tiles** — *Statistik* ("Blick zurück") and *Planen* ("Blick nach
-  vorn").
-- **Haushaltsbuch** — what every book has: categories and budgets,
-  accounts, recurring entries, favourites.
-- **Werkzeuge** — what you may use: importing, debts and loans, trips and
-  projects, the tax list, import rules, automatic capture (iPhone).
-- **App** — the **Anleitung**, **Sichern und übertragen** and **Über diese
-  App**: the app's card (its name and version, "ohne Konto, ohne Server", how
-  much your book holds: months and entries, never an amount), what you can
-  count on (free without ads or subscription, no account, your data stays on
-  the device and goes to no one, backups locked with your own password), and
-  rating, feedback and the privacy policy.
-- **Einstellungen** — every setting, right in the menu (no screen of its
-  own), grouped by topic; a setting found by the search scrolls into view:
-  - **Allgemein** — language, currency (picking another applies at once;
-    the Syrian pound is among them), the day the month begins.
-  - **Darstellung** — light or dark, the colour.
-  - **Datenschutz und Sicherheit** — hide amounts, the lock, the phone's
-    backup.
-  - **Mitteilungen** — reminders (in the apps).
-  - **Ausprobieren** — the test data, in and out.
-  - Last, on its own, *App zurücksetzen*.
-
-Every row has an icon in its own colour within its group; counts (21
-categories, 3 favourites) sit in a small pill at the row's end.
+- The app's name and ✕, then **a search** — "Was möchtest du tun?" — over
+  the rows, the settings ("Währung" leads there) and the guide's topics.
+- **The pages**: *Statistik*, *Planen*, *Kategorien*, *Konten*,
+  *Wiederkehrende Posten*, *Favoriten* (with counts).
+- **Werkzeuge**: importing, debts and loans, trips and projects, the tax
+  list, import rules, automatic capture (iPhone).
+- **Einstellungen**: the day the month begins, hide amounts, the lock and
+  the phone's backup (in the apps), reminders (in the apps), test data in
+  and out (both ask first), and *App zurücksetzen*.
+- Quieter: the **Anleitung**, **Sichern und übertragen** and **Über diese
+  App** — the app's card (its name and version, "ohne Konto, ohne Server"),
+  what you can count on (free without ads or subscription, no account, your
+  data stays on the device and goes to no one, backups locked with your own
+  password), rating, feedback and the privacy policy.
+- At the foot, four round icon buttons: **light or dark**, **language**,
+  **currency** (the Syrian pound is among them; picking another applies at
+  once) and **colour** — each opens the phone's own list.
 
 ## Look, languages, accessibility
 
@@ -565,8 +553,8 @@ categories, 3 favourites) sit in a small pill at the row's end.
   at the top, cards that float on a soft shadow, and an ink-blue night mode;
   light, dark or automatic. Each category brings its colour — its card's
   header, its tile, its bar, its ticks. The balance sits on a deep gradient
-  card in the app's colour (eight to choose from in *Menü › Einstellungen ›
-  Darstellung*). Charts grow in with round-ended columns and smooth lines;
+  card in the app's colour (eight to choose from with the colour button at
+  the menu's foot). Charts grow in with round-ended columns and smooth lines;
   cards rise in, a tick pops, the tab's symbol lands with a bounce — all of
   it off under reduced motion. On the iPhone, Apple's own fonts (SF Pro, SF
   Rounded for the money).
@@ -574,7 +562,7 @@ categories, 3 favourites) sit in a small pill at the row's end.
   Norsk, Dansk, Français, Italiano, Español, Nederlands, Português and
   العربية (right to left, with Arabic category names; amounts typed with
   Arabic digits are understood). A new install starts in English.
-- **Currency.** EUR by default; *Menü › Einstellungen › Allgemein › Währung* switches
+- **Currency.** EUR by default; *Menü* (the coins button at its foot) switches
   to CHF, GBP, USD, SAR, the Syrian pound (SYP) and more. It only relabels the amounts — nothing is
   converted.
 - **Accessibility.** VoiceOver labels on everything (the paid circle is a
@@ -593,7 +581,7 @@ categories, 3 favourites) sit in a small pill at the row's end.
   (income or expense, default repeat, emoji, colour), edit, drag to reorder,
   delete (undoable; asks first if entries go with it), *Standard
   wiederherstellen*.
-- **Test data.** *Menü › Einstellungen › Ausprobieren › Testdaten hinzufügen*
+- **Test data.** *Menü › Einstellungen › Testdaten hinzufügen* (it asks first)
   (also in the guide, and on the start as *Erst mit Testdaten ansehen*) fills the
   book with a year of a family's household money — salary, child benefit,
   rent, electricity, groceries, the pharmacy, the car, a weekend away and a

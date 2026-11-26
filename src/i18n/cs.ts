@@ -203,7 +203,7 @@ const cs: Strings = {
   dueNothing: 'Vše je zaplaceno i přijato. Co bude čekat příště, objeví se tady.',
   addCategoryToMonth: 'Přidat kategorii',
   addCategoryTitle: 'Přidat kategorii',
-  addCategoryBody: 'Jen pro: {month}. Jaké kategorie dostane každý nový měsíc, nastavíš v části „Nabídka“ › „Kategorie a rozpočty“.',
+  addCategoryBody: 'Jen pro: {month}. Jaké kategorie dostane každý nový měsíc, nastavíš v části „Nabídka“ › „Kategorie“.',
   allCategoriesShown: 'Všechny kategorie už v tomto měsíci jsou.',
   createCategory: 'Vytvořit novou kategorii',
   categoryAddedToMonth: '„{name}“ přidáno',
@@ -940,6 +940,7 @@ const cs: Strings = {
   demoAdded: 'Testovací data přidána',
   demoRemoved: 'Testovací data odebrána',
   demoRemoveTitle: 'Odebrat testovací data?',
+  demoAddTitle: 'Přidat testovací data?',
   demoRemoveBody: 'Všechny ukázkové položky se odeberou i s jejich rozpočty, oblíbenými a pokladničkami. Vše, co bylo zadáno ručně, zůstane.',
   about: 'Spartopf',
   aboutBody: 'Tvůj domácí rozpočet. Bez účtu, bez serveru – vše zůstává v tvém zařízení.',
@@ -1120,7 +1121,7 @@ const cs: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Kategorie a rozpočty',
+  categoriesTitle: 'Kategorie',
   categoriesIntro: 'Měsíc je řadí v tomto pořadí. Klepni na kategorii a změň ji – pro řazení nebo mazání klepni na „Upravit“.',
   inEveryMonth: 'v každém měsíci',
   budgetFieldHint: 'Nepovinné. Platí pro každý měsíc, nic se nepřevádí.',

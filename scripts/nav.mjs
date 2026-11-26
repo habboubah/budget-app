@@ -1,19 +1,25 @@
 // Getting around the app in the scripts (Playwright). The month page is home:
-// it alone has ☰ (data-nav="menu"). Statistik and Planen are opened from the
-// menu's tiles (data-nav-tile) and go back with ‹ (data-nav="back"), like
-// every pushed screen; the menu closes with ✕ (data-nav="close").
+// it alone has ☰ (data-nav="menu"), which opens the menu drawer. Statistik and
+// Planen are opened from its rows (data-nav-tile) and go back with ‹
+// (data-nav="back"), like every pushed screen; the drawer closes with ✕
+// (data-nav="close").
 // The pages keep the tab bar's old numbers: 0 the month, 1 Statistik,
 // 2 Planen, 3 the menu.
 
 const PAGES = { 1: 'stats', 2: 'insights' };
 
-/** The month page's root, from wherever the page is: ‹ and ✕ until ☰ shows. */
+/**
+ * The month page's root, from wherever the page is: ✕ closes the menu drawer
+ * (the month page lies under it, ☰ and all), ‹ leaves a pushed screen.
+ */
 export async function toMonth(page, settle = 350) {
   for (let i = 0; i < 6; i++) {
-    if (await page.locator('[data-nav="menu"]:visible').count()) return;
-    const step = page.locator('[data-nav="back"]:visible, [data-nav="close"]:visible');
-    if (!(await step.count())) throw new Error('toMonth: neither ☰, ‹ nor ✕ on the screen');
-    await step.first().click();
+    const close = page.locator('[data-nav="close"]:visible');
+    const back = page.locator('[data-nav="back"]:visible');
+    if (await close.count()) await close.first().click();
+    else if (await back.count()) await back.first().click();
+    else if (await page.locator('[data-nav="menu"]:visible').count()) return;
+    else throw new Error('toMonth: neither ☰, ‹ nor ✕ on the screen');
     await page.waitForTimeout(settle);
   }
 }

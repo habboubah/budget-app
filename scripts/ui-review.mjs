@@ -193,19 +193,19 @@ const DEBTS = l => {
 /** Mehr → Schulden und Kredite. */
 const openDebts = async (page, l) => {
   await tab(3)(page);
-  await page.locator('main button', { hasText: l.debts.title }).first().click();
+  await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.debts.title }).first().click();
   await page.waitForTimeout(500);
 };
 /** Mehr → Wiederkehrende Posten. */
 const openRecurring = async (page, l) => {
   await tab(3)(page);
-  await page.locator('main button', { hasText: l.recurring }).first().click();
+  await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.recurring }).first().click();
   await page.waitForTimeout(500);
 };
 /** Mehr → Konten. */
 const openAccounts = async (page, l) => {
   await tab(3)(page);
-  await page.locator('main button', { hasText: l.accounts.title }).first().click();
+  await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.accounts.title }).first().click();
   await page.waitForTimeout(500);
 };
 
@@ -213,20 +213,20 @@ const dialog = '[role="dialog"], [role="alertdialog"]';
 const tab = n => async page => { await goTab(page, n); await page.waitForTimeout(450); };
 const openCategories = async (page, l) => {
   await tab(3)(page);
-  await page.locator('main button', { hasText: l.categories }).first().click();
+  await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.categories }).first().click();
   await page.waitForTimeout(500);
 };
 /** Mehr → Anleitung (src/guide.ts). */
 const openGuide = async (page, l) => {
   await tab(3)(page);
-  await page.locator('main button', { hasText: l.guide }).first().click();
+  await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.guide }).first().click();
   await page.waitForTimeout(500);
 };
-/** Mehr → Einstellungen (plan 39): what is set once. */
+/** The settings (plan 39): in the menu drawer since November 2026 — the drawer, scrolled to them. */
 const openPrefs = async page => {
   await tab(3)(page);
-  await page.locator('[data-tour="set-prefs"] button').click();
-  await page.waitForTimeout(500);
+  await page.locator('[data-tour="set-prefs"]').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(400);
 };
 /**
  * The start of a new book (plan 39), up to a step: `welcome`, `balance`,
@@ -484,19 +484,19 @@ const SCREENS = [
   // Mehr → Einstellungen → An offene Posten erinnern, switched on.
   { name: 'reminders', storage: { 'spartopf-dev-native': '1', 'spartopf-reminders': JSON.stringify({ on: true, time: '09:00', lead: 1, amounts: false }) }, run: async (page, l) => {
     await openPrefs(page);
-    await page.locator('main button', { hasText: l.reminders }).first().click();
+    await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.reminders }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page' },
   // Mehr → Automatisch erfassen (plan 19).
   { name: 'capture', storage: { 'spartopf-dev-native': '1' }, run: async (page, l) => {
     await tab(3)(page);
-    await page.locator('main button', { hasText: l.capture }).first().click();
+    await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.capture }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page', full: true },
   // Mehr → Sichern und übertragen.
   { name: 'transfer', run: async (page, l) => {
     await tab(3)(page);
-    await page.locator('main button', { hasText: l.transfer }).first().click();
+    await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: l.transfer }).first().click();
     await page.waitForTimeout(500);
   }, audit: 'page' },
   { name: 'categories', run: openCategories, audit: 'page' },

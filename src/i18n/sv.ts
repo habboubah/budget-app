@@ -200,7 +200,7 @@ const sv: Strings = {
   dueNothing: 'Allt är betalt och mottaget. Det som väntar härnäst visas här.',
   addCategoryToMonth: 'Lägg till kategori',
   addCategoryTitle: 'Lägg till en kategori',
-  addCategoryBody: 'Bara för {month}. Vilka kategorier varje ny månad får ställer du in under ”Meny” › ”Kategorier och budgetar”.',
+  addCategoryBody: 'Bara för {month}. Vilka kategorier varje ny månad får ställer du in under ”Meny” › ”Kategorier”.',
   allCategoriesShown: 'Alla kategorier finns redan i den här månaden.',
   createCategory: 'Skapa en ny kategori',
   categoryAddedToMonth: '”{name}” tillagd',
@@ -937,6 +937,7 @@ const sv: Strings = {
   demoAdded: 'Testdata tillagd',
   demoRemoved: 'Testdata borttagen',
   demoRemoveTitle: 'Ta bort testdata?',
+  demoAddTitle: 'Lägga till testdata?',
   demoRemoveBody: 'Alla exempelposter tas bort tillsammans med deras budgetar, favoriter och sparburkar. Allt du själv lagt in finns kvar.',
   about: 'Spartopf',
   aboutBody: 'Din hushållsbudget. Inget konto, ingen server – allt stannar på din enhet.',
@@ -1117,7 +1118,7 @@ const sv: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Kategorier och budgetar',
+  categoriesTitle: 'Kategorier',
   categoriesIntro: 'Månaden visar dem i den här ordningen. Tryck på en för att ändra den – för att sortera eller radera, tryck på ”Redigera”.',
   inEveryMonth: 'i varje månad',
   budgetFieldHint: 'Valfritt. Gäller varje månad, inget förs över.',

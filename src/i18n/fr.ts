@@ -200,7 +200,7 @@ const fr: Strings = {
   dueNothing: 'Tout est payé et reçu. Ce qui sera en attente apparaîtra ici.',
   addCategoryToMonth: 'Ajouter une catégorie',
   addCategoryTitle: 'Ajouter une catégorie',
-  addCategoryBody: 'Pour {month} seulement. Les catégories de chaque nouveau mois se règlent dans « Menu » › « Catégories et budgets ».',
+  addCategoryBody: 'Pour {month} seulement. Les catégories de chaque nouveau mois se règlent dans « Menu » › « Catégories ».',
   allCategoriesShown: 'Toutes les catégories sont déjà dans ce mois.',
   createCategory: 'Créer une catégorie',
   categoryAddedToMonth: '« {name} » ajouté',
@@ -937,6 +937,7 @@ const fr: Strings = {
   demoAdded: 'Données de test ajoutées',
   demoRemoved: 'Données de test retirées',
   demoRemoveTitle: 'Retirer les données de test ?',
+  demoAddTitle: 'Ajouter des données de test ?',
   demoRemoveBody: 'Toutes les écritures d’exemple sont retirées avec leurs budgets, favoris et cagnottes. Tout ce que vous avez saisi vous-même reste.',
   about: 'Spartopf',
   aboutBody: 'Le budget de votre foyer. Sans compte, sans serveur – tout reste sur votre appareil.',
@@ -1117,7 +1118,7 @@ const fr: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Catégories et budgets',
+  categoriesTitle: 'Catégories',
   categoriesIntro: 'Le mois les affiche dans cet ordre. Touchez-en une pour la modifier – pour trier ou supprimer, touchez « Modifier ».',
   inEveryMonth: 'chaque mois',
   budgetFieldHint: 'Facultatif. Valable chaque mois, sans report.',

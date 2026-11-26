@@ -50,7 +50,7 @@ interface Props {
   goals?: Goal[];
   /** Split this (existing) payment into parts (plan 21). */
   onSplit?: (entry: Entry) => void;
-  /** Take the category the typed name points to, until one is tapped (plan 32; Kategorien → switch). Off: only point it out. */
+  /** Take the category the typed name points to, until one is tapped (plan 32; always on since November 2026, the default). Off: only point it out. */
   autoCategory?: boolean;
   /** The accounts, once there is more than one (plan 30): an account pill joins the details. */
   accounts?: { id: string; label: string; emoji: string }[];

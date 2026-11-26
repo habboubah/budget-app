@@ -173,7 +173,7 @@ try {
     await page.keyboard.press('Escape');
     await wait(page);
     await tab(page, 3);
-    await check(page, 'the menu', 'main button');
+    await check(page, 'the menu', '[data-menu] button, [data-menu] select');
     await ctx.close();
   }
   {

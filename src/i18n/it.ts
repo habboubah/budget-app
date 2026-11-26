@@ -199,7 +199,7 @@ const it: Strings = {
   dueNothing: 'Tutto pagato e ricevuto. Quello che sarà in sospeso comparirà qui.',
   addCategoryToMonth: 'Aggiungi categoria',
   addCategoryTitle: 'Aggiungi una categoria',
-  addCategoryBody: 'Solo per {month}. Quali categorie riceve ogni nuovo mese lo decidi in «Menu» › «Categorie e budget».',
+  addCategoryBody: 'Solo per {month}. Quali categorie riceve ogni nuovo mese lo decidi in «Menu» › «Categorie».',
   allCategoriesShown: 'Tutte le categorie sono già in questo mese.',
   createCategory: 'Crea una nuova categoria',
   categoryAddedToMonth: '«{name}» aggiunta',
@@ -936,6 +936,7 @@ const it: Strings = {
   demoAdded: 'Dati di prova aggiunti',
   demoRemoved: 'Dati di prova rimossi',
   demoRemoveTitle: 'Rimuovere i dati di prova?',
+  demoAddTitle: 'Aggiungere i dati di prova?',
   demoRemoveBody: 'Tutte le voci d’esempio vengono rimosse con i loro budget, preferiti e salvadanai. Tutto ciò che hai inserito tu resta.',
   about: 'Spartopf',
   aboutBody: 'Il tuo bilancio familiare. Niente account, niente server – tutto resta sul tuo dispositivo.',
@@ -1116,7 +1117,7 @@ const it: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Categorie e budget',
+  categoriesTitle: 'Categorie',
   categoriesIntro: 'Il mese le mostra in quest’ordine. Toccane una per modificarla – per ordinare o eliminare, tocca «Modifica».',
   inEveryMonth: 'in ogni mese',
   budgetFieldHint: 'Facoltativo. Vale per ogni mese, senza riporto.',

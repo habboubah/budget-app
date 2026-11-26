@@ -127,11 +127,11 @@ try {
   await step('the guide opened, searched, and the tour taken', async () => {
     // The guide's screen, its words and the tour are chunks loaded here for the first time: from this origin only.
     await tab(3);
-    // Mehr's own search reads the guide's words too (plan 39): the same chunks, a moment earlier.
+    // The menu's own search reads the guide's words too (plan 39): the same chunks, a moment earlier.
     await page.locator('[data-tour="set-search"] input').fill('pdf');
-    await page.waitForSelector('main section button', { timeout: 10000 });
+    await page.locator('[data-menu] button', { hasText: /pdf/i }).first().waitFor({ timeout: 10000 });
     await page.locator('[data-tour="set-search"] input').fill('');
-    await page.locator('main button', { hasText: 'Anleitung' }).first().click();
+    await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: 'Anleitung' }).first().click();
     await page.waitForSelector('[data-guide-topic]', { timeout: 10000 });
     await page.locator('input[type="search"]').fill('pdf');
     await page.waitForTimeout(200);
@@ -147,10 +147,7 @@ try {
       await page.keyboard.press('Escape').catch(() => {});
       await page.waitForTimeout(300);
     }
-    // Mehr still shows the guide (a tab keeps its place): back to its root for the steps below.
-    await tab(3);
-    await page.locator('header button').first().click();
-    await page.waitForTimeout(400);
+    // Back to the month page for the steps below (goTab backs out of the guide and closes the drawer).
     await tab(0);
   });
   await step('a statement PDF read on the device (pdf.js)', async () => {
@@ -262,7 +259,7 @@ try {
       await page.waitForTimeout(300);
     }
     await tab(3);
-    await page.locator('main button', { hasText: 'Sichern und übertragen' }).click();
+    await page.locator('[data-menu] button, main:not([inert] main) button', { hasText: 'Sichern und übertragen' }).click();
     await page.waitForTimeout(400);
     // Opens the export sheet (plan 04); export without a password so no key
     // derivation or password entry is needed in the check. The row is the

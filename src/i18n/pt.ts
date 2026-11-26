@@ -200,7 +200,7 @@ const pt: Strings = {
   dueNothing: 'Está tudo pago e recebido. O que ficar pendente a seguir aparece aqui.',
   addCategoryToMonth: 'Adicionar categoria',
   addCategoryTitle: 'Adicionar uma categoria',
-  addCategoryBody: 'Só para {month}. As categorias de cada mês novo escolhem-se em «Menu» › «Categorias e orçamentos».',
+  addCategoryBody: 'Só para {month}. As categorias de cada mês novo escolhem-se em «Menu» › «Categorias».',
   allCategoriesShown: 'Todas as categorias já estão neste mês.',
   createCategory: 'Criar uma categoria nova',
   categoryAddedToMonth: '«{name}» adicionada',
@@ -937,6 +937,7 @@ const pt: Strings = {
   demoAdded: 'Dados de teste adicionados',
   demoRemoved: 'Dados de teste removidos',
   demoRemoveTitle: 'Remover os dados de teste?',
+  demoAddTitle: 'Adicionar dados de teste?',
   demoRemoveBody: 'Todos os registos de exemplo são removidos com os respetivos orçamentos, favoritos e mealheiros. Tudo o que registaste tu fica.',
   about: 'Spartopf',
   aboutBody: 'O orçamento da tua casa. Sem conta, sem servidor – tudo fica no teu dispositivo.',
@@ -1117,7 +1118,7 @@ const pt: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Categorias e orçamentos',
+  categoriesTitle: 'Categorias',
   categoriesIntro: 'O mês mostra-as por esta ordem. Toca numa para a alterar – para ordenar ou apagar, toca em «Editar».',
   inEveryMonth: 'em todos os meses',
   budgetFieldHint: 'Opcional. Vale para cada mês, sem transitar nada.',

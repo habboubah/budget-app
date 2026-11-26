@@ -199,7 +199,7 @@ const nl: Strings = {
   dueNothing: 'Alles is betaald en ontvangen. Wat hierna openstaat, verschijnt hier.',
   addCategoryToMonth: 'Categorie toevoegen',
   addCategoryTitle: 'Een categorie toevoegen',
-  addCategoryBody: 'Alleen voor {month}. Welke categorieën elke nieuwe maand krijgt, stel je in bij ‘Menu’ › ‘Categorieën en budgetten’.',
+  addCategoryBody: 'Alleen voor {month}. Welke categorieën elke nieuwe maand krijgt, stel je in bij ‘Menu’ › ‘Categorieën’.',
   allCategoriesShown: 'Alle categorieën staan al in deze maand.',
   createCategory: 'Een nieuwe categorie maken',
   categoryAddedToMonth: '‘{name}’ toegevoegd',
@@ -936,6 +936,7 @@ const nl: Strings = {
   demoAdded: 'Testgegevens toegevoegd',
   demoRemoved: 'Testgegevens verwijderd',
   demoRemoveTitle: 'Testgegevens verwijderen?',
+  demoAddTitle: 'Testgegevens toevoegen?',
   demoRemoveBody: 'Alle voorbeeldposten worden verwijderd, samen met hun budgetten, favorieten en spaarpotten. Alles wat je zelf hebt ingevoerd, blijft.',
   about: 'Spartopf',
   aboutBody: 'Je huishoudboekje. Geen account, geen server – alles blijft op je apparaat.',
@@ -1116,7 +1117,7 @@ const nl: Strings = {
 
   csvSection: 'CSV',
 
-  categoriesTitle: 'Categorieën en budgetten',
+  categoriesTitle: 'Categorieën',
   categoriesIntro: 'De maand toont ze in deze volgorde. Tik op een categorie om hem te wijzigen – om te sorteren of te verwijderen, tik op ‘Wijzig’.',
   inEveryMonth: 'in elke maand',
   budgetFieldHint: 'Optioneel. Geldt voor elke maand, er wordt niets overgedragen.',
