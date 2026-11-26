@@ -34,7 +34,7 @@ export type GuideChapter = (typeof GUIDE_CHAPTERS)[number];
 /** Where *Zeigen* leads: a tab, a pushed screen, the entry sheet or the month start's sheet. */
 export type GuideAction =
   | 'month' | 'stats' | 'insights' | 'settings'
-  | 'entry' | 'monthStart' | 'report' | 'preferences'
+  | 'entry' | 'monthStart' | 'report'
   | 'categories' | 'dueSoon' | 'favorites' | 'capture' | 'goals' | 'contracts' | 'debts'
   | 'transfer' | 'accounts' | 'projects' | 'tax' | 'reminders';
 
@@ -90,9 +90,9 @@ export const GUIDE_TOPICS = [
 
   { id: 'private', chapter: 'safe', title: 'guidePrivate' },
   { id: 'backup', chapter: 'safe', title: 'transferTitle', action: 'transfer', tour: 'settings' },
-  { id: 'lock', chapter: 'safe', title: 'guideLock', action: 'preferences', point: 'setSecurity' },
+  { id: 'lock', chapter: 'safe', title: 'guideLock', action: 'settings', point: 'setSecurity' },
   { id: 'reminders', chapter: 'safe', title: 'remindersTitle', action: 'reminders', only: 'app' },
-  { id: 'look', chapter: 'safe', title: 'displaySection', action: 'preferences', point: 'setDisplay' },
+  { id: 'look', chapter: 'safe', title: 'displaySection', action: 'settings', point: 'setDisplay' },
 ] as const satisfies readonly GuideTopic[];
 
 export type GuideTopicId = (typeof GUIDE_TOPICS)[number]['id'];

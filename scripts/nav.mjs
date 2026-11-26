@@ -1,33 +1,37 @@
-// Getting around the app in the scripts (Playwright), since the tab bar gave
-// way to the menu (☰, November 2026). The pages keep their old numbers:
-// 0 the month, 1 Statistik, 2 Planen, 3 the menu (it was the tab "Mehr").
-//
-// `goTab(page, n)` gets there from wherever the page is: back out of a pushed
-// screen (‹, data-nav="back") until ☰ (data-nav="menu") shows, open the menu,
-// and tap the page's tile (data-nav-tile) — or stay in the menu for 3, at its top.
+// Getting around the app in the scripts (Playwright). The month page is home:
+// it alone has ☰ (data-nav="menu"). Statistik and Planen are opened from the
+// menu's tiles (data-nav-tile) and go back with ‹ (data-nav="back"), like
+// every pushed screen; the menu closes with ✕ (data-nav="close").
+// The pages keep the tab bar's old numbers: 0 the month, 1 Statistik,
+// 2 Planen, 3 the menu.
 
-const PAGES = ['month', 'stats', 'insights'];
+const PAGES = { 1: 'stats', 2: 'insights' };
 
-/** The menu, at its top, from wherever the page is. */
-export async function openMenu(page, settle = 350) {
-  for (let i = 0; i < 5; i++) {
-    const tiles = page.locator('[data-nav-tile]');
-    const back = page.locator('[data-nav="back"]:visible');
-    if (await tiles.count() && !(await back.count())) return;
-    const menu = page.locator('[data-nav="menu"]:visible');
-    if (await menu.count()) await menu.first().click();
-    else if (await back.count()) await back.first().click();
-    else throw new Error('goTab: neither ☰ nor ‹ on the screen');
+/** The month page's root, from wherever the page is: ‹ and ✕ until ☰ shows. */
+export async function toMonth(page, settle = 350) {
+  for (let i = 0; i < 6; i++) {
+    if (await page.locator('[data-nav="menu"]:visible').count()) return;
+    const step = page.locator('[data-nav="back"]:visible, [data-nav="close"]:visible');
+    if (!(await step.count())) throw new Error('toMonth: neither ☰, ‹ nor ✕ on the screen');
+    await step.first().click();
     await page.waitForTimeout(settle);
   }
 }
 
-/** 0 the month, 1 Statistik, 2 Planen, 3 the menu. */
-export async function goTab(page, n, settle = 350) {
-  await openMenu(page, settle);
-  if (n < 3) await page.locator(`[data-nav-tile="${PAGES[n]}"]`).click();
+/** The menu, at its top, from wherever the page is. */
+export async function openMenu(page, settle = 350) {
+  await toMonth(page, settle);
+  await page.locator('[data-nav="menu"]:visible').first().click();
+  await page.waitForTimeout(settle);
 }
 
-/** For page.evaluate (perf-check): the tile's selector and the menu button's. */
+/** 0 the month, 1 Statistik, 2 Planen, 3 the menu. */
+export async function goTab(page, n, settle = 350) {
+  if (n === 0) return toMonth(page, settle);
+  await openMenu(page, settle);
+  if (PAGES[n]) await page.locator(`[data-nav-tile="${PAGES[n]}"]`).click();
+}
+
+/** For page.evaluate (perf-check): a page's tile in the menu. */
 export const TILE = n => `[data-nav-tile="${PAGES[n]}"]`;
 export const MENU = '[data-nav="menu"]';

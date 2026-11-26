@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronsUpDown, Menu as MenuIcon, X } from 'lucide-react';
 import { tapLight } from './haptics';
 import { useMenuButton } from './menuButton';
+import { AddButton } from './AddButton';
 
 interface Props {
   title: string;
@@ -22,7 +23,7 @@ interface Props {
   docked?: boolean;
   /** A screen of its own (not a form): a little room under its last card. */
   tabbed?: boolean;
-  /** The month page: bottom padding also clears the add button floating at the bottom. */
+  /** The month page (its add button sits in the bar now; kept so callers need not change). */
   withAdd?: boolean;
   /** Replaces the plain large title (the month switcher). */
   titleSlot?: React.ReactNode;
@@ -46,7 +47,7 @@ const roundButton = 'h-tap w-tap inline-flex items-center justify-center rounded
  */
 export function Screen({ title, eyebrow, subtitle, onBack, backLabel, onClose, closeLabel, actions, leading, docked, tabbed, titleSlot, accessory, still, withAdd, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
-  // ☰ where there is nothing to go back to: the month page, Statistik, Planen.
+  // Where the page passes no back button: ☰ and + on the month page, ‹ to the month on Statistik and Planen.
   const menu = useMenuButton();
   // At the very top the bar is see-through, so the page's accent light shows
   // behind it; once anything scrolls under it, it turns solid (as iOS does).
@@ -88,15 +89,26 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, onClose, c
               >
                 <X className="w-[22px] h-[22px]" strokeWidth={2.25} />
               </button>
-            ) : menu ? (
+            ) : menu?.back ? (
               <button
-                type="button" onClick={() => { tapLight(); menu.onOpen(); }}
-                title={menu.label} aria-label={menu.label} aria-haspopup="true"
-                data-nav="menu" data-tour="tabs"
+                type="button" onClick={() => { tapLight(); menu.back!.onBack(); }}
+                title={menu.back.label} aria-label={menu.back.label} data-nav="back"
                 className={roundButton}
               >
-                <MenuIcon className="w-[22px] h-[22px]" strokeWidth={2.25} />
+                <ChevronLeft className="w-6 h-6 -ms-0.5 rtl:rotate-180" strokeWidth={2.25} />
               </button>
+            ) : menu ? (
+              <span className="flex items-center gap-2">
+                <button
+                  type="button" onClick={() => { tapLight(); menu.onOpen(); }}
+                  title={menu.label} aria-label={menu.label} aria-haspopup="true"
+                  data-nav="menu" data-tour="tabs"
+                  className={roundButton}
+                >
+                  <MenuIcon className="w-[22px] h-[22px]" strokeWidth={2.25} />
+                </button>
+                {menu.add && <AddButton label={menu.add.label} open={menu.add.open} onClick={menu.add.onClick} />}
+              </span>
             ) : null}
           </div>
           <span

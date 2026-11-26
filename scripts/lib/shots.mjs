@@ -17,6 +17,7 @@ import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { chromium } from 'playwright';
 import { createServer, preview } from 'vite';
+import { goTab } from '../nav.mjs';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const PORT = 4319;
@@ -155,29 +156,12 @@ export function storage(src, lang, { platform } = {}) {
 
 export const pause = (page, ms = 450) => page.waitForTimeout(ms);
 /**
- * The app's pages: 0 Monat, 1 Statistik, 2 Planen, 3 Mehr (the menu). Reached
- * through the tab bar where there is one, else through the menu (☰,
- * data-nav="menu", and its tiles, data-nav-tile — backing out of a pushed
- * screen with ‹, data-nav="back", first), so the captures work with either.
+ * The app's pages: 0 Monat, 1 Statistik, 2 Planen, 3 the menu (☰) — reached
+ * the way a person does (scripts/nav.mjs): back to the month with ‹ and ✕,
+ * ☰, then a tile.
  */
-export const PAGES = ['month', 'stats', 'insights'];
 export async function tab(page, n) {
-  const bar = page.locator('nav button:not(.hero)');
-  if (await bar.count()) {
-    await bar.nth(n).click();
-  } else {
-    for (let i = 0; i < 5; i++) {
-      const tiles = page.locator('[data-nav-tile]');
-      const back = page.locator('[data-nav="back"]:visible');
-      if (await tiles.count() && !(await back.count())) break;
-      const menu = page.locator('[data-nav="menu"]:visible');
-      if (await menu.count()) await menu.first().click();
-      else if (await back.count()) await back.first().click();
-      else throw new Error('tab: no tab bar, and neither ☰ nor ‹ on the screen');
-      await pause(page, 350);
-    }
-    if (n < 3) await page.locator(`[data-nav-tile="${PAGES[n]}"]`).click();
-  }
+  await goTab(page, n);
   await pause(page);
 }
 /** A pushed screen starts at its top, not where the row that opened it was. */

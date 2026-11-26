@@ -13,8 +13,6 @@
    {"optional": [{"tap": ["Look around with test data first", "Erst mit Testdaten ansehen", "جرّب أولًا ببيانات تجريبية", "Nejdřív si to prohlédnout s testovacími daty", "Se dig omkring med testdata først", "Primero echar un vistazo con datos de prueba", "abord découvrir avec des données de test", "occhiata con dati di prova", "Se deg rundt med testdata først", "Eerst rondkijken met testgegevens", "Najpierw obejrzyj z danymi testowymi", "Primeiro ver com dados de teste", "Titta runt med testdata först", "Önce test verileriyle göz at"], "timeout": 1.5}, {"pause": 1.5}]},
    {"tap": ["Menu", "Menü", "القائمة", "Nabídka", "Menú", "Meny"], "role": "button", "timeout": 10},
    {"pause": 0.5},
-   {"tap": ["Settings", "Einstellungen", "الإعدادات", "Nastavení", "Indstillinger", "Ajustes", "Réglages", "Impostazioni", "Innstillinger", "Instellingen", "Ustawienia", "Definições", "Inställningar", "Ayarlar"]},
-   {"pause": 0.5},
    {"scrollTo": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla"]},
    {"tap": ["Reset app", "App zurücksetzen", "إعادة ضبط التطبيق", "Obnovit aplikaci", "Nulstil appen", "Restablecer la app", "Réinitialiser l", "Reimposta l", "Tilbakestill appen", "App resetten", "Zresetuj aplikację", "Repor a app", "Återställ appen", "Uygulamayı sıfırla"]},
    {"pause": 1},
@@ -64,13 +62,12 @@
     {"pause": 1.5},
     {"tap": "Menu", "role": "button"},
     {"pause": 1},
-    {"tap": "Settings"},
+    {"scrollTo": "Currency"},
     {"pause": 1},
     {"select": "US Dollar (USD)", "in": "Currency"},
     {"optional": [{"tap": "Change"}]},
     {"pause": 1.5},
-    {"tap": "Back"},
-    {"tap": "Month"},
+    {"tap": "Close menu"},
     {"pause": 2}
   ]},
   { "name": "Entering, paid and pending", "steps": [
@@ -146,8 +143,6 @@
   { "name": "A year of test data and Statistics", "steps": [
     {"tap": "Menu", "role": "button"},
     {"pause": 1.5},
-    {"tap": "Settings"},
-    {"pause": 1},
     {"scrollTo": "Add test data"},
     {"pause": 1},
     {"tap": "Add test data"},
@@ -171,6 +166,8 @@
     {"pause": 1.5}
   ]},
   { "name": "Plan: budgets, outlook and savings pots", "steps": [
+    {"tap": "Back"},
+    {"pause": 1},
     {"tap": "Menu", "role": "button"},
     {"pause": 1},
     {"tap": "Plan"},
@@ -192,6 +189,8 @@
     {"pause": 2}
   ]},
   { "name": "The menu: the guide and categories", "steps": [
+    {"tap": "Back"},
+    {"pause": 1},
     {"tap": "Menu", "role": "button"},
     {"pause": 1.5},
     {"tap": "Guide"},
@@ -204,7 +203,7 @@
     {"pause": 1}
   ]},
   { "name": "Settings: appearance and reminders", "steps": [
-    {"tap": "Settings"},
+    {"scrollTo": "Appearance"},
     {"pause": 1.5},
     {"select": "Dark", "in": "Appearance"},
     {"pause": 1.5},
@@ -220,8 +219,7 @@
     {"pause": 1.5},
     {"tap": "Back"},
     {"pause": 1},
-    {"tap": "Back"},
-    {"tap": "Month"},
+    {"tap": "Close menu"},
     {"see": "Bank balance now"},
     {"pause": 2},
     {"stopRecording": true}

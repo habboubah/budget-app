@@ -36,7 +36,7 @@ export function guideLabels(t: Strings): Record<string, string> {
     where: t.whereMoneyGoes, share: t.reportShare, budgets: t.budgetsTitle, budgetSet: t.budgetsAdd, goals: t.goalsTitle,
     goalNew: t.goalNew, runway: t.runwayTitle, outlook: t.outlookTitle, whatIf: t.whatIfTitle, contracts: t.contractsTitle,
     // Mehr, and its Einstellungen.
-    prefs: t.prefsTitle, security: t.securitySection, hide: t.hideAmounts, reminders: t.remindersRow, nudge: t.nudgeRow, capture: t.captureRow,
+    prefs: t.prefsTitle, general: t.generalSection, security: t.securitySection, hide: t.hideAmounts, reminders: t.remindersRow, nudge: t.nudgeRow, capture: t.captureRow,
     review: t.captureReview, display: t.displaySection, language: t.language, appearance: t.appearance, currency: t.currency,
     categories: t.categoriesTitle, favorites: t.favorites, accounts: t.accountsTitle, accountAdd: t.accountAddOther,
     debts: t.debtsTitle, debtAdd: t.debtAdd, projects: t.projectsTitle, projectAdd: t.projectAdd, taxList: t.taxTitle,
@@ -148,7 +148,7 @@ export const TOUR_STEPS: Record<TourId, readonly MarkId[]> = {
   entry: ['entryAmount', 'entryName', 'entryCategory', 'entryDetails', 'save'],
   stats: ['statsRange', 'statsHero', 'statsChart', 'statsWhere', 'statsRhythm'],
   plan: ['planPace', 'planBudgets', 'planRunway', 'planOutlook', 'planGoals'],
-  settings: ['setSearch', 'setTransfer', 'setBook', 'setMore', 'setPrefs'],
+  settings: ['setSearch', 'setBook', 'setMore', 'setTransfer', 'setPrefs'],
 };
 
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);

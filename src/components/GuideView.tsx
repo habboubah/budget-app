@@ -4,7 +4,7 @@ import {
   ArrowRight, BarChart3, Bell, Calculator, CalendarClock, CalendarDays, CalendarRange, Check, ChevronDown, ChevronLeft, ChevronRight, CircleCheck, CircleEllipsis,
   Compass, Download, EyeOff, FileText, FlaskConical, HandCoins, Hash, Info, Landmark, Lightbulb, Luggage,
   MoreHorizontal, Palette, Paperclip, PenLine, PiggyBank, Play, Plus, QrCode, Repeat, Scale, ScrollText, Search, Settings, Share,
-  ShieldCheck, Split, Star, Tags, Target, TrendingUp, Undo2, Wallet, WalletCards, Zap,
+  Menu as MenuIcon, ShieldCheck, Split, Star, Tags, Target, TrendingUp, Undo2, Wallet, WalletCards, Zap,
 } from 'lucide-react';
 import { Hue } from '../types';
 import { Strings, fmt } from '../translations';
@@ -72,7 +72,7 @@ const CHIP_ICON: Partial<Record<string, Icon>> = {
 };
 
 /**
- * A button the text names, drawn as it looks: +, ⋯, the tick that saves, ⓘ
+ * A button the text names, drawn as it looks: ☰, +, ⋯, the tick that saves, ⓘ
  * and ‹ › as their symbols (read out by their names), every other one as its
  * label on a soft capsule, with its symbol where it has one. It wraps with the
  * line, so a long label never runs off a small screen.
@@ -82,6 +82,9 @@ function Chip({ part, t }: { part: { label: string; key: string }; t: Strings })
   switch (part.key) {
     case 'add':
       return <span role="img" aria-label={t.addEntry} className={`${round} w-[1.45em] h-[1.45em] hero text-on-hero`}><Plus className="w-[1em] h-[1em]" strokeWidth={2.6} /></span>;
+    case 'menu':
+      // ☰ on the month page's bar, which opens the menu.
+      return <span role="img" aria-label={t.tabSettings} className={`${round} w-[1.45em] h-[1.45em] glass-chrome text-fg`}><MenuIcon className="w-[0.95em] h-[0.95em]" strokeWidth={2.4} /></span>;
     case 'save':
       return <span role="img" aria-label={t.save} className={`${round} w-[1.45em] h-[1.45em] bg-accent-fill text-accent-fill-ink`}><Check className="w-[0.9em] h-[0.9em]" strokeWidth={3} /></span>;
     case 'actions':
