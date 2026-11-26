@@ -1106,6 +1106,8 @@ const tr: Strings = {
   // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
   // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
   guideTitle: 'Kılavuz',
+  pageInfo: 'Bu nedir?',
+  pageInfoGuide: 'Kılavuzda aç',
   guideBack: 'Kılavuza dön',
   guideRowSub: 'Tüm özellikler kısaca, kısa bir turla',
   guideAll: 'Tüm özellikleri gör',

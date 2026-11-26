@@ -1,6 +1,6 @@
 import { ComponentType, ReactNode } from 'react';
 import {
-  ArrowRight, Bell, CalendarDays, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, CloudOff, Download, Eye, EyeOff, FileSpreadsheet,
+  ArrowRight, Bell, Filter, CalendarDays, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, CloudOff, Download, Eye, EyeOff, FileSpreadsheet,
   FileText, HandCoins, Hash, Landmark, Lock, Luggage, Moon, Paperclip, PiggyBank, Plus, QrCode, Repeat, Scale, ScrollText, Search,
   Share, ShieldCheck, Split, Star, Sun,
 } from 'lucide-react';
@@ -309,6 +309,18 @@ const SCENES: Record<GuideTopicId, (t: Strings) => ReactNode> = {
       <span className="w-16 h-16 rounded-[10px] bg-surface card-edge ring-2 ring-accent inline-flex items-center justify-center shrink-0"><QrCode className="w-10 h-10 text-fg" strokeWidth={1.6} /></span>
       <Arrow />
       <span className="flex-1 rounded-[12px] bg-surface card-edge py-1"><Entry state="open" cents={18450} w="55%" /><span className="block px-2.5 pb-1"><Bar w="70%" dim /></span></span>
+    </Row2>
+  ),
+  // A bank line as it comes in, the rule's funnel, and the entry as it lands: its category, a clean name.
+  rules: t => (
+    <Row2>
+      <span className="flex-1 rounded-[12px] bg-surface card-edge px-2.5 py-2 text-[10px] text-fg-mute font-mono truncate" dir="ltr">REWE MARKT 4711</span>
+      <Round icon={Filter} hero />
+      <span className="flex-1 rounded-[12px] bg-surface card-edge ring-2 ring-accent px-2.5 py-1.5 flex items-center gap-1.5">
+        <span className="emoji text-[14px]">🛒</span>
+        <span className="text-[11px] font-semibold text-fg truncate" dir="ltr">Rewe</span>
+        <span className="sr-only">{t.rulesTitle}</span>
+      </span>
     </Row2>
   ),
   reconcile: () => (

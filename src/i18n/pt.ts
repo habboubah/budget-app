@@ -1104,6 +1104,8 @@ const pt: Strings = {
   // The guide and its tour (src/guide.ts): what the app says about them outside the guide. The guide's own pages
   // and the tour's sentences are in src/i18n/guide/, loaded with the guide.
   guideTitle: 'Guia',
+  pageInfo: 'O que é isto?',
+  pageInfoGuide: 'Abrir no guia',
   guideBack: 'Voltar ao guia',
   guideRowSub: 'Todas as funções em resumo, com uma visita curta',
   guideAll: 'Ver todas as funções',

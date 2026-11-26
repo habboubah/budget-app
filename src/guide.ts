@@ -36,7 +36,7 @@ export type GuideAction =
   | 'month' | 'stats' | 'insights' | 'settings'
   | 'entry' | 'monthStart' | 'report'
   | 'categories' | 'dueSoon' | 'favorites' | 'capture' | 'goals' | 'contracts' | 'debts'
-  | 'transfer' | 'accounts' | 'projects' | 'tax' | 'reminders';
+  | 'transfer' | 'accounts' | 'projects' | 'tax' | 'reminders' | 'rules';
 
 /** The app's labels and the guide's pages together: what a guide text may be read from. */
 export type GuideWords = Strings & GuidePages;
@@ -82,6 +82,7 @@ export const GUIDE_TOPICS = [
   { id: 'bank', chapter: 'importing', title: 'guideBank', action: 'month', point: 'actions' },
   { id: 'invoice', chapter: 'importing', title: 'scanInvoice', action: 'month', point: 'actions' },
   { id: 'reconcile', chapter: 'importing', title: 'reconcileTitle', action: 'month', point: 'actions' },
+  { id: 'rules', chapter: 'importing', title: 'rulesTitle', action: 'rules' },
 
   { id: 'accounts', chapter: 'more', title: 'accountsTitle', action: 'accounts' },
   { id: 'projects', chapter: 'more', title: 'projectsTitle', action: 'projects' },

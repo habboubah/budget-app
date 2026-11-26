@@ -117,6 +117,10 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
       377,
       430
     ],
+    "rules": [
+      377,
+      380
+    ],
     "search": [
       377,
       430
@@ -242,6 +246,10 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     "reports": [
       377,
       430
+    ],
+    "rules": [
+      377,
+      380
     ],
     "search": [
       377,
@@ -369,6 +377,10 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
       377,
       430
     ],
+    "rules": [
+      377,
+      380
+    ],
     "search": [
       377,
       430
@@ -494,6 +506,10 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     "reports": [
       377,
       430
+    ],
+    "rules": [
+      377,
+      380
     ],
     "search": [
       377,
@@ -621,6 +637,10 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
       377,
       430
     ],
+    "rules": [
+      377,
+      380
+    ],
     "search": [
       377,
       430
@@ -746,6 +766,10 @@ export const GUIDE_SHOTS: Record<string, Record<string, [number, number]>> = {
     "reports": [
       377,
       430
+    ],
+    "rules": [
+      377,
+      380
     ],
     "search": [
       377,

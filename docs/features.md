@@ -547,6 +547,12 @@ tab, *Mehr*, and *Optionen* before that.) In the drawer, from the top:
   **currency** (the Syrian pound is among them; picking another applies at
   once) and **colour** — each opens the phone's own list.
 
+**What is this page?** Pages like *Regeln*, *Schulden und Kredite*,
+*Steuerliste*, *Sichern und wiederherstellen*, *Kategorien*, *Konten*,
+*Spartöpfe* or *Abos & Verträge* have an ⓘ at the top right: a sheet says what
+the page does and how to use it, step by step, in the app's language — with a
+way into the guide at that topic.
+
 ## Look, languages, accessibility
 
 - **A look of its own.** A cool, light canvas with a glow of the app's colour

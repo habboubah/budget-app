@@ -190,6 +190,19 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
   buttons as `[data-menu] button` (the page's as `main:not([inert] main)
   button`); the App Review recording taps "Menu" (`role: button`), "Back" and
   "Close menu". The tour's `tabs` mark is ☰.
+- **A page's ⓘ: what it is for (November 2026, Ahmad).** The pages with a
+  topic in the guide — *Regeln*, *Schulden*, *Steuerliste*, *Sichern und
+  wiederherstellen* (and its snapshots), *Kategorien*, *Konten*,
+  *Favoriten*, *Wiederkehrende Posten*, *Reisen und Projekte*, *Automatisch
+  erfassen*, *Abos & Verträge*, *Spartöpfe*, *Demnächst fällig*,
+  *Erinnerungen*, the month report and Statistik — have an ⓘ at the bar's
+  end (`PAGE_TOPIC` in App → `PageInfoContext`, `ui/pageInfo.ts`; `Screen`
+  draws it, `data-page-info`). It opens `PageInfoSheet`: the topic's title,
+  its sentence, its steps numbered, its tip — from the guide's pages, so in
+  the app's language — and *In der Anleitung öffnen*. A new page with a
+  guide topic joins `PAGE_TOPIC`; a new topic needs its words in all 14
+  guide pages, a `GuideScenes` picture and its screenshots (`npm run
+  guide-shots -- --only <topic>`). *Regeln* got its topic for this.
 - **The menu drawer (`MoreView`; the fourth tab *Mehr* until November 2026, *Optionen* before) holds what is done
   and what is set once** (plan 39; the settings had a pushed screen,
   `preferences`, until November 2026 — on Ahmad's word they are in the

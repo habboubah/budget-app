@@ -59,6 +59,8 @@ import { GuideBackPill } from './components/GuideBackPill';
 import { GuideHit, MoreView, PrefsSection } from './components/MoreView';
 import { PreferencesButtons, PreferencesRows } from './components/PreferencesView';
 import { AboutView } from './components/AboutView';
+import { PageInfoSheet } from './components/PageInfoSheet';
+import { PageInfoContext } from './ui/pageInfo';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
@@ -82,7 +84,7 @@ import { inboxReview, inboxToEntries } from './native/inbox';
 import { CaptureView } from './components/CaptureView';
 import { HintCard } from './components/HintCard';
 import { isGestureTip, nextTip } from './tips';
-import { GuideTopic, GuideTopicId, GuideWords, guideTopics, topicText } from './guide';
+import { GUIDE_TOPICS, GuideTopic, GuideTopicId, GuideWords, guideTopics, topicText } from './guide';
 import type { MarkId, TourId } from './guideKit';
 import { guidePages, loadGuidePages } from './guidePages';
 import { DeepLink, parseDeepLink } from './native/deepLink';
@@ -148,6 +150,16 @@ type ScreenId = TabId | PushedId;
  * lives in App state, one per screen.
  */
 const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings', about: 'settings' };
+/**
+ * The pages whose bar has an ⓘ, and the guide topic it opens (src/guide.ts):
+ * what the page is for, in a sheet. Pages whose figures carry their own ⓘ
+ * (Planen) or that explain themselves (a category, a report's figures) have none.
+ */
+const PAGE_TOPIC: Partial<Record<ScreenId, GuideTopicId>> = {
+  rules: 'rules', debts: 'debts', tax: 'tax', transfer: 'backup', backups: 'backup', categories: 'categories',
+  accounts: 'accounts', favorites: 'favorites', recurring: 'repeats', projects: 'projects', capture: 'capture',
+  contracts: 'contracts', goals: 'goals', dueSoon: 'due', reminders: 'reminders', monthReport: 'reports', stats: 'stats',
+};
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -1319,6 +1331,19 @@ export default function App() {
       .map(topic => ({ id: topic.id, title: kit.guideText(words, topic.title), sum: kit.guideText(words, topicText(topic).sum) }));
   };
   /** A topic the search found: the guide, open at it. */
+  // ---- A page's ⓘ: its guide topic's words in a sheet, in the app's language (the guide's words are a chunk of their own).
+  const [pageInfo, setPageInfo] = useState<GuideTopicId | null>(null);
+  const openPageInfo = (id: GuideTopicId) => {
+    void Promise.all([loadTour(), loadGuidePages(language)]).then(() => setPageInfo(id), () => undefined);
+  };
+  const pageInfoText = (() => {
+    const topic = pageInfo && GUIDE_TOPICS.find(x => x.id === pageInfo);
+    if (!topic || !guideKit || !pages) return null;
+    const words = { ...t, ...pages };
+    const keys = topicText(topic);
+    const text = (k: keyof typeof words) => (words[k] ? guideKit!.guideText(words, k) : '');
+    return { title: text(topic.title), sum: text(keys.sum), steps: text(keys.steps).split('\n').filter(Boolean), tip: text(keys.tip) || undefined };
+  })();
   const openGuideAt = (id: string) => { setGuideTopic(id as GuideTopicId); store.seeGuideTopic(id as GuideTopicId); openGuide(); };
   const gestureTip = tip && isGestureTip(tip) ? tip : null;
   const featureTip = tip && !isGestureTip(tip) ? tip : null;
@@ -1354,7 +1379,7 @@ export default function App() {
   ) : null;
 
   /** Every screen, by name — the tab roots and what can be pushed over them. */
-  const screenFor = (id: ScreenId) => (
+  const screenBody = (id: ScreenId) => (
     <>
         {id === 'guide' ? GuideScreen && pages && (
           <GuideScreen
@@ -1720,6 +1745,12 @@ export default function App() {
         )}
     </>
   );
+  /** A page, and — where the guide has a topic for it — its ⓘ in the bar (ui/pageInfo.ts). */
+  const screenFor = (id: ScreenId) => {
+    const topic = PAGE_TOPIC[id];
+    const body = screenBody(id);
+    return topic ? <PageInfoContext.Provider value={{ label: t.pageInfo, onOpen: () => openPageInfo(topic) }}>{body}</PageInfoContext.Provider> : body;
+  };
 
   // Locked: the lock screen instead of the app (after every hook, so their order holds).
   if (locked) return <LockScreen kind={lockKind} t={t} onUnlock={() => void unlock()} />;
@@ -2202,6 +2233,13 @@ export default function App() {
         cancelLabel={t.cancel}
         onCancel={() => setDemoOut(false)}
         onConfirm={() => { setDemoOut(false); endDemoTrial(); }}
+      />
+
+      <PageInfoSheet
+        info={pageInfoText}
+        t={t}
+        onClose={() => setPageInfo(null)}
+        onGuide={() => { const id = pageInfo; setPageInfo(null); if (id) openGuideAt(id); }}
       />
 
       <GuideBackPill
