@@ -57,7 +57,8 @@ import { ProjectSheet, ProjectSheetMode } from './components/ProjectSheet';
 import { TaxView } from './components/TaxView';
 import { GuideBackPill } from './components/GuideBackPill';
 import { GuideHit, MoreView, PrefsSection } from './components/MoreView';
-import { PreferencesGroups } from './components/PreferencesView';
+import { PreferencesButtons, PreferencesRows } from './components/PreferencesView';
+import { AboutView } from './components/AboutView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
 import { AddCategorySheet } from './components/AddCategorySheet';
@@ -138,7 +139,7 @@ type TourState = {
   guide?: boolean;
 } | null;
 
-type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'recurring';
+type PushedId = 'categories' | 'transfer' | 'backups' | 'favorites' | 'goals' | 'rules' | 'reminders' | 'dueSoon' | 'contracts' | 'category' | 'monthReport' | 'yearReview' | 'accounts' | 'debts' | 'capture' | 'projects' | 'tax' | 'guide' | 'recurring' | 'about';
 type ScreenId = TabId | PushedId;
 /**
  * The tab a pushed screen belongs to. Those without one — a category, a
@@ -146,7 +147,7 @@ type ScreenId = TabId | PushedId;
  * from, so a report opened on Planen doesn't jump to Monat. Their parameter
  * lives in App state, one per screen.
  */
-const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings' };
+const HOME: Partial<Record<PushedId, TabId>> = { categories: 'settings', transfer: 'settings', backups: 'settings', favorites: 'settings', goals: 'insights', rules: 'settings', reminders: 'settings', dueSoon: 'month', contracts: 'insights', accounts: 'settings', debts: 'settings', capture: 'settings', projects: 'settings', tax: 'settings', guide: 'settings', about: 'settings' };
 /** Away longer than this, and the lock asks again. */
 const LOCK_AFTER_MS = 60_000;
 /** How long the eye on the balance card shows hidden amounts (plan 06). */
@@ -455,7 +456,9 @@ export default function App() {
   // ref guarded by `screen` so StrictMode's double render can't recompute it.
   const nav = useRef({ screen, depth, dir: 0, still: false });
   if (nav.current.screen !== screen) {
-    const still = swipe.popped.current;
+    // The month page under the drawer stays where it is as the drawer opens and closes.
+    const prev = nav.current.screen;
+    const still = swipe.popped.current || (prev === 'settings' && screen === 'month') || (prev === 'month' && screen === 'settings');
     swipe.popped.current = false;
     nav.current = { screen, depth, still, dir: slide.current || (depth === nav.current.depth ? 0 : depth > nav.current.depth ? 1 : -1) };
     slide.current = 0;
@@ -516,7 +519,7 @@ export default function App() {
    */
   const budgetNote = (after: Entry[], categoryId: string, m: MonthKey): string | null => {
     const c = categories.find(x => x.id === categoryId);
-    if (!store.budgetNotes || !c || m < monthKeyOf(new Date())) return null;
+    if (!c || m < monthKeyOf(new Date())) return null;
     const now = budgetStatus(after, c, m);
     const mark = budgetCrossing(budgetStatus(data.entries, c, m), now);
     if (!mark || !now) return null;
@@ -1198,7 +1201,7 @@ export default function App() {
   /** ☰: the menu, always at its top (not at a screen left open in it). */
   const openMenu = () => { setGuideReturn(false); root('settings'); };
   /** The add button: on the month page's root only, while there is something to add to. */
-  const addShown = tab === 'month' && !stack.month && !!quickAddCategory && balance.started;
+  const addShown = (tab === 'month' || (tab === 'settings' && !stack.settings)) && !stack.month && !!quickAddCategory && balance.started;
   const addOpen = entrySheet?.kind === 'new';
   /** What the bars show where a page passes no back of its own (ui/menuButton.ts): ☰ and + on the month page, ‹ to it on Statistik and Planen. */
   const menuButton = useMemo<MenuButton>(() => ({
@@ -1296,16 +1299,14 @@ export default function App() {
   // ---- Mehr's search: its own rows, what Einstellungen holds, and the guide's topics.
   /** What *Einstellungen* holds on this device: a label, and the group it is in. */
   const prefsIndex: { label: string; sub?: string; section: PrefsSection }[] = [
-    { label: t.language, section: 'general' }, { label: t.currency, section: 'general' },
-    { label: t.monthStartRow, sub: t.monthStartRowSub, section: 'general' },
+    { label: t.language, section: 'display' }, { label: t.currency, section: 'display' },
     { label: t.appearance, section: 'display' }, { label: t.accent, section: 'display' },
+    { label: t.monthStartRow, sub: t.monthStartRowSub, section: 'general' },
     { label: t.hideAmounts, sub: t.hideAmountsSub, section: 'security' },
     ...(lockKind ? [{ label: lockKind === 'faceId' ? t.lockFaceId : lockKind === 'touchId' ? t.lockTouchId : t.lockCode, sub: t.lockSub, section: 'security' as const }] : []),
     ...(deviceBackup !== null ? [{ label: t.deviceBackup, section: 'security' as const }] : []),
     ...(remindersAvailable() ? [{ label: t.remindersRow, section: 'notify' as const }] : []),
     store.hasDemo ? { label: t.demoRemove, sub: t.demoRemoveSub, section: 'demo' } : { label: t.demoAdd, sub: t.demoAddSub, section: 'demo' },
-    ...(native || devNative() ? [{ label: t.rateApp, section: 'about' as const }] : []),
-    { label: t.sendFeedback, sub: t.sendFeedbackSub, section: 'about' }, { label: t.privacyPolicy, section: 'about' },
     { label: t.deleteAll, section: 'reset' },
   ];
   /** The guide's words are a chunk of their own: they come when the search begins. */
@@ -1437,10 +1438,6 @@ export default function App() {
             onDelete={askDeleteCategory}
             onReorder={store.setCategoryOrder}
             onRestoreDefaults={restoreDefaults}
-            autoCategory={store.autoCategory}
-            onAutoCategory={store.setAutoCategory}
-            budgetNotes={store.budgetNotes}
-            onBudgetNotes={store.setBudgetNotes}
           />
         ) : id === 'capture' ? (
           <CaptureView review={store.captureReview} t={t} onBack={back} onReview={store.setCaptureReview} />
@@ -1520,6 +1517,9 @@ export default function App() {
             onBack={back}
           />
         ) : id === 'settings' ? (
+          <>
+          {/* The menu is a drawer over the month page (as in fuel-app): the page lies under it, dimmed and still. */}
+          <div inert aria-hidden="true">{screenFor('month')}</div>
           <MoreView
             t={t}
             onPage={root}
@@ -1543,44 +1543,64 @@ export default function App() {
             onCapture={isIos() || devNative() ? () => push('capture') : undefined}
             onTransfer={() => push('transfer')}
             onGuide={openGuide}
+            onAbout={() => push('about')}
             prefs={prefsIndex}
             onSearch={loadFind}
             findGuide={findGuide}
             onGuideTopic={openGuideAt}
-          >
-            <PreferencesGroups
+            settings={(
+              <PreferencesRows
               language={language}
-              themeMode={themeMode}
-              accent={store.accent}
-              onAccent={store.setAccent}
-              currency={store.currency}
-              onCurrency={store.setCurrency}
-              t={t}
-              monthCount={data.months.length}
-              entryCount={allView.entries.length}
-              onLanguage={store.setLanguage}
-              onTheme={store.setThemeMode}
-              monthStart={store.monthStart}
-              onMonthStart={() => setMonthStartOpen(true)}
-              hasDemo={store.hasDemo}
-              onAddDemo={addDemo}
-              onRemoveDemo={removeDemo}
-              onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); setStartOpen(true); }}
-              lockKind={lockKind}
-              lockOn={store.lockOn}
-              onLock={on => void setLock(on)}
-              hideAmounts={store.hideAmounts}
-              onHideAmounts={on => { store.setHideAmounts(on); setPeek(false); }}
-              deviceBackup={deviceBackup}
-              onDeviceBackup={on => void switchDeviceBackup(on)}
-              deviceBackupBusy={backupMoving}
-              reminders={remindersAvailable() ? store.reminders : null}
-              onReminders={() => push('reminders')}
-              onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
-              onFeedback={() => void sendFeedback()}
-              onPrivacy={() => void openExternal(privacyUrl(language))}
-            />
-          </MoreView>
+                themeMode={themeMode}
+                accent={store.accent}
+                onAccent={store.setAccent}
+                currency={store.currency}
+                onCurrency={store.setCurrency}
+                t={t}
+                onLanguage={store.setLanguage}
+                onTheme={store.setThemeMode}
+                monthStart={store.monthStart}
+                onMonthStart={() => setMonthStartOpen(true)}
+                hasDemo={store.hasDemo}
+                onAddDemo={addDemo}
+                onRemoveDemo={removeDemo}
+                onDeleteAll={() => { store.resetAll(); setMonth(monthKeyOf()); setTab('month'); setStack({}); show(t.deleteAllDone); setStartOpen(true); }}
+                lockKind={lockKind}
+                lockOn={store.lockOn}
+                onLock={on => void setLock(on)}
+                hideAmounts={store.hideAmounts}
+                onHideAmounts={on => { store.setHideAmounts(on); setPeek(false); }}
+                deviceBackup={deviceBackup}
+                onDeviceBackup={on => void switchDeviceBackup(on)}
+                deviceBackupBusy={backupMoving}
+                reminders={remindersAvailable() ? store.reminders : null}
+                onReminders={() => push('reminders')}
+              />
+            )}
+            footer={(
+              <PreferencesButtons
+                t={t}
+                language={language}
+                onLanguage={store.setLanguage}
+                themeMode={themeMode}
+                onTheme={store.setThemeMode}
+                currency={store.currency}
+                onCurrency={store.setCurrency}
+                accent={store.accent}
+                onAccent={store.setAccent}
+              />
+            )}
+          />
+          </>
+
+        ) : id === 'about' ? (
+          <AboutView
+            t={t}
+            onBack={back}
+            onRate={native || devNative() ? () => void openExternal(isAndroid() ? PLAY_URL : REVIEW_URL) : undefined}
+            onFeedback={() => void sendFeedback()}
+            onPrivacy={() => void openExternal(privacyUrl(language))}
+          />
         ) : id === 'stats' ? (
           <StatsView
             book={book}
@@ -1750,7 +1770,7 @@ export default function App() {
         // in over it. Fixed chrome (sheets, toasts, the tab bar) is portalled
         // to <body>, so this transform can never capture it.
         // A tab comes forward out of a slight depth; a pushed screen slides.
-        initial={nav.current.still ? false : dir === 0 && screen === 'settings' ? { opacity: 0, y: 28 } : dir === 0 ? { opacity: 0, scale: 0.975 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
+        initial={nav.current.still ? false : dir === 0 ? { opacity: 0, scale: 0.975 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
         animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
         transition={dir === 0 ? { duration: 0.28, ease: [0.22, 1, 0.36, 1] } : { duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
         style={{ transformOrigin: '50% 30vh' }}
@@ -1810,7 +1830,6 @@ export default function App() {
         }}
         goals={store.goals}
         onSplit={e => setSplitEntry(e)}
-        autoCategory={store.autoCategory}
         accounts={multi ? accounts.map(a => ({ id: a.id, label: accountName(a, t.accountMain), emoji: a.emoji })) : undefined}
         defaultAccount={target}
         debts={store.debts.length ? store.debts.map(d => ({ id: d.id, name: d.name })) : undefined}

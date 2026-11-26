@@ -1,14 +1,14 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react';
-import { BarChart3, ChevronRight, Compass, Download, Filter, HandCoins, Landmark, Luggage, PiggyBank, Repeat, Settings, Star, Tags, Wallet, Zap } from 'lucide-react';
-import { motion, useReducedMotion } from 'motion/react';
+import { createPortal } from 'react-dom';
+import { DrawerRow, DrawerValue } from '../ui/DrawerRow';
+import { BarChart3, ChevronRight, Compass, Download, Filter, HandCoins, Info, Landmark, Luggage, PiggyBank, Repeat, Settings, Star, Tags, Wallet, X, Zap } from 'lucide-react';
 import { Strings, fmt } from '../translations';
 import { foldForSearch, searchTerms } from '../logic';
-import { Empty, Screen, Group, IconTile, Row } from '../ui/Screen';
 import { SearchField } from '../ui/SearchField';
 import { tapLight } from '../ui/haptics';
 
 /** The settings' groups a search can lead to (the menu scrolls there). */
-export type PrefsSection = 'general' | 'display' | 'security' | 'notify' | 'demo' | 'about' | 'reset';
+export type PrefsSection = 'general' | 'display' | 'security' | 'notify' | 'demo' | 'reset';
 
 /** The two pages the menu goes to besides its rows (the month page is home: ✕ leads there). */
 export type MenuPage = 'stats' | 'insights';
@@ -46,8 +46,12 @@ interface Props {
   onTransfer: () => void;
   /** Pushes the guide (src/guide.ts): every feature explained, and the short tours. */
   onGuide: () => void;
-  /** The settings' groups (PreferencesGroups), shown under the rows. */
-  children: ReactNode;
+  /** Pushes *Über diese App*: the app's card, its promises, rating, feedback, the privacy policy. */
+  onAbout: () => void;
+  /** The settings' rows (PreferencesRows), under the pages and tools. */
+  settings: ReactNode;
+  /** The round icon buttons at the drawer's foot: look, language, currency, colour (PreferencesButtons). */
+  footer: ReactNode;
   /** What the settings hold on this device, for the search: a label and the group it is in. */
   prefs: { label: string; sub?: string; section: PrefsSection }[];
   /** The search began: the guide's words are fetched (they are a chunk of their own). */
@@ -69,43 +73,6 @@ export function Next({ value }: { value?: ReactNode }) {
   );
 }
 
-/**
- * One of the menu's two big tiles: Statistik and Planen — the pages besides
- * the month that are used most, so they are the first thing in it. Each comes
- * in a beat after the one before, a little from below.
- */
-function NavTile({ icon: Icon, label, sub, page, index, onClick }: {
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-  label: string;
-  sub: string;
-  page: MenuPage;
-  index: number;
-  onClick: () => void;
-}) {
-  const calm = useReducedMotion();
-  return (
-    <motion.button
-      type="button"
-      data-nav-tile={page}
-      aria-label={label}
-      onClick={() => { tapLight(); onClick(); }}
-      initial={calm ? false : { opacity: 0, y: 14, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: 'spring', duration: 0.45, bounce: 0.25, delay: 0.04 + index * 0.05 }}
-      whileTap={{ scale: 0.96 }}
-      className="relative flex-1 basis-[8.5rem] min-w-0 rounded-md p-[14px] pt-[16px] flex items-center gap-3 text-start bg-surface card-edge text-fg focus-visible:ring-focus"
-    >
-      <span className="w-[42px] h-[42px] shrink-0 rounded-[12px] inline-flex items-center justify-center add-fab text-on-hero">
-        <Icon className="w-[22px] h-[22px]" strokeWidth={2.2} />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-body font-bold wrap-compound">{label}</span>
-        <span aria-hidden="true" className="block mt-0.5 text-caption text-fg-mute wrap-compound">{sub}</span>
-      </span>
-    </motion.button>
-  );
-}
-
 /** A row of *Mehr*: what it is called, what a search also finds it by, and where it leads. */
 interface Feature {
   id: string;
@@ -119,24 +86,30 @@ interface Feature {
 }
 
 /**
- * The menu (☰, November 2026; it was the tab *Mehr*, and *Optionen* before
- * that): every page of the app on about one screen, named for what is done
- * there. It opens over the month page, the app's home; ✕ goes back there.
+ * The menu (☰; it was the tab *Mehr*, and *Optionen* before that): since
+ * November 2026 a drawer from the start edge over the dimmed month page, the
+ * way fuel-app has its menu (Ahmad). It is the tab `settings`: what it opens
+ * is pushed on it, and back from there opens the drawer again; ✕, a tap on
+ * the dimmed page, Escape and Android's back close it (to the month page).
  *
- *   1. a search, "Was möchtest du tun?", over these rows, what *Einstellungen*
- *      holds and the guide's topics;
- *   2. two big tiles: Statistik and Planen;
- *   3. *Haushaltsbuch* — what every book has: categories and budgets,
- *      accounts, recurring entries, favourites;
- *   4. *Werkzeuge* — what a book may use: importing, debts, trips and
- *      projects, the tax list, import rules, automatic capture (iPhone);
- *   5. *App* — the guide, and backup and transfer;
- *   6. *Einstellungen* — every setting, grouped by topic (PreferencesGroups,
- *      which App passes as children): the search's settings scroll here.
+ *   - the app's name and ✕;
+ *   - the search, "Was möchtest du tun?", over these rows, the settings and
+ *     the guide's topics (a setting it finds scrolls into view);
+ *   - the pages, the icon in the accent: Statistik, Planen, then what every
+ *     book has — categories and budgets, accounts, recurring entries,
+ *     favourites;
+ *   - *Werkzeuge* — importing, debts, trips and projects, the tax list,
+ *     import rules, automatic capture (iPhone);
+ *   - *Einstellungen* (PreferencesRows): the day the month begins, hiding
+ *     amounts, the lock, the phone's backup, reminders, the test data;
+ *   - quieter, grey: the guide, backup and transfer, *Über diese App*, and
+ *     resetting the app;
+ *   - at the foot, round icon buttons without a label (PreferencesButtons):
+ *     the look, the language, the currency and the colour — each opens the
+ *     phone's own picker.
  *
- * Every icon tile in a group has its own colour, so a row is found by it. A
- * later feature joins its group; a new group needs a reason — and the screen
- * has a budget (scripts/simplicity-check.mjs).
+ * A later feature joins its section; the drawer has a budget
+ * (scripts/simplicity-check.mjs).
  */
 export function MoreView(p: Props) {
   const { t } = p;
@@ -155,6 +128,7 @@ export function MoreView(p: Props) {
   useEffect(() => { if (searching) p.onSearch(); }, [searching]);
 
   const guide: Feature = { id: 'guide', label: t.guideTitle, sub: t.guideRowSub, icon: Compass, hue: 'blue', onClick: p.onGuide };
+  const about: Feature = { id: 'about', label: t.aboutPageTitle, sub: t.aboutPageRowSub, icon: Info, hue: 'mint', onClick: p.onAbout };
   const transfer: Feature = { id: 'transfer', label: t.transferTitle, sub: t.transferRowSub, icon: Download, hue: 'sky', onClick: p.onTransfer };
   const book: Feature[] = [
     { id: 'categories', label: t.categoriesTitle, icon: Tags, hue: 'lavender', value: p.categoryCount, onClick: p.onCategories },
@@ -170,8 +144,9 @@ export function MoreView(p: Props) {
     { id: 'rules', label: t.rulesRow, sub: t.rulesRowSub, icon: Filter, hue: 'plum', value: p.ruleCount || undefined, onClick: p.onRules },
     ...(p.onCapture ? [{ id: 'capture', label: t.captureRow, sub: t.captureRowSub, icon: Zap, hue: 'lemon', onClick: p.onCapture }] : []),
   ];
-  const row = (f: Feature) => (
-    <Row key={f.id} label={f.label} sub={f.sub} leading={<IconTile icon={f.icon} hue={f.hue} />} trailing={<Next value={f.value} />} onClick={f.onClick} />
+  const row = (f: Feature, main = true, tour?: string) => (
+    <DrawerRow key={f.id} icon={f.icon} label={f.label} main={main} onClick={f.onClick} tour={tour}
+      end={f.value !== undefined ? <DrawerValue>{f.value}</DrawerValue> : undefined} />
   );
 
   // The search: every word in a row's label or the line under it, whatever its case or accents.
@@ -179,59 +154,82 @@ export function MoreView(p: Props) {
     const text = foldForSearch(texts.filter(Boolean).join(' '));
     return terms.every(w => text.includes(w));
   };
-  const features = searching ? [guide, transfer, ...book, ...tools].filter(f => has(f.label, f.sub)) : [];
+  const features = searching ? [guide, transfer, about, ...book, ...tools].filter(f => has(f.label, f.sub)) : [];
   const settings = searching ? p.prefs.filter(s => has(s.label, s.sub, t.prefsTitle)) : [];
   const topics = searching ? p.findGuide(query) ?? [] : [];
 
-  return (
-    <Screen
-      title={t.tabSettings}
-      tabbed
-      onClose={p.onClose}
-      closeLabel={t.menuClose}
-      accessory={(
-        <div data-tour="set-search">
+  // Escape closes it — unless a sheet or a menu opened from it is on top, which Escape closes first.
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !document.querySelector('[role="dialog"], [role="alertdialog"], [role="menu"]')) p.onClose();
+    };
+    window.addEventListener('keydown', key);
+    return () => window.removeEventListener('keydown', key);
+  }, [p.onClose]);
+
+  const section = 'flex flex-col gap-0.5 border-t border-hairline pt-2';
+  return createPortal(
+    <div className="fixed inset-0 z-40 flex drawer-backdrop touch-none" dir={t.dir} onClick={p.onClose}>
+      <nav
+        data-menu
+        aria-label={t.tabSettings}
+        onClick={e => e.stopPropagation()}
+        className="drawer touch-auto flex h-full w-[19.5rem] max-w-[86vw] flex-col gap-2 overflow-y-auto overscroll-contain bg-surface px-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+1rem)] text-fg"
+      >
+        <div className="flex items-center justify-between gap-2 ps-3 pe-1">
+          <p className="display text-heading font-bold wrap-compound">{t.appName}</p>
+          <button
+            type="button"
+            onClick={() => { tapLight(); p.onClose(); }}
+            aria-label={t.menuClose}
+            title={t.menuClose}
+            data-nav="close"
+            className="h-tap w-tap inline-flex items-center justify-center rounded-full text-fg-mute active:bg-surface-2 focus-visible:ring-focus"
+          >
+            <X className="w-[22px] h-[22px]" strokeWidth={2.25} />
+          </button>
+        </div>
+        <div data-tour="set-search" className="px-1 pb-1">
           <SearchField value={query} onChange={setQuery} placeholder={t.moreSearch} clearLabel={t.searchClear} cancelLabel={t.cancel} />
         </div>
-      )}
-    >
-      {searching ? (
-        <>
-          {features.length > 0 && <Group>{features.map(row)}</Group>}
-          {settings.length > 0 && (
-            <Group title={t.prefsTitle}>
-              {settings.map(s => (
-                <Row key={s.label} label={s.label} sub={s.sub} leading={<IconTile icon={Settings} hue="stone" />} trailing={<Next />} onClick={() => toSetting(s.section)} />
-              ))}
-            </Group>
-          )}
-          {topics.length > 0 && (
-            <Group title={t.guideTitle}>
-              {topics.map(g => (
-                <Row key={g.id} label={g.title} sub={g.sum} leading={<IconTile icon={Compass} hue="blue" />} trailing={<Next />} onClick={() => p.onGuideTopic(g.id)} />
-              ))}
-            </Group>
-          )}
-          {features.length + settings.length + topics.length === 0 && <Empty emoji="🔎" title={fmt(t.searchNone, { q: query.trim() })} />}
-        </>
-      ) : (
-        <>
-          {/* The two pages besides the month: the largest, and first. */}
-          <nav aria-label={t.tabSettings} className="flex flex-wrap gap-[10px]">
-            <NavTile page="stats" index={0} icon={BarChart3} label={t.tabStats} sub={t.menuStatsSub} onClick={() => p.onPage('stats')} />
-            <NavTile page="insights" index={1} icon={PiggyBank} label={t.tabInsights} sub={t.menuPlanSub} onClick={() => p.onPage('insights')} />
-          </nav>
-          <Group title={t.bookSection} tour="set-book">{book.map(row)}</Group>
-          <Group title={t.moreSection} tour="set-more">{tools.map(row)}</Group>
-          {/* The app itself: help, and keeping the book safe. */}
-          <Group title={t.appSection}>
-            {row(guide)}
-            <Row label={transfer.label} sub={transfer.sub} leading={<IconTile icon={transfer.icon} hue={transfer.hue} />} trailing={<Next />} onClick={transfer.onClick} tour="set-transfer" />
-          </Group>
-          {/* Then every setting, right here (they had a screen of their own until November 2026). */}
-          {p.children}
-        </>
-      )}
-    </Screen>
+
+        {searching ? (
+          <div className={section}>
+            {features.map(f => row(f, false))}
+            {settings.map(x => (
+              <DrawerRow key={x.label} icon={Settings} label={x.label} onClick={() => toSetting(x.section)} />
+            ))}
+            {topics.map(g => (
+              <DrawerRow key={g.id} icon={Compass} label={g.title} sub={g.sum} onClick={() => p.onGuideTopic(g.id)} />
+            ))}
+            {features.length + settings.length + topics.length === 0 && (
+              <p className="px-3 py-4 text-label text-fg-mute wrap-prose">{fmt(t.searchNone, { q: query.trim() })}</p>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className={section} data-tour="set-book">
+              <DrawerRow icon={BarChart3} label={t.tabStats} main nav="stats" onClick={() => p.onPage('stats')} />
+              <DrawerRow icon={PiggyBank} label={t.tabInsights} main nav="insights" onClick={() => p.onPage('insights')} />
+              {book.map(f => row(f))}
+            </div>
+            <div className={section} data-tour="set-more">
+              <p className="px-3 pt-1 eyebrow text-fg-mute">{t.moreSection}</p>
+              {tools.map(f => row(f))}
+            </div>
+            {/* Every setting, right here (they had a screen of their own until November 2026). */}
+            {p.settings}
+            <div className={section}>
+              {row(guide, false)}
+              {row(transfer, false, 'set-transfer')}
+              {row(about, false)}
+            </div>
+          </>
+        )}
+
+        <div className="mt-auto pt-3">{p.footer}</div>
+      </nav>
+    </div>,
+    document.body,
   );
 }

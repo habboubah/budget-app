@@ -1,15 +1,13 @@
-import { CSSProperties, useId, useState } from 'react';
-import { ArrowUpRight, Bell, CalendarDays, CalendarRange, Check, CloudUpload, Coins, EyeOff, FlaskConical, FlaskConicalOff, Fingerprint, Languages, ListChecks, Lock, Mail, Palette, ScanFace, ShieldCheck, Star, SunMoon, Trash2 } from 'lucide-react';
+import { ComponentType, useState } from 'react';
+import { Bell, CalendarRange, CloudUpload, Coins, EyeOff, FlaskConical, FlaskConicalOff, Fingerprint, Languages, Lock, Moon, Palette, ScanFace, Sun, SunMoon, Trash2 } from 'lucide-react';
 import { ACCENTS, Accent, ThemeMode } from '../types';
 import { CURRENCIES, Currency, currencyName } from '../currency';
 import { LANGUAGE_NAMES, Language, Strings, fmt, languages } from '../translations';
 import { LockKind } from '../lock';
 import { ReminderPrefs } from '../reminders';
-import { Group, IconTile, MenuRow, Row } from '../ui/Screen';
+import { DrawerRow, DrawerValue } from '../ui/DrawerRow';
 import { Confirm } from '../ui/Sheet';
 import { Switch } from '../ui/Switch';
-import { tapLight } from '../ui/haptics';
-import { Next } from './MoreView';
 import { leadLabel, timeLabel } from './RemindersView';
 
 interface Props {
@@ -17,9 +15,6 @@ interface Props {
   themeMode: ThemeMode;
   accent: Accent;
   t: Strings;
-  /** How much the book holds, for the card about the app: its started months and its entries (no amounts). */
-  monthCount: number;
-  entryCount: number;
   onLanguage: (l: Language) => void;
   onTheme: (m: ThemeMode) => void;
   onAccent: (a: Accent) => void;
@@ -50,252 +45,71 @@ interface Props {
   /** The reminder settings; null where there are no notifications (the web). */
   reminders: ReminderPrefs | null;
   onReminders: () => void;
-  /** Über Spartopf (plan 15): the App Store's review page — iPhone app only; Mail with the versions; the privacy policy. */
-  onRate?: () => void;
-  onFeedback: () => void;
-  onPrivacy: () => void;
-}
-
-/** A row's end when it opens something outside the app (the App Store, Mail, Safari): ↗. */
-function Away() {
-  return <ArrowUpRight className="shrink-0 w-5 h-5 text-fg-faint rtl:-scale-x-100" aria-hidden="true" />;
 }
 
 /**
- * Darstellung → Farbe: the colour's name at the row's end and the eight
- * swatches under it, each showing the gradient it gives the balance card —
- * one line of eight where each still gets 44 px, else two lines of four.
- * A radio group for VoiceOver; the whole app follows at once.
- */
-function AccentRow({ value, onChange, t }: { value: Accent; onChange: (a: Accent) => void; t: Strings }) {
-  const id = useId();
-  const names: Record<Accent, string> = {
-    petrol: t.accentPetrol, ocean: t.accentOcean, indigo: t.accentIndigo, violet: t.accentViolet,
-    berry: t.accentBerry, coral: t.accentCoral, emerald: t.accentEmerald, graphite: t.accentGraphite,
-  };
-  return (
-    <div className="px-4 pt-2.5 pb-1" style={{ '--sep': '58px' } as CSSProperties}>
-      <div className="min-h-8 flex items-center gap-3">
-        <IconTile icon={Palette} hue="plum" />
-        <span className="min-w-0 flex-1 flex flex-wrap items-center gap-x-3">
-          <span id={id} className="min-w-0 max-w-full text-body text-fg wrap-compound">{t.accent}</span>
-          <span className="ms-auto min-w-0 max-w-full text-body text-fg-mute wrap-compound">{names[value]}</span>
-        </span>
-      </div>
-      <div className="@container -mx-3 mt-1">
-        <div role="radiogroup" aria-labelledby={id} className="grid grid-cols-4 @min-[352px]:grid-cols-8">
-          {ACCENTS.map(a => {
-            const on = a === value;
-            return (
-              <button
-                key={a}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                aria-label={names[a]}
-                title={names[a]}
-                onClick={() => { if (!on) { tapLight(); onChange(a); } }}
-                className="h-tap min-w-0 flex items-center justify-center rounded-full active:scale-[0.9] transition-transform duration-150 focus-visible:ring-focus"
-              >
-                <span
-                  data-accent={a}
-                  aria-hidden="true"
-                  // Physical, like the 44 px cell around it: a swatch holds no text to enlarge.
-                  className={`hero size-[32px] rounded-full inline-flex items-center justify-center transition-shadow duration-200 ${
-                    on ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface' : ''}`}
-                >
-                  {on && <Check className="size-[16px]" strokeWidth={3} />}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * The settings (plan 39): what is set once and then left alone. They stand in
- * the menu itself, under the heading *Einstellungen*, after its rows (they had
- * a screen of their own until November 2026), in the order they are looked for:
+ * The settings, in the menu drawer (plan 39; a screen of their own until
+ * November 2026, then groups in a full-screen menu, now the way fuel-app has
+ * them, Ahmad). Two parts, which the menu places itself:
  *
- *   1. *Allgemein* — language, currency, the day the month begins;
- *   2. *Darstellung* — light or dark, the colour (the guide's {display});
- *   3. *Datenschutz und Sicherheit* — hiding amounts first (every device
- *      has it), then the lock and the phone's backup (apps only);
- *   4. *Mitteilungen* — the reminders (apps only);
- *   5. *Ausprobieren* — the test data, in and out;
- *   6. *Über Spartopf* — the card on the hero (what the app is, its version,
- *      how much the book holds: months and entries, never an amount), then
- *      rating, feedback and the privacy policy (it stood on top until
- *      November 2026);
- *   7. last, on its own, resetting.
+ * - `PreferencesRows`, under the heading *Einstellungen*: the day the month
+ *   begins; hiding amounts, the lock and the phone's backup (the guide's
+ *   `{security}`); the reminders (apps only); the test data in and out (each
+ *   asks first); and
+ *   resetting the app, in red, behind a confirmation.
+ * - `PreferencesButtons`, at the drawer's foot: four round icon buttons
+ *   without a visible label — the look (light, dark, automatic), the language,
+ *   the currency and the colour (the guide's `{display}`). Each has the
+ *   phone's own picker lying invisibly over it, so a tap opens the system's
+ *   list, and VoiceOver reads a pop-up button with its name and value.
  *
- * Every icon tile in a group has its own colour, so a row is found by it.
+ * What the app is — its card, its promises, rating, feedback and the privacy
+ * policy — is on *Über diese App* (AboutView).
  */
-export function PreferencesGroups(p: Props) {
+export function PreferencesRows(p: Props) {
   const { t } = p;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmDemo, setConfirmDemo] = useState(false);
+  // Adding the test data asks first too (Ahmad, November 2026): a year of entries lands in the book.
+  const [confirmAddDemo, setConfirmAddDemo] = useState(false);
   const lockLabel = p.lockKind === 'faceId' ? t.lockFaceId : p.lockKind === 'touchId' ? t.lockTouchId : t.lockCode;
   const LockIcon = p.lockKind === 'faceId' ? ScanFace : p.lockKind === 'touchId' ? Fingerprint : Lock;
-  // From two on: the strings are plurals ("14 Monate").
-  const facts = [
-    ...(p.monthCount > 1 ? [{ icon: CalendarDays, text: fmt(t.averageSpanN, { n: p.monthCount }) }] : []),
-    ...(p.entryCount > 1 ? [{ icon: ListChecks, text: fmt(t.tagEntries, { n: p.entryCount }) }] : []),
-  ];
+  const sw = (checked: boolean, onChange: (on: boolean) => void, label: string, busy = false) => (
+    <Switch checked={checked} onChange={on => { if (!busy) onChange(on); }} label={label} className={`-me-1 ${busy ? 'opacity-60' : ''}`} />
+  );
   return (
-    <>
-      {/* Where the settings begin in the menu: a heading of the page's own size, so they read as a part of their own. */}
-      <h2 data-tour="set-prefs" className="display text-heading font-bold text-fg px-[4px] pt-2 wrap-compound">{t.prefsTitle}</h2>
+    <div className="flex flex-col gap-0.5 border-t border-hairline pt-2" data-tour="set-prefs">
+      <p className="px-3 pt-1 eyebrow text-fg-mute">{t.prefsTitle}</p>
       <div data-prefs="general">
-        <Group title={t.generalSection}>
-          <MenuRow<Language>
-            label={t.language}
-            leading={<IconTile icon={Languages} hue="blue" />}
-            value={p.language}
-            onChange={p.onLanguage}
-            options={languages.map(l => ({ value: l, label: LANGUAGE_NAMES[l] }))}
-          />
-          <MenuRow<Currency>
-            label={t.currency}
-            leading={<IconTile icon={Coins} hue="lemon" />}
-            value={p.currency}
-            onChange={p.onCurrency}
-            options={CURRENCIES.map(c => ({ value: c, label: currencyName(c, t.locale) }))}
-          />
-          <Row
-            label={t.monthStartRow}
-            sub={t.monthStartRowSub}
-            leading={<IconTile icon={CalendarRange} hue="tomato" />}
-            trailing={<Next value={fmt(t.monthStartValue, { day: p.monthStart })} />}
-            onClick={p.onMonthStart}
-          />
-        </Group>
+        <DrawerRow icon={CalendarRange} label={t.monthStartRow} onClick={p.onMonthStart}
+          end={<DrawerValue>{fmt(t.monthStartValue, { day: p.monthStart })}</DrawerValue>} />
       </div>
-
-      <div data-prefs="display">
-        <Group title={t.displaySection} tour="set-display">
-          <MenuRow<ThemeMode>
-            label={t.appearance}
-            leading={<IconTile icon={SunMoon} hue="stone" />}
-            value={p.themeMode}
-            onChange={p.onTheme}
-            options={[
-              { value: 'system', label: t.themeSystem },
-              { value: 'light', label: t.themeLight },
-              { value: 'dark', label: t.themeDark },
-            ]}
-          />
-          <AccentRow value={p.accent} onChange={p.onAccent} t={t} />
-        </Group>
+      <div data-prefs="security" data-tour="set-security">
+        <DrawerRow icon={EyeOff} label={t.hideAmounts} end={sw(p.hideAmounts, p.onHideAmounts, t.hideAmounts)} />
+        {p.lockKind && <DrawerRow icon={LockIcon} label={lockLabel} end={sw(p.lockOn, p.onLock, lockLabel)} />}
+        {p.deviceBackup !== null && (
+          <DrawerRow icon={CloudUpload} label={t.deviceBackup} end={sw(p.deviceBackup, p.onDeviceBackup, t.deviceBackup, p.deviceBackupBusy)} />
+        )}
       </div>
-
-      <div data-prefs="security">
-        <Group title={t.securitySection} tour="set-security">
-          <Row
-            label={t.hideAmounts}
-            sub={t.hideAmountsSub}
-            leading={<IconTile icon={EyeOff} hue="berry" />}
-            trailing={<Switch checked={p.hideAmounts} onChange={p.onHideAmounts} label={t.hideAmounts} className="-me-2" />}
-          />
-          {p.lockKind && (
-            <Row
-              label={lockLabel}
-              sub={t.lockSub}
-              leading={<IconTile icon={LockIcon} hue="leaf" />}
-              trailing={<Switch checked={p.lockOn} onChange={p.onLock} label={lockLabel} className="-me-2" />}
-            />
-          )}
-          {p.deviceBackup !== null && (
-            <Row
-              label={t.deviceBackup}
-              sub={p.deviceBackup ? t.deviceBackupOn : t.deviceBackupOff}
-              leading={<IconTile icon={CloudUpload} hue="sky" />}
-              trailing={
-                <Switch
-                  checked={p.deviceBackup}
-                  onChange={on => { if (!p.deviceBackupBusy) p.onDeviceBackup(on); }}
-                  label={t.deviceBackup}
-                  className={`-me-2 ${p.deviceBackupBusy ? 'opacity-60' : ''}`}
-                />
-              }
-            />
-          )}
-        </Group>
-      </div>
-
       {p.reminders && (
         <div data-prefs="notify">
-          <Group title={t.notifySection}>
-              <Row
-                label={t.remindersRow}
-                // The setting as a line under it: long in German, and text in Arabic (no `num`).
-                sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}`
-                  : p.reminders.nudge ? `${t.nudgeRow} · ${timeLabel(p.reminders.nudgeTime, t.locale)}` : t.remindersOff}
-                leading={<IconTile icon={Bell} hue="tomato" />}
-                trailing={<Next />}
-                onClick={p.onReminders}
-              />
-          </Group>
+          <DrawerRow
+            icon={Bell}
+            label={t.remindersRow}
+            // The setting as a line under it: long in German, and text in Arabic (no `num`).
+            sub={p.reminders.on ? `${leadLabel(p.reminders.lead, t)} · ${timeLabel(p.reminders.time, t.locale)}`
+              : p.reminders.nudge ? `${t.nudgeRow} · ${timeLabel(p.reminders.nudgeTime, t.locale)}` : t.remindersOff}
+            onClick={p.onReminders}
+          />
         </div>
       )}
-
       <div data-prefs="demo">
-        <Group title={t.demoSection} footer={t.demoFooter}>
-          {p.hasDemo ? (
-            <Row
-              label={t.demoRemove}
-              sub={t.demoRemoveSub}
-              leading={<IconTile icon={FlaskConicalOff} hue="stone" />}
-              onClick={() => setConfirmDemo(true)}
-            />
-          ) : (
-            <Row
-              label={t.demoAdd}
-              sub={t.demoAddSub}
-              leading={<IconTile icon={FlaskConical} hue="mint" />}
-              onClick={p.onAddDemo}
-            />
-          )}
-        </Group>
+        {p.hasDemo
+          ? <DrawerRow icon={FlaskConicalOff} label={t.demoRemove} onClick={() => setConfirmDemo(true)} />
+          : <DrawerRow icon={FlaskConical} label={t.demoAdd} onClick={() => setConfirmAddDemo(true)} />}
       </div>
-
-      {/* About the app, near the end: its card (what it is, its version, how much the book holds), then rating, feedback and the privacy policy. */}
-      <div data-prefs="about" className="space-y-3">
-        <section className="rounded-lg hero hero-glow hero-art overflow-hidden text-on-hero p-[18px]" aria-labelledby="about-title">
-          <div className="flex items-center gap-3.5">
-            <img src="/icon.svg" alt="" className="w-[52px] h-[52px] rounded-[14px] shrink-0 shadow-[0_0_0_1px_rgb(255_255_255/0.2)]" />
-            <div className="min-w-0 flex-1">
-              <h2 id="about-title" className="display text-heading font-semibold wrap-compound">{t.about}</h2>
-              <p className="text-caption text-on-hero-mute tabular-nums">{fmt(t.version, { v: __APP_VERSION__ })}</p>
-            </div>
-          </div>
-          <p className="mt-3 text-label text-on-hero-mute wrap-prose">{t.aboutBody}</p>
-          {facts.length > 0 && (
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {facts.map(f => (
-                <li key={f.text} className="min-h-[30px] ps-2.5 pe-3 py-1 rounded-full hero-panel inline-flex items-center gap-1.5 text-caption font-semibold text-on-hero tabular-nums">
-                  <f.icon className="w-[15px] h-[15px] shrink-0 text-on-hero-soft" strokeWidth={2.2} aria-hidden="true" />
-                  {f.text}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <Group>
-          {p.onRate && <Row label={t.rateApp} leading={<IconTile icon={Star} hue="lemon" />} trailing={<Away />} onClick={p.onRate} />}
-          <Row label={t.sendFeedback} sub={t.sendFeedbackSub} leading={<IconTile icon={Mail} hue="blue" />} trailing={<Away />} onClick={p.onFeedback} />
-          <Row label={t.privacyPolicy} leading={<IconTile icon={ShieldCheck} hue="leaf" />} trailing={<Away />} onClick={p.onPrivacy} />
-        </Group>
-      </div>
-
       <div data-prefs="reset">
-        {/* Last and alone: nothing else sits beside what erases everything. */}
-        <Group>
-          <Row label={t.deleteAll} danger leading={<IconTile icon={Trash2} hue="tomato" />} onClick={() => setConfirmDelete(true)} />
-        </Group>
+        <DrawerRow icon={Trash2} label={t.deleteAll} danger onClick={() => setConfirmDelete(true)} />
       </div>
 
       <Confirm
@@ -308,6 +122,15 @@ export function PreferencesGroups(p: Props) {
         onConfirm={() => { setConfirmDemo(false); p.onRemoveDemo(); }}
       />
       <Confirm
+        open={confirmAddDemo}
+        title={t.demoAddTitle}
+        body={t.demoFooter}
+        confirmLabel={t.demoAdd}
+        cancelLabel={t.cancel}
+        onCancel={() => setConfirmAddDemo(false)}
+        onConfirm={() => { setConfirmAddDemo(false); p.onAddDemo(); }}
+      />
+      <Confirm
         open={confirmDelete}
         title={t.deleteAllTitle}
         body={t.deleteAllBody}
@@ -317,6 +140,86 @@ export function PreferencesGroups(p: Props) {
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => { setConfirmDelete(false); p.onDeleteAll(); }}
       />
-    </>
+    </div>
+  );
+}
+
+/**
+ * One round icon button at the drawer's foot, as fuel-app draws them: 48 px,
+ * the symbol only (the name is its title and what VoiceOver reads), and the
+ * phone's own picker lying invisibly over it.
+ */
+function IconSelect<V extends string>({ icon: I, label, value, options, onChange, accent }: {
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
+  label: string;
+  value: V;
+  options: { value: V; label: string }[];
+  onChange: (v: V) => void;
+  /** The colour button: filled with the chosen colour's gradient. */
+  accent?: Accent;
+}) {
+  const shown = options.find(o => o.value === value)?.label ?? '';
+  return (
+    <label
+      title={`${label}: ${shown}`}
+      data-accent={accent}
+      className={`relative grid size-12 shrink-0 place-items-center rounded-full active:scale-95 transition-transform duration-150 focus-within:ring-focus ${
+        accent ? 'hero text-on-hero' : 'bg-surface-2 text-fg'}`}
+    >
+      <I className="w-[22px] h-[22px]" strokeWidth={2.1} />
+      <select
+        aria-label={label}
+        value={value}
+        onChange={e => onChange(e.target.value as V)}
+        className="absolute inset-0 cursor-pointer appearance-none rounded-full opacity-0"
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </label>
+  );
+}
+
+export function PreferencesButtons(p: Pick<Props, 't' | 'language' | 'onLanguage' | 'themeMode' | 'onTheme' | 'currency' | 'onCurrency' | 'accent' | 'onAccent'>) {
+  const { t } = p;
+  const names: Record<Accent, string> = {
+    petrol: t.accentPetrol, ocean: t.accentOcean, indigo: t.accentIndigo, violet: t.accentViolet,
+    berry: t.accentBerry, coral: t.accentCoral, emerald: t.accentEmerald, graphite: t.accentGraphite,
+  };
+  return (
+    <div data-prefs="display" data-tour="set-display" className="flex flex-wrap items-center gap-3 px-2">
+      <IconSelect<ThemeMode>
+        icon={p.themeMode === 'dark' ? Moon : p.themeMode === 'light' ? Sun : SunMoon}
+        label={t.appearance}
+        value={p.themeMode}
+        onChange={p.onTheme}
+        options={[
+          { value: 'system', label: t.themeSystem },
+          { value: 'light', label: t.themeLight },
+          { value: 'dark', label: t.themeDark },
+        ]}
+      />
+      <IconSelect<Language>
+        icon={Languages}
+        label={t.language}
+        value={p.language}
+        onChange={p.onLanguage}
+        options={languages.map(l => ({ value: l, label: LANGUAGE_NAMES[l] }))}
+      />
+      <IconSelect<Currency>
+        icon={Coins}
+        label={t.currency}
+        value={p.currency}
+        onChange={p.onCurrency}
+        options={CURRENCIES.map(c => ({ value: c, label: currencyName(c, t.locale) }))}
+      />
+      <IconSelect<Accent>
+        icon={Palette}
+        label={t.accent}
+        value={p.accent}
+        onChange={p.onAccent}
+        accent={p.accent}
+        options={ACCENTS.map(a => ({ value: a, label: names[a] }))}
+      />
+    </div>
   );
 }
