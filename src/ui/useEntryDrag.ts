@@ -39,7 +39,7 @@ const HOLD_MS = 380;
 const TOUCH_SLOP = 8;
 const MOUSE_SLOP = 5;
 const EDGE = 96;
-const BOTTOM_CHROME = 84; // the tab bar
+const BOTTOM_CHROME = 24; // the home indicator (the tab bar was here until the menu)
 /** A folded category takes a dropped entry at its end. */
 export const AT_END = Number.MAX_SAFE_INTEGER;
 

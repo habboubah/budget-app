@@ -124,7 +124,7 @@ const pl: GuidePages = {
   tourBalance: 'Na górze: ile jest teraz na koncie. Niżej: ile zostanie na koniec miesiąca, gdy wszystko, co oczekuje, będzie zapłacone.',
   tourTick: 'Stuknięcie kółka odhacza pozycję: zapłacona zamiast oczekującej.',
   tourMonth: 'Tutaj zmieniasz miesiąc. Pozycje cykliczne przechodzą same.',
-  tourTabs: '„{stats}” patrzą wstecz, „{plan}” w przód. Cały przewodnik znajdziesz w „{settings}”.',
+  tourTabs: 'Wszystko inne jest pod {menu}: „{stats}” patrzą wstecz, „{plan}” w przód – tam znajdziesz też cały przewodnik.',
   tourAdd: 'A tutaj coś wpisujesz – najpierw kwota.',
   guideToursTitle: 'Wycieczki',
   guideToursBody: 'Krok po kroku na prawdziwych ekranach – każda trwa krócej niż minutę.',

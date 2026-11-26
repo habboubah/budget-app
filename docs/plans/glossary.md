@@ -53,7 +53,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Měsíc | tab | |
 | Statistik | Statistics | Statistika | tab | |
 | Planen | Plan | Plán | tab | |
-| Mehr | More | Více | tab | |
+| Menü | Menu | Nabídka | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Uložit |  | |
 | Rückgängig | Undo | Zpět |  | |
 
@@ -106,7 +106,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Måned | tab | |
 | Statistik | Statistics | Statistik | tab | |
 | Planen | Plan | Planlæg | tab | |
-| Mehr | More | Mere | tab | |
+| Menü | Menu | Menu | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Gem |  | |
 | Rückgängig | Undo | Fortryd |  | |
 
@@ -159,7 +159,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Mes | tab | |
 | Statistik | Statistics | Análisis | tab | |
 | Planen | Plan | Planificar | tab | |
-| Mehr | More | Más | tab | |
+| Menü | Menu | Menú | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Guardar |  | |
 | Rückgängig | Undo | Deshacer |  | |
 
@@ -212,7 +212,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Mois | tab | |
 | Statistik | Statistics | Stats | tab | |
 | Planen | Plan | Prévoir | tab | |
-| Mehr | More | Plus | tab | |
+| Menü | Menu | Menu | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Enregistrer |  | |
 | Rückgängig | Undo | Annuler |  | |
 
@@ -265,7 +265,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Mese | tab | |
 | Statistik | Statistics | Statistiche | tab | |
 | Planen | Plan | Pianifica | tab | |
-| Mehr | More | Altro | tab | |
+| Menü | Menu | Menu | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Salva |  | |
 | Rückgängig | Undo | Annulla |  | |
 
@@ -318,7 +318,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Maand | tab | |
 | Statistik | Statistics | Statistiek | tab | |
 | Planen | Plan | Plannen | tab | |
-| Mehr | More | Meer | tab | |
+| Menü | Menu | Menu | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Bewaar |  | |
 | Rückgängig | Undo | Ongedaan maken |  | |
 
@@ -371,7 +371,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Måned | tab | |
 | Statistik | Statistics | Statistikk | tab | |
 | Planen | Plan | Planlegg | tab | |
-| Mehr | More | Mer | tab | |
+| Menü | Menu | Meny | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Lagre |  | |
 | Rückgängig | Undo | Angre |  | |
 
@@ -424,7 +424,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Miesiąc | tab | |
 | Statistik | Statistics | Statystyki | tab | |
 | Planen | Plan | Plan | tab | |
-| Mehr | More | Więcej | tab | |
+| Menü | Menu | Menu | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Zapisz |  | |
 | Rückgängig | Undo | Cofnij |  | |
 
@@ -477,7 +477,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Mês | tab | |
 | Statistik | Statistics | Análise | tab | |
 | Planen | Plan | Planear | tab | |
-| Mehr | More | Mais | tab | |
+| Menü | Menu | Menu | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Guardar |  | |
 | Rückgängig | Undo | Desfazer |  | |
 
@@ -530,7 +530,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Månad | tab | |
 | Statistik | Statistics | Statistik | tab | |
 | Planen | Plan | Planera | tab | |
-| Mehr | More | Mer | tab | |
+| Menü | Menu | Meny | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Spara |  | |
 | Rückgängig | Undo | Ångra |  | |
 
@@ -583,7 +583,7 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | Ay | tab | |
 | Statistik | Statistics | İstatistik | tab | |
 | Planen | Plan | Planla | tab | |
-| Mehr | More | Daha fazla | tab | |
+| Menü | Menu | Menü | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | Kaydet |  | |
 | Rückgängig | Undo | Geri al |  | |
 
@@ -636,6 +636,6 @@ Regenerate: `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts`.
 | Monat | Month | الشهر | tab | |
 | Statistik | Statistics | الإحصاءات | tab | |
 | Planen | Plan | التخطيط | tab | |
-| Mehr | More | المزيد | tab | |
+| Menü | Menu | القائمة | the menu (☰), which was the tab *Mehr* until November 2026 | |
 | Sichern | Save | حفظ |  | |
 | Rückgängig | Undo | تراجع |  | |

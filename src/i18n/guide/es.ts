@@ -124,7 +124,7 @@ const es: GuidePages = {
   tourBalance: 'Arriba: lo que hay ahora en la cuenta. Debajo: lo que quedará a fin de mes, cuando todo lo pendiente esté pagado.',
   tourTick: 'Un toque en el círculo marca un apunte: pagado en vez de pendiente.',
   tourMonth: 'Aquí cambias de mes. Los apuntes periódicos llegan solos.',
-  tourTabs: '«{stats}» mira hacia atrás; «{plan}», hacia delante. La guía completa está en «{settings}».',
+  tourTabs: 'Todo lo demás está tras {menu}: «{stats}» mira hacia atrás; «{plan}», hacia delante. Ahí también está la guía completa.',
   tourAdd: 'Y aquí anotas algo: primero el importe.',
   guideToursTitle: 'Recorridos',
   guideToursBody: 'Paso a paso en las pantallas reales; cada uno dura menos de un minuto.',

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { motion, useTransform } from 'motion/react';
-import { AlertTriangle, ArrowLeftRight, BarChart3, CalendarDays, Circle, CircleEllipsis, Hand, PiggyBank } from 'lucide-react';
+import { AlertTriangle, ArrowLeftRight, Circle, Hand } from 'lucide-react';
 import { useAppStore } from './store';
 import { fmt, plural, stringsFor } from './translations';
 import { AccountKind, Category, Contract, Entry, EntryDraft, MonthKey } from './types';
@@ -56,7 +56,7 @@ import { ProjectsCard, ProjectsView } from './components/ProjectsView';
 import { ProjectSheet, ProjectSheetMode } from './components/ProjectSheet';
 import { TaxView } from './components/TaxView';
 import { GuideBackPill } from './components/GuideBackPill';
-import { GuideHit, MoreView, PrefsSection } from './components/MoreView';
+import { GuideHit, MenuPage, MoreView, PrefsSection } from './components/MoreView';
 import { PreferencesView } from './components/PreferencesView';
 import { CategoriesView } from './components/CategoriesView';
 import { CategorySheet, CategorySheetMode } from './components/CategorySheet';
@@ -97,7 +97,8 @@ import { PdfLockedError, readPdfLines } from './pdfText';
 import { parseStatementLines } from './statementPdf';
 import { giroCodeEntry, parseGiroCode } from './girocode';
 import { FileTooLargeError, LIMITS } from './limits';
-import { TabBar } from './ui/TabBar';
+import { AddButton } from './ui/AddButton';
+import { MenuContext } from './ui/menu';
 import { Toast, useToast } from './ui/Toast';
 import { Menu } from './ui/Menu';
 import { Confirm } from './ui/Sheet';
@@ -196,6 +197,12 @@ export default function App() {
     : action);
 
   const [tab, setTab] = useState<TabId>('month');
+  /**
+   * The menu (☰) is the tab *settings* (it was *Mehr*): the page it was opened
+   * from is kept, so ✕ — and Android's back — return there, and its tile is marked.
+   */
+  const [menuFrom, setMenuFrom] = useState<MenuPage>('month');
+  useEffect(() => { if (tab !== 'settings') setMenuFrom(tab); }, [tab]);
   /** A screen the guide's *Zeigen* opened is shown: back leads to the guide again (see `under` below). */
   const [guideReturn, setGuideReturn] = useState(false);
   /** A screen pushed from *Einstellungen* is shown (the reminders): back leads there again, not to *Mehr*. */
@@ -486,11 +493,12 @@ export default function App() {
         return;
       }
       if (pushed) back();
+      else if (tab === 'settings') setTab(menuFrom);
       else if (tab !== 'month') setTab('month');
       else void CapacitorApp.minimizeApp();
     });
     return () => { void handle.then(h => h.remove()); };
-  }, [pushed, tab, under]);
+  }, [pushed, tab, under, menuFrom]);
 
   // Reminders: after a change settles, and on every return to the app, what is
   // pending on the device becomes the plan again (iPhone app only).
@@ -1199,6 +1207,11 @@ export default function App() {
   const canAdd = !!quickAddCategory && balance.started;
   /** A tab's root, whatever was pushed on it. */
   const root = (id: TabId) => { setTab(id); setStack(s => ({ ...s, [id]: undefined })); };
+  /** ☰: the menu, always at its top (not at a screen left open in it). */
+  const openMenu = () => { setGuideReturn(false); setPrefsReturn(false); root('settings'); };
+  const menuButton = useMemo(() => ({ label: t.tabSettings, onOpen: openMenu }), [t.tabSettings]);
+  /** The add button: on the month page's root only, while there is something to add to. */
+  const addShown = tab === 'month' && !stack.month && !!quickAddCategory && balance.started;
   /** Once the screen stands (it comes in over about 300 ms; a sheet a little longer), find the marks and begin. */
   const beginMarks = (wait: number, make: (words: GuideWords, kit: typeof import('./guideKit')) => TourState) => {
     window.clearTimeout(tourTimer.current);
@@ -1516,6 +1529,10 @@ export default function App() {
         ) : id === 'settings' ? (
           <MoreView
             t={t}
+            current={menuFrom}
+            monthLabel={monthLabel(month, t.locale)}
+            onPage={root}
+            onClose={() => setTab(menuFrom)}
             categoryCount={categories.length}
             onCategories={() => push('categories')}
             accountCount={accounts.length}
@@ -1719,6 +1736,7 @@ export default function App() {
   }
 
   return (
+    <MenuContext.Provider value={menuButton}>
     <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
       {covered && <PrivacyCover />}
       {store.storageError && (
@@ -1745,8 +1763,8 @@ export default function App() {
         // in over it. Fixed chrome (sheets, toasts, the tab bar) is portalled
         // to <body>, so this transform can never capture it.
         // A tab comes forward out of a slight depth; a pushed screen slides.
-        initial={nav.current.still ? false : dir === 0 ? { opacity: 0, scale: 0.975 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
-        animate={{ x: 0, scale: 1, opacity: 1 }}
+        initial={nav.current.still ? false : dir === 0 && screen === 'settings' ? { opacity: 0, y: 28 } : dir === 0 ? { opacity: 0, scale: 0.975 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
+        animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
         transition={dir === 0 ? { duration: 0.28, ease: [0.22, 1, 0.36, 1] } : { duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
         style={{ transformOrigin: '50% 30vh' }}
       >
@@ -1769,22 +1787,10 @@ export default function App() {
         />
       )}
 
-      <TabBar
-        label={t.appName}
-        active={tab}
-        // Tapping the active tab again pops back to its root, as on iOS.
-        onChange={id => { if (id === tab) { popTo(id); if (id === 'settings') { setGuideReturn(false); setPrefsReturn(false); } } setTab(id); }}
-        tabs={[
-          { id: 'month', label: t.tabMonth, icon: CalendarDays },
-          { id: 'stats', label: t.tabStats, icon: BarChart3 },
-          { id: 'insights', label: t.tabInsights, icon: PiggyBank },
-          { id: 'settings', label: t.tabSettings, icon: CircleEllipsis },
-        ]}
-        // On the month page only (its root, not a screen pushed over it): entries go into the month shown there.
-        add={tab === 'month' && !stack.month && quickAddCategory && balance.started
-          ? { label: t.addEntry, open: entrySheet?.kind === 'new', onClick: () => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory }) }
-          : null}
-      />
+      {/* The month page's add button, at the bottom's trailing end where the tab bar ended until November 2026. */}
+      {addShown && (
+        <AddButton label={t.addEntry} open={entrySheet?.kind === 'new'} onClick={() => setEntrySheet({ kind: 'new', month, categoryId: quickAddCategory! })} />
+      )}
 
       <MonthPickerSheet
         open={monthPickerOpen}
@@ -2204,7 +2210,8 @@ export default function App() {
         onClose={() => setGuideAway(false)}
       />
 
-      <Toast toast={toast} onDone={hide} raised />
+      <Toast toast={toast} onDone={hide} raised={addShown} />
     </div>
+    </MenuContext.Provider>
   );
 }

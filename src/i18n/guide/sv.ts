@@ -124,7 +124,7 @@ const sv: GuidePages = {
   tourBalance: 'Överst: vad som finns på kontot nu. Under det: vad som blir kvar vid månadens slut när allt som väntar är betalt.',
   tourTick: 'Ett tryck på cirkeln bockar av en post: betald i stället för väntar.',
   tourMonth: 'Här byter du månad. Återkommande poster följer med av sig själva.',
-  tourTabs: '”{stats}” ser bakåt, ”{plan}” framåt. Hela guiden hittar du under ”{settings}”.',
+  tourTabs: 'Allt annat finns bakom {menu}: ”{stats}” ser bakåt, ”{plan}” framåt – och där hittar du också hela guiden.',
   tourAdd: 'Och här lägger du in något – beloppet först.',
   guideToursTitle: 'Rundturer',
   guideToursBody: 'Steg för steg på de riktiga skärmarna – var och en tar under en minut.',

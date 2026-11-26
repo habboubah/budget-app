@@ -124,7 +124,7 @@ const tr: GuidePages = {
   tourBalance: 'Üstte: şu an hesabında olan. Altında: bekleyen her şey ödendiğinde ay sonunda kalacak olan.',
   tourTick: 'Daireye dokunmak kalemi işaretler: bekliyor yerine ödendi.',
   tourMonth: 'Ayı buradan değiştirirsin. Tekrarlayan kalemler kendiliğinden gelir.',
-  tourTabs: '“{stats}” geriye, “{plan}” ileriye bakar. Kılavuzun tamamı “{settings}” altında.',
+  tourTabs: 'Geri kalan her şey {menu} arkasında: “{stats}” geriye, “{plan}” ileriye bakar – kılavuzun tamamı da orada.',
   tourAdd: 'Buradan da bir şey girersin – önce tutar.',
   guideToursTitle: 'Turlar',
   guideToursBody: 'Gerçek ekranlarda adım adım – her biri bir dakikadan kısa.',

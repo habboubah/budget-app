@@ -124,7 +124,7 @@ const pt: GuidePages = {
   tourBalance: 'Em cima: o que está agora na conta. Por baixo: o que sobra no fim do mês, depois de pago tudo o que está pendente.',
   tourTick: 'Um toque no círculo marca um registo: pago em vez de pendente.',
   tourMonth: 'É aqui que mudas de mês. Os registos recorrentes vêm sozinhos.',
-  tourTabs: '«{stats}» olha para trás, «{plan}» olha em frente. O guia completo está em «{settings}».',
+  tourTabs: 'Tudo o resto está em {menu}: «{stats}» olha para trás, «{plan}» olha em frente – e lá está também o guia completo.',
   tourAdd: 'E é aqui que registas algo – primeiro o valor.',
   guideToursTitle: 'Visitas guiadas',
   guideToursBody: 'Passo a passo nos ecrãs verdadeiros – cada uma demora menos de um minuto.',

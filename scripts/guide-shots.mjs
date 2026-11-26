@@ -24,6 +24,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
+import { goTab } from './nav.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -49,7 +50,7 @@ const { TIP_IDS } = await server.ssrLoadModule('/src/tips.ts');
 const { GUIDE_TOPICS } = await server.ssrLoadModule('/src/guide.ts');
 
 const wait = (page, ms = 450) => page.waitForTimeout(ms);
-const tab = async (page, n) => { await page.locator('nav button:not(.hero)').nth(n).click(); await wait(page); };
+const tab = async (page, n) => { await goTab(page, n); await wait(page); };
 /** A row or a card of Mehr (or any screen) by its label. */
 const open = async (page, label) => { await page.locator('main button', { hasText: label }).first().click(); await wait(page, 550); };
 const addSheet = async page => { await page.locator('[data-tour="add"]').click(); await page.waitForSelector('[data-tour="entry-amount"]'); await wait(page, 500); };

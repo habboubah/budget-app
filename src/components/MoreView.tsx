@@ -1,5 +1,6 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react';
-import { ChevronRight, Compass, Download, Filter, HandCoins, Landmark, Luggage, Repeat, Settings, Star, Tags, Wallet, Zap } from 'lucide-react';
+import { BarChart3, CalendarDays, ChevronRight, Compass, Download, Filter, HandCoins, Landmark, Luggage, PiggyBank, Repeat, Settings, Star, Tags, Wallet, Zap } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Strings, fmt } from '../translations';
 import { foldForSearch, searchTerms } from '../logic';
 import { Empty, Screen, Group, IconTile, Row } from '../ui/Screen';
@@ -9,11 +10,21 @@ import { tapLight } from '../ui/haptics';
 /** The groups of *Einstellungen* a search can lead to (PreferencesView scrolls there). */
 export type PrefsSection = 'display' | 'security' | 'book' | 'demo' | 'about' | 'reset';
 
+/** The three pages the menu goes to (the tab bar's first three until November 2026). */
+export type MenuPage = 'month' | 'stats' | 'insights';
+
 /** A topic of the guide a search found: its title and its one sentence. */
 export interface GuideHit { id: string; title: string; sum: string }
 
 interface Props {
   t: Strings;
+  /** The page the menu was opened from: its tile is marked. */
+  current: MenuPage;
+  /** The month the month page shows ("November 2026"), under its tile. */
+  monthLabel: string;
+  onPage: (page: MenuPage) => void;
+  /** ✕: back to the page the menu was opened from. */
+  onClose: () => void;
   categoryCount: number;
   onCategories: () => void;
   /** How many accounts the book has (1 until another is added, plan 30). */
@@ -95,6 +106,46 @@ function QuickTile({ icon, hue, label, sub, onClick, tour }: {
   );
 }
 
+/**
+ * One of the menu's three big tiles: the month, Statistik, Planen — where the
+ * app is used every day, so they are the first and largest thing in it. The
+ * page the menu came from wears the accent and a dot. Each comes in a beat
+ * after the one before, a little from below.
+ */
+function NavTile({ icon: Icon, label, sub, on, page, index, onClick }: {
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  label: string;
+  sub: string;
+  on: boolean;
+  page: MenuPage;
+  index: number;
+  onClick: () => void;
+}) {
+  const calm = useReducedMotion();
+  return (
+    <motion.button
+      type="button"
+      data-nav-tile={page}
+      aria-label={label}
+      aria-current={on ? 'page' : undefined}
+      onClick={() => { tapLight(); onClick(); }}
+      initial={calm ? false : { opacity: 0, y: 14, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: 'spring', duration: 0.45, bounce: 0.25, delay: 0.04 + index * 0.05 }}
+      whileTap={{ scale: 0.96 }}
+      className={`relative flex-1 basis-[6.75rem] min-w-0 rounded-md p-[14px] pt-[16px] flex flex-col items-start text-start focus-visible:ring-focus ${
+        on ? 'add-fab text-on-hero' : 'bg-surface card-edge text-fg'}`}
+    >
+      {on && <span aria-hidden="true" className="absolute top-[14px] end-[14px] w-2 h-2 rounded-full bg-on-hero/90" />}
+      <span className={`w-[40px] h-[40px] rounded-[12px] inline-flex items-center justify-center ${on ? 'bg-white/20' : 'bg-accent-dim text-accent'}`}>
+        <Icon className="w-[22px] h-[22px]" strokeWidth={2.2} />
+      </span>
+      <span className="block mt-3 text-body font-bold wrap-compound">{label}</span>
+      <span aria-hidden="true" className={`block mt-0.5 text-caption wrap-compound ${on ? 'opacity-85' : 'text-fg-mute'}`}>{sub}</span>
+    </motion.button>
+  );
+}
+
 /** A row of *Mehr*: what it is called, what a search also finds it by, and where it leads. */
 interface Feature {
   id: string;
@@ -108,9 +159,11 @@ interface Feature {
 }
 
 /**
- * *Mehr* (plan 39; it was *Optionen*): everything that is not a month, a
- * statistic or a plan — on about one screen, named for what is done there:
+ * The menu (☰, November 2026; it was the tab *Mehr*, and *Optionen* before
+ * that): every page of the app on about one screen, named for what is done
+ * there. It covers the page it was opened from; ✕ goes back there.
  *
+ *   0. three big tiles: the month, Statistik, Planen — what the tab bar held;
  *   1. a search, "Was möchtest du tun?", over these rows, what *Einstellungen*
  *      holds and the guide's topics;
  *   2. two large cards: the guide, and backup and transfer;
@@ -166,6 +219,8 @@ export function MoreView(p: Props) {
     <Screen
       title={t.tabSettings}
       tabbed
+      onClose={p.onClose}
+      closeLabel={t.menuClose}
       accessory={(
         <div data-tour="set-search">
           <SearchField value={query} onChange={setQuery} placeholder={t.moreSearch} clearLabel={t.searchClear} cancelLabel={t.cancel} />
@@ -193,7 +248,13 @@ export function MoreView(p: Props) {
         </>
       ) : (
         <>
-          {/* Where help and safety are looked for: large, and first. */}
+          {/* Where the app is used every day: the largest, and first. */}
+          <nav aria-label={t.tabSettings} className="flex flex-wrap gap-[10px]">
+            <NavTile page="month" index={0} icon={CalendarDays} label={t.tabMonth} sub={p.monthLabel} on={p.current === 'month'} onClick={() => p.onPage('month')} />
+            <NavTile page="stats" index={1} icon={BarChart3} label={t.tabStats} sub={t.menuStatsSub} on={p.current === 'stats'} onClick={() => p.onPage('stats')} />
+            <NavTile page="insights" index={2} icon={PiggyBank} label={t.tabInsights} sub={t.menuPlanSub} on={p.current === 'insights'} onClick={() => p.onPage('insights')} />
+          </nav>
+          {/* Where help and safety are looked for: large, and next. */}
           <div className="flex flex-wrap gap-[12px]">
             <QuickTile icon={guide.icon} hue={guide.hue} label={guide.label} sub={guide.sub!} onClick={guide.onClick} />
             <QuickTile icon={transfer.icon} hue={transfer.hue} label={transfer.label} sub={transfer.sub!} onClick={transfer.onClick} tour="set-transfer" />

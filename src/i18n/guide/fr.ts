@@ -124,7 +124,7 @@ const fr: GuidePages = {
   tourBalance: 'En haut : ce qu’il y a sur votre compte maintenant. En dessous : ce qu’il restera en fin de mois, une fois tout ce qui est en attente payé.',
   tourTick: 'Un toucher sur le cercle coche une écriture : payée au lieu d’en attente.',
   tourMonth: 'C’est ici que vous changez de mois. Les écritures récurrentes suivent d’elles-mêmes.',
-  tourTabs: '« {stats} » regarde en arrière, « {plan} » regarde devant. Le guide complet se trouve dans « {settings} ».',
+  tourTabs: 'Tout le reste se trouve derrière {menu} : « {stats} » regarde en arrière, « {plan} » regarde devant – et le guide complet y est aussi.',
   tourAdd: 'Et c’est ici que vous saisissez quelque chose – le montant d’abord.',
   guideToursTitle: 'Visites',
   guideToursBody: 'Pas à pas sur les vrais écrans – chacune prend moins d’une minute.',

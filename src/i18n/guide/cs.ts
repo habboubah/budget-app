@@ -124,7 +124,7 @@ const cs: GuidePages = {
   tourBalance: 'Nahoře: kolik je teď na účtu. Pod tím: kolik zbude na konci měsíce, až bude zaplaceno všechno, co čeká.',
   tourTick: 'Klepnutí na kolečko položku odškrtne: zaplaceno místo čeká.',
   tourMonth: 'Tady přepínáš měsíc. Opakované položky přejdou samy.',
-  tourTabs: '„{stats}“ se dívá zpět, „{plan}“ dopředu. Celého průvodce najdeš v části „{settings}“.',
+  tourTabs: 'Všechno ostatní je pod {menu}: „{stats}“ se dívá zpět, „{plan}“ dopředu – a najdeš tam i celého průvodce.',
   tourAdd: 'A tady něco zadáš – nejdřív částku.',
   guideToursTitle: 'Prohlídky',
   guideToursBody: 'Krok za krokem na skutečných obrazovkách – každá trvá méně než minutu.',

@@ -14,6 +14,7 @@ import zlib from 'zlib';
 import { fileURLToPath } from 'url';
 import { chromium } from 'playwright';
 import { build, preview } from 'vite';
+import { TILE, goTab, openMenu } from './nav.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4341;
@@ -126,29 +127,32 @@ try {
   const worst = Math.max(...switches);
   report(worst <= MONTH_SWITCH_MS, `month switch ${Math.round(Math.min(...switches))}–${Math.round(worst)} ms (budget ${MONTH_SWITCH_MS} ms)`);
 
-  // Switching to Statistik and to Planen (plan 06a): from the tap to the frame that shows the tab.
+  // Switching to Statistik and to Planen (plan 06a): from the tap on its tile in the menu to the frame that shows it.
   for (const [index, title] of [[1, 'Statistik'], [2, 'Planen']]) {
     const times = [];
     let longest = 0;
     for (let i = 0; i < 3; i++) {
-      await page.evaluate(() => { document.querySelectorAll('nav button:not(.hero)')[0]?.click(); });
+      // From the month page into the menu (not timed): the tap timed is the page's tile.
+      await goTab(page, 0);
+      await page.waitForTimeout(500);
+      await openMenu(page);
       await page.waitForTimeout(500);
       await page.evaluate(() => { window.__long = []; });
-      times.push(await page.evaluate(({ index, title }) => new Promise(resolve => {
+      times.push(await page.evaluate(({ tile, title }) => new Promise(resolve => {
         const t0 = performance.now();
         const done = () => requestAnimationFrame(() => resolve(performance.now() - t0));
         const shown = () => document.querySelector('h1')?.textContent === title;
         const mo = new MutationObserver(() => { if (shown()) { mo.disconnect(); done(); } });
         mo.observe(document.body, { subtree: true, childList: true, characterData: true });
-        document.querySelectorAll('nav button:not(.hero)')[index]?.click();
-      }), { index, title }));
+        document.querySelector(tile)?.click();
+      }), { tile: TILE(index), title }));
       await page.waitForTimeout(400);
       longest = Math.max(longest, ...(await page.evaluate(() => window.__long)), 0);
     }
     const slowest = Math.max(...times);
     report(slowest <= TAB_SWITCH_MS, `switch to ${title} ${Math.round(Math.min(...times))}–${Math.round(slowest)} ms, longest task ${Math.round(longest)} ms (budget ${TAB_SWITCH_MS} ms)`);
   }
-  await page.evaluate(() => { document.querySelectorAll('nav button:not(.hero)')[0]?.click(); });
+  await goTab(page, 0);
   await page.waitForTimeout(500);
 
   // Typing an amount into a new entry.

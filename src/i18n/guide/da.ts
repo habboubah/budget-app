@@ -124,7 +124,7 @@ const da: GuidePages = {
   tourBalance: 'Øverst: det, der står på kontoen nu. Under det: det, der er tilbage ved månedens slutning, når alt det afventende er betalt.',
   tourTick: 'Et tryk på cirklen hakker en post af: betalt i stedet for afventer.',
   tourMonth: 'Her skifter du måned. Tilbagevendende poster kommer med af sig selv.',
-  tourTabs: '»{stats}« ser tilbage, »{plan}« ser fremad. Hele vejledningen finder du under »{settings}«.',
+  tourTabs: 'Alt det andet ligger bag {menu}: »{stats}« ser tilbage, »{plan}« ser fremad – og der finder du også hele vejledningen.',
   tourAdd: 'Og her indtaster du noget – beløbet først.',
   guideToursTitle: 'Rundvisninger',
   guideToursBody: 'Trin for trin på de rigtige skærme – hver tager under et minut.',

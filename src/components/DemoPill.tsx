@@ -6,7 +6,7 @@ import { tapLight } from '../ui/haptics';
 /**
  * While someone looks around with the test data they started with (plan
  * 39, the welcome screen's *Erst mit Testdaten ansehen*): a small capsule
- * above the tab bar, on every tab, that says so — and takes the test data
+ * at the bottom, on every page, that says so — and takes the test data
  * out again to begin with one's own. Where the guide's "‹ Anleitung"
  * capsule sits, and under every sheet and menu like it.
  */
@@ -21,7 +21,7 @@ export function DemoPill({ show, title, label, onRemove }: {
   return createPortal(
     <div
       className="fixed inset-x-0 z-[35] flex justify-center px-[84px] pointer-events-none"
-      style={{ bottom: 'calc(92px + env(safe-area-inset-bottom))' }}
+      style={{ bottom: 'calc(max(env(safe-area-inset-bottom), 16px) + 12px)' }}
     >
       <AnimatePresence>
         {show && (

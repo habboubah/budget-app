@@ -138,7 +138,7 @@ const de = {
   tourBalance: 'Oben steht, was jetzt auf dem Konto ist. Darunter, was am Monatsende bleibt, wenn alles Offene bezahlt ist.',
   tourTick: 'Ein Tipp auf den Kreis hakt einen Eintrag ab: bezahlt statt offen.',
   tourMonth: 'Hier wechselst du den Monat. Wiederkehrende Einträge kommen von selbst mit.',
-  tourTabs: '„{stats}“ schaut zurück, „{plan}“ nach vorn. Unter „{settings}“ findest du die ganze Anleitung.',
+  tourTabs: 'Hinter {menu} liegt alles Weitere: „{stats}“ schaut zurück, „{plan}“ nach vorn – und dort findest du auch die ganze Anleitung.',
   tourAdd: 'Und hier trägst du etwas ein – der Betrag zuerst.',
   guideToursTitle: 'Touren',
   guideToursBody: 'Schritt für Schritt auf den echten Seiten – jede dauert keine Minute.',
