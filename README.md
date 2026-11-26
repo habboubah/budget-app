@@ -70,6 +70,8 @@ https://play.google.com/
 # App store
 https://appstoreconnect.apple.com/apps
 
+Production: https://apps.apple.com/de/app/spartopf-haushaltsbuch/id6829541731
+
 ## Release
 Release to both stores with `npm run release`.
 
