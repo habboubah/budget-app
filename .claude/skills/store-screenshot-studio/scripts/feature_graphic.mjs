@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Google Play feature graphic: exactly 1024x500, JPEG so it cannot carry alpha.
 import { chromium } from 'playwright';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { cfg, root, launchArgs, slideData, ribbonFor, pointsFor, placedStickers, shoot, copyFor, die } from './render.mjs';
 
@@ -14,7 +15,16 @@ if (!fg) {
 const slide = cfg.slides.find(s => s.id === fg.slide);
 if (!slide) die(`featureGraphic.slide is "${fg.slide}", which is not a slide id in screenshots.config.json.`);
 
-const browser = await chromium.launch({ args: launchArgs });
+// A picture in place of the phone ("art": a file in the repo, such as the
+// icon's drawing), for a graphic without device imagery. Absent: the phone.
+let art = null;
+if (fg.art) {
+  const file = path.join(root, fg.art);
+  if (!existsSync(file)) die(`featureGraphic.art is "${fg.art}", which is not a file in the repo.`);
+  art = pathToFileURL(file).href;
+}
+
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: launchArgs });
 try {
   for (const locale of cfg.locales) {
     const copy = copyFor(locale);
@@ -26,6 +36,8 @@ try {
       ...slide,
       background: fg.background,
       device: fg.device || slide.device,
+      // Google Play's graphic shows the Android app (featureGraphic.rawDir).
+      ...(fg.rawDir && { rawDir: fg.rawDir }),
       phone: fg.phone || {},
       second: null,
       callouts: [],
@@ -39,6 +51,9 @@ try {
       points: pointsFor(copy.featureGraphic.points, Boolean(fg.ribbon), `config/copy.${locale}.json[featureGraphic]`),
       stickers: placedStickers(fg.stickers, copy.dir === 'rtl', 'featureGraphic.stickers'),
       ribbon: ribbonFor(fg, locale),
+      art,
+      // The opening slide's small icon stays on the slide.
+      icon: null,
     });
 
     const buf = await shoot(browser, data, fg);

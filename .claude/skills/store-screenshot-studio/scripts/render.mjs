@@ -76,16 +76,20 @@ export function pointsFor(points, priceWords, where) {
 
 // ---------------------------------------------------------------- captures
 
-const rawPath = (file, locale) => path.join(root, cfg.rawDir.replaceAll('{locale}', locale), file);
+// A target (or the feature graphic) may take its captures from its own
+// folder: Google Play's come from the Android captures (`npm run screenshots`
+// writes screenshots/<locale>-android/), with Android's words (no iCloud,
+// fingerprint for Face ID) and its rounded face. Same file names, same marks.
+const rawPath = (file, locale, dir = cfg.rawDir) => path.join(root, dir.replaceAll('{locale}', locale), file);
 
 /** One phone's worth of data: the capture, its shape, how the frame is placed. */
-function phoneData(spec, locale, device, where) {
-  const file = rawPath(spec.raw, locale);
+function phoneData(spec, locale, device, where, dir) {
+  const file = rawPath(spec.raw, locale, dir);
   let size;
   try {
     size = pngSize(file);
   } catch {
-    die(`${where} points at ${path.relative(root, file)}, which is missing. Run \`npm run screenshots\` first.`);
+    die(`${where} points at ${path.relative(root, file)}, which is missing. Run \`npm run screenshots\` first (it takes the iPhone and the Android captures, in every language).`);
   }
   const place = spec.phone || spec;
   return {
@@ -106,7 +110,7 @@ function phoneData(spec, locale, device, where) {
 
 /**
  * Where things are in a capture: `<capture>.marks.json`, written next to it
- * by `npm run screenshots` (scripts/screenshots.mjs) — each named element's box
+ * by `npm run screenshots` (scripts/lib/shots.mjs) — each named element's box
  * in fractions of the capture, and its corner radius. A call-out names a mark
  * instead of carrying numbers, so it follows the app when a screen changes
  * and is right in every language.
@@ -137,7 +141,7 @@ function calloutData(c, file, rtl, where) {
     box = marks[c.mark];
     if (!box) {
       die(`${where} lifts the mark "${c.mark}", which ${path.relative(root, sidecar)} does not have. `
-        + `It has: ${Object.keys(marks).join(', ') || 'none'}. Marks are named in scripts/screenshots.mjs.`);
+        + `It has: ${Object.keys(marks).join(', ') || 'none'}. Marks are named in scripts/lib/shots.mjs.`);
     }
   } else if (Array.isArray(c.crop) && c.crop.length === 4) {
     const [x, y, w, h] = c.crop.map(v => num(v, where, '"crop"'));
@@ -249,6 +253,12 @@ export function placedStickers(list, rtl, where) {
 
 // ---------------------------------------------------------------- slides
 
+const iconUrl = (file, where) => {
+  const full = path.join(root, file);
+  if (!existsSync(full)) die(`${where} shows the icon "${file}", which is not a file in the repo.`);
+  return pathToFileURL(full).href;
+};
+
 const backgroundFor = (name, where) =>
   theme.backgrounds[name] || die(`${where} asks for background "${name}", which is not in theme.json. It has: ${Object.keys(theme.backgrounds).join(', ')}.`);
 
@@ -257,7 +267,7 @@ export function slidesFor(target) {
   const list = target.slides
     ? target.slides.map(id => cfg.slides.find(s => s.id === id) || die(`target "${target.id}" lists slide "${id}", which is not in slides.`))
     : cfg.slides;
-  return target.device ? list.map(s => ({ ...s, device: target.device })) : list;
+  return list.map(s => ({ ...s, ...(target.device && { device: target.device }), ...(target.rawDir && { rawDir: target.rawDir }) }));
 }
 
 /**
@@ -274,7 +284,7 @@ export function slideData(slide, locale, { ids = cfg.slides.map(s => s.id), inde
   if (!LAYOUTS.includes(slide.layout)) die(`${where} has layout "${slide.layout}". Use ${LAYOUTS.join(' or ')}.`);
 
   const style = cfg.style || {};
-  const phone = phoneData(slide, locale, slide.device, where);
+  const phone = phoneData(slide, locale, slide.device, where, slide.rawDir);
   const background = backgroundFor(slide.background, where);
   if (ribbon && !(background.ribbon && background.ribbonInk)) {
     die(`${where} carries the ribbon, but background "${slide.background}" has no "ribbon" / "ribbonInk" colours in theme.json.`);
@@ -297,8 +307,10 @@ export function slideData(slide, locale, { ids = cfg.slides.map(s => s.id), inde
     bezel: theme.device.bezel,
     background,
     phone,
-    second: slide.second ? phoneData(slide.second, locale, slide.device, `${where} › second`) : null,
+    second: slide.second ? phoneData(slide.second, locale, slide.device, `${where} › second`, slide.rawDir) : null,
     callouts: (slide.callouts || []).map((c, n) => calloutData(c, phone.file, copy.dir === 'rtl', `${where} › callouts[${n}]`)),
+    // The app's icon above the headline (the opening slide): a picture from the repo.
+    icon: slide.icon ? iconUrl(slide.icon, where) : null,
     stickers: stickersFor(ids, index, copy.dir === 'rtl'),
     // Off unless the caller passes ribbonFor(…).
     ribbon: ribbon && { ...ribbon, bg: background.ribbon, fg: background.ribbonInk },
@@ -363,7 +375,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const index = slidesFor(target).findIndex(s => s.id === id);
   if (index === -1) die(`target "${target.id}" does not export slide "${id}". It has: ${slidesFor(target).map(s => s.id).join(', ')}.`);
 
-  const browser = await chromium.launch({ args: launchArgs });
+  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: launchArgs });
   try {
     const buf = await shoot(browser, targetSlideData(target, locale, index), {
       width: Math.round(target.width / target.scale * scale),

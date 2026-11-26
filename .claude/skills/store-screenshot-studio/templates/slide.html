@@ -10,6 +10,7 @@
   <div class="stickers back"></div>
 
   <section class="copy">
+    <img class="app-icon" alt="">
     <h1 class="headline"></h1>
     <p class="subline"></p>
     <ul class="points"></ul>
@@ -90,9 +91,21 @@
     img.src = phone.rawUrl;
     img.alt = d.headline;
   };
-  fill(document.querySelector('.device.main'), d.phone);
-  const second = document.querySelector('.device.second');
-  if (d.second) fill(second, d.second); else second.remove();
+  if (d.art) {
+    // The feature graphic draws a picture (the icon's art) instead of a phone.
+    body.dataset.art = '';
+    const stage = document.querySelector('.stage');
+    stage.replaceChildren();
+    const art = document.createElement('img');
+    art.className = 'art';
+    art.alt = '';
+    art.src = d.art;
+    stage.append(art);
+  } else {
+    fill(document.querySelector('.device.main'), d.phone);
+    const second = document.querySelector('.device.second');
+    if (d.second) fill(second, d.second); else second.remove();
+  }
 
   // ---- call-outs ----
   // x/y/w/h are fractions of the capture, radius a fraction of its width,
@@ -129,11 +142,15 @@
     const ribbon = document.querySelector('.ribbon');
     ribbon.firstElementChild.textContent = d.ribbon.text;
     ribbon.hidden = false;
+    // Two words ("Free · No Ads") need a longer band than one ("Kostenlos").
+    if (d.ribbon.text.length > 12) ribbon.dataset.long = '';
     // The headline keeps clear of the corner (slide.css).
     body.dataset.ribbon = 'on';
   }
 
   // ---- copy ----
+  const icon = document.querySelector('.app-icon');
+  if (d.icon) icon.src = d.icon; else icon.remove();
   const headline = document.querySelector('.headline');
   // A dash stays with the word before it: no line starts with "– ganz einfach".
   headline.textContent = d.headline.replace(/ ([–—-]) /g, '\u00a0$1 ');

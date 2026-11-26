@@ -19,7 +19,7 @@ if (existsSync(outDir)) {
   }
 }
 
-const browser = await chromium.launch({ args: launchArgs });
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: launchArgs });
 const written = [];
 
 try {

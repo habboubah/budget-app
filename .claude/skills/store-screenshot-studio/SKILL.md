@@ -6,16 +6,22 @@ description: Turn the raw app captures in screenshots/<locale>/ into polished, s
 > Spartopf's store set. Since 15 November 2026 it is composed the way
 > shopping-list's is (Ahmad pointed at Bring!'s listing there and asked for the
 > same here): the ten captures of `scripts/screenshots.mjs` per language, the
-> icon's petrol, DE / EN copy, an App Store target and a Google Play target
-> with its feature graphic. The skill came from pizza-driver-log (Fahrtwerk).
+> icon's petrol, DE / EN / AR copy, an App Store target and a Google Play target
+> with its feature graphic. Since 26 November 2026 (ported from photo-filter-app):
+> Arabic, Google Play framed from the Android captures (`rawDir`), the app's
+> icon above the opening headline, `npm run store-screenshots` takes missing
+> captures by itself (`scripts/ensure-captures.mjs`), and `npm run
+> store:listing` uploads the set (both stores). The skill came from pizza-driver-log (Fahrtwerk).
 
 
 # Store screenshot studio
 
 Raw capture in → marketing slide out. The raw captures come from the
 `app-store-screenshots` skill (`npm run screenshots`), which writes plain,
-unstyled app screens to `screenshots/de/` and `screenshots/en/` and, next to
-each, where its parts are (`<capture>.marks.json`). This skill composes them:
+unstyled app screens to `screenshots/<de|en|ar>/` (iPhone) and
+`screenshots/<de|en|ar>-android/` (Android: its wording and its rounded face —
+the Play target and the feature graphic name that folder as their `rawDir`)
+and, next to each, where its parts are (`<capture>.marks.json`). This skill composes them:
 colour, headline, phone, call-outs, stickers.
 
 **Never edit the pixels of the app.** What is inside the phone is the untouched
@@ -46,7 +52,8 @@ the numbers — read it before changing a composition):
 
 ```bash
 npm run screenshots          # only when the app's screens changed: captures + marks
-npm run store-screenshots    # export → feature graphic → contact sheets → validate
+npm run store-screenshots    # missing captures first → export → feature graphic → contact sheets → validate
+npm run store:listing -- --android   # then: upload the Play set, the feature graphic and the texts (store:listing:dry checks first)
 ```
 
 The run fails loudly if any exported file misses its store spec, a call-out
@@ -138,7 +145,7 @@ A call-out lifts one piece of the slide's own capture out of the phone: it
 starts exactly where that piece is on the screen, grows about its centre (or
 the edge named by `anchor`) and may reach past the frame. **It names a mark,
 not coordinates**: the marks are measured from the running app by
-`npm run screenshots` (`marks` in `scripts/screenshots.mjs`) and stored next to
+`npm run screenshots` (`marks` in `scripts/lib/shots.mjs`) and stored next to
 each capture, so a call-out is right in every language and still right after
 the screen has changed. Listing them:
 
@@ -175,7 +182,7 @@ cat screenshots/de/04-budgets.marks.json
   `anchor` and `shift` so each edge lands in a gap, or covers the heading
   whole (the backup slide does both).
 - **A part that is not marked yet**: add it to that screen's `marks` in
-  `scripts/screenshots.mjs` (a name and a selector built from the app's own
+  `scripts/lib/shots.mjs` (a name and a selector built from the app's own
   handles — `data-tour`, a category's id; a list of selectors marks the box
   around them all), rerun `npm run screenshots -- --only <screen>`, then use the name.
   Never fall back to a hand-measured `"crop"` for a set with two languages.
@@ -243,7 +250,7 @@ in `reference/store-specs.md` › *The ribbon and the price words*.
   store order and drives the filename index. Give it a call-out (mark the part
   first if it has no mark) and move the stickers on its seams.
 - **A language** — add `config/copy.<locale>.json` and the code to `locales`,
-  and capture it (`L` in `scripts/screenshots.mjs`). Set `"dir": "rtl"`
+  and capture it (`LANGS`, `LOCALE` and `NAMES` in `scripts/lib/shots.mjs`). Set `"dir": "rtl"`
   for RTL: the copy, the ribbon, the phones' lean and the strip of stickers all
   turn round.
 - **A device size** — add an entry to `targets`. `validate.py` picks it up from the

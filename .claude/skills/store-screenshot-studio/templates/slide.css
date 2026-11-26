@@ -70,6 +70,19 @@ body {
   text-wrap: balance;
 }
 
+/* The app's icon above the headline (the opening slide), drawn as the
+   launcher draws it: a rounded square with a soft shadow. */
+.app-icon {
+  display: block;
+  width: calc(24 * var(--u));
+  height: calc(24 * var(--u));
+  margin: 0 auto calc(3.4 * var(--u));
+  border-radius: 23%;
+  box-shadow: 0 calc(1.4 * var(--u)) calc(3.6 * var(--u)) color-mix(in srgb, var(--shade) 32%, transparent),
+              0 0 0 calc(0.5 * var(--u)) rgb(255 255 255 / 0.55);
+}
+[data-align="start"] .app-icon { margin-inline: 0; }
+
 /* ---------- points ----------
    The short promises under the headline ("Keine Werbung", "Kein Abo"): one pill
    each, with a tick. An empty list takes no room. */
@@ -408,4 +421,25 @@ body {
 [data-layout="feature"][data-ribbon] .copy {
   padding-inline-start: 19vh;
   transform: translateY(var(--ribbon-clear, 0px));
+}
+
+/* A band with two words ("Free · No Ads") sits further in, so it is long
+   enough for them. */
+.ribbon[data-long] { --rc: calc(20 * var(--u)); --rt: calc(9.6 * var(--u)); }
+.ribbon[data-long] span { font-size: calc(5 * var(--u)); letter-spacing: 0.01em; }
+
+/* The feature graphic with art instead of a phone (featureGraphic.art): the
+   name large, the points, and the picture filling the end side. */
+[data-layout="feature"][data-art] .copy { padding-inline: 13vh 0; }
+[data-layout="feature"][data-art] .stage {
+  flex: 0 0 47%;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+[data-layout="feature"][data-art] .art {
+  display: block;
+  height: 112vh;
+  width: auto;
+  margin-inline-start: -4vh;
 }

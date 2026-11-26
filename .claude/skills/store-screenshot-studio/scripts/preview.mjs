@@ -55,7 +55,7 @@ const sheetFor = target => {
   return { html, width: Math.max(slides.length * (THUMB + GAP), fg ? cfg.locales.length * (THUMB * 2.4 + 16) : 0) + 56 };
 };
 
-const browser = await chromium.launch({ args: launchArgs });
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: launchArgs });
 try {
   for (const [n, target] of cfg.targets.entries()) {
     const { html, width } = sheetFor(target);

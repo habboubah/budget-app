@@ -1,0 +1,17 @@
+{
+  "locale": "en",
+  "dir": "ltr",
+  "captions": {
+    "balance": "What's left at month end",
+    "entry": "Note a purchase in seconds",
+    "stats": "See where your money goes",
+    "next": "New month in one tap"
+  },
+  "card": {
+    "name": "Spartopf",
+    "points": [
+      "No ads, no account",
+      "Everything stays on your device"
+    ]
+  }
+}

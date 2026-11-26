@@ -1,0 +1,52 @@
+{
+  "//": "How the video is dressed. The colours are those of the store screenshots (store-screenshot-studio/config/theme.json: the app's petrol accent, the icon's teal and its coin's gold), so the video and the screenshots next to it read as one set.",
+  "//font": "The app's own bundled typeface, Nunito (src/assets/fonts/, SIL OFL 1.1), as in the store screenshots: `display` sets the captions and the name on the end card at `displayWeight`, `text` its points at `textWeight`. `files` is the folder assets/fonts.css loads it from. Arabic is not in the file: it falls back to the system's Arabic face (on the Mac, Apple's).",
+  "font": {
+    "display": "Nunito",
+    "text": "Nunito",
+    "displayWeight": 900,
+    "textWeight": 800,
+    "css": "assets/fonts.css",
+    "files": "src/assets/fonts"
+  },
+  "//icon": "The app's icon, for the end card (the 1024 px render of public/icon.svg).",
+  "icon": "assets/icon-only.png",
+  "//veil": "What a caption stands on: the frozen screen under a veil. fill and opacity are the veil (the store set's shade of petrol), blur how soft the screen goes under it (in pt; 0 for none), ink the caption.",
+  "veil": {
+    "fill": "#02272E",
+    "opacity": 0.76,
+    "blur": 7,
+    "ink": "#FFFFFF"
+  },
+  "//caption": "The caption's type, in pt of the app's layout (the video is twice that in pixels): as large as fits `width` (a share of the screen) on at most `maxLines` lines, between `min` and `max`.",
+  "caption": {
+    "max": 50,
+    "min": 34,
+    "maxLines": 3,
+    "width": 0.84
+  },
+  "//light": "What is dimmed around a part of the screen that a chapter lights up.",
+  "light": {
+    "fill": "#02272E",
+    "opacity": 0.6
+  },
+  "//touch": "The dot where a tap lands: its size in pt, its fill and its ring.",
+  "touch": {
+    "size": 46,
+    "fill": "rgb(2 39 46 / 0.26)",
+    "ring": "rgb(255 255 255 / 0.9)"
+  },
+  "//statusBar": "The ink of the status bar and the home indicator, by the app's theme at that moment.",
+  "statusBar": {
+    "light": "#0D1017",
+    "dark": "#FFFFFF"
+  },
+  "//card": "The end card: the store set's petrol with white type; chip / chipInk / tick are a point's pill, its text and its tick.",
+  "card": {
+    "fill": "#0A6D80",
+    "ink": "#FFFFFF",
+    "chip": "#FFFFFF",
+    "chipInk": "#0D1017",
+    "tick": "#0A6D80"
+  }
+}
