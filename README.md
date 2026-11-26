@@ -42,9 +42,31 @@ npm run deploy:web       # vite build → wrangler deploy (asks you to log in to
 
 ```bash
 npx playwright install chromium                      # once per Mac
-npm run screenshots                                  # raw captures → screenshots/de, screenshots/en
+npm run screenshots                                  # raw captures, de + en + ar → screenshots/<lang>/ (iPhone) and <lang>-android/
+npm run screenshots -- --lang ar --ios               # one language, one platform
 npm run screenshots -- --only 08-category,10-plan    # only some screens
-npm run store-screenshots                            # framed store set → screenshots/store/
+npm run store-screenshots                            # framed store set → screenshots/store/ (takes missing captures first)
+```
+
+## App preview video
+
+```bash
+brew install ffmpeg                                  # once per Mac
+npm run app-preview                                  # film → compose → validate, de + en + ar → screenshots/store/app-preview/
+npm run app-preview -- --lang de --compose           # one language, keep the footage (after changing a caption)
+```
+
+## Store listing upload
+
+Texts from `store/listing.md`, `store/play-listing.md` and
+`store/play-listing-languages.md`, the screenshots, the feature graphic, the
+icon and the preview video — credentials from `.env.release`.
+
+```bash
+npm run store:listing:dry                            # check everything, send nothing
+npm run store:listing -- --android                   # Google Play: texts (14 languages), 8 screenshots, feature graphic, icon
+npm run store:listing -- --ios                       # App Store: texts, screenshots, preview video, review contact, build
+npm run store:listing                                # both
 ```
 
 ## App Review recording

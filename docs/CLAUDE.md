@@ -1381,7 +1381,9 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | Build + open Android Studio / a debug APK | `npm run build:android` / `npm run android:debug` |
 | Regenerate the iOS icon and splash from `assets/` | `npm run assets:generate` (the drawing is `public/icon.svg`; `assets/icon-only.png` is its 1024 px render and `assets/splash*.png` carry it as a tile; the Android launcher icons and splashes in `android/app/src/main/res/`, the PWA icons in `public/` and `screenshots/store/play-icon-512.png` are rendered from the same drawing, not by this command) |
 | Screenshots of every screen before and after a UI change | `node scripts/ui-review.mjs` (`stats-rhythm` and `insights-runway` show a picked day and a chart in hand; `guide*`, `tour-*`, `point-*`, `guide-back` and `hint-guide` the guide and its topics, the tours, what Zeigen lights up, the way back, and its tip) |
-| Store screenshots: raw captures with their marks (DE + EN) / the composed App Store and Google Play sets with the feature graphic | `npm run screenshots` / `npm run store-screenshots` — on the Mac, in this order. The set is one flat petrol, a big headline, a large phone, one piece of the screen lifted out of it (a call-out) and drawings across the seams; a call-out names a mark that `scripts/screenshots.mjs` measures and writes next to each capture (`<screen>.marks.json`). The model and its reasons: `.claude/skills/store-screenshot-studio/reference/composition.md` |
+| Store screenshots: raw captures with their marks (DE + EN + AR, iPhone and Android) / the composed App Store and Google Play sets with the feature graphic | `npm run screenshots` / `npm run store-screenshots` — on the Mac, in this order (`store-screenshots` takes missing captures by itself). The screens, their labels (from the app's strings) and marks are in `scripts/lib/shots.mjs`; Google Play's set is framed from the Android captures (`screenshots/<lang>-android/`). The set is one flat petrol, a big headline, a large phone, one piece of the screen lifted out of it (a call-out) and drawings across the seams; a call-out names a mark that `scripts/screenshots.mjs` measures and writes next to each capture (`<screen>.marks.json`). The model and its reasons: `.claude/skills/store-screenshot-studio/reference/composition.md` |
+| App Store preview video (DE + EN + AR, 886 × 1920, ≤ 30 s) | `npm run app-preview` (`-- --lang de --compose` after changing only words) — on the Mac; the storyboard is `.claude/skills/app-preview-video/config/storyboard.mjs` |
+| Upload the store listing: texts, screenshots, feature graphic, icon, preview video | `npm run store:listing:dry` (checks, sends nothing) / `npm run store:listing` (`-- --android` / `-- --ios` for one store) — only when Ahmad asks; it never submits for review |
 | Rewrite `docs/plans/glossary.md` from the app's strings | `WRITE_GLOSSARY=1 npx vitest run src/glossary.gen.test.ts` |
 | Release to both stores on one version (TestFlight + Play's internal test track) | `npm run release` (preview: `npm run release:dry`) |
 | One store only | `npm run release:ios` (first upload: `npm run release:first`) / `npm run release:android` (once: `npm run android:key`; only the bundle: `-- --no-upload`) |
@@ -1389,7 +1391,10 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 
 A change to a screen, a label or a flow that the App Review recording passes
 through means a change to `ios/AppReviewRecorder/scenes.json`; run
-`npm run rehearse:app-review` after it. The recording shows the main
+`npm run rehearse:app-review` after it. A screen, label or flow the app preview video passes
+through (the month's balance card, the entry sheet, Statistik → a category,
+the next month) means `npm run app-preview` and a look at its contact sheets;
+labels follow by themselves, a changed flow stops the film. The recording shows the main
 features only (13 November 2026; its README lists the seven scenes and what is
 left out): a new feature gets a scene only when it is one of them, and
 otherwise at most a word in the Review Notes.
