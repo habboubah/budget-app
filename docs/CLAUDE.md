@@ -82,7 +82,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
 | `src/translations.ts`, `src/i18n/` | All UI text: `de`, `en`, `ar` in `translations.ts`, the eleven others loaded on demand; `i18n/android.ts` swaps Apple wording for Android's |
 | `src/data/` | Built-in categories, their names in every language, their keywords |
 | `src/components/` | Screens (`*View`), sheets (`*Sheet`), cards, the charts |
-| `src/ui/` | Shared primitives: Screen, Sheet, Button, Field, Menu, Toast, AddButton, SwipeRow … (`menu.ts`: the ☰ button's context) |
+| `src/ui/` | Shared primitives: Screen, Sheet, Button, Field, Menu, Toast, AddButton, SwipeRow … (`menuButton.ts`: the ☰ button's context — not `menu.ts`: on a Mac that is the same file as `Menu.tsx`) |
 | `src/fixtures/` | What older versions stored and backed up, and the golden demo year (`compat.test.ts`, `golden.test.ts`) |
 | `ios/App/` | The Capacitor iOS project (Swift Package Manager, UIScene); our Swift: `SpartopfShared.swift` (the plugin), `SpartopfIntents.swift` (Siri and Shortcuts) |
 | `ios/AppReviewRecorder/` | The UI test that records the App Review video, and its `scenes.json` |
@@ -171,7 +171,7 @@ iPhone app, `localStorage` on the web; `src/storage.ts`).
     iOS does when it reclaims web storage; after a relaunch the file has it all.
 - **No tab bar: the menu (☰, November 2026, on Ahmad's word).** The month
   page, Statistik and Planen show ☰ on the bar's leading end where a pushed
-  screen shows ‹ (`Screen` reads `MenuContext` from `ui/menu.ts`, which App
+  screen shows ‹ (`Screen` reads `MenuContext` from `ui/menuButton.ts`, which App
   provides — no view passes it). ☰ opens the menu full screen: it is the tab
   `settings` (`MoreView`), always at its top, rising in a little from below.
   It covers the page it was opened from (`menuFrom` in App): ✕ on its bar and

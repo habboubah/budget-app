@@ -98,7 +98,7 @@ import { parseStatementLines } from './statementPdf';
 import { giroCodeEntry, parseGiroCode } from './girocode';
 import { FileTooLargeError, LIMITS } from './limits';
 import { AddButton } from './ui/AddButton';
-import { MenuContext } from './ui/menu';
+import { MenuContext } from './ui/menuButton';
 import { Toast, useToast } from './ui/Toast';
 import { Menu } from './ui/Menu';
 import { Confirm } from './ui/Sheet';

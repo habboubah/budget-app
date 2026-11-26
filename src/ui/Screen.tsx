@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronsUpDown, Menu as MenuIcon, X } from 'lucide-react';
 import { tapLight } from './haptics';
-import { useMenuButton } from './menu';
+import { useMenuButton } from './menuButton';
 
 interface Props {
   title: string;
