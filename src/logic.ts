@@ -32,8 +32,9 @@ import { isSupportedCurrency } from './currency';
  *  28: trips and projects (`AppData.projects`) — optional, unset = none.
  *  29: `Entry.tax` (an expense marked for the tax return) — optional.
  *  30: the built-in "Verliehenes Geld" (id `lent`) — added to a book saved before, in no month.
- *  31: `Entry.distinct` (the same amount twice in a month, checked as right) — optional. */
-export const SCHEMA_VERSION = 31;
+ *  31: `Entry.distinct` (the same amount twice in a month, checked as right) — optional.
+ *  32: `AppData.lastEdit` (when the user last changed an entry) — optional, unset = read off the entries. */
+export const SCHEMA_VERSION = 32;
 
 /* ------------------------------------------------------------------ basics */
 
@@ -1787,6 +1788,8 @@ export function normalizeState(raw: unknown): AppData {
   const goals = normalizeGoals(v.goals);
   const rules = normalizeRules(v.rules);
   const demo = normalizeDemo(v.demo);
+  // When the user last changed an entry (schema 32): a time, or nothing.
+  const lastEdit = typeof v.lastEdit === 'number' && Number.isFinite(v.lastEdit) && v.lastEdit > 0 ? v.lastEdit : undefined;
   return {
     categories, entries, months,
     ...(contracts ? { contracts } : {}),
@@ -1799,6 +1802,7 @@ export function normalizeState(raw: unknown): AppData {
     ...(debts ? { debts } : {}),
     ...(projects ? { projects } : {}),
     ...(monthStart !== 1 ? { monthStart } : {}),
+    ...(lastEdit ? { lastEdit } : {}),
   };
 }
 

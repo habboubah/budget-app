@@ -279,6 +279,7 @@ const da: Strings = {
   reconcileConfirmAgree: 'Markér som afstemt',
   reconcileDone: 'Afstemt med banken',
   reconciledOn: 'Afstemt {date}',
+  lastUpdated: 'Sidst opdateret: {date}',
 
   newIncome: 'Ny indtægt',
   newExpense: 'Ny udgift',

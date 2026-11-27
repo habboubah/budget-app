@@ -280,6 +280,7 @@ const nb: Strings = {
   reconcileConfirmAgree: 'Merk som avstemt',
   reconcileDone: 'Avstemt mot banken',
   reconciledOn: 'Avstemt {date}',
+  lastUpdated: 'Sist oppdatert: {date}',
 
   newIncome: 'Ny inntekt',
   newExpense: 'Ny utgift',

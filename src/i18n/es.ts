@@ -279,6 +279,7 @@ const es: Strings = {
   reconcileConfirmAgree: 'Marcar como cuadrado',
   reconcileDone: 'Cuadrado con el banco',
   reconciledOn: 'Cuadrado el {date}',
+  lastUpdated: 'Última actualización: {date}',
 
   newIncome: 'Nuevo ingreso',
   newExpense: 'Nuevo gasto',

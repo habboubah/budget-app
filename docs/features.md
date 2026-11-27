@@ -17,6 +17,11 @@ server, no ads; everything stays on the device.
   or tap the month's name to pick any month (each shown with what it ended
   on, this month tinted, saved or overspent per month); *Zum aktuellen
   Monat* jumps back.
+- **Zuletzt aktualisiert.** Under the balance card, on every month's page:
+  the day you last added, changed, ticked off or deleted an entry — "heute",
+  "gestern", "25. Nov." — not the date an entry is for. What the app does by
+  itself (carrying recurring entries into a new month, test data) doesn't
+  count. Kept in the book (schema 32), so it travels in a backup.
 - **Two balances.** The balance card shows *Kontostand jetzt* — the bank
   balance, counting what is paid or received — large, and under it one row:
   *Am Monatsende* ("nach 6 offenen Posten"), what is left once everything

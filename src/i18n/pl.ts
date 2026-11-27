@@ -282,6 +282,7 @@ const pl: Strings = {
   reconcileConfirmAgree: 'Oznacz jako zgodne',
   reconcileDone: 'Uzgodniono z bankiem',
   reconciledOn: 'Uzgodniono: {date}',
+  lastUpdated: 'Ostatnia zmiana: {date}',
 
   newIncome: 'Nowy wpływ',
   newExpense: 'Nowy wydatek',

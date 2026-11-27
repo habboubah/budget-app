@@ -279,6 +279,7 @@ const nl: Strings = {
   reconcileConfirmAgree: 'Markeren als afgestemd',
   reconcileDone: 'Afgestemd met de bank',
   reconciledOn: 'Afgestemd op {date}',
+  lastUpdated: 'Laatst bijgewerkt: {date}',
 
   newIncome: 'Nieuwe inkomst',
   newExpense: 'Nieuwe uitgave',

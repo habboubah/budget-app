@@ -279,6 +279,7 @@ const it: Strings = {
   reconcileConfirmAgree: 'Segna come allineato',
   reconcileDone: 'Allineato con la banca',
   reconciledOn: 'Allineato il {date}',
+  lastUpdated: 'Ultimo aggiornamento: {date}',
 
   newIncome: 'Nuova entrata',
   newExpense: 'Nuova uscita',

@@ -283,6 +283,7 @@ const cs: Strings = {
   reconcileConfirmAgree: 'Označit jako srovnané',
   reconcileDone: 'Srovnáno s bankou',
   reconciledOn: 'Srovnáno: {date}',
+  lastUpdated: 'Naposledy upraveno: {date}',
 
   newIncome: 'Nový příjem',
   newExpense: 'Nový výdaj',

@@ -293,6 +293,7 @@ const de = {
   reconcileConfirmAgree: 'Als abgeglichen merken',
   reconcileDone: 'Mit Bank abgeglichen',
   reconciledOn: 'Abgeglichen am {date}',
+  lastUpdated: 'Zuletzt aktualisiert: {date}',
 
   // Entry sheet
   newIncome: 'Neue Einnahme',
@@ -1599,6 +1600,7 @@ const en: Strings = {
   reconcileConfirmAgree: 'Mark as matched',
   reconcileDone: 'Matched with the bank',
   reconciledOn: 'Matched on {date}',
+  lastUpdated: 'Last updated: {date}',
 
   newIncome: 'New income',
   newExpense: 'New expense',
@@ -2899,6 +2901,7 @@ const ar: Strings = {
   reconcileConfirmAgree: 'وضع علامة مطابق',
   reconcileDone: 'تمت المطابقة مع البنك',
   reconciledOn: 'طوبِق في {date}',
+  lastUpdated: 'آخر تحديث: {date}',
 
   // Entry sheet
   newIncome: 'دخل جديد',

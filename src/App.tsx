@@ -93,6 +93,7 @@ import { PrintReport, PrintSpec, ReportPdfSheet, reportFileName } from './compon
 import { APP_STORE_URL, PLAY_URL, REVIEW_URL, feedbackMail, privacyUrl } from './links';
 import { LATER_KEY, dueForCheck, readLater, shouldOffer } from './appUpdate';
 import { isDemoEntry } from './demo';
+import { lastEntryUpdate } from './lastUpdate';
 import { StatementImportSheet, ImportState } from './components/StatementImportSheet';
 import { PlannedRow, allCategoryNames, applyStatement, csvForMapping, parseBankCsv, parseMappedCsv, parseStatementText, planStatement } from './statementImport';
 import { readImageText, readTextFile } from './ocr';
@@ -181,6 +182,8 @@ function AmountsShown({ hidden = false }: { hidden?: boolean }) {
 export default function App() {
   const store = useAppStore();
   const { data, categories, entries, language, themeMode } = store;
+  /** The day the user last changed an entry, for the month page (schema 32). */
+  const lastUpdate = useMemo(() => lastEntryUpdate(data), [data]);
   const t = stringsFor(language);
   /* Accounts (plan 30): nothing about them shows until the book has a second one. */
   const multi = hasAccounts(data);
@@ -1750,6 +1753,7 @@ export default function App() {
               <TransfersCard transfers={transfers} sides={monthSides} accounts={accounts} account={account} t={t} onToggle={toggleTransfer} onEdit={editTransfer} onNew={newTransfer} />
             ) : null}
             reconciledAt={store.months.find(m => m.key === month)?.reconciledAt}
+            lastUpdate={lastUpdate}
             peek={store.hideAmounts ? { shown: peek, onToggle: () => setPeek(v => !v) } : undefined}
             balanceOpen={store.balanceOpen}
             onBalanceOpen={store.setBalanceOpen}

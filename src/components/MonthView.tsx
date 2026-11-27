@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ChevronsDownUp, ChevronsUpDown, ListFilter, MoreHorizontal, Plus, Repeat as RepeatIcon } from 'lucide-react';
+import { AlertCircle, ChevronDown, History, ChevronLeft, ChevronRight, ChevronsDownUp, ChevronsUpDown, ListFilter, MoreHorizontal, Plus, Repeat as RepeatIcon } from 'lucide-react';
 import { Category, Entry, MonthKey } from '../types';
 import {
   MonthBalance, addMonths, displayName, entriesOf, formatMoney, monthKeyOf, monthLabel, parseMonthKey, searchByMonth, searchEntries, searchTerms,
@@ -17,6 +17,7 @@ import { rise, stagger } from '../ui/stagger';
 import { Picture } from '../ui/Picture';
 import { SearchField } from '../ui/SearchField';
 import { Tooltip } from '../ui/Tooltip';
+import { updatedLabel } from '../lastUpdate';
 import { AccountSwitch, BalanceCard } from './BalanceCard';
 import { MonthTrack } from '../insights';
 import { CategorySection } from './CategorySection';
@@ -47,6 +48,8 @@ interface Props {
   track?: MonthTrack | null;
   /** When this month was last matched against the bank (plan 10). */
   reconciledAt?: number;
+  /** When the user last added, changed or deleted an entry (`lastEntryUpdate`): *Zuletzt aktualisiert*, under the balance card. */
+  lastUpdate?: number;
   /** The balance card's eye, while amounts are hidden (plan 06). */
   peek?: { shown: boolean; onToggle: () => void };
   language: string;
@@ -270,6 +273,13 @@ export function MonthView(p: Props) {
         {!searching && (
           <BalanceCard balance={balance} track={p.track} t={t} onOpening={p.onOpening} onSwipe={d => p.onMonth(addMonths(month, d))} reconciledAt={p.reconciledAt} peek={p.peek} account={p.account}
             open={p.balanceOpen} onOpen={p.onBalanceOpen} given={p.balanceGiven} onBalanceNow={p.onBalanceNow} />
+        )}
+        {/* The day the book last changed — not an entry's own date (Ahmad, November 2026). The same on every month's page. */}
+        {!searching && p.lastUpdate !== undefined && (
+          <p className="-mt-2 px-1 flex items-center justify-end gap-1.5 text-caption text-fg-mute wrap-compound" data-last-update>
+            <History className="w-3.5 h-3.5 shrink-0" strokeWidth={2.2} aria-hidden="true" />
+            {fmt(t.lastUpdated, { date: updatedLabel(p.lastUpdate, t.locale) })}
+          </p>
         )}
         {(grown || searching) && (
         <div className="flex items-center gap-2">
