@@ -280,6 +280,7 @@ const sv: Strings = {
   reconcileConfirmAgree: 'Markera som avstämd',
   reconcileDone: 'Avstämd mot banken',
   reconciledOn: 'Avstämd {date}',
+  lastUpdated: 'Senast uppdaterad: {date}',
 
   newIncome: 'Ny inkomst',
   newExpense: 'Ny utgift',

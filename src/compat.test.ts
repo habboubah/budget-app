@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { SCHEMA_VERSION, computeBalances, makeBackup, parseBackup } from './logic';
+import { lastEntryUpdate } from './lastUpdate';
 import { loadStored, writeLocal } from './storage';
 import { AppData } from './types';
 import { debtPlan } from './insights';
@@ -300,5 +301,18 @@ describe('version 31 (the same amount twice, checked)', () => {
     expect(data.entries.find(e => e.id === 'y2')).toMatchObject({ distinct: true, amount: 250 });
     expect(data.entries.find(e => e.id === 'y1')?.distinct).toBeUndefined();
     expect(stored('storage-v30.json').data.entries.some(e => e.distinct)).toBe(false);
+  });
+});
+
+describe('version 32 (when the user last changed an entry)', () => {
+  it('keeps the time, and a book from before reads a day off its entries', () => {
+    const { data } = stored('storage-v32.json');
+    expect(data.lastEdit).toBe(Date.UTC(2026, 10, 25, 18, 30));
+    expect(lastEntryUpdate(data)).toBe(data.lastEdit);
+    const before = stored('storage-v31.json').data;
+    expect(before.lastEdit).toBeUndefined();
+    expect(lastEntryUpdate(before)).toBe(Math.max(...before.entries.filter(e => e.id === e.seriesId).map(e => e.createdAt)));
+    const again = parseBackup(JSON.stringify(makeBackup(data)));
+    expect(again.ok && again.data.lastEdit).toBe(data.lastEdit);
   });
 });

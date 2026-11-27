@@ -120,6 +120,14 @@ export function useAppStore() {
   const [debts, setDebts] = useState<Debt[]>(initial.debts ?? []);
   const [projects, setProjects] = useState<Project[]>(initial.projects ?? []);
   /**
+   * When the user last added, changed, ticked off or deleted an entry (schema
+   * 32): the month page's *Zuletzt aktualisiert*. `touch()` in each of those
+   * actions below — not where the app changes entries by itself (carrying
+   * over, test data, a category or goal taken away), nor in an undo.
+   */
+  const [lastEdit, setLastEdit] = useState<number | undefined>(initial.lastEdit);
+  const touch = () => setLastEdit(Date.now());
+  /**
    * The day the book's month begins (plan 32) — data, so part of a backup.
    * `setMonthStart` keeps logic.ts in step; set in the same breath as the
    * state, so nothing computes a month with the old day.
@@ -290,8 +298,9 @@ export function useAppStore() {
       ...(debts.length ? { debts } : {}),
       ...(projects.length ? { projects } : {}),
       ...(monthStart !== 1 ? { monthStart } : {}),
+      ...(lastEdit ? { lastEdit } : {}),
     }),
-    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts, monthStart, projects],
+    [categories, entries, months, contracts, currency, favorites, goals, rules, demo, accounts, debts, monthStart, projects, lastEdit],
   );
   /** Whether the book holds test data: Einstellungen offers to remove it instead of adding it. */
   const hasDemo = useMemo(() => hasDemoData(data), [data]);
@@ -412,12 +421,14 @@ export function useAppStore() {
 
   /** A new entry; a recurring one also goes into the months already started after it. */
   const addEntry = (entry: Entry) => {
+    touch();
     ensureMonth(entry.month);
     const later = laterCopies(data, entry, Date.now());
     setEntries(prev => [...prev, entry, ...later]);
   };
 
   const updateEntry = (id: string, patch: Partial<Omit<Entry, 'id'>>) => {
+    touch();
     const before = entries.find(e => e.id === id);
     setEntries(prev => prev.map(e => {
       if (e.id !== id) return e;
@@ -457,6 +468,7 @@ export function useAppStore() {
    * transactions paid, ticked. Returns what to undo.
    */
   const importEntries = (add: Entry[], pay: string[]): { added: string[]; paid: string[]; createdMonths: MonthKey[] } => {
+    touch();
     const have = new Set(months.map(m => m.key));
     const createdMonths = [...new Set(add.map(e => e.month))].filter(k => !have.has(k));
     if (createdMonths.length) {
@@ -489,6 +501,7 @@ export function useAppStore() {
   const moveEntry = (id: string, toCategoryId: string, toIndex: number): Entry[] | null => {
     const e = entries.find(x => x.id === id);
     if (!e) return null;
+    touch();
     const before = entries.filter(x => x.month === e.month && (x.categoryId === e.categoryId || x.categoryId === toCategoryId));
     setEntries(prev => move(prev, id, toCategoryId, toIndex));
     return before;
@@ -508,6 +521,7 @@ export function useAppStore() {
   const splitEntry = (id: string, parts: { categoryId: string; name: string; amount: number }[]): { original: Entry; splitId: string } | null => {
     const original = entries.find(e => e.id === id);
     if (!original || parts.length < 2) return null;
+    touch();
     const splitId = original.splitId ?? uid();
     const now = Date.now();
     const made: Entry[] = parts.map((p, i) => ({
@@ -537,6 +551,7 @@ export function useAppStore() {
   const removeEntry = (id: string): { entry: Entry; index: number } | null => {
     const index = entries.findIndex(e => e.id === id);
     if (index === -1) return null;
+    touch();
     setEntries(prev => prev.filter(e => e.id !== id));
     return { entry: entries[index], index };
   };
@@ -549,6 +564,7 @@ export function useAppStore() {
   const removeSeries = (seriesId: string, running: MonthKey): { seriesId: string; before: { entry: Entry; index: number }[] } | null => {
     const { remove, end } = stopSeries(entries, seriesId, running);
     if (!remove.length && !end) return null;
+    touch();
     const before = entries.flatMap((entry, index) => (entry.seriesId === seriesId ? [{ entry, index }] : []));
     setEntries(prev => prev
       .filter(e => !remove.includes(e.id))
@@ -571,6 +587,7 @@ export function useAppStore() {
 
   /** A transfer between two accounts: its two entries; a recurring one also in the months started after it. */
   const addTransfer = (d: TransferDraft): string => {
+    touch();
     ensureMonth(d.month);
     const now = Date.now();
     const pair = makeTransfer(d, now);
@@ -581,6 +598,7 @@ export function useAppStore() {
 
   /** Change both sides of a transfer at once. Returns them as they were, for undo (`restoreEntries`). */
   const updateTransfer = (pairId: string, patch: Partial<Omit<TransferDraft, 'month'>>): Entry[] => {
+    touch();
     const before = entries.filter(e => e.transfer?.pairId === pairId);
     const now = Date.now();
     setEntries(prev => prev.map(e => {
@@ -606,6 +624,7 @@ export function useAppStore() {
   /** Remove a transfer's two entries; returns them for undo. */
   const removeTransfer = (pairId: string): Entry[] => {
     const gone = entries.filter(e => e.transfer?.pairId === pairId);
+    if (gone.length) touch();
     setEntries(prev => prev.filter(e => e.transfer?.pairId !== pairId));
     return gone;
   };
@@ -747,6 +766,7 @@ export function useAppStore() {
     setAccounts(fixed.accounts ?? []);
     setDebts(fixed.debts ?? []);
     setProjects(fixed.projects ?? []);
+    setLastEdit(fixed.lastEdit);
   };
 
   /** Load a version (an automatic snapshot) and return the book as it was, for undo. */
@@ -803,6 +823,7 @@ export function useAppStore() {
     setAccountView(MAIN_ACCOUNT);
     setDebts([]);
     setProjects([]);
+    setLastEdit(undefined);
     // Back to the defaults of a fresh install: the phone's currency and
     // language (US dollars and German when it gives none).
     setCurrency(systemCurrency());
@@ -1066,6 +1087,7 @@ export function useAppStore() {
     debts, addDebt, updateDebt, removeDebt, restoreDebt,
     projects, addProject, updateProject, removeProject, restoreProject,
     monthStart, changeStart,
+    lastEdit,
     lastExport, markExported: () => setLastExport(isoDay()),
     copyCardDismissed, dismissCopyCard: () => setCopyCardDismissed(true),
     newId: uid,

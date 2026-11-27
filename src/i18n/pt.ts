@@ -280,6 +280,7 @@ const pt: Strings = {
   reconcileConfirmAgree: 'Marcar como acertado',
   reconcileDone: 'Acertado com o banco',
   reconciledOn: 'Acertado a {date}',
+  lastUpdated: 'Última atualização: {date}',
 
   newIncome: 'Nova receita',
   newExpense: 'Nova despesa',

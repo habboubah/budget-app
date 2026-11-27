@@ -282,6 +282,7 @@ const tr: Strings = {
   reconcileConfirmAgree: 'Eşleşti olarak işaretle',
   reconcileDone: 'Bankayla eşleştirildi',
   reconciledOn: 'Eşleştirildi: {date}',
+  lastUpdated: 'Son güncelleme: {date}',
 
   newIncome: 'Yeni gelir',
   newExpense: 'Yeni gider',

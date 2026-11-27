@@ -280,6 +280,7 @@ const fr: Strings = {
   reconcileConfirmAgree: 'Marquer comme rapproché',
   reconcileDone: 'Rapproché avec la banque',
   reconciledOn: 'Rapproché le {date}',
+  lastUpdated: 'Dernière mise à jour : {date}',
 
   newIncome: 'Nouveau revenu',
   newExpense: 'Nouvelle dépense',

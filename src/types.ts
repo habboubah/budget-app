@@ -238,6 +238,13 @@ export interface AppData {
   monthStart?: number;
   /** Trips and projects (schema 28): a tag with a budget and dates. Unset = none. */
   projects?: Project[];
+  /**
+   * When the user last added, changed, ticked off or deleted an entry, ms
+   * (schema 32) — the month page's *Zuletzt aktualisiert*. Not what the app
+   * does by itself (carrying recurring entries into a new month, test data).
+   * Unset = a book saved before: `lastEntryUpdate` reads it off the entries.
+   */
+  lastEdit?: number;
 }
 
 /**
