@@ -200,7 +200,9 @@ when it is wanted:
   move to the front with a ✦ — "Lidl" → Lebensmittel, "Strom" /
   "Electricity" / "كهرباء" → Wohnen, "gym" → Sport. A sure match is chosen
   for you until you tap a category yourself (switch that off in *Kategorien
-  und Budgets*: then it is only marked). Your own entries teach it: what you
+  und Budgets*: then it is only marked). An entry added with a category's
+  own + on the month page stays in that category — the match is only
+  marked there. Your own entries teach it: what you
   filed "Lidl" under before wins. Each category has **keywords** — the
   built-ins come with the usual German shops, brands and words in German,
   English and Arabic — to see, change, delete or add in its sheet, with ideas
