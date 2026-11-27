@@ -25,7 +25,8 @@ import { tapLight } from '../ui/haptics';
 
 export type EntrySheetMode =
   /** `preset`: what the first run's steps fill in ("Gehalt", monthly); the repeat stays for "save & next". */
-  | { kind: 'new'; month: MonthKey; categoryId: string; preset?: { name?: string; repeat?: Repeat; amount?: number; paid?: boolean; note?: string } }
+  /** `fromCategory`: opened with a category's own + on the month page — that category stays; the name's keywords only point at others (✦). */
+  | { kind: 'new'; month: MonthKey; categoryId: string; fromCategory?: true; preset?: { name?: string; repeat?: Repeat; amount?: number; paid?: boolean; note?: string } }
   | { kind: 'edit'; entry: Entry }
   | null;
 
@@ -103,7 +104,9 @@ const PILL = 'relative min-h-tap max-w-full ps-2 pe-3 rounded-full inline-flex i
  * du …?", and the categories it points to move to the front with a ✦ and a
  * short pop. A sure match is also chosen — for a new entry, until the user
  * taps a category, and only with `autoCategory`; emptying the name goes back
- * to the category the sheet opened with.
+ * to the category the sheet opened with. Not when the sheet was opened with a
+ * category's own + (`fromCategory`, Ahmad, November 2026): the user already
+ * said where it goes, so that category stays and the matches are only marked.
  *
  * A new entry starts with *Ausgabe | Einnahme* (plan 39): the switch picks a
  * category of that kind — the kind is the category's, nothing new is saved —
@@ -340,7 +343,7 @@ export function EntrySheet({ mode, categories, featured, entries, language, t, o
     setName(v);
     setAllSuggestions(false);
     setNameTyped(true);
-    if (!autoCategory || categoryChosen) return;
+    if (!autoCategory || categoryChosen || (mode?.kind === 'new' && mode.fromCategory)) return;
     const best = guessCategories(keywordIndex, v, { featured })[0];
     if (best?.sure) setCategoryId(best.categoryId);
     else if (!cleanText(v)) setCategoryId(baseCategory);

@@ -1725,7 +1725,7 @@ export default function App() {
             onMonth={setMonth}
             onStart={startMonth}
             onActions={setActionsAnchor}
-            onAdd={categoryId => setEntrySheet({ kind: 'new', month, categoryId })}
+            onAdd={categoryId => setEntrySheet({ kind: 'new', month, categoryId, fromCategory: true })}
             onEdit={entry => setEntrySheet({ kind: 'edit', entry })}
             onToggle={toggle}
             onDelete={e => deleteEntry(e.id)}
