@@ -108,7 +108,7 @@ ffmpeg -i "$IN" -vf "scale=-2:1280,fps=15" -c:v libx264 -preset veryfast -b:v 17
 
 
 # Summery
-
+`npm run deploy:web`            Deploy to claudflare
 `npm run release`               screenshots, store set, preview video, update listing
 `npm run release:upload`        Build and upload only (`release:ios`, `release:android`) 
 `npm run screenshots`           Raw store captures in DE / EN / AR → `screenshots/<de\|en\|ar>/`
